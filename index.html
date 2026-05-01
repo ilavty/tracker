@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Final Notepad V75 (Ultimate Dashboard)</title>
     <style>
         @import url("https://cdn.jsdelivr.net/gh/sun-typeface/gmarket-sans@v1.0.0/css/gmarket-sans-all.css");
@@ -263,7 +263,9 @@
         #chrono-view .q-grid-header { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 40px 40px; gap: 15px; font-weight: 700; border-bottom: 1px solid var(--primary-blue); padding-bottom: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; color: var(--primary-blue); align-items: center; min-width: 800px;}
         #chrono-view .quiz-note-list { display: flex; flex-direction: column; gap: 6px; min-width: 800px;}
         #chrono-view .q-row { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 40px 40px; gap: 15px; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 12px 5px; text-align: center; font-weight: 300; font-size: 1rem; }
-        
+        #chrono-view .q-grid-header { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 30px 40px 40px; gap: 15px; font-weight: 700; border-bottom: 1px solid var(--primary-blue); padding-bottom: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; color: var(--primary-blue); align-items: center; min-width: 800px;}
+        #chrono-view .quiz-note-list { display: flex; flex-direction: column; gap: 6px; min-width: 800px;}
+        #chrono-view .q-row { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 30px 40px 40px; gap: 15px; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 12px 5px; text-align: center; font-weight: 300; font-size: 1rem; }
         /* v72 반영: 랜덤 퀴즈 폰트 굵기 하향 */
         #chrono-view .q-num { font-family: 'Montserrat', sans-serif !important; font-weight: 500; color: var(--grey-text); text-align: right; }
         #chrono-view .q-name { font-weight: 400; color: #111; text-align: left;}
@@ -340,9 +342,9 @@
         .calendar-legend span:nth-child(5) { background-color: rgba(42,85,140, 0.8); color: #fff; }
 
        /* 7. Tracker - 사이클 체크 디테일(선, 점선, 그림자) 수정 */
-        .topics-row { border-bottom: 1px solid rgba(0,0,0,0.08) !important; padding-bottom: 8px !important; margin-bottom: 6px !important; } /* 소주제 밑 선 매우 연하게 */
-        .session-row { border-bottom: none !important; box-shadow: none !important; margin-bottom: 4px !important; background: transparent !important; } /* 행 배경/그림자/하단선 제거 */
-        .tracker-bar { box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important; } 
+.topics-row { border-bottom: 1px solid rgba(0,0,0,0.08) !important; padding-bottom: 8px !important; margin-bottom: 6px !important; }
+.session-row { border-bottom: 1px dashed rgba(0,0,0,0.1) !important; box-shadow: none !important; margin-bottom: 4px !important; background: transparent !important; }
+.tracker-bar { box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important; }
         /* 바(막대)에만 그림자 부여 (연하게) */
 /* ================================================= */
         /* ▼ 모바일 최적화 (가장 마지막에 위치해야 함) ▼ */
@@ -644,18 +646,25 @@
                 background: rgba(42, 85, 140, 0.03);
                 border: 0.5px solid rgba(0, 0, 0, 0.05);
             }
+            /* 퀴즈 왕관, 눈 아이콘 (Absolute 우측 하단 고정) */
+            #chrono-view .q-row > *:nth-child(7) { position: absolute !important; bottom: 12px !important; right: 40px !important; margin: 0 !important; display: block !important; font-size: 1.2rem !important; cursor: pointer; }
+            #chrono-view .q-row > *:nth-child(8) { display: none !important; } /* 프로그레스 숨김 */
+            #chrono-view .q-row > *:nth-child(9) { position: absolute !important; bottom: 15px !important; right: 5px !important; margin: 0 !important; }
         }
         /* v72 반영: 모바일 상세 팝업 테두리 삭제 및 2열 레이아웃을 위한 오버라이드 스타일 - 기존 .modal-content에 테두리 스타일이 덮어씌워지지 않도록 !important 추가 */
         #mobile-detail-modal .modal-content { border: none !important; }
-        /* PC용 바 삭제 버튼(X) 스타일 */
-.tracker-bar { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        //* PC용 바 삭제 버튼(X) 스타일 (위치 고정 및 모양 복구) */
+.tracker-bar { 
+    position: absolute; /* 바를 가로로 길게 뻗게 복구 */
+    overflow: hidden; 
+}
 .bar-delete-btn { 
     position: absolute; right: 2px; top: 50%; transform: translateY(-50%); 
     width: 14px; height: 14px; background: rgba(0,0,0,0.2); color: #fff; 
     border-radius: 50%; font-size: 10px; line-height: 14px; text-align: center; 
-    cursor: pointer; display: none; /* 기본적으로 숨김 */
+    cursor: pointer; display: none; z-index: 5;
 }
-.tracker-bar:hover .bar-delete-btn { display: block; } /* 마우스 올리면 표시 */
+.tracker-bar:hover .bar-delete-btn { display: block; }
 
 /* 모바일 연필 버튼 강제 노출 */
 @media (max-width: 850px) {
@@ -1122,8 +1131,8 @@
             </div>
             <div style="margin-bottom:10px;"><label style="font-size:0.75rem; font-weight:700;">이름</label><input type="text" id="me-name" class="chrono-input-text" style="width:100%; border:1px solid #ccc; border-radius:4px; padding:6px;"></div>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <div style="flex:1"><label style="font-size:0.75rem; font-weight:700;">한국발효</label><input type="text" id="me-kf" class="chrono-input-text" style="width:100%; border:1px solid #ccc; border-radius:4px; padding:6px;"></div>
                 <div style="flex:1"><label style="font-size:0.75rem; font-weight:700;">발효</label><input type="text" id="me-ef" class="chrono-input-text" style="width:100%; border:1px solid #ccc; border-radius:4px; padding:6px;"></div>
+                <div style="flex:1"><label style="font-size:0.75rem; font-weight:700;">한국발효</label><input type="text" id="me-kf" class="chrono-input-text" style="width:100%; border:1px solid #ccc; border-radius:4px; padding:6px;"></div>
             </div>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <div style="flex:1"><label style="font-size:0.75rem; font-weight:700;">중요도</label><select id="me-imp" class="chrono-input-text" style="width:100%; border:1px solid #ccc; border-radius:4px; padding:6px;"><option value="1">★</option><option value="2">★★</option><option value="3">★★★</option></select></div>
@@ -1472,78 +1481,57 @@ let isTrackerEditMode = false;
                     if(isCycleCompleted) dateStrHtml = `<span style="color: #000; font-size:0.9rem;"><span class="completed-text">COMPLETED</span> <span style="font-weight: 500;">(${minStr} - ${maxStr}) : ${diffDays} DAYS</span></span>`; else dateStrHtml = `<span class="in-progress-text">IN PROGRESS: ${minStr} ~</span>`;
                 }
 
-                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})" ontouchstart="this.pressTimer = setTimeout(() => { showTrackerMenu(event, 'cycle', ${cIdx}); }, 600);" ontouchend="clearTimeout(this.pressTimer);"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><input type="text" value="${cycle.num}" class="cycle-num-input" onclick="event.stopPropagation()" onchange="updateCycleNum(${cIdx}, this.value)" style="font-weight:400; width:40px;"></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
+                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})" ontouchstart="this.pressTimer = setTimeout(() => { showTrackerMenu(event, 'cycle', ${cIdx}); }, 600);" ontouchend="clearTimeout(this.pressTimer);" ontouchmove="clearTimeout(this.pressTimer);"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><input type="text" value="${cycle.num}" class="cycle-num-input" onclick="event.stopPropagation()" onchange="updateCycleNum(${cIdx}, this.value)" style="font-weight:400; width:40px;"></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
                 
                 cycle.cats.forEach((cat, catIdx) => {
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
                     let sessions = toArray(cat.sessions);
                     if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
                     
-                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => `<div class="topic-cell" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; 
-                        return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})" onmousedown="if(!isTrackerEditMode) startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="if(!isTrackerEditMode) onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}%); width: calc(${(bar.end - bar.start + 1) / N * 100}%); background: ${barColor}; color: ${textColor};" onclick="event.stopPropagation();"><input type="text" value="${bar.text}" onchange="updateBarText(${cIdx}, ${catIdx}, ${sIdx}, ${bIdx}, this.value)" style="width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: inherit; font-family: inherit; outline: none;"><span class="bar-delete-btn" onclick="event.stopPropagation(); pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[${cIdx}].cats[${catIdx}].sessions[${sIdx}].bars.splice(${bIdx}, 1); renderTrackerCycles(); saveDataToFirebase();">×</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; 
+                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => `<div class="topic-cell" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.15 + (sIdx * 0.15); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; 
+                        
+                        // ★ 변경된 부분: left에 + 2px, width에 - 4px가 추가되어 바 사이에 예쁜 여백이 생깁니다!
+                        return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})" onmousedown="if(!isTrackerEditMode) startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="if(!isTrackerEditMode) onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor};" onclick="event.stopPropagation();"><input type="text" value="${bar.text}" onchange="updateBarText(${cIdx}, ${catIdx}, ${sIdx}, ${bIdx}, this.value)" style="width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: inherit; font-family: inherit; outline: none;"><span class="bar-delete-btn" onclick="event.stopPropagation(); pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[${cIdx}].cats[${catIdx}].sessions[${sIdx}].bars.splice(${bIdx}, 1); renderTrackerCycles(); saveDataToFirebase();">×</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; 
                     }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
                 });
                 html += `</div></div>`; container.innerHTML += html;
             });
         }
 
+        // --- 드래그 보조 함수들 ---
         function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
-    if (e.button !== 0) return; 
-    dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; 
-    renderDragHighlight(); 
-}
-
-function onDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
-    if (!dragInfo) return; 
-    if (dragInfo.cIdx === cIdx && dragInfo.catIdx === catIdx && dragInfo.sIdx === sIdx) { 
-        dragInfo.currentCol = colIdx; 
-        renderDragHighlight(); 
-    } 
-}
-
-function renderDragHighlight() { 
-    if (!dragInfo) return; 
-    let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
-    let start = Math.min(startCol, currentCol); 
-    let end = Math.max(startCol, currentCol); 
-    let hl = document.getElementById(`hl-${cIdx}-${catIdx}-${sIdx}`); 
-    if (hl) { 
-        hl.style.display = 'block'; 
-        hl.style.left = `${(start / numCols) * 100}%`; 
-        hl.style.width = `${((end - start + 1) / numCols) * 100}%`; 
-    } 
-}
-
-        function promptBarEdit(e, cIdx, catIdx, sIdx, bIdx) {
-            if(e) e.stopPropagation();
-            closeAllModals();
-            let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx];
-            
-            // 수정 또는 삭제 선택
-            let res = prompt("'삭제'를 입력하면 바가 삭제됩니다.\n내용 수정을 원하시면 새 내용을 입력하세요:", bar.text);
-            
-            if(res === null) return;
-            
-            pushUndoState();
-            if(res.trim() === "삭제") {
-                trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars.splice(bIdx, 1);
-            } else if(res.trim() !== "") {
-                bar.text = res.trim();
-            }
-            
-            renderTrackerCycles();
-            saveDataToFirebase();
+            if (e.button !== 0 || isTrackerEditMode) return; 
+            dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; 
+            renderDragHighlight(); 
         }
-        function handleTopicClick(cIdx, catIdx, tIdx) { pushUndoState(); let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx]; let topic = cat.topics[tIdx]; let baseName = topic.name.replace(/\s*\(\d+\)$/, '').trim(); let maxNum = 0; cat.topics.forEach(t => { let escapedBase = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); let m = t.name.match(new RegExp("^" + escapedBase + "\\s*\\((\\d+)\\)$")); if (m) maxNum = Math.max(maxNum, parseInt(m[1])); }); if (maxNum === 0) { topic.name = baseName + " (1)"; cat.topics.splice(tIdx + 1, 0, { id: Math.random(), name: baseName + " (2)" }); } else { cat.topics.splice(tIdx + 1, 0, { id: Math.random(), name: baseName + " (" + (maxNum + 1) + ")" }); } cat.sessions.forEach(sess => { sess.bars.forEach(bar => { if (bar.start > tIdx) bar.start++; if (bar.end > tIdx) bar.end++; else if (bar.start <= tIdx && bar.end >= tIdx) bar.end++; }); }); renderTrackerCycles(); saveDataToFirebase(); }
-        
-    
+
+        function onDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
+            if (!dragInfo || isTrackerEditMode) return; 
+            if (dragInfo.cIdx === cIdx && dragInfo.catIdx === catIdx && dragInfo.sIdx === sIdx) { 
+                dragInfo.currentCol = colIdx; 
+                renderDragHighlight(); 
+            } 
+        }
+
+        function renderDragHighlight() { 
+            if (!dragInfo) return; 
+            let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
+            let start = Math.min(startCol, currentCol); 
+            let end = Math.max(startCol, currentCol); 
+            let hl = document.getElementById(`hl-${cIdx}-${catIdx}-${sIdx}`); 
+            if (hl) { 
+                hl.style.display = 'block'; 
+                hl.style.left = `${(start / numCols) * 100}%`; 
+                hl.style.width = `${((end - start + 1) / numCols) * 100}%`; 
+            } 
+        }
+
         function endDragGlobal(e) { 
             if (!dragInfo) return; 
             
             let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
             dragInfo = null; 
             
-            // 드래그 하이라이트(자국) 숨기기
             document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none');
             
             let start = Math.min(startCol, currentCol); 
@@ -1551,19 +1539,15 @@ function renderDragHighlight() {
             let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate(); 
             
             pushUndoState();
-            
-            // 데이터 구조 확인 및 바 추가
             let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
             if(!session.bars) session.bars = [];
             
-            session.bars.push({ 
-                id: Date.now() + Math.random(), 
-                start: start, 
-                end: end, 
-                text: todayStr 
-            });
+            // 기존과 겹치는지 간단히 확인
+            let overlap = session.bars.some(b => (start <= b.end && end >= b.start));
+            if(!overlap) {
+                session.bars.push({ id: Date.now()+Math.random(), start, end, text: todayStr });
+            }
             
-            // 화면 새로고침 및 저장
             renderTrackerCycles(); 
             saveDataToFirebase();
         }
@@ -2550,6 +2534,38 @@ function renderDragHighlight() {
             renderQuizBoard();
         }
 
+        // 눈 감고 뜨기 (정답 확인용 함수)
+        function toggleAns(i) {
+            let el = document.getElementById(`qz-eye-${i}`);
+            let isHidden = el.getAttribute('data-hidden') === 'true';
+            let boxes = [document.getElementById(`ans-y-${i}`), document.getElementById(`ans-e-${i}`), document.getElementById(`ans-k-${i}`)];
+            if(isHidden) {
+                el.innerHTML = '👁️';
+                el.setAttribute('data-hidden', 'false');
+                boxes.forEach(b => { if(b) b.classList.add('show'); });
+            } else {
+                el.innerHTML = '🙈';
+                el.setAttribute('data-hidden', 'true');
+                boxes.forEach(b => { if(b) b.classList.remove('show'); });
+            }
+        }
+
+       
+       // 눈 감고 뜨기 (정답 확인용 함수)
+        function toggleAns(i) {
+            let el = document.getElementById(`qz-eye-${i}`);
+            let isHidden = el.getAttribute('data-hidden') === 'true';
+            let boxes = [document.getElementById(`ans-y-${i}`), document.getElementById(`ans-e-${i}`), document.getElementById(`ans-k-${i}`)];
+            if(isHidden) {
+                el.innerHTML = '☻'; // 답을 봤을 때 모양
+                el.setAttribute('data-hidden', 'false');
+                boxes.forEach(b => { if(b) b.classList.add('show'); });
+            } else {
+                el.innerHTML = '☺︎'; // 답을 숨겼을 때 모양
+                el.setAttribute('data-hidden', 'true');
+                boxes.forEach(b => { if(b) b.classList.remove('show'); });
+            }
+        }
         function renderQuizBoard() {
             const list = document.getElementById('quiz-list'); list.innerHTML='';
             const crownSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-1-1v-1h14v1z"></path></svg>`;
@@ -2569,8 +2585,9 @@ function renderDragHighlight() {
                         <div class="q-num">${i+1}.</div>
                         <div class="q-name-cell" style="text-align:left;"><div class="q-name" style="font-weight:500;">${q.name}</div></div>
                         <div class="q-input-wrap"><input type="text" class="q-input" id="qz-y-${i}" placeholder="" autocomplete="off" onblur="checkAns(${i}, 'y', '${q.year}')" onkeydown="if(event.key==='Enter') this.blur();"><span class="q-ans" id="ans-y-${i}">${q.year}</span></div>
-                        ${korEffectInput} ${effectInput}
+                        ${effectInput} ${korEffectInput}
                         <div class="q-kws-cell q-col-kws">${kws}</div>
+                        <div style="cursor:pointer; font-size: 1.8rem !important; line-height: 1;" id="qz-eye-${i}" data-hidden="true" onclick="toggleAns(${i})">☺︎</div>
                         <div class="quiz-progress-cell q-col-prog">${circHtml}</div>
                         <div class="q-crown-cell" id="qz-crown-box-${i}" style="cursor:${isTodayDone ? 'default' : 'pointer'}; color:var(--primary-blue); transition:0.2s; opacity:${isTodayDone ? '0.2' : '1'};" ${isTodayDone ? '' : `onclick="submitQuizRow(${i})"`}>${crownSvg}</div>
                     </div>`;
@@ -2757,9 +2774,7 @@ function renderDragHighlight() {
                 }; reader.readAsText(f, 'utf-8');
             });
         };
-        // 마우스/터치 종료 시 드래그 기록 확정
-window.addEventListener('mouseup', endDragGlobal);
-window.addEventListener('touchend', endDragGlobal);
+        window.addEventListener('mouseup', endDragGlobal);
     </script>
 </body>
 </html>
