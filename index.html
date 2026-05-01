@@ -1665,16 +1665,83 @@ let isTrackerEditMode = false;
             }
         }
 
-        function renderTimelineData(dateStr) {
-            const container = document.getElementById('timeline-list'); if(!container) return; container.innerHTML = '';
-            if(!Array.isArray(detailedSessions)) return;
-            const daySessions = detailedSessions.filter(s => s && s.date === dateStr).sort((a,b) => { if(!a.start || !b.start) return 0; return a.start.localeCompare(b.start); });
-            if(daySessions.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px; font-weight:700;">No Records</p>'; return; }
-            daySessions.forEach(sess => {
-                const sub = subjectsData.find(s => s.id === sess.subId); const subName = sess.isManual ? "수동 추가 (통계전용)" : (sub ? sub.name : 'DEL'); const subColor = sess.isManual ? "#aaa" : (sub ? sub.color : '#ccc'); const timeText = sess.isManual ? "0:00:00" : `${stripLeadingZero(sess.start)} - ${stripLeadingZero(sess.end)}`;
-                const div = document.createElement('div'); div.className = 'timeline-item';
-                div.innerHTML = `<div class="timeline-color-bar" style="background:${subColor}"></div><div class="timeline-content"><div><strong>${subName}</strong> ${Math.floor(sess.duration/60)}m</div><div style="font-size:0.75rem; color:#888;">${timeText}</div></div><div class="timeline-menu-btn" onclick="toggleMenu('${sess.id}', event)">⋮</div><div class="timeline-dropdown" id="menu-${sess.id}">${sess.isManual ? '' : `<div class="dropdown-item" onclick="openEditModal('${sess.id}')">Edit</div>`}<div class="dropdown-item delete-btn" onclick="deleteSession('${sess.id}')">Delete</div></div>`; container.appendChild(div);
+        function renderTimeline() {
+            const list = document.getElementById('tl-list'); list.innerHTML = '';
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const yMin = parseInt(document.getElementById('year-min').value) || -9999;
+            const yMax = parseInt(document.getElementById('year-max').value) || 9999;
+
+            if(!Array.isArray(chronoEvents)) chronoEvents = [];
+            let sorted = [...chronoEvents].sort((a, b) => { if(a.year !== b.year) return a.year - b.year; let aM=0, aD=0, bM=0, bD=0; if(a.date) { let p=a.date.split('.'); aM=parseInt(p[0])||0; aD=parseInt(p[1])||0; } if(b.date) { let p=b.date.split('.'); bM=parseInt(p[0])||0; bD=parseInt(p[1])||0; } if(aM!==bM) return aM-bM; return aD-bD; });
+            
+            let markers = {};
+            const milestones = [2020, 2010, 2000, 1900, 1800];
+            
+            // 모바일 여부 확인 (키보드 차단용)
+            let isMobile = window.innerWidth <= 850;
+            let cEdit = isMobile ? 'false' : 'true';
+
+            sorted.forEach(ev => {
+                try {
+                    let evYr = parseInt(ev.year);
+                    if(isNaN(evYr) || evYr < yMin || evYr > yMax) return;
+                    if(search && !String(ev.name).toLowerCase().includes(search) && !(ev.keywords ? String(ev.keywords) : "").toLowerCase().includes(search)) return;
+                    if(filterSubs && filterSubs.length > 0) { let es = (ev.subject||"").split(',').map(x=>x.trim()); if(!filterSubs.some(s => es.includes(s))) return; }
+                    if(filterKws && filterKws.length > 0) { let ek = (ev.keywords||"").split(',').map(x=>x.trim()); if(!filterKws.some(k => ek.includes(k))) return; }
+
+                    let idAttr = "";
+                    let jumpY = milestones.find(y => evYr >= y);
+                    if (jumpY && !markers[jumpY]) { markers[jumpY] = true; idAttr = `jump-${jumpY}`; }
+
+                    let imp = Math.max(0, parseInt(ev.importance) || 1);
+                    let stars = "★".repeat(Math.min(imp, 3)); 
+                    
+                    let kwStr = ev.keywords ? String(ev.keywords) : "";
+                    let kws = kwStr.split(',').map(k=>k.trim()).filter(k=>k);
+                    let kwHtml = kws.length > 0 ? kws.map(k=>`<span class="kw-box">${k}</span>`).join('') : '<span class="kw-empty" style="font-weight:300 !important;">+</span>';
+
+                    let chkSvg = ev.target ? `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary-blue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ccc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+                    let row = document.createElement('div'); row.className = 'tl-row';
+                    row.style.cursor = 'pointer'; // ★ iOS 터치 증발 방지용 필수 설정
+                    if (idAttr) row.setAttribute('id', idAttr);
+                    
+                    let cleanDate = (!ev.date || ev.date === '0' || ev.date === '0.0' || ev.date === 'NaN') ? '' : ev.date;
+
+                    row.innerHTML = `
+                        <div class="tl-year editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'year', this.innerText)">${ev.year}</div>
+                        <div class="tl-date editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'date', this.innerText)">${cleanDate}</div>
+                        <div class="tl-name editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'name', this.innerText)">${ev.name}</div>
+                        <div class="tl-effect editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'effect', this.innerText)">${ev.effect||''}</div>
+                        <div class="tl-korEffect editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'korEffect', this.innerText)">${ev.korEffect||''}</div>
+                        <div class="tl-kws tl-col-kws" onclick="openInlineTagModal(event, ${ev.id}, 'keywords')">${kwHtml}</div>
+                        <div class="tl-star tl-col-imp" onclick="cycleStar(${ev.id})">${stars}</div>
+                        <div class="tl-sub tl-col-sub" onclick="openInlineTagModal(event, ${ev.id}, 'subject')">${getSubShort(ev.subject) || '<span class="kw-empty">+</span>'}</div>
+                        <div class="tl-chk tl-col-chk" onclick="toggleTarget(${ev.id}, ${!ev.target})" style="cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;">${chkSvg}</div>
+                    `;
+                    
+                    // ★ 모바일 터치 이벤트: 꾹 누르는 딜레이 없이 떼는 순간 바로 창 띄움
+                    let isScrolling = false;
+                    row.addEventListener('touchmove', () => { isScrolling = true; }, { passive: true });
+                    row.addEventListener('touchend', (e) => {
+                        if (window.innerWidth <= 850 && !isScrolling) {
+                            if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
+                            e.preventDefault(); // 중복 클릭(고스트 클릭) 방지
+                            openMobileDetailModal(ev.id);
+                        }
+                        isScrolling = false;
+                    });
+
+                    // PC는 우클릭으로 팝업
+                    row.oncontextmenu = (e) => { 
+                        if (window.innerWidth > 850) { e.preventDefault(); openMobileDetailModal(ev.id); }
+                    };
+                    
+                    list.appendChild(row);
+                    row.querySelectorAll('[contenteditable="true"]').forEach(el => { el.addEventListener('keydown', function(e) { if(e.key==='Enter') { e.preventDefault(); this.blur(); } }); });
+                } catch(err) { console.error("Timeline render error:", err); }
             });
+            updateProgress();
         }
 
         function addSubject() { pushUndoState(); let name = prompt("추가할 과목 이름:"); if(name && name.trim()) { let id = 's' + Date.now(); if(!Array.isArray(subjectsData)) subjectsData = []; let color = paletteColors[subjectsData.length % paletteColors.length]; subjectsData.push({id: id, name: name.trim(), color: color}); renderSubjects(); saveDataToFirebase(); } }
