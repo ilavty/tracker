@@ -656,6 +656,28 @@
                 pointer-events: none !important; 
             }
 
+            /* 모바일 연표(Timeline) 완벽 제어: 텍스트 선택 방지, 글자 크기, 화면 넘어감 고침 */
+            #chrono-view .tl-list {
+                min-width: 0 !important; /* 화면 밖으로 밀리는 원인 제거 */
+                width: 100% !important;
+                overflow-x: hidden !important;
+            }
+            #chrono-view .tl-row {
+                user-select: none !important; /* 텍스트 파랗게 선택되는 현상 원천 차단 */
+                -webkit-user-select: none !important; /* 아이폰/사파리 텍스트 선택 차단 */
+            }
+            #chrono-view .tl-year, 
+            #chrono-view .tl-date, 
+            #chrono-view .tl-name {
+                font-size: 0.85rem !important; /* 갑자기 커진 글씨 원래대로 예쁘게 축소 */
+                white-space: normal !important; /* 가로로 넘어가지 않고 밑으로 줄바꿈되도록 */
+                word-break: keep-all !important;
+                line-height: 1.3 !important;
+            }
+            #chrono-view .editable {
+                pointer-events: none !important; /* 모바일에서 텍스트 커서(수정) 잡히는 현상 확인사살 */
+            }
+
         }
         /* v72 반영: 모바일 상세 팝업 테두리 삭제 및 2열 레이아웃을 위한 오버라이드 스타일 - 기존 .modal-content에 테두리 스타일이 덮어씌워지지 않도록 !important 추가 */
         #mobile-detail-modal .modal-content { border: none !important; }
