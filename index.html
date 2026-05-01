@@ -633,6 +633,17 @@
             
             /* 프로그레스 숨김 */
             #chrono-view .q-row > *:nth-child(7) { display: none !important; }
+            /* 트래커 영역에서 터치 드래그 시 화면 밀림 및 선택 방지 */
+            .grid-cell { 
+                touch-action: none !important; 
+                user-select: none !important; 
+                -webkit-user-select: none !important; 
+            }
+            /* 수정 모드 활성화 시 빈 칸 강조 */
+            #tracker-view.edit-active .grid-cell {
+                background: rgba(42, 85, 140, 0.03);
+                border: 0.5px solid rgba(0, 0, 0, 0.05);
+            }
         }
         /* v72 반영: 모바일 상세 팝업 테두리 삭제 및 2열 레이아웃을 위한 오버라이드 스타일 - 기존 .modal-content에 테두리 스타일이 덮어씌워지지 않도록 !important 추가 */
         #mobile-detail-modal .modal-content { border: none !important; }
@@ -908,7 +919,8 @@
         <div id="tracker-view" class="gmarket-font">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
                 <div id="tracker-subject-nav" style="display: flex; gap: 10px; font-weight: 700; flex-wrap:wrap;"></div>
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="tracker-edit-mode-btn" class="action-btn" onclick="toggleTrackerEditMode()" style="background:#fff;">✏️</button>
                     <button class="action-btn" onclick="event.stopPropagation(); addNewCycle()">+ Add Cycle</button>
                     <button class="action-btn" onclick="event.stopPropagation(); openTrackerSettings()">Settings</button>
                     <button class="action-btn" onclick="backupTracker()">Backup</button>
@@ -1308,7 +1320,60 @@
         }
 
         let dragInfo = null;
+let isTrackerEditMode = false;
 
+        function toggleTrackerEditMode() {
+            isTrackerEditMode = !isTrackerEditMode;
+            const btn = document.getElementById('tracker-edit-mode-btn');
+            if (isTrackerEditMode) {
+                btn.style.background = 'var(--primary-blue)';
+                btn.style.color = '#fff';
+                alert("수정 모드 활성화: 빈 칸을 터치하여 기록하세요.");
+            } else {
+                btn.style.background = '#fff';
+                btn.style.color = 'var(--line-color)';
+            }
+        }
+
+        // 스마트 터치 기록 함수 (하나씩 선택 및 자동 병합)
+        function handleCellTouch(cIdx, catIdx, sIdx, colIdx) {
+            if (!isTrackerEditMode) return;
+            
+            pushUndoState();
+            let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
+            if (!session.bars) session.bars = [];
+            
+            let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate();
+            
+            // 1. 이미 해당 칸을 포함하는 바가 있는지 확인 (있으면 삭제 - 토글 기능)
+            let existingIdx = session.bars.findIndex(b => colIdx >= b.start && colIdx <= b.end);
+            if (existingIdx !== -1) {
+                session.bars.splice(existingIdx, 1);
+            } else {
+                // 2. 새 칸 추가 및 주변 바와 병합
+                let newStart = colIdx;
+                let newEnd = colIdx;
+                
+                // 왼쪽 바와 병합 가능한지 확인
+                let leftBarIdx = session.bars.findIndex(b => b.end === colIdx - 1);
+                if (leftBarIdx !== -1) {
+                    newStart = session.bars[leftBarIdx].start;
+                    session.bars.splice(leftBarIdx, 1);
+                }
+                
+                // 오른쪽 바와 병합 가능한지 확인
+                let rightBarIdx = session.bars.findIndex(b => b.start === colIdx + 1);
+                if (rightBarIdx !== -1) {
+                    newEnd = session.bars[rightBarIdx].end;
+                    session.bars.splice(rightBarIdx, 1);
+                }
+                
+                session.bars.push({ id: Date.now() + Math.random(), start: newStart, end: newEnd, text: todayStr });
+            }
+            
+            renderTrackerCycles();
+            saveDataToFirebase();
+        }
         function renderTrackerNav() {
             const nav = document.getElementById('tracker-subject-nav'); nav.innerHTML = '';
             let subjects = trackerData.settingsText ? Object.keys(parseSettingsText(trackerData.settingsText)) : Object.keys(trackerData.subjectDef);
@@ -1386,12 +1451,8 @@
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
                     let sessions = toArray(cat.sessions);
                     if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
-                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => { let isSplit = /\\(\\d+\\)$/.test(t.name.trim()); let splitStyle = isSplit ? 'font-weight: 500; color: #000;' : ''; return `<div class="topic-cell" style="${splitStyle}" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`; }).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" 
-    onmousedown="startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" 
-    ontouchstart="startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" 
-    onmouseenter="onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"
-    ontouchmove="let t=event.touches[0]; let el=document.elementFromPoint(t.clientX, t.pageY); if(el && el.classList.contains('grid-cell')) el.dispatchEvent(new Event('mouseenter'));">
-</div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
+                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => { let isSplit = /\\(\\d+\\)$/.test(t.name.trim()); let splitStyle = isSplit ? 'font-weight: 500; color: #000;' : ''; return `<div class="topic-cell" style="${splitStyle}" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`; }).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`;
+return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`;}).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
                 });
                 html += `</div></div>`; container.innerHTML += html;
             });
@@ -1419,29 +1480,9 @@
         }
         function handleTopicClick(cIdx, catIdx, tIdx) { pushUndoState(); let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx]; let topic = cat.topics[tIdx]; let baseName = topic.name.replace(/\s*\(\d+\)$/, '').trim(); let maxNum = 0; cat.topics.forEach(t => { let escapedBase = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); let m = t.name.match(new RegExp("^" + escapedBase + "\\s*\\((\\d+)\\)$")); if (m) maxNum = Math.max(maxNum, parseInt(m[1])); }); if (maxNum === 0) { topic.name = baseName + " (1)"; cat.topics.splice(tIdx + 1, 0, { id: Math.random(), name: baseName + " (2)" }); } else { cat.topics.splice(tIdx + 1, 0, { id: Math.random(), name: baseName + " (" + (maxNum + 1) + ")" }); } cat.sessions.forEach(sess => { sess.bars.forEach(bar => { if (bar.start > tIdx) bar.start++; if (bar.end > tIdx) bar.end++; else if (bar.start <= tIdx && bar.end >= tIdx) bar.end++; }); }); renderTrackerCycles(); saveDataToFirebase(); }
         
-        function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { if (e.type === 'mousedown' && e.button !== 0) return; dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; renderDragHighlight(); }
-        function onDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { if (!dragInfo) return; if (dragInfo.cIdx === cIdx && dragInfo.catIdx === catIdx && dragInfo.sIdx === sIdx) { dragInfo.currentCol = colIdx; renderDragHighlight(); } }
-        function renderDragHighlight() { if (!dragInfo) return; let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; let start = Math.min(startCol, currentCol); let end = Math.max(startCol, currentCol); let hl = document.getElementById(`hl-${cIdx}-${catIdx}-${sIdx}`); if (hl) { hl.style.display = 'block'; hl.style.left = `calc(${(start / numCols) * 100}% + 2px)`; hl.style.width = `calc(${((end - start + 1) / numCols) * 100}% - 4px)`; } }
-        
+    
         function endDragGlobal(e) { 
             if (!dragInfo) return; 
-            try {
-                let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
-                dragInfo = null; 
-                document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none');
-                let start = Math.min(startCol, currentCol); let end = Math.max(startCol, currentCol); let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate(); 
-                let sessionBars = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars;
-                if (!Array.isArray(sessionBars)) {
-                    trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars = [];
-                    sessionBars = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars;
-                }
-                let exists = sessionBars.some(b => b.start === start && b.end === end);
-                if (!exists) { pushUndoState(); sessionBars.push({ id: Date.now()+Math.random(), start, end, text: todayStr }); renderTrackerCycles(); saveDataToFirebase(); }
-            } catch(e) { console.error(e); }
-        }
-        function endDragGlobal(e) { 
-            if (!dragInfo) return; 
-            // 터치 기기에서 touchend 시 위치를 찾기 어려울 수 있으므로 드래그 중 업데이트된 마지막 좌표를 사용함
             let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
             dragInfo = null; 
             document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none');
