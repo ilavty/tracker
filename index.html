@@ -1358,7 +1358,24 @@
             }).catch(e => { isInitialLoadDone = true; initialRender(); });
         }
         
-        function initialRender() { updateDayViewDate(); renderSubjects(); renderCalendar(); renderRep(); renderTimeline(); generateQuiz(); if (document.getElementById('tracker-view').style.display === 'block') renderTrackerNav(); if (document.getElementById('stats-view').style.display === 'block') { let lastTab = localStorage.getItem('lastStatTab') || 'week'; switchStatTab(lastTab); } }
+        function initialRender() { 
+            updateDayViewDate(); 
+            renderSubjects(); 
+            renderCalendar(); 
+            renderRep(); 
+            renderTimeline(); 
+            generateQuiz(); 
+            if (document.getElementById('tracker-view').style.display === 'block') renderTrackerNav(); 
+            if (document.getElementById('stats-view').style.display === 'block') { 
+                let lastTab = localStorage.getItem('lastStatTab') || 'week'; 
+                switchStatTab(lastTab); 
+            }
+            // ★ 페이지 로드 시 CHRONO 탭에 있다면 강제로 탭을 다시 보여줘서 렌더링 버그 해결
+            if (document.getElementById('chrono-view').style.display === 'block') {
+                let lastChronoTab = localStorage.getItem('lastChronoTab') || 'tl';
+                showChronoTab(lastChronoTab);
+            }
+        }
         function saveAllToLocal() { localStorage.setItem('myDetailedSessions_v5', JSON.stringify(detailedSessions)); localStorage.setItem('mySubjectsData_v5', JSON.stringify(subjectsData)); localStorage.setItem('myTrackerData_v5', JSON.stringify(trackerData)); localStorage.setItem('myRepCols_v5', JSON.stringify(repCols)); localStorage.setItem('myRepData_v5', JSON.stringify(repData)); localStorage.setItem('myRepHistory_v5', JSON.stringify(repHistory)); localStorage.setItem('myChronoEvents_v5', JSON.stringify(chronoEvents)); }
         
         function saveDataToFirebase() { 
@@ -1656,81 +1673,7 @@ let isTrackerEditMode = false;
             }
         }
 
-        function renderTimeline() {
-            const list = document.getElementById('tl-list'); list.innerHTML = '';
-            const search = document.getElementById('search-input').value.toLowerCase();
-            const yMin = parseInt(document.getElementById('year-min').value) || -9999;
-            const yMax = parseInt(document.getElementById('year-max').value) || 9999;
-
-            if(!Array.isArray(chronoEvents)) chronoEvents = [];
-            let sorted = [...chronoEvents].sort((a, b) => { if(a.year !== b.year) return a.year - b.year; let aM=0, aD=0, bM=0, bD=0; if(a.date) { let p=a.date.split('.'); aM=parseInt(p[0])||0; aD=parseInt(p[1])||0; } if(b.date) { let p=b.date.split('.'); bM=parseInt(p[0])||0; bD=parseInt(p[1])||0; } if(aM!==bM) return aM-bM; return aD-bD; });
-            
-            let markers = {};
-            const milestones = [2020, 2010, 2000, 1900, 1800];
-            
-            // ★ 모바일 여부 확인 (키보드 팝업 원천 차단용)
-            let isMobile = window.innerWidth <= 850;
-            let cEdit = isMobile ? 'false' : 'true';
-
-            sorted.forEach(ev => {
-                try {
-                    let evYr = parseInt(ev.year);
-                    if(isNaN(evYr) || evYr < yMin || evYr > yMax) return;
-                    if(search && !String(ev.name).toLowerCase().includes(search) && !(ev.keywords ? String(ev.keywords) : "").toLowerCase().includes(search)) return;
-                    if(filterSubs && filterSubs.length > 0) { let es = (ev.subject||"").split(',').map(x=>x.trim()); if(!filterSubs.some(s => es.includes(s))) return; }
-                    if(filterKws && filterKws.length > 0) { let ek = (ev.keywords||"").split(',').map(x=>x.trim()); if(!filterKws.some(k => ek.includes(k))) return; }
-
-                    let idAttr = "";
-                    let jumpY = milestones.find(y => evYr >= y);
-                    if (jumpY && !markers[jumpY]) { markers[jumpY] = true; idAttr = `jump-${jumpY}`; }
-
-                    let imp = Math.max(0, parseInt(ev.importance) || 1);
-                    let stars = "★".repeat(Math.min(imp, 3)); 
-                    
-                    let kwStr = ev.keywords ? String(ev.keywords) : "";
-                    let kws = kwStr.split(',').map(k=>k.trim()).filter(k=>k);
-                    let kwHtml = kws.length > 0 ? kws.map(k=>`<span class="kw-box">${k}</span>`).join('') : '<span class="kw-empty" style="font-weight:300 !important;">+</span>';
-
-                    let chkSvg = ev.target ? `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary-blue)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ccc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-
-                    let row = document.createElement('div'); row.className = 'tl-row';
-                    if (idAttr) row.setAttribute('id', idAttr);
-                    
-                    let cleanDate = (!ev.date || ev.date === '0' || ev.date === '0.0' || ev.date === 'NaN') ? '' : ev.date;
-
-                    // cEdit이 false로 들어가면서 모바일 키보드가 아예 안 올라옴
-                    row.innerHTML = `
-                        <div class="tl-year editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'year', this.innerText)">${ev.year}</div>
-                        <div class="tl-date editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'date', this.innerText)">${cleanDate}</div>
-                        <div class="tl-name editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'name', this.innerText)">${ev.name}</div>
-                        <div class="tl-effect editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'effect', this.innerText)">${ev.effect||''}</div>
-                        <div class="tl-korEffect editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'korEffect', this.innerText)">${ev.korEffect||''}</div>
-                        <div class="tl-kws tl-col-kws" onclick="openInlineTagModal(event, ${ev.id}, 'keywords')">${kwHtml}</div>
-                        <div class="tl-star tl-col-imp" onclick="cycleStar(${ev.id})">${stars}</div>
-                        <div class="tl-sub tl-col-sub" onclick="openInlineTagModal(event, ${ev.id}, 'subject')">${getSubShort(ev.subject) || '<span class="kw-empty">+</span>'}</div>
-                        <div class="tl-chk tl-col-chk" onclick="toggleTarget(${ev.id}, ${!ev.target})" style="cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;">${chkSvg}</div>
-                    `;
-                    
-                    // ★ 깔끔하고 확실한 터치(클릭) 이벤트
-                    row.onclick = (e) => {
-                        if (window.innerWidth <= 850) {
-                            // 내부 버튼 클릭 시엔 팝업 무시
-                            if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
-                            openMobileDetailModal(ev.id);
-                        }
-                    };
-                    
-                    // PC 우클릭
-                    row.oncontextmenu = (e) => { 
-                        if (window.innerWidth > 850) { e.preventDefault(); openMobileDetailModal(ev.id); }
-                    };
-
-                    list.appendChild(row);
-                    row.querySelectorAll('[contenteditable="true"]').forEach(el => { el.addEventListener('keydown', function(e) { if(e.key==='Enter') { e.preventDefault(); this.blur(); } }); });
-                } catch(err) { console.error("Timeline render error:", err); }
-            });
-            updateProgress();
-        }
+        
 
         function addSubject() { pushUndoState(); let name = prompt("추가할 과목 이름:"); if(name && name.trim()) { let id = 's' + Date.now(); if(!Array.isArray(subjectsData)) subjectsData = []; let color = paletteColors[subjectsData.length % paletteColors.length]; subjectsData.push({id: id, name: name.trim(), color: color}); renderSubjects(); saveDataToFirebase(); } }
 
@@ -2533,7 +2476,7 @@ let isTrackerEditMode = false;
             let markers = {};
             const milestones = [2020, 2010, 2000, 1900, 1800];
             
-            // ★ 모바일 여부 확인하여 텍스트 편집 기능 자체를 꺼버림 (키보드 차단)
+            // ★ 모바일 여부 확인 (키보드 팝업 원천 차단용)
             let isMobile = window.innerWidth <= 850;
             let cEdit = isMobile ? 'false' : 'true';
 
@@ -2563,6 +2506,7 @@ let isTrackerEditMode = false;
                     
                     let cleanDate = (!ev.date || ev.date === '0' || ev.date === '0.0' || ev.date === 'NaN') ? '' : ev.date;
 
+                    // cEdit이 false로 들어가면서 모바일 키보드가 아예 안 올라옴
                     row.innerHTML = `
                         <div class="tl-year editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'year', this.innerText)">${ev.year}</div>
                         <div class="tl-date editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'date', this.innerText)">${cleanDate}</div>
@@ -2575,15 +2519,20 @@ let isTrackerEditMode = false;
                         <div class="tl-chk tl-col-chk" onclick="toggleTarget(${ev.id}, ${!ev.target})" style="cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;">${chkSvg}</div>
                     `;
                     
+                    // ★ 깔끔하고 확실한 터치(클릭) 이벤트
                     row.onclick = (e) => {
                         if (window.innerWidth <= 850) {
+                            // 내부 버튼 클릭 시엔 팝업 무시
                             if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
                             openMobileDetailModal(ev.id);
                         }
                     };
+                    
+                    // PC 우클릭
                     row.oncontextmenu = (e) => { 
                         if (window.innerWidth > 850) { e.preventDefault(); openMobileDetailModal(ev.id); }
                     };
+
                     list.appendChild(row);
                     row.querySelectorAll('[contenteditable="true"]').forEach(el => { el.addEventListener('keydown', function(e) { if(e.key==='Enter') { e.preventDefault(); this.blur(); } }); });
                 } catch(err) { console.error("Timeline render error:", err); }
