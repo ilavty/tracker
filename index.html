@@ -394,8 +394,20 @@
             
             .cat-box { padding: 6px 10px !important; gap: 4px !important; }
             .session-row { margin-top: 1px !important; margin-bottom: 1px !important; height: 32px !important; }
-            .tracker-bar { top: 15% !important; bottom: auto !important; height: 70% !important; box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important; font-size: 0.65rem !important; }
-            .topic-cell { font-size: 0.6rem !important; }
+            /* 바 간격 줄이기 및 소주제 2줄 허용 */
+            .session-row { height: 28px !important; margin-bottom: 2px !important; } 
+            .tracker-bar { top: 5% !important; height: 90% !important; font-size: 0.6rem !important; }
+            
+            .topic-cell { 
+                font-size: 0.6rem !important; 
+                white-space: normal !important; /* 2줄 허용 */
+                line-height: 1.1 !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important; /* 최대 2줄 */
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+                padding: 0 2px !important;
+            }
             
             /* ==== STATICS 네비게이터 ==== */
             .stats-header-row { flex-direction: column-reverse !important; align-items: flex-start !important; gap: 12px !important; margin-bottom: 15px !important;}
@@ -1374,19 +1386,36 @@
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
                     let sessions = toArray(cat.sessions);
                     if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
-                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => { let isSplit = /\\(\\d+\\)$/.test(t.name.trim()); let splitStyle = isSplit ? 'font-weight: 500; color: #000;' : ''; return `<div class="topic-cell" style="${splitStyle}" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`; }).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onmousedown="startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" ontouchstart="startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
+                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => { let isSplit = /\\(\\d+\\)$/.test(t.name.trim()); let splitStyle = isSplit ? 'font-weight: 500; color: #000;' : ''; return `<div class="topic-cell" style="${splitStyle}" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`; }).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" 
+    onmousedown="startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" 
+    ontouchstart="startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" 
+    onmouseenter="onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"
+    ontouchmove="let t=event.touches[0]; let el=document.elementFromPoint(t.clientX, t.pageY); if(el && el.classList.contains('grid-cell')) el.dispatchEvent(new Event('mouseenter'));">
+</div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
                 });
                 html += `</div></div>`; container.innerHTML += html;
             });
         }
 
         function promptBarEdit(e, cIdx, catIdx, sIdx, bIdx) {
-            e.stopPropagation(); closeAllModals();
+            if(e) e.stopPropagation();
+            closeAllModals();
             let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx];
-            let newText = prompt("수정할 날짜/텍스트를 입력하세요:", bar.text);
-            if(newText !== null && newText.trim() !== "") {
-                updateBarText(cIdx, catIdx, sIdx, bIdx, newText);
+            
+            // 수정 또는 삭제 선택
+            let res = prompt("'삭제'를 입력하면 바가 삭제됩니다.\n내용 수정을 원하시면 새 내용을 입력하세요:", bar.text);
+            
+            if(res === null) return;
+            
+            pushUndoState();
+            if(res.trim() === "삭제") {
+                trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars.splice(bIdx, 1);
+            } else if(res.trim() !== "") {
+                bar.text = res.trim();
             }
+            
+            renderTrackerCycles();
+            saveDataToFirebase();
         }
         function handleTopicClick(cIdx, catIdx, tIdx) { pushUndoState(); let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx]; let topic = cat.topics[tIdx]; let baseName = topic.name.replace(/\s*\(\d+\)$/, '').trim(); let maxNum = 0; cat.topics.forEach(t => { let escapedBase = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); let m = t.name.match(new RegExp("^" + escapedBase + "\\s*\\((\\d+)\\)$")); if (m) maxNum = Math.max(maxNum, parseInt(m[1])); }); if (maxNum === 0) { topic.name = baseName + " (1)"; cat.topics.splice(tIdx + 1, 0, { id: Math.random(), name: baseName + " (2)" }); } else { cat.topics.splice(tIdx + 1, 0, { id: Math.random(), name: baseName + " (" + (maxNum + 1) + ")" }); } cat.sessions.forEach(sess => { sess.bars.forEach(bar => { if (bar.start > tIdx) bar.start++; if (bar.end > tIdx) bar.end++; else if (bar.start <= tIdx && bar.end >= tIdx) bar.end++; }); }); renderTrackerCycles(); saveDataToFirebase(); }
         
@@ -1410,8 +1439,23 @@
                 if (!exists) { pushUndoState(); sessionBars.push({ id: Date.now()+Math.random(), start, end, text: todayStr }); renderTrackerCycles(); saveDataToFirebase(); }
             } catch(e) { console.error(e); }
         }
-        window.addEventListener('mouseup', endDragGlobal);
-        window.addEventListener('touchend', endDragGlobal);
+        function endDragGlobal(e) { 
+            if (!dragInfo) return; 
+            // 터치 기기에서 touchend 시 위치를 찾기 어려울 수 있으므로 드래그 중 업데이트된 마지막 좌표를 사용함
+            let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
+            dragInfo = null; 
+            document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none');
+            
+            let start = Math.min(startCol, currentCol); 
+            let end = Math.max(startCol, currentCol); 
+            let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate(); 
+            
+            let sessionBars = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars;
+            pushUndoState();
+            sessionBars.push({ id: Date.now()+Math.random(), start, end, text: todayStr });
+            renderTrackerCycles(); 
+            saveDataToFirebase();
+        }
 
         function updateBarText(cIdx, catIdx, sIdx, bIdx, newText) { pushUndoState(); let text = newText.trim(); let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx]; if (bar.text !== text) { bar.text = text; saveDataToFirebase(); } }
         function toggleCycle(e, cIdx) { e.stopPropagation(); pushUndoState(); let subject = trackerData.currentSubject; trackerData.data[subject].cycles[cIdx].isOpen = !trackerData.data[subject].cycles[cIdx].isOpen; renderTrackerCycles(); saveDataToFirebase(); }
@@ -2215,7 +2259,7 @@
             if(isPomodoro) { updatePomodoroTime(); } else { stopwatchSecs = 0; document.getElementById('display').innerText = "0:00:00"; } 
         }
         function updatePomodoroTime() { if(!isPomodoro) return; const studyMins = parseInt(document.getElementById('study-min').value) || 25; const breakMins = parseInt(document.getElementById('break-min').value) || 5; pomodoroSeconds = isBreakTime ? breakMins * 60 : studyMins * 60; document.getElementById('display').innerText = formatTimeDuration(pomodoroSeconds); }
-        function timerAction(act) { 
+       function timerAction(act) { 
             if(act === 'start') { 
                 if(!selectedSubId && !isBreakTime) return alert('과목을 선택하세요.'); 
                 if(isRunning) return; isRunning = true; document.getElementById('btn-start').classList.add('active-control'); document.getElementById('btn-pause').classList.remove('active-control'); 
