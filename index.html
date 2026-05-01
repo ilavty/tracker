@@ -1370,12 +1370,13 @@
                 let lastTab = localStorage.getItem('lastStatTab') || 'week'; 
                 switchStatTab(lastTab); 
             }
-            // ★ 페이지 로드 시 CHRONO 탭에 있다면 강제로 탭을 다시 보여줘서 렌더링 버그 해결
+            // ★ 페이지 로드 시 크로노(연표) 탭에 있다면 강제로 렌더링하여 화면 딜레이 해결
             if (document.getElementById('chrono-view').style.display === 'block') {
                 let lastChronoTab = localStorage.getItem('lastChronoTab') || 'tl';
                 showChronoTab(lastChronoTab);
             }
         }
+        
         function saveAllToLocal() { localStorage.setItem('myDetailedSessions_v5', JSON.stringify(detailedSessions)); localStorage.setItem('mySubjectsData_v5', JSON.stringify(subjectsData)); localStorage.setItem('myTrackerData_v5', JSON.stringify(trackerData)); localStorage.setItem('myRepCols_v5', JSON.stringify(repCols)); localStorage.setItem('myRepData_v5', JSON.stringify(repData)); localStorage.setItem('myRepHistory_v5', JSON.stringify(repHistory)); localStorage.setItem('myChronoEvents_v5', JSON.stringify(chronoEvents)); }
         
         function saveDataToFirebase() { 
@@ -1386,62 +1387,44 @@
         }
 
         let dragInfo = null;
-let isTrackerEditMode = false;
+        let isTrackerEditMode = false;
 
         function toggleTrackerEditMode() {
-    isTrackerEditMode = !isTrackerEditMode;
-    const btn = document.getElementById('tracker-edit-mode-btn');
-    const view = document.getElementById('tracker-view');
-    if (isTrackerEditMode) {
-        btn.style.background = 'var(--primary-blue)';
-        btn.style.color = '#fff';
-        view.classList.add('edit-active');
-    } else {
-        btn.style.background = '#fff';
-        btn.style.color = 'var(--line-color)';
-        view.classList.remove('edit-active');
-    }
-}
+            isTrackerEditMode = !isTrackerEditMode;
+            const btn = document.getElementById('tracker-edit-mode-btn');
+            const view = document.getElementById('tracker-view');
+            if (isTrackerEditMode) {
+                btn.style.background = 'var(--primary-blue)';
+                btn.style.color = '#fff';
+                view.classList.add('edit-active');
+            } else {
+                btn.style.background = '#fff';
+                btn.style.color = 'var(--line-color)';
+                view.classList.remove('edit-active');
+            }
+        }
 
-        // 스마트 터치 기록 함수 (하나씩 선택 및 자동 병합)
         function handleCellTouch(cIdx, catIdx, sIdx, colIdx) {
             if (!isTrackerEditMode) return;
-            
             pushUndoState();
             let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
             if (!session.bars) session.bars = [];
-            
             let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate();
-            
-            // 1. 이미 해당 칸을 포함하는 바가 있는지 확인 (있으면 삭제 - 토글 기능)
             let existingIdx = session.bars.findIndex(b => colIdx >= b.start && colIdx <= b.end);
+            
             if (existingIdx !== -1) {
                 session.bars.splice(existingIdx, 1);
             } else {
-                // 2. 새 칸 추가 및 주변 바와 병합
-                let newStart = colIdx;
-                let newEnd = colIdx;
-                
-                // 왼쪽 바와 병합 가능한지 확인
+                let newStart = colIdx; let newEnd = colIdx;
                 let leftBarIdx = session.bars.findIndex(b => b.end === colIdx - 1);
-                if (leftBarIdx !== -1) {
-                    newStart = session.bars[leftBarIdx].start;
-                    session.bars.splice(leftBarIdx, 1);
-                }
-                
-                // 오른쪽 바와 병합 가능한지 확인
+                if (leftBarIdx !== -1) { newStart = session.bars[leftBarIdx].start; session.bars.splice(leftBarIdx, 1); }
                 let rightBarIdx = session.bars.findIndex(b => b.start === colIdx + 1);
-                if (rightBarIdx !== -1) {
-                    newEnd = session.bars[rightBarIdx].end;
-                    session.bars.splice(rightBarIdx, 1);
-                }
-                
+                if (rightBarIdx !== -1) { newEnd = session.bars[rightBarIdx].end; session.bars.splice(rightBarIdx, 1); }
                 session.bars.push({ id: Date.now() + Math.random(), start: newStart, end: newEnd, text: todayStr });
             }
-            
-            renderTrackerCycles();
-            saveDataToFirebase();
+            renderTrackerCycles(); saveDataToFirebase();
         }
+
         function renderTrackerNav() {
             const nav = document.getElementById('tracker-subject-nav'); nav.innerHTML = '';
             let subjects = trackerData.settingsText ? Object.keys(parseSettingsText(trackerData.settingsText)) : Object.keys(trackerData.subjectDef);
@@ -1459,7 +1442,7 @@ let isTrackerEditMode = false;
             trackerContextTarget = { type, cIdx, catIdx, tIdx, sIdx, bIdx }; 
             let menu = document.getElementById('tracker-context-menu'); 
             let editBtn = document.getElementById('tracker-menu-edit');
-            // 바(bar)와 사이클(cycle) 모두 '수정' 메뉴가 보이도록 변경
+            // ★ 바와 사이클 모두 수정 버튼이 보이게 설정
             if (editBtn) editBtn.style.display = (type === 'bar' || type === 'cycle') ? 'block' : 'none';
             menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; 
         }
@@ -1476,7 +1459,7 @@ let isTrackerEditMode = false;
                     updateBarText(cIdx, catIdx, sIdx, bIdx, newText);
                 }
             } else if (type === 'cycle') {
-                // 사이클 '수정' 클릭 시 숫자 변경
+                // ★ 사이클 꾹 눌러서 숫자를 수정하는 기능
                 let cycle = trackerData.data[trackerData.currentSubject].cycles[cIdx];
                 let newNum = prompt("사이클 번호 수정:", cycle.num);
                 if(newNum !== null && newNum.trim() !== "") {
@@ -1484,7 +1467,6 @@ let isTrackerEditMode = false;
                 }
             }
         }
-
         
         function execTrackerDelete() {
             document.getElementById('tracker-context-menu').style.display = 'none';
@@ -1536,8 +1518,6 @@ let isTrackerEditMode = false;
                     if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
                     
                     html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => `<div class="topic-cell" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.15 + (sIdx * 0.15); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; 
-                        
-                        // ★ 변경된 부분: left에 + 2px, width에 - 4px가 추가되어 바 사이에 예쁜 여백이 생깁니다!
                         return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})" onmousedown="if(!isTrackerEditMode) startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="if(!isTrackerEditMode) onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor};" onclick="event.stopPropagation();"><input type="text" value="${bar.text}" onchange="updateBarText(${cIdx}, ${catIdx}, ${sIdx}, ${bIdx}, this.value)" style="width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: inherit; font-family: inherit; outline: none;"><span class="bar-delete-btn" onclick="event.stopPropagation(); pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[${cIdx}].cats[${catIdx}].sessions[${sIdx}].bars.splice(${bIdx}, 1); renderTrackerCycles(); saveDataToFirebase();">×</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; 
                     }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
                 });
@@ -1545,7 +1525,6 @@ let isTrackerEditMode = false;
             });
         }
 
-        // --- 드래그 보조 함수들 ---
         function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
             if (e.button !== 0 || isTrackerEditMode) return; 
             dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; 
@@ -1575,12 +1554,9 @@ let isTrackerEditMode = false;
 
         function endDragGlobal(e) { 
             if (!dragInfo) return; 
-            
             let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
             dragInfo = null; 
-            
             document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none');
-            
             let start = Math.min(startCol, currentCol); 
             let end = Math.max(startCol, currentCol); 
             let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate(); 
@@ -1589,14 +1565,9 @@ let isTrackerEditMode = false;
             let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
             if(!session.bars) session.bars = [];
             
-            // 기존과 겹치는지 간단히 확인
             let overlap = session.bars.some(b => (start <= b.end && end >= b.start));
-            if(!overlap) {
-                session.bars.push({ id: Date.now()+Math.random(), start, end, text: todayStr });
-            }
-            
-            renderTrackerCycles(); 
-            saveDataToFirebase();
+            if(!overlap) { session.bars.push({ id: Date.now()+Math.random(), start, end, text: todayStr }); }
+            renderTrackerCycles(); saveDataToFirebase();
         }
 
         function updateBarText(cIdx, catIdx, sIdx, bIdx, newText) { pushUndoState(); let text = newText.trim(); let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx]; if (bar.text !== text) { bar.text = text; saveDataToFirebase(); } }
@@ -1673,8 +1644,6 @@ let isTrackerEditMode = false;
             }
         }
 
-        
-
         function addSubject() { pushUndoState(); let name = prompt("추가할 과목 이름:"); if(name && name.trim()) { let id = 's' + Date.now(); if(!Array.isArray(subjectsData)) subjectsData = []; let color = paletteColors[subjectsData.length % paletteColors.length]; subjectsData.push({id: id, name: name.trim(), color: color}); renderSubjects(); saveDataToFirebase(); } }
 
         let currentSubjectEditColor = '';
@@ -1682,66 +1651,21 @@ let isTrackerEditMode = false;
             if(e && e.preventDefault) e.preventDefault(); 
             if(e && e.stopPropagation) e.stopPropagation(); 
             closeAllModals(); 
-            
             let sub = subjectsData.find(s => s.id === id);
             if(!sub) return;
-
-            document.getElementById('se-id').value = id;
-            document.getElementById('se-name').value = sub.name;
-            currentSubjectEditColor = sub.color;
-            
-            let pg = document.getElementById('se-palette-grid');
-            pg.innerHTML = '';
+            document.getElementById('se-id').value = id; document.getElementById('se-name').value = sub.name; currentSubjectEditColor = sub.color;
+            let pg = document.getElementById('se-palette-grid'); pg.innerHTML = '';
             paletteColors.forEach(c => {
-                let dot = document.createElement('div');
-                dot.className = 'palette-color';
-                dot.style.backgroundColor = c;
-                dot.style.width = '24px'; dot.style.height = '24px';
-                if(c === sub.color) {
-                    dot.style.border = '2px solid #000';
-                    dot.style.transform = 'scale(1.2)';
-                }
-                dot.onclick = () => {
-                    currentSubjectEditColor = c;
-                    Array.from(pg.children).forEach(d => { d.style.border='1px solid var(--line-color)'; d.style.transform='none'; });
-                    dot.style.border = '2px solid #000';
-                    dot.style.transform = 'scale(1.2)';
-                };
+                let dot = document.createElement('div'); dot.className = 'palette-color'; dot.style.backgroundColor = c; dot.style.width = '24px'; dot.style.height = '24px';
+                if(c === sub.color) { dot.style.border = '2px solid #000'; dot.style.transform = 'scale(1.2)'; }
+                dot.onclick = () => { currentSubjectEditColor = c; Array.from(pg.children).forEach(d => { d.style.border='1px solid var(--line-color)'; d.style.transform='none'; }); dot.style.border = '2px solid #000'; dot.style.transform = 'scale(1.2)'; };
                 pg.appendChild(dot);
             });
-            
             document.getElementById('subject-edit-modal').style.display = 'flex';
         }
 
-        function saveSubjectEdit() {
-            let id = document.getElementById('se-id').value;
-            let sub = subjectsData.find(s => s.id === id);
-            if(!sub) return;
-            
-            let newName = document.getElementById('se-name').value.trim();
-            if(!newName) return alert("과목 이름을 입력해주세요.");
-            
-            pushUndoState();
-            sub.name = newName;
-            sub.color = currentSubjectEditColor;
-            renderSubjects();
-            updateDayViewDate(); /* 타임테이블 등 화면 전체에 색상 즉시 반영 */
-            saveDataToFirebase();
-            closeAllModals();
-        }
-
-        function deleteSubjectFromEdit() {
-            let id = document.getElementById('se-id').value;
-            let sub = subjectsData.find(s => s.id === id);
-            if(!sub) return;
-            if(confirm(`'${sub.name}' 과목을 삭제하시겠습니까?`)) { 
-                pushUndoState(); 
-                subjectsData = subjectsData.filter(s => s.id !== id); 
-                renderSubjects(); 
-                saveDataToFirebase(); 
-                closeAllModals();
-            }
-        }
+        function saveSubjectEdit() { let id = document.getElementById('se-id').value; let sub = subjectsData.find(s => s.id === id); if(!sub) return; let newName = document.getElementById('se-name').value.trim(); if(!newName) return alert("과목 이름을 입력해주세요."); pushUndoState(); sub.name = newName; sub.color = currentSubjectEditColor; renderSubjects(); updateDayViewDate(); saveDataToFirebase(); closeAllModals(); }
+        function deleteSubjectFromEdit() { let id = document.getElementById('se-id').value; let sub = subjectsData.find(s => s.id === id); if(!sub) return; if(confirm(`'${sub.name}' 과목을 삭제하시겠습니까?`)) { pushUndoState(); subjectsData = subjectsData.filter(s => s.id !== id); renderSubjects(); saveDataToFirebase(); closeAllModals(); } }
 
         function renderSubjects() {
             const dateStr = formatDateStr(currentDayViewDate.getFullYear(), currentDayViewDate.getMonth(), currentDayViewDate.getDate());
@@ -1752,14 +1676,10 @@ let isTrackerEditMode = false;
                 subjectsData.forEach(sub => {
                     const li = document.createElement('li'); if(selectedSubId === sub.id) li.classList.add('selected'); const timeStr = formatTimeDuration(daySubSecs[sub.id] || 0); li.onclick = (e) => selectSubject(li, sub.id, e);
                     li.innerHTML = `<span class="color-star" style="color:${sub.color}" onclick="openColorPalette('${sub.id}', event)">★</span><span class="sub-name">${sub.name}</span><span style="font-family:'Montserrat'; font-size:0.8rem; font-weight:700; color:var(--grey-text); margin-left:10px;" class="sub-time">${timeStr}</span>`;
-                    
                     let pressTimer;
                     li.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { openSubjectEditModal(e, sub.id); }, 600); }, {passive: true});
-                    li.addEventListener('touchend', () => { clearTimeout(pressTimer); });
-                    li.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
-                    
-                    li.oncontextmenu = (e) => { e.preventDefault(); openSubjectEditModal(e, sub.id); };
-                    ul.appendChild(li);
+                    li.addEventListener('touchend', () => { clearTimeout(pressTimer); }); li.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
+                    li.oncontextmenu = (e) => { e.preventDefault(); openSubjectEditModal(e, sub.id); }; ul.appendChild(li);
                 });
             }
         }
@@ -1830,12 +1750,11 @@ let isTrackerEditMode = false;
             for(let i=1; i<=daysInMonth; i++) {
                 const dateStr = formatDateStr(targetMonth.getFullYear(), targetMonth.getMonth(), i); let daySecs = detailedSessions.filter(s => s && s.date === dateStr).reduce((acc, s) => acc + s.duration, 0); let miniTimeHtml = ''; let monthTimeHtml = '';
                 
-                // 공부시간 연산 및 배경색 설정
                 let bgStyle = '';
                 if(daySecs > 0) { 
                     const h = Math.floor(daySecs / 3600); const m = Math.floor((daySecs % 3600) / 60);
                     let timeTxt = `${h}:${String(m).padStart(2,'0')}`;
-                    let txtColor = h >= 10 ? '#fff' : 'var(--primary-blue)'; /* 배경이 진해지면 글씨를 하얀색으로 반전 */
+                    let txtColor = h >= 10 ? '#fff' : 'var(--primary-blue)'; 
                     
                     miniTimeHtml = `<div class="mini-day-time" style="color:${txtColor}; font-size:0.8rem; font-weight:800; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">${timeTxt}</div>`; 
                     monthTimeHtml = `<div class="day-time" style="color:${txtColor}; font-size:1.1rem; font-weight:800; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">${timeTxt}</div>`; 
@@ -1857,139 +1776,87 @@ let isTrackerEditMode = false;
         }
         
         function selectDailyDetail(dateStr) {
-    let panel = document.getElementById('daily-detail-panel'); panel.style.display = 'block';
-    document.getElementById('dd-date-title').innerText = dateStr;
-    renderCalendar(); 
-    
-    // 1. 선택한 날짜(오늘) 데이터
-    let sessions = detailedSessions.filter(s => s && s.date === dateStr && !s.isManual);
-    let total = sessions.reduce((acc, s) => acc + s.duration, 0);
-    
-    let isSelectedToday = false;
-    let todayObj = new Date();
-    let todayStr = formatDateStr(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
-    if (dateStr === todayStr) isSelectedToday = true;
-
-    if (isSelectedToday && isRunning && !isBreakTime) {
-        total += runningAddedSecs;
-    }
-    document.getElementById('dd-total-time').innerText = formatTimeDuration(total);
-    
-    // 2. 선택한 날짜 기준 전날(어제) 데이터 가져오기 (단색 영역용)
-    let pDate = new Date(dateStr.split('-')[0], dateStr.split('-')[1]-1, dateStr.split('-')[2]);
-    pDate.setDate(pDate.getDate() - 1);
-    let prevDateStr = formatDateStr(pDate.getFullYear(), pDate.getMonth(), pDate.getDate());
-    let prevSessions = detailedSessions.filter(s => s && s.date === prevDateStr && !s.isManual);
-
-    // 5시 기준으로 타임라인 좌표계 변환
-    const parseToOffset = (tStr) => {
-        let parts = tStr.split(':');
-        let h = parseInt(parts[0]);
-        let m = parseInt(parts[1]) || 0;
-        let val = h + m/60;
-        if(val < 5) val += 24; // 새벽 0~4시는 24~28시로 연장
-        return val;
-    };
-
-    // 왼쪽 텍스트 정보 업데이트 (시작-종료, 최고 집중 시간)
-    let minH = 29, maxH = 0; let maxSessDur = 0;
-    if(sessions.length > 0) {
-        sessions.forEach(s => { 
-            if(!s.start || !s.end) return; 
-            let sh = parseToOffset(s.start); 
-            let eh = parseToOffset(s.end); 
-            if(sh < minH) minH = sh; 
-            if(eh > maxH) maxH = eh; 
-            if(s.duration > maxSessDur) maxSessDur = s.duration;
-        });
-        let formatHHMM = h => {
-            let realH = Math.floor(h) % 24;
-            return `${realH}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`;
-        };
-        document.getElementById('dd-start-end').innerText = `${formatHHMM(minH)} - ${formatHHMM(maxH)}`;
-        document.getElementById('dd-max-session').innerText = formatTimeDuration(maxSessDur);
-    } else {
-        document.getElementById('dd-start-end').innerText = `-`; document.getElementById('dd-max-session').innerText = `-`;
-    }
-    
-    // 3. 그래프 좌표(Pts) 생성 함수
-    function getPts(sessList, isTodayObj) {
-        let pts = [{x:0, y:0}];
-        let accum = 0;
-        let sorted = [...sessList].sort((a,b) => parseToOffset(a.start) - parseToOffset(b.start));
-        
-        sorted.forEach(s => {
-            if(!s.start || !s.end) return;
-            let sx = ((parseToOffset(s.start) - 5) / 24) * 100; // 24시간 백분율 환산
-            let ex = ((parseToOffset(s.end) - 5) / 24) * 100;
+            let panel = document.getElementById('daily-detail-panel'); panel.style.display = 'block';
+            document.getElementById('dd-date-title').innerText = dateStr;
+            renderCalendar(); 
             
-            // 공백 기간(쉬는시간 등)은 누적시간 그대로 수평 이동
-            if (pts.length > 0 && sx > pts[pts.length-1].x) {
-                pts.push({x: sx, y: accum});
+            let sessions = detailedSessions.filter(s => s && s.date === dateStr && !s.isManual);
+            let total = sessions.reduce((acc, s) => acc + s.duration, 0);
+            
+            let isSelectedToday = false;
+            let todayObj = new Date();
+            let todayStr = formatDateStr(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
+            if (dateStr === todayStr) isSelectedToday = true;
+
+            if (isSelectedToday && isRunning && !isBreakTime) { total += runningAddedSecs; }
+            document.getElementById('dd-total-time').innerText = formatTimeDuration(total);
+            
+            let pDate = new Date(dateStr.split('-')[0], dateStr.split('-')[1]-1, dateStr.split('-')[2]);
+            pDate.setDate(pDate.getDate() - 1);
+            let prevDateStr = formatDateStr(pDate.getFullYear(), pDate.getMonth(), pDate.getDate());
+            let prevSessions = detailedSessions.filter(s => s && s.date === prevDateStr && !s.isManual);
+
+            const parseToOffset = (tStr) => { let parts = tStr.split(':'); let h = parseInt(parts[0]); let m = parseInt(parts[1]) || 0; let val = h + m/60; if(val < 5) val += 24; return val; };
+
+            let minH = 29, maxH = 0; let maxSessDur = 0;
+            if(sessions.length > 0) {
+                sessions.forEach(s => { 
+                    if(!s.start || !s.end) return; 
+                    let sh = parseToOffset(s.start); let eh = parseToOffset(s.end); 
+                    if(sh < minH) minH = sh; if(eh > maxH) maxH = eh; 
+                    if(s.duration > maxSessDur) maxSessDur = s.duration;
+                });
+                let formatHHMM = h => { let realH = Math.floor(h) % 24; return `${realH}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`; };
+                document.getElementById('dd-start-end').innerText = `${formatHHMM(minH)} - ${formatHHMM(maxH)}`;
+                document.getElementById('dd-max-session').innerText = formatTimeDuration(maxSessDur);
+            } else { document.getElementById('dd-start-end').innerText = `-`; document.getElementById('dd-max-session').innerText = `-`; }
+            
+            function getPts(sessList, isTodayObj) {
+                let pts = [{x:0, y:0}]; let accum = 0;
+                let sorted = [...sessList].sort((a,b) => parseToOffset(a.start) - parseToOffset(b.start));
+                sorted.forEach(s => {
+                    if(!s.start || !s.end) return;
+                    let sx = ((parseToOffset(s.start) - 5) / 24) * 100; 
+                    let ex = ((parseToOffset(s.end) - 5) / 24) * 100;
+                    if (pts.length > 0 && sx > pts[pts.length-1].x) { pts.push({x: sx, y: accum}); }
+                    accum += s.duration; pts.push({x: ex, y: accum});
+                });
+                if (isTodayObj && isRunning && !isBreakTime && currentTimerStartTime) {
+                    let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`;
+                    let startT = `${currentTimerStartTime.getHours()}:${currentTimerStartTime.getMinutes()}`;
+                    let sx = ((parseToOffset(startT) - 5) / 24) * 100; let ex = ((parseToOffset(currTimeStr) - 5) / 24) * 100;
+                    let lastEx = pts.length > 0 ? pts[pts.length-1].x : 0;
+                    if(sx < lastEx) sx = lastEx;
+                    if(ex > sx) { pts.push({x: sx, y: accum}); accum += runningAddedSecs; pts.push({x: ex, y: accum}); }
+                }
+                return {pts, total: accum, lastX: pts.length>0 ? pts[pts.length-1].x : 0};
             }
-            accum += s.duration;
-            pts.push({x: ex, y: accum});
-        });
-        
-        // 타이머가 동작 중일 경우 실시간 그래프 연장
-        if (isTodayObj && isRunning && !isBreakTime && currentTimerStartTime) {
-            let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`;
-            let startT = `${currentTimerStartTime.getHours()}:${currentTimerStartTime.getMinutes()}`;
-            let sx = ((parseToOffset(startT) - 5) / 24) * 100;
-            let ex = ((parseToOffset(currTimeStr) - 5) / 24) * 100;
 
-            let lastEx = pts.length > 0 ? pts[pts.length-1].x : 0;
-            if(sx < lastEx) sx = lastEx;
-            if(ex > sx) {
-                pts.push({x: sx, y: accum});
-                accum += runningAddedSecs;
-                pts.push({x: ex, y: accum});
+            let todayData = getPts(sessions, isSelectedToday);
+            let prevData = getPts(prevSessions, false);
+            prevData.pts.push({x: 100, y: prevData.total}); 
+
+            let maxY = 14 * 3600;
+            let poly = "0,100 ";
+            prevData.pts.forEach(p => { let yPct = Math.max(0, 100 - (p.y / maxY * 100)); poly += `${p.x},${yPct} `; }); poly += "100,100";
+
+            let line = "";
+            todayData.pts.forEach(p => { let yPct = Math.max(0, 100 - (p.y / maxY * 100)); line += `${p.x},${yPct} `; });
+            
+            if (isSelectedToday && !isRunning) {
+                let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`;
+                let cx = ((parseToOffset(currTimeStr) - 5) / 24) * 100;
+                let lastY = todayData.pts.length > 0 ? Math.max(0, 100 - (todayData.pts[todayData.pts.length-1].y / maxY * 100)) : 100;
+                if(cx > todayData.lastX) { line += `${cx},${lastY}`; }
             }
+
+            if(prevSessions.length === 0) poly = "0,100 100,100";
+            if(sessions.length === 0 && (!isSelectedToday || todayData.pts.length === 1)) line = "0,100 100,100";
+
+            document.getElementById('dd-poly').setAttribute('points', poly);
+            document.getElementById('dd-line').setAttribute('points', line);
         }
-        return {pts, total: accum, lastX: pts.length>0 ? pts[pts.length-1].x : 0};
-    }
 
-    let todayData = getPts(sessions, isSelectedToday);
-    let prevData = getPts(prevSessions, false);
-    
-    // 어제 데이터는 그래프 끝(100%)까지 수평 유지
-    prevData.pts.push({x: 100, y: prevData.total}); 
-
-    // ★ 4. Y축 최대치를 14시간(14 * 3600초)으로 강제 고정
-    let maxY = 14 * 3600;
-
-    // 어제 그래프 (면적)
-    let poly = "0,100 ";
-    prevData.pts.forEach(p => {
-        // 14시간이 넘을 경우 그래프 천장에 붙도록 처리
-        let yPct = Math.max(0, 100 - (p.y / maxY * 100));
-        poly += `${p.x},${yPct} `;
-    });
-    poly += "100,100";
-
-    // 오늘 그래프 (선)
-    let line = "";
-    todayData.pts.forEach(p => {
-        let yPct = Math.max(0, 100 - (p.y / maxY * 100));
-        line += `${p.x},${yPct} `;
-    });
-    
-    // 타이머 중지 상태이더라도 오늘일 경우, "현재 시간"까진 수평선으로 유지
-    if (isSelectedToday && !isRunning) {
-        let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`;
-        let cx = ((parseToOffset(currTimeStr) - 5) / 24) * 100;
-        let lastY = todayData.pts.length > 0 ? Math.max(0, 100 - (todayData.pts[todayData.pts.length-1].y / maxY * 100)) : 100;
-        if(cx > todayData.lastX) {
-            line += `${cx},${lastY}`;
-        }
-    }
-
-    if(prevSessions.length === 0) poly = "0,100 100,100";
-    if(sessions.length === 0 && (!isSelectedToday || todayData.pts.length === 1)) line = "0,100 100,100";
-
-    document.getElementById('dd-poly').setAttribute('points', poly);
-    document.getElementById('dd-line').setAttribute('points', line);
-}
         function deleteDayRecords(e, dateStr) { e.preventDefault(); pushUndoState(); detailedSessions = detailedSessions.filter(s => s.date !== dateStr); saveDataToFirebase(); updateDayViewDate(); updateStatsUI(); renderCalendar(); }
 
         function openManualTimeModal(dateStr) { document.getElementById('manual-time-date').innerText = dateStr; document.getElementById('manual-time-date-val').value = dateStr; document.getElementById('manual-time-input').value = "0:00:00"; document.getElementById('manual-time-modal').style.display = "flex"; }
@@ -2043,37 +1910,26 @@ let isTrackerEditMode = false;
             if(currentTab === 'trend') renderTrendCharts();
         }
 
-       function renderWeeklyBarChart(startOfWeek) {
-    const barCont = document.getElementById('week-daily-bars'); if(!barCont) return; barCont.innerHTML = '';
-    let dailyData = [];
-    
-    for(let i=0; i<7; i++) {
-        let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
-        let dayTotal = 0; let subs = {};
-        detailedSessions.filter(s => s && s.date === dStr).forEach(s => { 
-            dayTotal += s.duration; 
-            if(!subs[s.subId]) subs[s.subId] = 0; 
-            subs[s.subId] += s.duration; 
-        });
-        dailyData.push(subs);
-    }
-    
-    // ★ 14시간(초 단위)을 최대치로 고정
-    let fixedMaxDaily = 14 * 3600; 
-
-    dailyData.forEach(daySubs => {
-        let innerHtml = '';
-        for(let subId in daySubs) {
-            let sub = subjectsData.find(s=>s.id===subId); let color = sub ? sub.color : '#ccc';
-            // 상대적 비율이 아닌, 14시간 대비 실제 공부시간의 퍼센티지로 계산
-            let hPct = (daySubs[subId] / fixedMaxDaily) * 100;
-            // 바닥부터 쌓기
-            innerHtml = `<div class="daily-bar-segment" style="height:${hPct}%; background-color:${color};"></div>` + innerHtml;
+        function renderWeeklyBarChart(startOfWeek) {
+            const barCont = document.getElementById('week-daily-bars'); if(!barCont) return; barCont.innerHTML = '';
+            let dailyData = [];
+            for(let i=0; i<7; i++) {
+                let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
+                let dayTotal = 0; let subs = {};
+                detailedSessions.filter(s => s && s.date === dStr).forEach(s => { dayTotal += s.duration; if(!subs[s.subId]) subs[s.subId] = 0; subs[s.subId] += s.duration; });
+                dailyData.push(subs);
+            }
+            let fixedMaxDaily = 14 * 3600; 
+            dailyData.forEach(daySubs => {
+                let innerHtml = '';
+                for(let subId in daySubs) {
+                    let sub = subjectsData.find(s=>s.id===subId); let color = sub ? sub.color : '#ccc';
+                    let hPct = (daySubs[subId] / fixedMaxDaily) * 100;
+                    innerHtml = `<div class="daily-bar-segment" style="height:${hPct}%; background-color:${color};"></div>` + innerHtml;
+                }
+                barCont.innerHTML += `<div class="daily-bar-col" style="overflow: hidden;">${innerHtml}</div>`;
+            });
         }
-        // 혹시 14시간을 초과하더라도 그래프 박스 밖으로 튀어나가지 않게 overflow:hidden 적용
-        barCont.innerHTML += `<div class="daily-bar-col" style="overflow: hidden;">${innerHtml}</div>`;
-    });
-}
 
         function renderWeeklyTrendChart(startOfThisWeek) {
             let startOfLastWeek = new Date(startOfThisWeek); startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
@@ -2121,82 +1977,80 @@ let isTrackerEditMode = false;
         }
 
         function renderDynamicChart(startOfWeek) {
-    const chartGrid = document.getElementById('chart-bars-container');
-    const svgStart = document.getElementById('svg-start-line');
-    const svgEnd = document.getElementById('svg-end-line');
-    const svgArea = document.getElementById('svg-area');
-    const dotsContainer = document.getElementById('chart-dots-container');
-    if(!chartGrid || !svgStart || !svgEnd || !svgArea || !dotsContainer) return;
-    
-    chartGrid.innerHTML = ''; 
-    let validPts = []; 
-    let dotsStr = '';
-    
-    let today = new Date();
-    
-    for(let i=0; i<7; i++) {
-        let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); 
-        let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate()); 
-        let sessions = detailedSessions.filter(s => s && s.date === dStr && !s.isManual);
-        
-        let cx = i * 100 + 50; 
-        let pcx = (cx / 700) * 100; 
-        
-        let minH = 24, maxH = 0; 
-        let hasData = false;
+            const chartGrid = document.getElementById('chart-bars-container');
+            const svgStart = document.getElementById('svg-start-line');
+            const svgEnd = document.getElementById('svg-end-line');
+            const svgArea = document.getElementById('svg-area');
+            const dotsContainer = document.getElementById('chart-dots-container');
+            if(!chartGrid || !svgStart || !svgEnd || !svgArea || !dotsContainer) return;
+            
+            chartGrid.innerHTML = ''; 
+            let validPts = []; 
+            let dotsStr = '';
+            
+            let today = new Date();
+            
+            for(let i=0; i<7; i++) {
+                let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); 
+                let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate()); 
+                let sessions = detailedSessions.filter(s => s && s.date === dStr && !s.isManual);
+                
+                let cx = i * 100 + 50; 
+                let pcx = (cx / 700) * 100; 
+                
+                let minH = 24, maxH = 0; 
+                let hasData = false;
 
-        if(sessions.length > 0) {
-            hasData = true;
-            sessions.forEach(s => { 
-                if(!s.start || !s.end) return; 
-                let sParts = s.start.split(':'); let eParts = s.end.split(':'); 
-                if(sParts.length<2 || eParts.length<2) return; 
-                let sh = parseInt(sParts[0]) + parseInt(sParts[1])/60; 
-                let eh = parseInt(eParts[0]) + parseInt(eParts[1])/60; 
-                if(sh < minH) minH = sh; 
-                if(eh > maxH) maxH = eh; 
-            });
-        }
-        
-        if (curr.toDateString() === today.toDateString() && isRunning && !isBreakTime) {
-            hasData = true;
-            let currH = today.getHours() + today.getMinutes() / 60;
-            if (currH > maxH) maxH = currH;
-            if (minH === 24 && currentTimerStartTime) {
-                minH = currentTimerStartTime.getHours() + currentTimerStartTime.getMinutes() / 60;
+                if(sessions.length > 0) {
+                    hasData = true;
+                    sessions.forEach(s => { 
+                        if(!s.start || !s.end) return; 
+                        let sParts = s.start.split(':'); let eParts = s.end.split(':'); 
+                        if(sParts.length<2 || eParts.length<2) return; 
+                        let sh = parseInt(sParts[0]) + parseInt(sParts[1])/60; 
+                        let eh = parseInt(eParts[0]) + parseInt(eParts[1])/60; 
+                        if(sh < minH) minH = sh; 
+                        if(eh > maxH) maxH = eh; 
+                    });
+                }
+                
+                if (curr.toDateString() === today.toDateString() && isRunning && !isBreakTime) {
+                    hasData = true;
+                    let currH = today.getHours() + today.getMinutes() / 60;
+                    if (currH > maxH) maxH = currH;
+                    if (minH === 24 && currentTimerStartTime) {
+                        minH = currentTimerStartTime.getHours() + currentTimerStartTime.getMinutes() / 60;
+                    }
+                }
+                
+                if(hasData) {
+                    let sy = 100 - (minH / 24 * 100); 
+                    let ey = 100 - (maxH / 24 * 100); 
+                    let formatHHMM = h => `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`;
+                    
+                    validPts.push({cx, sy, ey});
+                    
+                    dotsStr += `<div style="position:absolute; left: ${pcx}%; top: ${sy}%; z-index:5;"><div style="position:absolute; background: #fff; border: 2px solid var(--grey-text); width:8px; height:8px; border-radius:50%; transform:translate(-50%,-50%);"></div><span style="position:absolute; top:8px; left:8px; font-size:0.5rem; font-weight:700; color:var(--grey-text);">AM ${formatHHMM(minH)}</span></div>`;
+                    dotsStr += `<div style="position:absolute; left: ${pcx}%; top: ${ey}%; z-index:5;"><div style="position:absolute; background: var(--primary-blue); border: 2px solid #fff; width:8px; height:8px; border-radius:50%; transform:translate(-50%,-50%);"></div><span style="position:absolute; top:-14px; left:8px; font-size:0.5rem; font-weight:700; color:var(--primary-blue);">PM ${formatHHMM(maxH)}</span></div>`;
+                    
+                    chartGrid.innerHTML += `<div class="chart-col"><div style="position:absolute; top:${ey}%; height:${sy-ey}%; width:4px; background:rgba(42,85,140,0.1); border-radius:2px;"></div></div>`;
+                } else { 
+                    chartGrid.innerHTML += `<div class="chart-col"></div>`; 
+                }
             }
+            
+            let areaStr = ""; let startLineStr = ""; let endLineStr = "";
+            if (validPts.length > 0) {
+                validPts.forEach(v => { startLineStr += `${v.cx},${v.sy} `; });
+                validPts.forEach(v => { endLineStr += `${v.cx},${v.ey} `; });
+                validPts.forEach(v => { areaStr += `${v.cx},${v.sy} `; });
+                [...validPts].reverse().forEach(v => { areaStr += `${v.cx},${v.ey} `; });
+            }
+            svgStart.setAttribute('points', startLineStr.trim());
+            svgEnd.setAttribute('points', endLineStr.trim());
+            svgArea.setAttribute('points', areaStr.trim());
+            dotsContainer.innerHTML = dotsStr;
         }
-        
-        if(hasData) {
-            // ★ 수정: Y축을 00:00(하단) ~ 24:00(상단)으로 반전
-            let sy = 100 - (minH / 24 * 100); 
-            let ey = 100 - (maxH / 24 * 100); 
-            let formatHHMM = h => `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`;
-            
-            validPts.push({cx, sy, ey});
-            
-            dotsStr += `<div style="position:absolute; left: ${pcx}%; top: ${sy}%; z-index:5;"><div style="position:absolute; background: #fff; border: 2px solid var(--grey-text); width:8px; height:8px; border-radius:50%; transform:translate(-50%,-50%);"></div><span style="position:absolute; top:8px; left:8px; font-size:0.5rem; font-weight:700; color:var(--grey-text);">AM ${formatHHMM(minH)}</span></div>`;
-            dotsStr += `<div style="position:absolute; left: ${pcx}%; top: ${ey}%; z-index:5;"><div style="position:absolute; background: var(--primary-blue); border: 2px solid #fff; width:8px; height:8px; border-radius:50%; transform:translate(-50%,-50%);"></div><span style="position:absolute; top:-14px; left:8px; font-size:0.5rem; font-weight:700; color:var(--primary-blue);">PM ${formatHHMM(maxH)}</span></div>`;
-            
-            // 막대는 위(ey)에서부터 시작해서 아래(sy)까지의 길이를 가짐
-            chartGrid.innerHTML += `<div class="chart-col"><div style="position:absolute; top:${ey}%; height:${sy-ey}%; width:4px; background:rgba(42,85,140,0.1); border-radius:2px;"></div></div>`;
-        } else { 
-            chartGrid.innerHTML += `<div class="chart-col"></div>`; 
-        }
-    }
-    
-    let areaStr = ""; let startLineStr = ""; let endLineStr = "";
-    if (validPts.length > 0) {
-        validPts.forEach(v => { startLineStr += `${v.cx},${v.sy} `; });
-        validPts.forEach(v => { endLineStr += `${v.cx},${v.ey} `; });
-        validPts.forEach(v => { areaStr += `${v.cx},${v.sy} `; });
-        [...validPts].reverse().forEach(v => { areaStr += `${v.cx},${v.ey} `; });
-    }
-    svgStart.setAttribute('points', startLineStr.trim());
-    svgEnd.setAttribute('points', endLineStr.trim());
-    svgArea.setAttribute('points', areaStr.trim());
-    dotsContainer.innerHTML = dotsStr;
-}
 
         function updateDonut(prefix, totalSecs, subSecs) {
             let conicStr = []; let currentPct = 0; let legendHTML = '';
@@ -2464,6 +2318,7 @@ let isTrackerEditMode = false;
             openMobileEditModal(currentDetailId);
         }
 
+        // ★ THE ONE AND ONLY renderTimeline FUNCTION ★
         function renderTimeline() {
             const list = document.getElementById('tl-list'); list.innerHTML = '';
             const search = document.getElementById('search-input').value.toLowerCase();
@@ -2591,32 +2446,16 @@ let isTrackerEditMode = false;
             let isHidden = el.getAttribute('data-hidden') === 'true';
             let boxes = [document.getElementById(`ans-y-${i}`), document.getElementById(`ans-e-${i}`), document.getElementById(`ans-k-${i}`)];
             if(isHidden) {
-                el.innerHTML = '👁️';
+                el.innerHTML = '☻'; 
                 el.setAttribute('data-hidden', 'false');
                 boxes.forEach(b => { if(b) b.classList.add('show'); });
             } else {
-                el.innerHTML = '🙈';
+                el.innerHTML = '☺︎'; 
                 el.setAttribute('data-hidden', 'true');
                 boxes.forEach(b => { if(b) b.classList.remove('show'); });
             }
         }
 
-       
-       // 눈 감고 뜨기 (정답 확인용 함수)
-        function toggleAns(i) {
-            let el = document.getElementById(`qz-eye-${i}`);
-            let isHidden = el.getAttribute('data-hidden') === 'true';
-            let boxes = [document.getElementById(`ans-y-${i}`), document.getElementById(`ans-e-${i}`), document.getElementById(`ans-k-${i}`)];
-            if(isHidden) {
-                el.innerHTML = '☻'; // 답을 봤을 때 모양
-                el.setAttribute('data-hidden', 'false');
-                boxes.forEach(b => { if(b) b.classList.add('show'); });
-            } else {
-                el.innerHTML = '☺︎'; // 답을 숨겼을 때 모양
-                el.setAttribute('data-hidden', 'true');
-                boxes.forEach(b => { if(b) b.classList.remove('show'); });
-            }
-        }
         function renderQuizBoard() {
             const list = document.getElementById('quiz-list'); list.innerHTML='';
             const crownSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-1-1v-1h14v1z"></path></svg>`;
