@@ -2455,6 +2455,10 @@ let isTrackerEditMode = false;
             
             let markers = {};
             const milestones = [2020, 2010, 2000, 1900, 1800];
+            
+            // ★ 모바일 여부 확인하여 텍스트 편집 기능 자체를 꺼버림 (키보드 차단)
+            let isMobile = window.innerWidth <= 850;
+            let cEdit = isMobile ? 'false' : 'true';
 
             sorted.forEach(ev => {
                 try {
@@ -2483,31 +2487,28 @@ let isTrackerEditMode = false;
                     let cleanDate = (!ev.date || ev.date === '0' || ev.date === '0.0' || ev.date === 'NaN') ? '' : ev.date;
 
                     row.innerHTML = `
-                        <div class="tl-year editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="true" onblur="updateEv(${ev.id}, 'year', this.innerText)">${ev.year}</div>
-                        <div class="tl-date editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="true" onblur="updateEv(${ev.id}, 'date', this.innerText)">${cleanDate}</div>
-                        <div class="tl-name editable" contenteditable="true" onblur="updateEv(${ev.id}, 'name', this.innerText)">${ev.name}</div>
-                        <div class="tl-effect editable" contenteditable="true" onblur="updateEv(${ev.id}, 'effect', this.innerText)">${ev.effect||''}</div>
-                        <div class="tl-korEffect editable" contenteditable="true" onblur="updateEv(${ev.id}, 'korEffect', this.innerText)">${ev.korEffect||''}</div>
+                        <div class="tl-year editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'year', this.innerText)">${ev.year}</div>
+                        <div class="tl-date editable" style="font-weight:500; color:var(--primary-blue);" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'date', this.innerText)">${cleanDate}</div>
+                        <div class="tl-name editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'name', this.innerText)">${ev.name}</div>
+                        <div class="tl-effect editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'effect', this.innerText)">${ev.effect||''}</div>
+                        <div class="tl-korEffect editable" contenteditable="${cEdit}" onblur="updateEv(${ev.id}, 'korEffect', this.innerText)">${ev.korEffect||''}</div>
                         <div class="tl-kws tl-col-kws" onclick="openInlineTagModal(event, ${ev.id}, 'keywords')">${kwHtml}</div>
                         <div class="tl-star tl-col-imp" onclick="cycleStar(${ev.id})">${stars}</div>
                         <div class="tl-sub tl-col-sub" onclick="openInlineTagModal(event, ${ev.id}, 'subject')">${getSubShort(ev.subject) || '<span class="kw-empty">+</span>'}</div>
                         <div class="tl-chk tl-col-chk" onclick="toggleTarget(${ev.id}, ${!ev.target})" style="cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;">${chkSvg}</div>
                     `;
                     
-                    // 모바일에서는 가볍게 터치(클릭)만 해도 팝업이 뜨게 변경
                     row.onclick = (e) => {
                         if (window.innerWidth <= 850) {
-                            // 별, 체크박스, 키워드 등을 터치했을 때는 팝업이 뜨지 않도록 예외 처리
                             if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
                             openMobileDetailModal(ev.id);
                         }
                     };
-                    // PC에서는 기존대로 우클릭 시 팝업
                     row.oncontextmenu = (e) => { 
                         if (window.innerWidth > 850) { e.preventDefault(); openMobileDetailModal(ev.id); }
                     };
                     list.appendChild(row);
-                    row.querySelectorAll('[contenteditable]').forEach(el => { el.addEventListener('keydown', function(e) { if(e.key==='Enter') { e.preventDefault(); this.blur(); } }); });
+                    row.querySelectorAll('[contenteditable="true"]').forEach(el => { el.addEventListener('keydown', function(e) { if(e.key==='Enter') { e.preventDefault(); this.blur(); } }); });
                 } catch(err) { console.error("Timeline render error:", err); }
             });
             updateProgress();
