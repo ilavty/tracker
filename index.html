@@ -2228,15 +2228,38 @@
                             else { isBreakTime = false; timerAction('pause'); document.getElementById('display').style.color = 'var(--primary-blue)'; updatePomodoroTime(); alert("Break Over! Ready to Focus?"); } 
                         } 
                     } else { stopwatchSecs++; document.getElementById('display').innerText = formatTimeDuration(stopwatchSecs); } 
-                    if(!isBreakTime) { runningAddedSecs++; updateDayViewDate(); }
+                    if(!isBreakTime) { runningAddedSecs++; }
                 }, 1000); 
             } else if (act === 'pause') { 
-                if(!isRunning) return; clearInterval(timerInt); isRunning = false; document.getElementById('btn-start').classList.remove('active-control'); document.getElementById('btn-pause').classList.add('active-control'); 
+                if(!isRunning) return; clearInterval(timerInt); isRunning = false; 
+                document.getElementById('btn-start').classList.remove('active-control'); 
+                document.getElementById('btn-pause').classList.add('active-control'); 
+                
                 if(!isBreakTime && currentTimerStartTime) { 
                     pushUndoState();
-                    const endTime = new Date(); const addedSecs = Math.floor((endTime - currentTimerStartTime) / 1000); 
-                    if(addedSecs > 0) { const dateStr = formatDateStr(endTime.getFullYear(), endTime.getMonth(), endTime.getDate()); const formatHHMM = (d) => `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; detailedSessions.push({ id: Date.now().toString(), date: dateStr, subId: selectedSubId, start: formatHHMM(currentTimerStartTime), end: formatHHMM(endTime), duration: addedSecs }); runningAddedSecs = 0; updateDayViewDate(); saveDataToFirebase(); } 
-                } currentTimerStartTime = null; 
+                    const endTime = new Date(); 
+                    const addedSecs = Math.floor((endTime - currentTimerStartTime) / 1000); 
+                    
+                    if(addedSecs > 0) { 
+                        const dateStr = formatDateStr(endTime.getFullYear(), endTime.getMonth(), endTime.getDate()); 
+                        const formatHHMM = (d) => `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; 
+                        
+                        detailedSessions.push({ 
+                            id: Date.now().toString(), 
+                            date: dateStr, 
+                            subId: selectedSubId, 
+                            start: formatHHMM(currentTimerStartTime), 
+                            end: formatHHMM(endTime), 
+                            duration: addedSecs 
+                        }); 
+                        
+                        runningAddedSecs = 0; 
+                        stopwatchSecs = 0; // 스톱워치 초기화
+                        saveDataToFirebase(); 
+                        updateDayViewDate(); // ★ 이 코드가 있어야 타임테이블이 즉시 새로 그려집니다![cite: 3]
+                    } 
+                } 
+                currentTimerStartTime = null; 
             } 
         }
 
