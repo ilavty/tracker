@@ -650,6 +650,12 @@
             #chrono-view .q-row > *:nth-child(7) { position: absolute !important; bottom: 12px !important; right: 40px !important; margin: 0 !important; display: block !important; font-size: 1.2rem !important; cursor: pointer; }
             #chrono-view .q-row > *:nth-child(8) { display: none !important; } /* 프로그레스 숨김 */
             #chrono-view .q-row > *:nth-child(9) { position: absolute !important; bottom: 15px !important; right: 5px !important; margin: 0 !important; }
+       
+            /* 모바일 연표 텍스트 수정 방지 */
+            #chrono-view .editable { 
+                pointer-events: none !important; 
+            }
+
         }
         /* v72 반영: 모바일 상세 팝업 테두리 삭제 및 2열 레이아웃을 위한 오버라이드 스타일 - 기존 .modal-content에 테두리 스타일이 덮어씌워지지 않도록 !important 추가 */
         #mobile-detail-modal .modal-content { border: none !important; }
@@ -1423,18 +1429,29 @@ let isTrackerEditMode = false;
             trackerContextTarget = { type, cIdx, catIdx, tIdx, sIdx, bIdx }; 
             let menu = document.getElementById('tracker-context-menu'); 
             let editBtn = document.getElementById('tracker-menu-edit');
-            if (editBtn) editBtn.style.display = (type === 'bar') ? 'block' : 'none';
+            // 바(bar)와 사이클(cycle) 모두 '수정' 메뉴가 보이도록 변경
+            if (editBtn) editBtn.style.display = (type === 'bar' || type === 'cycle') ? 'block' : 'none';
             menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; 
         }
         
         function execTrackerEdit() {
             document.getElementById('tracker-context-menu').style.display = 'none';
-            if(!trackerContextTarget || trackerContextTarget.type !== 'bar') return;
-            let { cIdx, catIdx, sIdx, bIdx } = trackerContextTarget;
-            let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx];
-            let newText = prompt("바 내용 수정:", bar.text);
-            if(newText !== null && newText.trim() !== "") {
-                updateBarText(cIdx, catIdx, sIdx, bIdx, newText);
+            if(!trackerContextTarget) return;
+            let { type, cIdx, catIdx, sIdx, bIdx } = trackerContextTarget;
+            
+            if (type === 'bar') {
+                let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx];
+                let newText = prompt("바 내용 수정:", bar.text);
+                if(newText !== null && newText.trim() !== "") {
+                    updateBarText(cIdx, catIdx, sIdx, bIdx, newText);
+                }
+            } else if (type === 'cycle') {
+                // 사이클 '수정' 클릭 시 숫자 변경
+                let cycle = trackerData.data[trackerData.currentSubject].cycles[cIdx];
+                let newNum = prompt("사이클 번호 수정:", cycle.num);
+                if(newNum !== null && newNum.trim() !== "") {
+                    updateCycleNum(cIdx, newNum.trim());
+                }
             }
         }
 
@@ -1481,7 +1498,7 @@ let isTrackerEditMode = false;
                     if(isCycleCompleted) dateStrHtml = `<span style="color: #000; font-size:0.9rem;"><span class="completed-text">COMPLETED</span> <span style="font-weight: 500;">(${minStr} - ${maxStr}) : ${diffDays} DAYS</span></span>`; else dateStrHtml = `<span class="in-progress-text">IN PROGRESS: ${minStr} ~</span>`;
                 }
 
-                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})" ontouchstart="this.pressTimer = setTimeout(() => { showTrackerMenu(event, 'cycle', ${cIdx}); }, 600);" ontouchend="clearTimeout(this.pressTimer);" ontouchmove="clearTimeout(this.pressTimer);"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><input type="text" value="${cycle.num}" class="cycle-num-input" onclick="event.stopPropagation()" onchange="updateCycleNum(${cIdx}, this.value)" style="font-weight:400; width:40px;"></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
+                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})" ontouchstart="this.pressTimer = setTimeout(() => { showTrackerMenu(event, 'cycle', ${cIdx}); }, 600);" ontouchend="clearTimeout(this.pressTimer);" ontouchmove="clearTimeout(this.pressTimer);"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><span class="cycle-num-input" style="font-weight:400; width:40px; display:inline-block; padding-left:3px;">${cycle.num}</span></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
                 
                 cycle.cats.forEach((cat, catIdx) => {
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
@@ -2477,11 +2494,18 @@ let isTrackerEditMode = false;
                         <div class="tl-chk tl-col-chk" onclick="toggleTarget(${ev.id}, ${!ev.target})" style="cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;">${chkSvg}</div>
                     `;
                     
-                    let pressTimer;
-                    row.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { openMobileDetailModal(ev.id); }, 500); }, {passive: true});
-                    row.addEventListener('touchend', () => { clearTimeout(pressTimer); });
-                    row.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
-                    row.oncontextmenu = (e) => { e.preventDefault(); openMobileDetailModal(ev.id); };
+                    // 모바일에서는 가볍게 터치(클릭)만 해도 팝업이 뜨게 변경
+                    row.onclick = (e) => {
+                        if (window.innerWidth <= 850) {
+                            // 별, 체크박스, 키워드 등을 터치했을 때는 팝업이 뜨지 않도록 예외 처리
+                            if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
+                            openMobileDetailModal(ev.id);
+                        }
+                    };
+                    // PC에서는 기존대로 우클릭 시 팝업
+                    row.oncontextmenu = (e) => { 
+                        if (window.innerWidth > 850) { e.preventDefault(); openMobileDetailModal(ev.id); }
+                    };
                     list.appendChild(row);
                     row.querySelectorAll('[contenteditable]').forEach(el => { el.addEventListener('keydown', function(e) { if(e.key==='Enter') { e.preventDefault(); this.blur(); } }); });
                 } catch(err) { console.error("Timeline render error:", err); }
