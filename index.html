@@ -647,6 +647,27 @@
         }
         /* v72 반영: 모바일 상세 팝업 테두리 삭제 및 2열 레이아웃을 위한 오버라이드 스타일 - 기존 .modal-content에 테두리 스타일이 덮어씌워지지 않도록 !important 추가 */
         #mobile-detail-modal .modal-content { border: none !important; }
+        /* PC용 바 삭제 버튼(X) 스타일 */
+.tracker-bar { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.bar-delete-btn { 
+    position: absolute; right: 2px; top: 50%; transform: translateY(-50%); 
+    width: 14px; height: 14px; background: rgba(0,0,0,0.2); color: #fff; 
+    border-radius: 50%; font-size: 10px; line-height: 14px; text-align: center; 
+    cursor: pointer; display: none; /* 기본적으로 숨김 */
+}
+.tracker-bar:hover .bar-delete-btn { display: block; } /* 마우스 올리면 표시 */
+
+/* 모바일 연필 버튼 강제 노출 */
+@media (max-width: 850px) {
+    #tracker-edit-mode-btn { display: inline-flex !important; visibility: visible !important; }
+}
+/* 사이클 헤더 텍스트 선택 방지 및 터치 피드백 */
+.cycle-header {
+    user-select: none !important;
+    -webkit-user-select: none !important; /* 아이폰/사파리 대응 */
+    -webkit-touch-callout: none !important; /* 시스템 팝업 방지 */
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -1323,17 +1344,19 @@
 let isTrackerEditMode = false;
 
         function toggleTrackerEditMode() {
-            isTrackerEditMode = !isTrackerEditMode;
-            const btn = document.getElementById('tracker-edit-mode-btn');
-            if (isTrackerEditMode) {
-                btn.style.background = 'var(--primary-blue)';
-                btn.style.color = '#fff';
-                alert("수정 모드 활성화: 빈 칸을 터치하여 기록하세요.");
-            } else {
-                btn.style.background = '#fff';
-                btn.style.color = 'var(--line-color)';
-            }
-        }
+    isTrackerEditMode = !isTrackerEditMode;
+    const btn = document.getElementById('tracker-edit-mode-btn');
+    const view = document.getElementById('tracker-view');
+    if (isTrackerEditMode) {
+        btn.style.background = 'var(--primary-blue)';
+        btn.style.color = '#fff';
+        view.classList.add('edit-active');
+    } else {
+        btn.style.background = '#fff';
+        btn.style.color = 'var(--line-color)';
+        view.classList.remove('edit-active');
+    }
+}
 
         // 스마트 터치 기록 함수 (하나씩 선택 및 자동 병합)
         function handleCellTouch(cIdx, catIdx, sIdx, colIdx) {
@@ -1451,12 +1474,40 @@ let isTrackerEditMode = false;
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
                     let sessions = toArray(cat.sessions);
                     if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
-                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => { let isSplit = /\\(\\d+\\)$/.test(t.name.trim()); let splitStyle = isSplit ? 'font-weight: 500; color: #000;' : ''; return `<div class="topic-cell" style="${splitStyle}" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`; }).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`;
-return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor}; cursor:pointer;" onmousedown="event.stopPropagation();" onclick="promptBarEdit(event, ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})" oncontextmenu="showTrackerMenu(event, 'bar', ${cIdx}, ${catIdx}, ${sIdx}, ${bIdx})"><span style="user-select:none; -webkit-user-select:none; pointer-events:none; display:inline-block; min-width:20px; text-align:center;">${bar.text}</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`;}).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
+                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => { let isSplit = /\\(\\d+\\)$/.test(t.name.trim()); let splitStyle = isSplit ? 'font-weight: 500; color: #000;' : ''; return `<div class="topic-cell" style="${splitStyle}" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`; }).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.2 + (sIdx * 0.2); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; 
+                        return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})" onmousedown="if(!isTrackerEditMode) startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="if(!isTrackerEditMode) onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}%); width: calc(${(bar.end - bar.start + 1) / N * 100}%); background: ${barColor}; color: ${textColor};" onclick="event.stopPropagation();"><input type="text" value="${bar.text}" onchange="updateBarText(${cIdx}, ${catIdx}, ${sIdx}, ${bIdx}, this.value)" style="width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: inherit; font-family: inherit; outline: none;"><span class="bar-delete-btn" onclick="event.stopPropagation(); pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[${cIdx}].cats[${catIdx}].sessions[${sIdx}].bars.splice(${bIdx}, 1); renderTrackerCycles(); saveDataToFirebase();">×</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; 
+                    }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
                 });
                 html += `</div></div>`; container.innerHTML += html;
             });
         }
+
+        function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
+    if (e.button !== 0) return; 
+    dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; 
+    renderDragHighlight(); 
+}
+
+function onDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
+    if (!dragInfo) return; 
+    if (dragInfo.cIdx === cIdx && dragInfo.catIdx === catIdx && dragInfo.sIdx === sIdx) { 
+        dragInfo.currentCol = colIdx; 
+        renderDragHighlight(); 
+    } 
+}
+
+function renderDragHighlight() { 
+    if (!dragInfo) return; 
+    let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
+    let start = Math.min(startCol, currentCol); 
+    let end = Math.max(startCol, currentCol); 
+    let hl = document.getElementById(`hl-${cIdx}-${catIdx}-${sIdx}`); 
+    if (hl) { 
+        hl.style.display = 'block'; 
+        hl.style.left = `${(start / numCols) * 100}%`; 
+        hl.style.width = `${((end - start + 1) / numCols) * 100}%`; 
+    } 
+}
 
         function promptBarEdit(e, cIdx, catIdx, sIdx, bIdx) {
             if(e) e.stopPropagation();
