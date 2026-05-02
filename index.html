@@ -1244,8 +1244,27 @@
         </div>
     </div>
 
-    <div class="floating-nav" id="floating-nav" style="display:none;"><span onclick="jumpTo(1800)">1800s</span><span onclick="jumpTo(1900)">1900s</span><span onclick="jumpTo(2000)">2000s</span><span onclick="jumpTo(2010)">2010s</span><span onclick="jumpTo(2020)">2020s</span><span class="top-btn" onclick="window.scrollTo(0,0)">TOP</span></div>
-
+   <!-- ★ 절대 부서지지 않는 플로팅 네비게이터 ★ -->
+    <div class="floating-nav" id="floating-nav" style="display:none; flex-direction: column !important; align-items: flex-end !important; gap: 8px;">
+        <!-- 검색 버튼 묶음 -->
+        <div style="display:flex; align-items:center; justify-content:flex-end; gap:5px;">
+            <div id="floating-search-input-wrap" style="display:none;">
+                <input type="text" id="floating-search-input" style="border:1.5px solid var(--primary-blue); border-radius:20px; padding:4px 10px; outline:none; font-size:0.85rem; font-family:'GmarketSansChrono', sans-serif; width:120px; color:var(--primary-blue); font-weight:700; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" placeholder="검색..." oninput="document.getElementById('search-input').value=this.value; renderTimeline();">
+            </div>
+            <!-- 돋보기 아이콘 (padding 강제 리셋으로 찌그러짐 방지) -->
+            <span id="floating-search-btn" onclick="toggleFloatingSearch()" style="border-radius:50%; width:36px !important; height:36px !important; padding:0 !important; display:flex !important; align-items:center; justify-content:center; cursor:pointer; background:#fff; border:1.5px solid var(--primary-blue); color:var(--primary-blue); transition:0.2s; box-sizing:border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+        </div>
+        <!-- 네비게이터 버튼들 -->
+        <span class="top-btn" style="background: var(--primary-blue) !important; color: #fff !important; border: none !important; box-shadow: 0 4px 10px rgba(42,85,140,0.3) !important;" onclick="window.scrollTo({top:0, behavior:'smooth'})">TOP</span>
+        <span onclick="jumpTo(1800)">1800s</span>
+        <span onclick="jumpTo(1900)">1900s</span>
+        <span onclick="jumpTo(2000)">2000s</span>
+        <span onclick="jumpTo(2010)">2010s</span>
+        <span onclick="jumpTo(2020)">2020s</span>
+    </div>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
@@ -1255,7 +1274,7 @@
         let filterSubs = []; let filterKws = []; let qSession = []; let qzFilterSubs = []; let qzFilterKws = []; let qzFilterImpMin = 1;
 
         const paletteColors = ['#AFC6E0', '#87A9D1', '#537FB1', '#204179', '#B0A08B', '#9D8C71', '#847156', '#534633', '#F0E5CC', '#E1CFA1', '#D1BA85', '#69665B', '#F2E1E1', '#ECC5C5', '#E6ABB0', '#DB999E'];
-        const trackerThemes = [{ text: "#154c94", rgb: "30, 95, 170" }, { text: "#b52c16", rgb: "215, 60, 30" }, { text: "#1a7021", rgb: "40, 150, 50" }, { text: "#d95000", rgb: "240, 90, 0" }, { text: "#661899", rgb: "125, 30, 180" }];
+       const trackerThemes = [{ text: "#5a97eb", rgb: "90, 151, 235" }, { text: "#ff6b6b", rgb: "255, 107, 107" }, { text: "#4ecdc4", rgb: "78, 205, 196" }, { text: "#ffa62b", rgb: "255, 166, 43" }, { text: "#9b5de5", rgb: "155, 93, 229" }];
         const svgHeart = `<svg viewBox="0 0 24 24" width="14" height="14" fill="var(--primary-blue)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 
         const firebaseConfig = { apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" };
@@ -1711,6 +1730,24 @@
             const yMin = parseInt(document.getElementById('year-min').value) || -9999;
             const yMax = parseInt(document.getElementById('year-max').value) || 9999;
 
+            // ★ 플로팅 검색창 UI 동기화 (SVG 픽토그램 적용)
+            let fBtn = document.getElementById('floating-search-btn');
+            let fWrap = document.getElementById('floating-search-input-wrap');
+            let fInput = document.getElementById('floating-search-input');
+            if(fBtn && fInput) {
+                if(search.trim() !== '') {
+                    fBtn.style.background = 'var(--primary-blue)';
+                    fBtn.style.color = '#fff';
+                    fBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                    fInput.value = document.getElementById('search-input').value;
+                } else {
+                    fBtn.style.background = '#fff';
+                    fBtn.style.color = 'var(--primary-blue)';
+                    fBtn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+                    fInput.value = '';
+                }
+            }
+
             if(!Array.isArray(chronoEvents)) chronoEvents = [];
             let sorted = [...chronoEvents].sort((a, b) => { if(a.year !== b.year) return a.year - b.year; let aM=0, aD=0, bM=0, bD=0; if(a.date) { let p=a.date.split('.'); aM=parseInt(p[0])||0; aD=parseInt(p[1])||0; } if(b.date) { let p=b.date.split('.'); bM=parseInt(p[0])||0; bD=parseInt(p[1])||0; } if(aM!==bM) return aM-bM; return aD-bD; });
             
@@ -2041,7 +2078,26 @@
             closeAllModals();
             renderTimeline(); renderGraduatedList();
         }
-
+        function toggleFloatingSearch() {
+                    let mainSearch = document.getElementById('search-input');
+                    let wrap = document.getElementById('floating-search-input-wrap');
+                    
+                    // 검색된 상태라면 끄기(초기화)
+                    if (mainSearch.value.trim() !== '') {
+                        mainSearch.value = '';
+                        wrap.style.display = 'none';
+                        renderTimeline();
+                    } else {
+                        // 검색된 게 없으면 검색창 토글
+                        if (wrap.style.display === 'none') {
+                            wrap.style.display = 'block';
+                            document.getElementById('floating-search-input').focus();
+                        } else {
+                            wrap.style.display = 'none';
+                        }
+                    }
+                }
+                
         window.onload = () => { 
             initPlanner(); 
             if (!sessionStorage.getItem('session_initialized')) { sessionStorage.setItem('session_initialized', 'true'); showPage('main'); } 
