@@ -1725,7 +1725,9 @@
                 try {
                     let evYr = parseInt(ev.year);
                     if(isNaN(evYr) || evYr < yMin || evYr > yMax) return;
-                    if(search && !String(ev.name).toLowerCase().includes(search) && !(ev.keywords ? String(ev.keywords) : "").toLowerCase().includes(search)) return;
+                    // 이름, 연도, 날짜, 키워드, 내용 등 모든 필드에서 통합 검색하도록 업그레이드
+                    let searchTarget = `${ev.name} ${ev.year} ${ev.date || ''} ${ev.keywords || ''} ${ev.effect || ''} ${ev.korEffect || ''} ${ev.subject || ''}`.toLowerCase();
+                    if(search && !searchTarget.includes(search)) return;
                     if(filterSubs && filterSubs.length > 0) { let es = (ev.subject||"").split(',').map(x=>x.trim()); if(!filterSubs.some(s => es.includes(s))) return; }
                     if(filterKws && filterKws.length > 0) { let ek = (ev.keywords||"").split(',').map(x=>x.trim()); if(!filterKws.some(k => ek.includes(k))) return; }
 
