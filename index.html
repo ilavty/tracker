@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Final Notepad V75 (Ultimate Dashboard)</title>
-    <link rel="apple-touch-icon" href="icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tracker">
     <style>
         @import url("https://cdn.jsdelivr.net/gh/sun-typeface/gmarket-sans@v1.0.0/css/gmarket-sans-all.css");
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Nanum+Pen+Script&display=swap');
@@ -1278,7 +1274,7 @@
         let filterSubs = []; let filterKws = []; let qSession = []; let qzFilterSubs = []; let qzFilterKws = []; let qzFilterImpMin = 1;
 
         const paletteColors = ['#AFC6E0', '#87A9D1', '#537FB1', '#204179', '#B0A08B', '#9D8C71', '#847156', '#534633', '#F0E5CC', '#E1CFA1', '#D1BA85', '#69665B', '#F2E1E1', '#ECC5C5', '#E6ABB0', '#DB999E'];
-       const trackerThemes = [{ text: "#5a97eb", rgb: "90, 151, 235" }, { text: "#ff6b6b", rgb: "255, 107, 107" }, { text: "#4ecdc4", rgb: "78, 205, 196" }, { text: "#ffa62b", rgb: "255, 166, 43" }, { text: "#9b5de5", rgb: "155, 93, 229" }];
+       const trackerThemes = [{ text: "#5a97eb", rgb: "107, 163, 235" }, { text: "#ff6b6b", rgb: "255, 107, 107" }, { text: "#4ecdc4", rgb: "78, 205, 196" }, { text: "#ffa62b", rgb: "255, 181, 127" }, { text: "#9b5de5", rgb: "145, 115, 223" }];
         const svgHeart = `<svg viewBox="0 0 24 24" width="14" height="14" fill="var(--primary-blue)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 
         const firebaseConfig = { apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" };
@@ -1484,6 +1480,32 @@
                 });
                 html += `</div></div>`; container.innerHTML += html;
             });
+        }
+
+        // ★ 소주제 클릭 시 (1), (2)로 분할하는 기능
+        function handleTopicClick(cIdx, catIdx, tIdx) {
+            if (isTrackerEditMode) return; // 펜(편집) 모드일 땐 무시
+            pushUndoState();
+            let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx];
+            let topicName = cat.topics[tIdx].name;
+            let baseName = topicName.replace(/\(\d+\)$/, '').trim(); // 기존에 (1)이 있으면 떼어냄
+            
+            let newT1 = { id: Date.now() + Math.random(), name: baseName + '(1)' };
+            let newT2 = { id: Date.now() + Math.random(), name: baseName + '(2)' };
+            
+            cat.topics.splice(tIdx, 1, newT1, newT2); // 1개를 빼고 2개를 집어넣음
+            
+            // 칸이 늘어났으므로 기존에 칠해둔 막대기 위치도 알맞게 밀어줌
+            cat.sessions.forEach(sess => {
+                if (!sess.bars) return;
+                sess.bars.forEach(bar => {
+                    if (bar.start > tIdx) bar.start++;
+                    if (bar.end >= tIdx) bar.end++;
+                });
+            });
+            
+            renderTrackerCycles();
+            saveDataToFirebase();
         }
 
         function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { if (e.button !== 0 || isTrackerEditMode) return; dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; renderDragHighlight(); }
