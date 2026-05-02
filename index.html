@@ -1279,18 +1279,13 @@
         let globalUndoStack = [];
         function pushUndoState() {
             let state = {
-                detailedSessions: JSON.parse(JSON.stringify(detailedSessions)),
-                subjectsData: JSON.parse(JSON.stringify(subjectsData)),
-                trackerData: JSON.parse(JSON.stringify(trackerData)),
-                repCols: JSON.parse(JSON.stringify(repCols)),
-                repData: JSON.parse(JSON.stringify(repData)),
-                repHistory: JSON.parse(JSON.stringify(repHistory)),
+                detailedSessions: JSON.parse(JSON.stringify(detailedSessions)), subjectsData: JSON.parse(JSON.stringify(subjectsData)),
+                trackerData: JSON.parse(JSON.stringify(trackerData)), repCols: JSON.parse(JSON.stringify(repCols)),
+                repData: JSON.parse(JSON.stringify(repData)), repHistory: JSON.parse(JSON.stringify(repHistory)),
                 chronoEvents: JSON.parse(JSON.stringify(chronoEvents))
             };
-            globalUndoStack.push(state);
-            if (globalUndoStack.length > 30) globalUndoStack.shift();
+            globalUndoStack.push(state); if (globalUndoStack.length > 30) globalUndoStack.shift();
         }
-        
         function triggerUndo() {
             if (globalUndoStack.length > 0) {
                 let prevState = globalUndoStack.pop();
@@ -1301,7 +1296,6 @@
         }
 
         function ensureRepData() { if(!Array.isArray(repCols) || repCols.length === 0) repCols = ['강의', 'ox', '기출(문)', '기출(실)']; if(!Array.isArray(repData) || repData.length === 0) repData = [{ id: Date.now(), name: "기본과목", counts: [0,0,0,0] }]; }
-
         function formatTimeDuration(s) { const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = Math.floor(s%60); return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
         function formatDateStr(y, m, d) { return `${y}-${String(m+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; }
         function stripLeadingZero(timeStr) { if(!timeStr) return timeStr; let parts = timeStr.split(':'); if(parts.length < 2) return timeStr; return `${parseInt(parts[0], 10)}:${parts[1]}`; }
@@ -1309,22 +1303,13 @@
         function initPlanner() { const rows = document.getElementById('planner-rows'); if(!rows) return; rows.innerHTML = ''; for(let i=0; i<24; i++) { const hRaw = (i+5)%24; const hDisplay = hRaw; const hStr = String(hRaw).padStart(2,'0'); rows.innerHTML += `<div class="hour-row"><div class="hour-label">${hDisplay}</div><div class="minute-track-wrapper" id="track-${hStr}"><div class="minute-grid">${'<div class="minute-cell"></div>'.repeat(6)}</div></div></div>`; } calcDday(); updateGoalTimeUI(); }
         function setDday() { let d = prompt("D-Day 날짜를 입력하세요 (예: 2026-08-30)"); if(d) { localStorage.setItem('myDday', d); calcDday(); } }
         function calcDday() { let d = localStorage.getItem('myDday'); if(d) { let target = new Date(d); let today = new Date(); today.setHours(0,0,0,0); target.setHours(0,0,0,0); let diff = Math.ceil((target - today) / (1000*60*60*24)); document.getElementById('dday-display').innerText = diff > 0 ? `D-${diff}` : (diff === 0 ? `D-Day` : `D+${Math.abs(diff)}`); } }
-        
         function setGoalTime() { let t = prompt("이번 주 목표 학습 시간(숫자만, 예: 50)"); if(t && !isNaN(t)) { localStorage.setItem('myGoal', t); updateGoalTimeUI(); } }
         function updateGoalTimeUI() { 
-            let g = localStorage.getItem('myGoal') || 50; 
-            let d = new Date(currentDayViewDate); let day = d.getDay(); let diff = d.getDate() - day + (day === 0 ? -6 : 1); 
-            let startOfWeek = new Date(d); startOfWeek.setDate(diff); startOfWeek.setHours(0,0,0,0); 
-            let endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6); endOfWeek.setHours(23,59,59,999);
-            
-            if(!Array.isArray(detailedSessions)) detailedSessions = []; 
-            let weekTotal = 0;
-            detailedSessions.forEach(s => { 
-                if(!s || !s.date) return; let parts = s.date.split('-'); let sD = new Date(parts[0], parts[1]-1, parts[2]); 
-                if(sD >= startOfWeek && sD <= endOfWeek) weekTotal += s.duration; 
-            });
-            let today = new Date();
-            if(today >= startOfWeek && today <= endOfWeek && isRunning && !isBreakTime) { weekTotal += runningAddedSecs; }
+            let g = localStorage.getItem('myGoal') || 50; let d = new Date(currentDayViewDate); let day = d.getDay(); let diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+            let startOfWeek = new Date(d); startOfWeek.setDate(diff); startOfWeek.setHours(0,0,0,0); let endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6); endOfWeek.setHours(23,59,59,999);
+            if(!Array.isArray(detailedSessions)) detailedSessions = []; let weekTotal = 0;
+            detailedSessions.forEach(s => { if(!s || !s.date) return; let parts = s.date.split('-'); let sD = new Date(parts[0], parts[1]-1, parts[2]); if(sD >= startOfWeek && sD <= endOfWeek) weekTotal += s.duration; });
+            let today = new Date(); if(today >= startOfWeek && today <= endOfWeek && isRunning && !isBreakTime) { weekTotal += runningAddedSecs; }
             let remain = Math.max(0, Math.ceil(g - (weekTotal/3600))); document.getElementById('remain-time-val').innerText = `${remain}h`; 
         }
 
@@ -1358,63 +1343,34 @@
             }).catch(e => { isInitialLoadDone = true; initialRender(); });
         }
         
+        // ★ 연표 렌더링 딜레이 완벽 해결 ★
         function initialRender() { 
-            updateDayViewDate(); 
-            renderSubjects(); 
-            renderCalendar(); 
-            renderRep(); 
-            renderTimeline(); 
-            generateQuiz(); 
-            if (document.getElementById('tracker-view').style.display === 'block') renderTrackerNav(); 
-            if (document.getElementById('stats-view').style.display === 'block') { 
-                let lastTab = localStorage.getItem('lastStatTab') || 'week'; 
-                switchStatTab(lastTab); 
-            }
-            // ★ 페이지 로드 시 크로노(연표) 탭에 있다면 강제로 렌더링하여 화면 딜레이 해결
-            if (document.getElementById('chrono-view').style.display === 'block') {
-                let lastChronoTab = localStorage.getItem('lastChronoTab') || 'tl';
-                showChronoTab(lastChronoTab);
-            }
+            updateDayViewDate(); renderSubjects(); renderCalendar(); renderRep(); renderTimeline(); generateQuiz(); 
+            let lastPage = localStorage.getItem('lastPage') || 'main';
+            showPage(lastPage);
+            if (lastPage === 'stats') { let lastTab = localStorage.getItem('lastStatTab') || 'week'; switchStatTab(lastTab); }
+            if (lastPage === 'chrono') { let lastChronoTab = localStorage.getItem('lastChronoTab') || 'tl'; showChronoTab(lastChronoTab); }
+            if (lastPage === 'tracker') { renderTrackerNav(); }
         }
         
         function saveAllToLocal() { localStorage.setItem('myDetailedSessions_v5', JSON.stringify(detailedSessions)); localStorage.setItem('mySubjectsData_v5', JSON.stringify(subjectsData)); localStorage.setItem('myTrackerData_v5', JSON.stringify(trackerData)); localStorage.setItem('myRepCols_v5', JSON.stringify(repCols)); localStorage.setItem('myRepData_v5', JSON.stringify(repData)); localStorage.setItem('myRepHistory_v5', JSON.stringify(repHistory)); localStorage.setItem('myChronoEvents_v5', JSON.stringify(chronoEvents)); }
-        
-        function saveDataToFirebase() { 
-            if(!isInitialLoadDone) return; 
-            saveAllToLocal(); 
-            if(!db) return; 
-            db.ref("study_records/" + USER_DOC_ID).set({ subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [] }); 
-        }
+        function saveDataToFirebase() { if(!isInitialLoadDone) return; saveAllToLocal(); if(!db) return; db.ref("study_records/" + USER_DOC_ID).set({ subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [] }); }
 
-        let dragInfo = null;
-        let isTrackerEditMode = false;
-
+        let dragInfo = null; let isTrackerEditMode = false;
         function toggleTrackerEditMode() {
             isTrackerEditMode = !isTrackerEditMode;
-            const btn = document.getElementById('tracker-edit-mode-btn');
-            const view = document.getElementById('tracker-view');
-            if (isTrackerEditMode) {
-                btn.style.background = 'var(--primary-blue)';
-                btn.style.color = '#fff';
-                view.classList.add('edit-active');
-            } else {
-                btn.style.background = '#fff';
-                btn.style.color = 'var(--line-color)';
-                view.classList.remove('edit-active');
-            }
+            const btn = document.getElementById('tracker-edit-mode-btn'); const view = document.getElementById('tracker-view');
+            if (isTrackerEditMode) { btn.style.background = 'var(--primary-blue)'; btn.style.color = '#fff'; view.classList.add('edit-active'); } 
+            else { btn.style.background = '#fff'; btn.style.color = 'var(--line-color)'; view.classList.remove('edit-active'); }
         }
 
         function handleCellTouch(cIdx, catIdx, sIdx, colIdx) {
-            if (!isTrackerEditMode) return;
-            pushUndoState();
+            if (!isTrackerEditMode) return; pushUndoState();
             let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
             if (!session.bars) session.bars = [];
             let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate();
             let existingIdx = session.bars.findIndex(b => colIdx >= b.start && colIdx <= b.end);
-            
-            if (existingIdx !== -1) {
-                session.bars.splice(existingIdx, 1);
-            } else {
+            if (existingIdx !== -1) { session.bars.splice(existingIdx, 1); } else {
                 let newStart = colIdx; let newEnd = colIdx;
                 let leftBarIdx = session.bars.findIndex(b => b.end === colIdx - 1);
                 if (leftBarIdx !== -1) { newStart = session.bars[leftBarIdx].start; session.bars.splice(leftBarIdx, 1); }
@@ -1440,52 +1396,30 @@
         function showTrackerMenu(e, type, cIdx, catIdx, tIdx, sIdx, bIdx) { 
             e.preventDefault(); e.stopPropagation(); closeAllModals(); 
             trackerContextTarget = { type, cIdx, catIdx, tIdx, sIdx, bIdx }; 
-            let menu = document.getElementById('tracker-context-menu'); 
-            let editBtn = document.getElementById('tracker-menu-edit');
-            // ★ 바와 사이클 모두 수정 버튼이 보이게 설정
+            let menu = document.getElementById('tracker-context-menu'); let editBtn = document.getElementById('tracker-menu-edit');
             if (editBtn) editBtn.style.display = (type === 'bar' || type === 'cycle') ? 'block' : 'none';
             menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; 
         }
         
         function execTrackerEdit() {
             document.getElementById('tracker-context-menu').style.display = 'none';
-            if(!trackerContextTarget) return;
-            let { type, cIdx, catIdx, sIdx, bIdx } = trackerContextTarget;
-            
+            if(!trackerContextTarget) return; let { type, cIdx, catIdx, sIdx, bIdx } = trackerContextTarget;
             if (type === 'bar') {
                 let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx];
-                let newText = prompt("바 내용 수정:", bar.text);
-                if(newText !== null && newText.trim() !== "") {
-                    updateBarText(cIdx, catIdx, sIdx, bIdx, newText);
-                }
+                let newText = prompt("바 내용 수정:", bar.text); if(newText !== null && newText.trim() !== "") { updateBarText(cIdx, catIdx, sIdx, bIdx, newText); }
             } else if (type === 'cycle') {
-                // ★ 사이클 꾹 눌러서 숫자를 수정하는 기능
                 let cycle = trackerData.data[trackerData.currentSubject].cycles[cIdx];
-                let newNum = prompt("사이클 번호 수정:", cycle.num);
-                if(newNum !== null && newNum.trim() !== "") {
-                    updateCycleNum(cIdx, newNum.trim());
-                }
+                let newNum = prompt("사이클 번호 수정:", cycle.num); if(newNum !== null && newNum.trim() !== "") { updateCycleNum(cIdx, newNum.trim()); }
             }
         }
         
         function execTrackerDelete() {
             document.getElementById('tracker-context-menu').style.display = 'none';
-            if(!trackerContextTarget) return; 
-            let { type, cIdx, catIdx, tIdx, sIdx, bIdx } = trackerContextTarget;
-            pushUndoState(); 
-            
-            if (type === 'cycle') {
-                trackerData.data[trackerData.currentSubject].cycles.splice(cIdx, 1); 
-            } else if (type === 'topic') {
-                let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx]; 
-                cat.topics.splice(tIdx, 1); 
-                cat.sessions.forEach(sess => { 
-                    sess.bars = sess.bars.filter(bar => !(bar.start === tIdx && bar.end === tIdx)); 
-                    sess.bars.forEach(bar => { if (bar.start > tIdx) bar.start--; if (bar.end >= tIdx) bar.end--; }); 
-                }); 
-            } else if (type === 'bar') {
-                trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars.splice(bIdx, 1); 
-            }
+            if(!trackerContextTarget) return; let { type, cIdx, catIdx, tIdx, sIdx, bIdx } = trackerContextTarget; pushUndoState(); 
+            if (type === 'cycle') { trackerData.data[trackerData.currentSubject].cycles.splice(cIdx, 1); } else if (type === 'topic') {
+                let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx]; cat.topics.splice(tIdx, 1); 
+                cat.sessions.forEach(sess => { sess.bars = sess.bars.filter(bar => !(bar.start === tIdx && bar.end === tIdx)); sess.bars.forEach(bar => { if (bar.start > tIdx) bar.start--; if (bar.end >= tIdx) bar.end--; }); }); 
+            } else if (type === 'bar') { trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars.splice(bIdx, 1); }
             renderTrackerCycles(); saveDataToFirebase(); 
         }
 
@@ -1498,8 +1432,7 @@
                 let isClosed = cycle.isOpen === false; let theme = trackerThemes[cycle.palIdx || 0]; let tColor = theme.text; let bgRgb = theme.rgb;
                 let parsedDef = trackerData.settingsText ? parseSettingsText(trackerData.settingsText) : trackerData.subjectDef;
                 let defCats = parsedDef[subject] ? Object.keys(parsedDef[subject]) : [];
-                cycle.cats = toArray(cycle.cats);
-                cycle.cats.sort((a, b) => { let aIdx = defCats.indexOf(a.name); let bIdx = defCats.indexOf(b.name); if (aIdx === -1) aIdx = 999; if (bIdx === -1) bIdx = 999; return aIdx - bIdx; });
+                cycle.cats = toArray(cycle.cats); cycle.cats.sort((a, b) => { let aIdx = defCats.indexOf(a.name); let bIdx = defCats.indexOf(b.name); if (aIdx === -1) aIdx = 999; if (bIdx === -1) bIdx = 999; return aIdx - bIdx; });
                 
                 let allDates = []; cycle.cats.forEach(cat => toArray(cat.sessions).forEach(sess => toArray(sess.bars).forEach(bar => { let parts = bar.text.trim().split('.'); if(parts.length === 2) { let m = parseInt(parts[0]); let d = parseInt(parts[1]); if(!isNaN(m) && !isNaN(d)) allDates.push(new Date(new Date().getFullYear(), m - 1, d)); } })));
                 let isCycleCompleted = true; cycle.cats.forEach((cat) => { let N = toArray(cat.topics).length; let isCatCompleted = false; let sessions = toArray(cat.sessions); if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) { isCatCompleted = true; } } if (!isCatCompleted) isCycleCompleted = false; });
@@ -1510,12 +1443,11 @@
                     if(isCycleCompleted) dateStrHtml = `<span style="color: #000; font-size:0.9rem;"><span class="completed-text">COMPLETED</span> <span style="font-weight: 500;">(${minStr} - ${maxStr}) : ${diffDays} DAYS</span></span>`; else dateStrHtml = `<span class="in-progress-text">IN PROGRESS: ${minStr} ~</span>`;
                 }
 
-                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})" ontouchstart="this.pressTimer = setTimeout(() => { showTrackerMenu(event, 'cycle', ${cIdx}); }, 600);" ontouchend="clearTimeout(this.pressTimer);" ontouchmove="clearTimeout(this.pressTimer);"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><span class="cycle-num-input" style="font-weight:400; width:40px; display:inline-block; padding-left:3px;">${cycle.num}</span></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
+                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><span class="cycle-num-input" style="font-weight:400; width:40px; display:inline-block; padding-left:3px;">${cycle.num}</span></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
                 
                 cycle.cats.forEach((cat, catIdx) => {
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
-                    let sessions = toArray(cat.sessions);
-                    if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
+                    let sessions = toArray(cat.sessions); if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
                     
                     html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => `<div class="topic-cell" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.15 + (sIdx * 0.15); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : tColor; 
                         return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})" onmousedown="if(!isTrackerEditMode) startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="if(!isTrackerEditMode) onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor};" onclick="event.stopPropagation();"><input type="text" value="${bar.text}" onchange="updateBarText(${cIdx}, ${catIdx}, ${sIdx}, ${bIdx}, this.value)" style="width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: inherit; font-family: inherit; outline: none;"><span class="bar-delete-btn" onclick="event.stopPropagation(); pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[${cIdx}].cats[${catIdx}].sessions[${sIdx}].bars.splice(${bIdx}, 1); renderTrackerCycles(); saveDataToFirebase();">×</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; 
@@ -1525,222 +1457,58 @@
             });
         }
 
-        function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
-            if (e.button !== 0 || isTrackerEditMode) return; 
-            dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; 
-            renderDragHighlight(); 
-        }
-
-        function onDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { 
-            if (!dragInfo || isTrackerEditMode) return; 
-            if (dragInfo.cIdx === cIdx && dragInfo.catIdx === catIdx && dragInfo.sIdx === sIdx) { 
-                dragInfo.currentCol = colIdx; 
-                renderDragHighlight(); 
-            } 
-        }
-
-        function renderDragHighlight() { 
-            if (!dragInfo) return; 
-            let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
-            let start = Math.min(startCol, currentCol); 
-            let end = Math.max(startCol, currentCol); 
-            let hl = document.getElementById(`hl-${cIdx}-${catIdx}-${sIdx}`); 
-            if (hl) { 
-                hl.style.display = 'block'; 
-                hl.style.left = `${(start / numCols) * 100}%`; 
-                hl.style.width = `${((end - start + 1) / numCols) * 100}%`; 
-            } 
-        }
-
-        function endDragGlobal(e) { 
-            if (!dragInfo) return; 
-            let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; 
-            dragInfo = null; 
-            document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none');
-            let start = Math.min(startCol, currentCol); 
-            let end = Math.max(startCol, currentCol); 
-            let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate(); 
-            
-            pushUndoState();
-            let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
-            if(!session.bars) session.bars = [];
-            
-            let overlap = session.bars.some(b => (start <= b.end && end >= b.start));
-            if(!overlap) { session.bars.push({ id: Date.now()+Math.random(), start, end, text: todayStr }); }
-            renderTrackerCycles(); saveDataToFirebase();
-        }
-
+        function startDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { if (e.button !== 0 || isTrackerEditMode) return; dragInfo = { cIdx, catIdx, sIdx, startCol: colIdx, currentCol: colIdx, numCols }; renderDragHighlight(); }
+        function onDrag(e, cIdx, catIdx, sIdx, colIdx, numCols) { if (!dragInfo || isTrackerEditMode) return; if (dragInfo.cIdx === cIdx && dragInfo.catIdx === catIdx && dragInfo.sIdx === sIdx) { dragInfo.currentCol = colIdx; renderDragHighlight(); } }
+        function renderDragHighlight() { if (!dragInfo) return; let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; let start = Math.min(startCol, currentCol); let end = Math.max(startCol, currentCol); let hl = document.getElementById(`hl-${cIdx}-${catIdx}-${sIdx}`); if (hl) { hl.style.display = 'block'; hl.style.left = `${(start / numCols) * 100}%`; hl.style.width = `${((end - start + 1) / numCols) * 100}%`; } }
+        function endDragGlobal(e) { if (!dragInfo) return; let { cIdx, catIdx, sIdx, startCol, currentCol, numCols } = dragInfo; dragInfo = null; document.querySelectorAll('[id^="hl-"]').forEach(el => el.style.display = 'none'); let start = Math.min(startCol, currentCol); let end = Math.max(startCol, currentCol); let todayStr = (new Date().getMonth()+1) + "." + new Date().getDate(); pushUndoState(); let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx]; if(!session.bars) session.bars = []; let overlap = session.bars.some(b => (start <= b.end && end >= b.start)); if(!overlap) { session.bars.push({ id: Date.now()+Math.random(), start, end, text: todayStr }); } renderTrackerCycles(); saveDataToFirebase(); }
         function updateBarText(cIdx, catIdx, sIdx, bIdx, newText) { pushUndoState(); let text = newText.trim(); let bar = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx].bars[bIdx]; if (bar.text !== text) { bar.text = text; saveDataToFirebase(); } }
         function toggleCycle(e, cIdx) { e.stopPropagation(); pushUndoState(); let subject = trackerData.currentSubject; trackerData.data[subject].cycles[cIdx].isOpen = !trackerData.data[subject].cycles[cIdx].isOpen; renderTrackerCycles(); saveDataToFirebase(); }
         function updateCycleNum(cIdx, val) { pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[cIdx].num = val; saveDataToFirebase(); }
         function addTrackerSession(cIdx, catIdx) { pushUndoState(); if (trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions.length >= 5) return; trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions.push({ id: Date.now()+Math.random(), bars: [] }); renderTrackerCycles(); saveDataToFirebase(); }
         
         function addNewCycle() {
-            pushUndoState();
-            const subject = trackerData.currentSubject;
-            if(!subject) return alert('과목이 없습니다. 설정에서 추가해주세요.');
-            if (!trackerData.data[subject]) trackerData.data[subject] = { cycles: [] };
-            if (!trackerData.data[subject].cycles) trackerData.data[subject].cycles = []; 
-            
-           let parsedDef = trackerData.settingsText ? parseSettingsText(trackerData.settingsText) : trackerData.subjectDef;
-            const def = parsedDef[subject] || {"기본 파트": ["소주제1"]};
-            const num = trackerData.data[subject].cycles.length + 1;
-            
+            pushUndoState(); const subject = trackerData.currentSubject; if(!subject) return alert('과목이 없습니다. 설정에서 추가해주세요.');
+            if (!trackerData.data[subject]) trackerData.data[subject] = { cycles: [] }; if (!trackerData.data[subject].cycles) trackerData.data[subject].cycles = []; 
+            let parsedDef = trackerData.settingsText ? parseSettingsText(trackerData.settingsText) : trackerData.subjectDef; const def = parsedDef[subject] || {"기본 파트": ["소주제1"]}; const num = trackerData.data[subject].cycles.length + 1;
             let recentColors = []; let currentCycles = trackerData.data[subject].cycles;
-            if (currentCycles.length > 0) recentColors.push(currentCycles[0].palIdx);
-            if (currentCycles.length > 1) recentColors.push(currentCycles[1].palIdx);
-
-            let randomThemeIdx;
-            do { randomThemeIdx = Math.floor(Math.random() * trackerThemes.length); } while (recentColors.includes(randomThemeIdx) && trackerThemes.length > 2);
-
-            let newCycle = {
-                id: Date.now()+Math.random(), num: num.toString(), isOpen: true, palIdx: randomThemeIdx,
-                cats: Object.keys(def).map(catName => ({ name: catName, topics: def[catName].map((t, idx) => ({ id: Math.random(), name: t })), sessions: [{ id: Date.now()+Math.random(), bars: [] }] }))
-            };
+            if (currentCycles.length > 0) recentColors.push(currentCycles[0].palIdx); if (currentCycles.length > 1) recentColors.push(currentCycles[1].palIdx);
+            let randomThemeIdx; do { randomThemeIdx = Math.floor(Math.random() * trackerThemes.length); } while (recentColors.includes(randomThemeIdx) && trackerThemes.length > 2);
+            let newCycle = { id: Date.now()+Math.random(), num: num.toString(), isOpen: true, palIdx: randomThemeIdx, cats: Object.keys(def).map(catName => ({ name: catName, topics: def[catName].map((t, idx) => ({ id: Math.random(), name: t })), sessions: [{ id: Date.now()+Math.random(), bars: [] }] })) };
             trackerData.data[subject].cycles.unshift(newCycle); renderTrackerCycles(); saveDataToFirebase();
         }
 
         function openTrackerSettings() { if (trackerData.settingsText) { document.getElementById("tracker-settings-text").value = trackerData.settingsText; } else { let text = ""; for (const [sub, cats] of Object.entries(trackerData.subjectDef)) { text += `## ${sub}\n`; for (const [cat, topics] of Object.entries(cats)) { text += `[${cat}]\n${topics.join(", ")}\n\n`; } } document.getElementById("tracker-settings-text").value = text.trim(); } document.getElementById("tracker-settings-modal").style.display = "flex"; }
-        
-        function saveTrackerSettings() {
-            pushUndoState();
-            let text = document.getElementById("tracker-settings-text").value; 
-            text = text.replace(/\[(.*?)\]/g, m => m.replace(/[.#$]/g, ''));
-            trackerData.settingsText = text;
-            
-            let newDef = parseSettingsText(text); trackerData.subjectDef = newDef;
-            for (let sub in trackerData.data) {
-                if (!newDef[sub]) continue;
-                let cycles = trackerData.data[sub].cycles || [];
-                cycles.forEach(cycle => { let oldCats = cycle.cats || []; cycle.cats = Object.keys(newDef[sub]).map(catName => { let oldCat = oldCats.find(c => c.name === catName); return { name: catName, topics: newDef[sub][catName].map(t => { return { id: Math.random(), name: t }; }), sessions: oldCat ? oldCat.sessions : [{ id: Date.now(), bars: [] }] }; }); });
-            }
-            if (!trackerData.subjectDef[trackerData.currentSubject]) trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0] || "";
-            renderTrackerNav(); saveDataToFirebase(); closeAllModals();
-        }
+        function saveTrackerSettings() { pushUndoState(); let text = document.getElementById("tracker-settings-text").value; text = text.replace(/\[(.*?)\]/g, m => m.replace(/[.#$]/g, '')); trackerData.settingsText = text; let newDef = parseSettingsText(text); trackerData.subjectDef = newDef; for (let sub in trackerData.data) { if (!newDef[sub]) continue; let cycles = trackerData.data[sub].cycles || []; cycles.forEach(cycle => { let oldCats = cycle.cats || []; cycle.cats = Object.keys(newDef[sub]).map(catName => { let oldCat = oldCats.find(c => c.name === catName); return { name: catName, topics: newDef[sub][catName].map(t => { return { id: Math.random(), name: t }; }), sessions: oldCat ? oldCat.sessions : [{ id: Date.now(), bars: [] }] }; }); }); } if (!trackerData.subjectDef[trackerData.currentSubject]) trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0] || ""; renderTrackerNav(); saveDataToFirebase(); closeAllModals(); }
         function backupTracker() { const blob = new Blob([JSON.stringify(trackerData, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `cycle_tracker_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
         function loadTracker() { const input = document.createElement('input'); input.type = 'file'; input.accept = '.json, .txt'; input.onchange = e => { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = ev => { try { pushUndoState(); const parsed = JSON.parse(ev.target.result); if (parsed && parsed.subjectDef && parsed.data) { trackerData = parsed; saveDataToFirebase(); renderTrackerNav(); alert("성공적으로 복원되었습니다!"); } else alert("올바르지 않은 파일 형식입니다."); } catch(err) { alert("파일을 읽는 중 오류가 발생했습니다."); } }; reader.readAsText(file); }; input.click(); }
 
         let currentDayViewDate = new Date();
         function changeDayView(offset) { currentDayViewDate.setDate(currentDayViewDate.getDate() + offset); updateDayViewDate(); }
-        
-        function updateDayViewDate() {
-            const dateStr = formatDateStr(currentDayViewDate.getFullYear(), currentDayViewDate.getMonth(), currentDayViewDate.getDate());
-            document.getElementById('today-date').innerText = dateStr.replace(/-/g, '.');
-            if(!Array.isArray(detailedSessions)) detailedSessions = [];
-            let savedTotal = detailedSessions.filter(s => s && s.date === dateStr).reduce((acc, s) => acc + s.duration, 0);
-            document.getElementById('total-time-display').innerText = formatTimeDuration(savedTotal + (isRunning && !isBreakTime ? runningAddedSecs : 0));
-            updateGoalTimeUI();
-            document.querySelectorAll('.study-bar').forEach(b => b.remove());
-            detailedSessions.filter(s => s && s.date === dateStr && !s.isManual).forEach(sess => { if(!sess.start) return; const parts = sess.start.split(':'); if(parts.length < 2) return; const [h, m] = parts.map(Number); addBarToTable(h, m, sess.duration, sess.subId); });
-            renderTimelineData(dateStr); renderSubjects(); updateStatsUI(); renderCalendar(); 
-        }
-
-        function addBarToTable(startH, startM, durationSecs, subId) {
-            const sub = subjectsData.find(s => s.id === subId); let currentH = startH, currentM = startM, remainingSecs = durationSecs;
-            while (remainingSecs > 0) {
-                let secsInCurrentHour = (60 - currentM) * 60; let secsToDraw = Math.min(remainingSecs, secsInCurrentHour); let track = document.getElementById(`track-${String(currentH % 24).padStart(2, '0')}`);
-                if (track) { let bar = document.createElement('div'); bar.className = 'study-bar'; bar.style.backgroundColor = sub ? sub.color : '#ccc'; bar.style.left = `${(currentM / 60) * 100}%`; bar.style.width = `${(secsToDraw / 3600) * 100}%`; track.appendChild(bar); }
-                remainingSecs -= secsToDraw; currentH++; currentM = 0; if(currentH > 29) break;
-            }
-        }
+        function updateDayViewDate() { const dateStr = formatDateStr(currentDayViewDate.getFullYear(), currentDayViewDate.getMonth(), currentDayViewDate.getDate()); document.getElementById('today-date').innerText = dateStr.replace(/-/g, '.'); if(!Array.isArray(detailedSessions)) detailedSessions = []; let savedTotal = detailedSessions.filter(s => s && s.date === dateStr).reduce((acc, s) => acc + s.duration, 0); document.getElementById('total-time-display').innerText = formatTimeDuration(savedTotal + (isRunning && !isBreakTime ? runningAddedSecs : 0)); updateGoalTimeUI(); document.querySelectorAll('.study-bar').forEach(b => b.remove()); detailedSessions.filter(s => s && s.date === dateStr && !s.isManual).forEach(sess => { if(!sess.start) return; const parts = sess.start.split(':'); if(parts.length < 2) return; const [h, m] = parts.map(Number); addBarToTable(h, m, sess.duration, sess.subId); }); renderTimelineData(dateStr); renderSubjects(); updateStatsUI(); renderCalendar(); }
+        function addBarToTable(startH, startM, durationSecs, subId) { const sub = subjectsData.find(s => s.id === subId); let currentH = startH, currentM = startM, remainingSecs = durationSecs; while (remainingSecs > 0) { let secsInCurrentHour = (60 - currentM) * 60; let secsToDraw = Math.min(remainingSecs, secsInCurrentHour); let track = document.getElementById(`track-${String(currentH % 24).padStart(2, '0')}`); if (track) { let bar = document.createElement('div'); bar.className = 'study-bar'; bar.style.backgroundColor = sub ? sub.color : '#ccc'; bar.style.left = `${(currentM / 60) * 100}%`; bar.style.width = `${(secsToDraw / 3600) * 100}%`; track.appendChild(bar); } remainingSecs -= secsToDraw; currentH++; currentM = 0; if(currentH > 29) break; } }
+        function renderTimelineData(dateStr) { const container = document.getElementById('timeline-list'); if(!container) return; container.innerHTML = ''; if(!Array.isArray(detailedSessions)) return; const daySessions = detailedSessions.filter(s => s && s.date === dateStr).sort((a,b) => { if(!a.start || !b.start) return 0; return a.start.localeCompare(b.start); }); if(daySessions.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px; font-weight:700;">No Records</p>'; return; } daySessions.forEach(sess => { const sub = subjectsData.find(s => s.id === sess.subId); const subName = sess.isManual ? "수동 추가 (통계전용)" : (sub ? sub.name : 'DEL'); const subColor = sess.isManual ? "#aaa" : (sub ? sub.color : '#ccc'); const timeText = sess.isManual ? "0:00:00" : `${stripLeadingZero(sess.start)} - ${stripLeadingZero(sess.end)}`; const div = document.createElement('div'); div.className = 'timeline-item'; div.innerHTML = `<div class="timeline-color-bar" style="background:${subColor}"></div><div class="timeline-content"><div><strong>${subName}</strong> ${Math.floor(sess.duration/60)}m</div><div style="font-size:0.75rem; color:#888;">${timeText}</div></div><div class="timeline-menu-btn" onclick="toggleMenu('${sess.id}', event)">⋮</div><div class="timeline-dropdown" id="menu-${sess.id}">${sess.isManual ? '' : `<div class="dropdown-item" onclick="openEditModal('${sess.id}')">Edit</div>`}<div class="dropdown-item delete-btn" onclick="deleteSession('${sess.id}')">Delete</div></div>`; container.appendChild(div); }); }
 
         function addSubject() { pushUndoState(); let name = prompt("추가할 과목 이름:"); if(name && name.trim()) { let id = 's' + Date.now(); if(!Array.isArray(subjectsData)) subjectsData = []; let color = paletteColors[subjectsData.length % paletteColors.length]; subjectsData.push({id: id, name: name.trim(), color: color}); renderSubjects(); saveDataToFirebase(); } }
-
         let currentSubjectEditColor = '';
-        function openSubjectEditModal(e, id) { 
-            if(e && e.preventDefault) e.preventDefault(); 
-            if(e && e.stopPropagation) e.stopPropagation(); 
-            closeAllModals(); 
-            let sub = subjectsData.find(s => s.id === id);
-            if(!sub) return;
-            document.getElementById('se-id').value = id; document.getElementById('se-name').value = sub.name; currentSubjectEditColor = sub.color;
-            let pg = document.getElementById('se-palette-grid'); pg.innerHTML = '';
-            paletteColors.forEach(c => {
-                let dot = document.createElement('div'); dot.className = 'palette-color'; dot.style.backgroundColor = c; dot.style.width = '24px'; dot.style.height = '24px';
-                if(c === sub.color) { dot.style.border = '2px solid #000'; dot.style.transform = 'scale(1.2)'; }
-                dot.onclick = () => { currentSubjectEditColor = c; Array.from(pg.children).forEach(d => { d.style.border='1px solid var(--line-color)'; d.style.transform='none'; }); dot.style.border = '2px solid #000'; dot.style.transform = 'scale(1.2)'; };
-                pg.appendChild(dot);
-            });
-            document.getElementById('subject-edit-modal').style.display = 'flex';
-        }
-
+        function openSubjectEditModal(e, id) { if(e && e.preventDefault) e.preventDefault(); if(e && e.stopPropagation) e.stopPropagation(); closeAllModals(); let sub = subjectsData.find(s => s.id === id); if(!sub) return; document.getElementById('se-id').value = id; document.getElementById('se-name').value = sub.name; currentSubjectEditColor = sub.color; let pg = document.getElementById('se-palette-grid'); pg.innerHTML = ''; paletteColors.forEach(c => { let dot = document.createElement('div'); dot.className = 'palette-color'; dot.style.backgroundColor = c; dot.style.width = '24px'; dot.style.height = '24px'; if(c === sub.color) { dot.style.border = '2px solid #000'; dot.style.transform = 'scale(1.2)'; } dot.onclick = () => { currentSubjectEditColor = c; Array.from(pg.children).forEach(d => { d.style.border='1px solid var(--line-color)'; d.style.transform='none'; }); dot.style.border = '2px solid #000'; dot.style.transform = 'scale(1.2)'; }; pg.appendChild(dot); }); document.getElementById('subject-edit-modal').style.display = 'flex'; }
         function saveSubjectEdit() { let id = document.getElementById('se-id').value; let sub = subjectsData.find(s => s.id === id); if(!sub) return; let newName = document.getElementById('se-name').value.trim(); if(!newName) return alert("과목 이름을 입력해주세요."); pushUndoState(); sub.name = newName; sub.color = currentSubjectEditColor; renderSubjects(); updateDayViewDate(); saveDataToFirebase(); closeAllModals(); }
         function deleteSubjectFromEdit() { let id = document.getElementById('se-id').value; let sub = subjectsData.find(s => s.id === id); if(!sub) return; if(confirm(`'${sub.name}' 과목을 삭제하시겠습니까?`)) { pushUndoState(); subjectsData = subjectsData.filter(s => s.id !== id); renderSubjects(); saveDataToFirebase(); closeAllModals(); } }
+        function renderSubjects() { const dateStr = formatDateStr(currentDayViewDate.getFullYear(), currentDayViewDate.getMonth(), currentDayViewDate.getDate()); let daySubSecs = {}; if(Array.isArray(subjectsData)) subjectsData.forEach(s => daySubSecs[s.id] = 0); if(Array.isArray(detailedSessions)) detailedSessions.filter(s => s && s.date === dateStr).forEach(sess => { if(daySubSecs[sess.subId] !== undefined) daySubSecs[sess.subId] += sess.duration; }); const ul = document.getElementById('subjectList'); ul.innerHTML = ''; if(Array.isArray(subjectsData)) { subjectsData.forEach(sub => { const li = document.createElement('li'); if(selectedSubId === sub.id) li.classList.add('selected'); const timeStr = formatTimeDuration(daySubSecs[sub.id] || 0); li.onclick = (e) => selectSubject(li, sub.id, e); li.innerHTML = `<span class="color-star" style="color:${sub.color}" onclick="openColorPalette('${sub.id}', event)">★</span><span class="sub-name">${sub.name}</span><span style="font-family:'Montserrat'; font-size:0.8rem; font-weight:700; color:var(--grey-text); margin-left:10px;" class="sub-time">${timeStr}</span>`; let pressTimer; li.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { openSubjectEditModal(e, sub.id); }, 600); }, {passive: true}); li.addEventListener('touchend', () => { clearTimeout(pressTimer); }); li.addEventListener('touchmove', () => { clearTimeout(pressTimer); }); li.oncontextmenu = (e) => { e.preventDefault(); openSubjectEditModal(e, sub.id); }; ul.appendChild(li); }); } }
+        let selectedSubId = null; function selectSubject(el, id, e) { if(e && e.target.classList.contains('color-star')) return; if (selectedSubId === id) { el.classList.remove('selected'); selectedSubId = null; } else { document.querySelectorAll('.subject-list li').forEach(l => l.classList.remove('selected')); el.classList.add('selected'); selectedSubId = id; } }
+        let currentPalSubId = null; function openColorPalette(id, e) { e.stopPropagation(); currentPalSubId = id; const palette = document.getElementById('palette-grid'); palette.innerHTML = ''; paletteColors.forEach(c => { const dot = document.createElement('div'); dot.className = 'palette-color'; dot.style.backgroundColor = c; dot.onclick = () => { pushUndoState(); subjectsData.find(s=>s.id===currentPalSubId).color = c; renderSubjects(); saveDataToFirebase(); closeAllModals(); }; palette.appendChild(dot); }); document.getElementById('color-palette-modal').style.display='flex'; }
 
-        function renderSubjects() {
-            const dateStr = formatDateStr(currentDayViewDate.getFullYear(), currentDayViewDate.getMonth(), currentDayViewDate.getDate());
-            let daySubSecs = {}; if(Array.isArray(subjectsData)) subjectsData.forEach(s => daySubSecs[s.id] = 0);
-            if(Array.isArray(detailedSessions)) detailedSessions.filter(s => s && s.date === dateStr).forEach(sess => { if(daySubSecs[sess.subId] !== undefined) daySubSecs[sess.subId] += sess.duration; });
-            const ul = document.getElementById('subjectList'); ul.innerHTML = '';
-            if(Array.isArray(subjectsData)) {
-                subjectsData.forEach(sub => {
-                    const li = document.createElement('li'); if(selectedSubId === sub.id) li.classList.add('selected'); const timeStr = formatTimeDuration(daySubSecs[sub.id] || 0); li.onclick = (e) => selectSubject(li, sub.id, e);
-                    li.innerHTML = `<span class="color-star" style="color:${sub.color}" onclick="openColorPalette('${sub.id}', event)">★</span><span class="sub-name">${sub.name}</span><span style="font-family:'Montserrat'; font-size:0.8rem; font-weight:700; color:var(--grey-text); margin-left:10px;" class="sub-time">${timeStr}</span>`;
-                    let pressTimer;
-                    li.addEventListener('touchstart', (e) => { pressTimer = setTimeout(() => { openSubjectEditModal(e, sub.id); }, 600); }, {passive: true});
-                    li.addEventListener('touchend', () => { clearTimeout(pressTimer); }); li.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
-                    li.oncontextmenu = (e) => { e.preventDefault(); openSubjectEditModal(e, sub.id); }; ul.appendChild(li);
-                });
-            }
-        }
-
-        let selectedSubId = null;
-        function selectSubject(el, id, e) { if(e && e.target.classList.contains('color-star')) return; if (selectedSubId === id) { el.classList.remove('selected'); selectedSubId = null; } else { document.querySelectorAll('.subject-list li').forEach(l => l.classList.remove('selected')); el.classList.add('selected'); selectedSubId = id; } }
-
-        let currentPalSubId = null;
-        function openColorPalette(id, e) { e.stopPropagation(); currentPalSubId = id; const palette = document.getElementById('palette-grid'); palette.innerHTML = ''; paletteColors.forEach(c => { const dot = document.createElement('div'); dot.className = 'palette-color'; dot.style.backgroundColor = c; dot.onclick = () => { pushUndoState(); subjectsData.find(s=>s.id===currentPalSubId).color = c; renderSubjects(); saveDataToFirebase(); closeAllModals(); }; palette.appendChild(dot); }); document.getElementById('color-palette-modal').style.display='flex'; }
-
-        let statMonthDate = new Date(); let statWeekDate = new Date(); let currentTab = 'week'; let statQYear = new Date().getFullYear(); let statQQuarter = Math.floor(new Date().getMonth() / 3) + 1;
-        let trendWeekOffset = 0; let trendMonthOffset = 0;
-        
+        let statMonthDate = new Date(); let statWeekDate = new Date(); let currentTab = 'week'; let statQYear = new Date().getFullYear(); let statQQuarter = Math.floor(new Date().getMonth() / 3) + 1; let trendWeekOffset = 0; let trendMonthOffset = 0;
         function changeQuarter(offset) { statQQuarter += offset; if (statQQuarter > 4) { statQQuarter = 1; statQYear++; } if (statQQuarter < 1) { statQQuarter = 4; statQYear--; } renderWeeklyRecords(); }
-        function renderWeeklyRecords() {
-            const qContainer = document.getElementById('weekly-blocks-container'); if(!qContainer) return; document.getElementById('quarter-label').innerText = `${statQYear} Q${statQQuarter}`; qContainer.innerHTML = '';
-            let qStartMonth = (statQQuarter - 1) * 3; let d = new Date(statQYear, qStartMonth, 1); let day = d.getDay(); d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
-            for(let i=0; i<10; i++) {
-                let startOfWeek = new Date(d); let endOfWeek = new Date(d); endOfWeek.setDate(d.getDate() + 6); endOfWeek.setHours(23,59,59,999);
-                let wTotal = 0; detailedSessions.forEach(s => { if(!s || !s.date) return; let sParts = s.date.split('-'); let sD = new Date(sParts[0], sParts[1]-1, sParts[2]); if(sD >= startOfWeek && sD <= endOfWeek) wTotal += s.duration; });
-                let wStr = `${startOfWeek.getMonth()+1}.${startOfWeek.getDate()}~`; let timeStr = wTotal > 0 ? formatTimeDuration(wTotal) : ""; let bgClass = "white"; if(wTotal > 144000) bgClass = "dark"; else if(wTotal > 36000) bgClass = "gray"; 
-                qContainer.innerHTML += `<div class="weekly-block ${bgClass}"><span>${wStr}</span><span style="margin-top:2px; font-family:'Montserrat',sans-serif;">${timeStr}</span></div>`; d.setDate(d.getDate() + 7);
-            }
-        }
+        function renderWeeklyRecords() { const qContainer = document.getElementById('weekly-blocks-container'); if(!qContainer) return; document.getElementById('quarter-label').innerText = `${statQYear} Q${statQQuarter}`; qContainer.innerHTML = ''; let qStartMonth = (statQQuarter - 1) * 3; let d = new Date(statQYear, qStartMonth, 1); let day = d.getDay(); d.setDate(d.getDate() - day + (day === 0 ? -6 : 1)); for(let i=0; i<10; i++) { let startOfWeek = new Date(d); let endOfWeek = new Date(d); endOfWeek.setDate(d.getDate() + 6); endOfWeek.setHours(23,59,59,999); let wTotal = 0; detailedSessions.forEach(s => { if(!s || !s.date) return; let sParts = s.date.split('-'); let sD = new Date(sParts[0], sParts[1]-1, sParts[2]); if(sD >= startOfWeek && sD <= endOfWeek) wTotal += s.duration; }); let wStr = `${startOfWeek.getMonth()+1}.${startOfWeek.getDate()}~`; let timeStr = wTotal > 0 ? formatTimeDuration(wTotal) : ""; let bgClass = "white"; if(wTotal > 144000) bgClass = "dark"; else if(wTotal > 36000) bgClass = "gray"; qContainer.innerHTML += `<div class="weekly-block ${bgClass}"><span>${wStr}</span><span style="margin-top:2px; font-family:'Montserrat',sans-serif;">${timeStr}</span></div>`; d.setDate(d.getDate() + 7); } }
         function updateStatNavigatorText() { const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; if (currentTab === 'week') { let d = new Date(statWeekDate); let day = d.getDay(); let diff = d.getDate() - day + (day === 0 ? -6 : 1); let start = new Date(d.setDate(diff)); let end = new Date(start); end.setDate(start.getDate() + 6); document.getElementById('current-stat-date').innerText = `${String(start.getMonth()+1).padStart(2,'0')}.${String(start.getDate()).padStart(2,'0')} - ${String(end.getMonth()+1).padStart(2,'0')}.${String(end.getDate()).padStart(2,'0')}`; } else { document.getElementById('current-stat-date').innerText = `${monthNames[statMonthDate.getMonth()]} ${statMonthDate.getFullYear()}`; } }
         function navStatDate(offset) { if (currentTab === 'week') { statWeekDate.setDate(statWeekDate.getDate() + (offset * 7)); } else { statMonthDate.setMonth(statMonthDate.getMonth() + offset); } updateStatNavigatorText(); renderCalendar(); updateStatsUI(); }
-
         function navTrend(type, dir) { if(type === 'week') trendWeekOffset += dir; if(type === 'month') trendMonthOffset += dir; renderTrendCharts(); }
 
         function renderTrendCharts() {
             const weekWrap = document.getElementById('trend-weekly-bars'); const weekLabels = document.getElementById('trend-weekly-labels');
-            if(weekWrap) {
-                let baseDate = new Date(); baseDate.setDate(baseDate.getDate() + (trendWeekOffset * 7));
-                let endW = new Date(baseDate); endW.setDate(endW.getDate() + (6 - endW.getDay() + (endW.getDay()===0?-6:1))); endW.setHours(23,59,59,999);
-                let startW = new Date(endW); startW.setDate(endW.getDate() - 34); startW.setHours(0,0,0,0); 
-                document.getElementById('trend-week-info').innerText = `${startW.getMonth()+1}.${startW.getDate()} ~ ${endW.getMonth()+1}.${endW.getDate()}`;
-                
-                let wData = [0,0,0,0,0]; let wLbls = [];
-                for(let i=0; i<5; i++) {
-                    let sd = new Date(startW); sd.setDate(sd.getDate() + (i*7)); let ed = new Date(sd); ed.setDate(sd.getDate() + 6); ed.setHours(23,59,59,999); wLbls.push(`W${i+1}`);
-                    detailedSessions.forEach(s => { if(!s || !s.date) return; let parts = s.date.split('-'); let d = new Date(parts[0], parts[1]-1, parts[2]); if(d >= sd && d <= ed) wData[i] += s.duration; });
-                }
-                let maxW = 72 * 3600; let wHtml = '';
-                wData.forEach(v => { let pct = Math.min((v / maxW) * 100, 100); wHtml += `<div class="trend-stacked-bar"><div style="height: ${pct}%; background: var(--primary-blue);"></div></div>`; });
-                weekWrap.innerHTML = wHtml; weekLabels.innerHTML = wLbls.map(l => `<span>${l}</span>`).join('');
-            }
+            if(weekWrap) { let baseDate = new Date(); baseDate.setDate(baseDate.getDate() + (trendWeekOffset * 7)); let endW = new Date(baseDate); endW.setDate(endW.getDate() + (6 - endW.getDay() + (endW.getDay()===0?-6:1))); endW.setHours(23,59,59,999); let startW = new Date(endW); startW.setDate(endW.getDate() - 34); startW.setHours(0,0,0,0); document.getElementById('trend-week-info').innerText = `${startW.getMonth()+1}.${startW.getDate()} ~ ${endW.getMonth()+1}.${endW.getDate()}`; let wData = [0,0,0,0,0]; let wLbls = []; for(let i=0; i<5; i++) { let sd = new Date(startW); sd.setDate(sd.getDate() + (i*7)); let ed = new Date(sd); ed.setDate(sd.getDate() + 6); ed.setHours(23,59,59,999); wLbls.push(`W${i+1}`); detailedSessions.forEach(s => { if(!s || !s.date) return; let parts = s.date.split('-'); let d = new Date(parts[0], parts[1]-1, parts[2]); if(d >= sd && d <= ed) wData[i] += s.duration; }); } let maxW = 72 * 3600; let wHtml = ''; wData.forEach(v => { let pct = Math.min((v / maxW) * 100, 100); wHtml += `<div class="trend-stacked-bar"><div style="height: ${pct}%; background: var(--primary-blue);"></div></div>`; }); weekWrap.innerHTML = wHtml; weekLabels.innerHTML = wLbls.map(l => `<span>${l}</span>`).join(''); }
             const monthWrap = document.getElementById('trend-monthly-bars'); const monthLabels = document.getElementById('trend-monthly-labels');
-            if(monthWrap) {
-                let mBase = new Date(); mBase.setMonth(mBase.getMonth() + trendMonthOffset);
-                let endM = new Date(mBase.getFullYear(), mBase.getMonth() + 1, 0, 23, 59, 59); let startM = new Date(mBase.getFullYear(), mBase.getMonth() - 3, 1, 0, 0, 0);
-                document.getElementById('trend-month-info').innerText = `${startM.getFullYear()}.${startM.getMonth()+1} ~ ${endM.getFullYear()}.${endM.getMonth()+1}`;
-                
-                let mData = [0,0,0,0]; let mLbls = []; const mNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-                for(let i=0; i<4; i++) {
-                    let target = new Date(startM.getFullYear(), startM.getMonth() + i, 1); mLbls.push(mNames[target.getMonth()]); let prefix = `${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`;
-                    detailedSessions.forEach(s => { if(s && s.date && s.date.startsWith(prefix)) mData[i] += s.duration; });
-                }
-                let maxM = 360 * 3600; let mHtml = '';
-                mData.forEach(v => { let pct = Math.min((v / maxM) * 100, 100); mHtml += `<div class="trend-stacked-bar" style="width:20%;"><div style="height: ${pct}%; background: var(--primary-blue);"></div></div>`; });
-                monthWrap.innerHTML = mHtml; monthLabels.innerHTML = mLbls.map(l => `<span>${l}</span>`).join('');
-            }
+            if(monthWrap) { let mBase = new Date(); mBase.setMonth(mBase.getMonth() + trendMonthOffset); let endM = new Date(mBase.getFullYear(), mBase.getMonth() + 1, 0, 23, 59, 59); let startM = new Date(mBase.getFullYear(), mBase.getMonth() - 3, 1, 0, 0, 0); document.getElementById('trend-month-info').innerText = `${startM.getFullYear()}.${startM.getMonth()+1} ~ ${endM.getFullYear()}.${endM.getMonth()+1}`; let mData = [0,0,0,0]; let mLbls = []; const mNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; for(let i=0; i<4; i++) { let target = new Date(startM.getFullYear(), startM.getMonth() + i, 1); mLbls.push(mNames[target.getMonth()]); let prefix = `${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`; detailedSessions.forEach(s => { if(s && s.date && s.date.startsWith(prefix)) mData[i] += s.duration; }); } let maxM = 360 * 3600; let mHtml = ''; mData.forEach(v => { let pct = Math.min((v / maxM) * 100, 100); mHtml += `<div class="trend-stacked-bar" style="width:20%;"><div style="height: ${pct}%; background: var(--primary-blue);"></div></div>`; }); monthWrap.innerHTML = mHtml; monthLabels.innerHTML = mLbls.map(l => `<span>${l}</span>`).join(''); }
         }
 
         function renderCalendar() {
@@ -1749,116 +1517,34 @@
             for(let i=0; i<firstDay; i++) { if(monthGrid) monthGrid.innerHTML += '<div class="calendar-day empty"></div>'; if(weekGrid) weekGrid.innerHTML += '<div class="mini-day empty"></div>'; }
             for(let i=1; i<=daysInMonth; i++) {
                 const dateStr = formatDateStr(targetMonth.getFullYear(), targetMonth.getMonth(), i); let daySecs = detailedSessions.filter(s => s && s.date === dateStr).reduce((acc, s) => acc + s.duration, 0); let miniTimeHtml = ''; let monthTimeHtml = '';
-                
                 let bgStyle = '';
-                if(daySecs > 0) { 
-                    const h = Math.floor(daySecs / 3600); const m = Math.floor((daySecs % 3600) / 60);
-                    let timeTxt = `${h}:${String(m).padStart(2,'0')}`;
-                    let txtColor = h >= 10 ? '#fff' : 'var(--primary-blue)'; 
-                    
-                    miniTimeHtml = `<div class="mini-day-time" style="color:${txtColor}; font-size:0.8rem; font-weight:800; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">${timeTxt}</div>`; 
-                    monthTimeHtml = `<div class="day-time" style="color:${txtColor}; font-size:1.1rem; font-weight:800; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">${timeTxt}</div>`; 
-                    
-                    if(h >= 12) bgStyle = 'background-color: rgba(42,85,140, 0.8); color: #fff;';
-                    else if(h >= 10) bgStyle = 'background-color: rgba(42,85,140, 0.6); color: #fff;';
-                    else if(h >= 7) bgStyle = 'background-color: rgba(42,85,140, 0.4);';
-                    else if(h >= 4) bgStyle = 'background-color: rgba(42,85,140, 0.2);';
-                    else if(daySecs > 0) bgStyle = 'background-color: rgba(42,85,140, 0.05);';
-                }
-                
+                if(daySecs > 0) { const h = Math.floor(daySecs / 3600); const m = Math.floor((daySecs % 3600) / 60); let timeTxt = `${h}:${String(m).padStart(2,'0')}`; let txtColor = h >= 10 ? '#fff' : 'var(--primary-blue)'; miniTimeHtml = `<div class="mini-day-time" style="color:${txtColor}; font-size:0.8rem; font-weight:800; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">${timeTxt}</div>`; monthTimeHtml = `<div class="day-time" style="color:${txtColor}; font-size:1.1rem; font-weight:800; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none;">${timeTxt}</div>`; if(h >= 12) bgStyle = 'background-color: rgba(42,85,140, 0.8); color: #fff;'; else if(h >= 10) bgStyle = 'background-color: rgba(42,85,140, 0.6); color: #fff;'; else if(h >= 7) bgStyle = 'background-color: rgba(42,85,140, 0.4);'; else if(h >= 4) bgStyle = 'background-color: rgba(42,85,140, 0.2);'; else if(daySecs > 0) bgStyle = 'background-color: rgba(42,85,140, 0.05);'; }
                 if(monthGrid) monthGrid.innerHTML += `<div class="calendar-day" style="${bgStyle}" onclick="event.stopPropagation(); openManualTimeModal('${dateStr}')" oncontextmenu="deleteDayRecords(event, '${dateStr}')"><span class="day-num" style="position:absolute; top:5px; left:8px; font-size:0.85rem; font-weight:700; color:var(--grey-text); z-index:1;">${i}</span>${monthTimeHtml}</div>`; 
-                if(weekGrid) {
-                    let isSel = (document.getElementById('dd-date-title') && document.getElementById('dd-date-title').innerText === dateStr) ? 'selected-day' : '';
-                    weekGrid.innerHTML += `<div class="mini-day ${isSel}" style="${bgStyle}" onclick="selectDailyDetail('${dateStr}')"><span class="day-num" style="font-size:0.75rem; position:absolute; top:4px; left:6px; font-weight:700; color:var(--grey-text); z-index:1;">${i}</span>${miniTimeHtml}</div>`;
-                }
+                if(weekGrid) { let isSel = (document.getElementById('dd-date-title') && document.getElementById('dd-date-title').innerText === dateStr) ? 'selected-day' : ''; weekGrid.innerHTML += `<div class="mini-day ${isSel}" style="${bgStyle}" onclick="selectDailyDetail('${dateStr}')"><span class="day-num" style="font-size:0.75rem; position:absolute; top:4px; left:6px; font-weight:700; color:var(--grey-text); z-index:1;">${i}</span>${miniTimeHtml}</div>`; }
             }
             const remaining = (firstDay + daysInMonth) % 7; if(remaining !== 0) { for(let i=0; i<(7-remaining); i++) { if(monthGrid) monthGrid.innerHTML += '<div class="calendar-day empty"></div>'; if(weekGrid) weekGrid.innerHTML += '<div class="mini-day empty"></div>'; } }
         }
         
         function selectDailyDetail(dateStr) {
-            let panel = document.getElementById('daily-detail-panel'); panel.style.display = 'block';
-            document.getElementById('dd-date-title').innerText = dateStr;
-            renderCalendar(); 
-            
-            let sessions = detailedSessions.filter(s => s && s.date === dateStr && !s.isManual);
-            let total = sessions.reduce((acc, s) => acc + s.duration, 0);
-            
-            let isSelectedToday = false;
-            let todayObj = new Date();
-            let todayStr = formatDateStr(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
+            let panel = document.getElementById('daily-detail-panel'); panel.style.display = 'block'; document.getElementById('dd-date-title').innerText = dateStr; renderCalendar(); 
+            let sessions = detailedSessions.filter(s => s && s.date === dateStr && !s.isManual); let total = sessions.reduce((acc, s) => acc + s.duration, 0);
+            let isSelectedToday = false; let todayObj = new Date(); let todayStr = formatDateStr(todayObj.getFullYear(), todayObj.getMonth(), todayObj.getDate());
             if (dateStr === todayStr) isSelectedToday = true;
-
-            if (isSelectedToday && isRunning && !isBreakTime) { total += runningAddedSecs; }
-            document.getElementById('dd-total-time').innerText = formatTimeDuration(total);
-            
-            let pDate = new Date(dateStr.split('-')[0], dateStr.split('-')[1]-1, dateStr.split('-')[2]);
-            pDate.setDate(pDate.getDate() - 1);
-            let prevDateStr = formatDateStr(pDate.getFullYear(), pDate.getMonth(), pDate.getDate());
-            let prevSessions = detailedSessions.filter(s => s && s.date === prevDateStr && !s.isManual);
-
+            if (isSelectedToday && isRunning && !isBreakTime) { total += runningAddedSecs; } document.getElementById('dd-total-time').innerText = formatTimeDuration(total);
+            let pDate = new Date(dateStr.split('-')[0], dateStr.split('-')[1]-1, dateStr.split('-')[2]); pDate.setDate(pDate.getDate() - 1); let prevDateStr = formatDateStr(pDate.getFullYear(), pDate.getMonth(), pDate.getDate()); let prevSessions = detailedSessions.filter(s => s && s.date === prevDateStr && !s.isManual);
             const parseToOffset = (tStr) => { let parts = tStr.split(':'); let h = parseInt(parts[0]); let m = parseInt(parts[1]) || 0; let val = h + m/60; if(val < 5) val += 24; return val; };
-
             let minH = 29, maxH = 0; let maxSessDur = 0;
-            if(sessions.length > 0) {
-                sessions.forEach(s => { 
-                    if(!s.start || !s.end) return; 
-                    let sh = parseToOffset(s.start); let eh = parseToOffset(s.end); 
-                    if(sh < minH) minH = sh; if(eh > maxH) maxH = eh; 
-                    if(s.duration > maxSessDur) maxSessDur = s.duration;
-                });
-                let formatHHMM = h => { let realH = Math.floor(h) % 24; return `${realH}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`; };
-                document.getElementById('dd-start-end').innerText = `${formatHHMM(minH)} - ${formatHHMM(maxH)}`;
-                document.getElementById('dd-max-session').innerText = formatTimeDuration(maxSessDur);
-            } else { document.getElementById('dd-start-end').innerText = `-`; document.getElementById('dd-max-session').innerText = `-`; }
-            
-            function getPts(sessList, isTodayObj) {
-                let pts = [{x:0, y:0}]; let accum = 0;
-                let sorted = [...sessList].sort((a,b) => parseToOffset(a.start) - parseToOffset(b.start));
-                sorted.forEach(s => {
-                    if(!s.start || !s.end) return;
-                    let sx = ((parseToOffset(s.start) - 5) / 24) * 100; 
-                    let ex = ((parseToOffset(s.end) - 5) / 24) * 100;
-                    if (pts.length > 0 && sx > pts[pts.length-1].x) { pts.push({x: sx, y: accum}); }
-                    accum += s.duration; pts.push({x: ex, y: accum});
-                });
-                if (isTodayObj && isRunning && !isBreakTime && currentTimerStartTime) {
-                    let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`;
-                    let startT = `${currentTimerStartTime.getHours()}:${currentTimerStartTime.getMinutes()}`;
-                    let sx = ((parseToOffset(startT) - 5) / 24) * 100; let ex = ((parseToOffset(currTimeStr) - 5) / 24) * 100;
-                    let lastEx = pts.length > 0 ? pts[pts.length-1].x : 0;
-                    if(sx < lastEx) sx = lastEx;
-                    if(ex > sx) { pts.push({x: sx, y: accum}); accum += runningAddedSecs; pts.push({x: ex, y: accum}); }
-                }
-                return {pts, total: accum, lastX: pts.length>0 ? pts[pts.length-1].x : 0};
-            }
-
-            let todayData = getPts(sessions, isSelectedToday);
-            let prevData = getPts(prevSessions, false);
-            prevData.pts.push({x: 100, y: prevData.total}); 
-
-            let maxY = 14 * 3600;
-            let poly = "0,100 ";
-            prevData.pts.forEach(p => { let yPct = Math.max(0, 100 - (p.y / maxY * 100)); poly += `${p.x},${yPct} `; }); poly += "100,100";
-
-            let line = "";
-            todayData.pts.forEach(p => { let yPct = Math.max(0, 100 - (p.y / maxY * 100)); line += `${p.x},${yPct} `; });
-            
-            if (isSelectedToday && !isRunning) {
-                let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`;
-                let cx = ((parseToOffset(currTimeStr) - 5) / 24) * 100;
-                let lastY = todayData.pts.length > 0 ? Math.max(0, 100 - (todayData.pts[todayData.pts.length-1].y / maxY * 100)) : 100;
-                if(cx > todayData.lastX) { line += `${cx},${lastY}`; }
-            }
-
-            if(prevSessions.length === 0) poly = "0,100 100,100";
-            if(sessions.length === 0 && (!isSelectedToday || todayData.pts.length === 1)) line = "0,100 100,100";
-
-            document.getElementById('dd-poly').setAttribute('points', poly);
-            document.getElementById('dd-line').setAttribute('points', line);
+            if(sessions.length > 0) { sessions.forEach(s => { if(!s.start || !s.end) return; let sh = parseToOffset(s.start); let eh = parseToOffset(s.end); if(sh < minH) minH = sh; if(eh > maxH) maxH = eh; if(s.duration > maxSessDur) maxSessDur = s.duration; }); let formatHHMM = h => { let realH = Math.floor(h) % 24; return `${realH}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`; }; document.getElementById('dd-start-end').innerText = `${formatHHMM(minH)} - ${formatHHMM(maxH)}`; document.getElementById('dd-max-session').innerText = formatTimeDuration(maxSessDur); } else { document.getElementById('dd-start-end').innerText = `-`; document.getElementById('dd-max-session').innerText = `-`; }
+            function getPts(sessList, isTodayObj) { let pts = [{x:0, y:0}]; let accum = 0; let sorted = [...sessList].sort((a,b) => parseToOffset(a.start) - parseToOffset(b.start)); sorted.forEach(s => { if(!s.start || !s.end) return; let sx = ((parseToOffset(s.start) - 5) / 24) * 100; let ex = ((parseToOffset(s.end) - 5) / 24) * 100; if (pts.length > 0 && sx > pts[pts.length-1].x) { pts.push({x: sx, y: accum}); } accum += s.duration; pts.push({x: ex, y: accum}); }); if (isTodayObj && isRunning && !isBreakTime && currentTimerStartTime) { let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`; let startT = `${currentTimerStartTime.getHours()}:${currentTimerStartTime.getMinutes()}`; let sx = ((parseToOffset(startT) - 5) / 24) * 100; let ex = ((parseToOffset(currTimeStr) - 5) / 24) * 100; let lastEx = pts.length > 0 ? pts[pts.length-1].x : 0; if(sx < lastEx) sx = lastEx; if(ex > sx) { pts.push({x: sx, y: accum}); accum += runningAddedSecs; pts.push({x: ex, y: accum}); } } return {pts, total: accum, lastX: pts.length>0 ? pts[pts.length-1].x : 0}; }
+            let todayData = getPts(sessions, isSelectedToday); let prevData = getPts(prevSessions, false); prevData.pts.push({x: 100, y: prevData.total}); 
+            let maxY = 14 * 3600; let poly = "0,100 "; prevData.pts.forEach(p => { let yPct = Math.max(0, 100 - (p.y / maxY * 100)); poly += `${p.x},${yPct} `; }); poly += "100,100";
+            let line = ""; todayData.pts.forEach(p => { let yPct = Math.max(0, 100 - (p.y / maxY * 100)); line += `${p.x},${yPct} `; });
+            if (isSelectedToday && !isRunning) { let currTimeStr = `${todayObj.getHours()}:${todayObj.getMinutes()}`; let cx = ((parseToOffset(currTimeStr) - 5) / 24) * 100; let lastY = todayData.pts.length > 0 ? Math.max(0, 100 - (todayData.pts[todayData.pts.length-1].y / maxY * 100)) : 100; if(cx > todayData.lastX) { line += `${cx},${lastY}`; } }
+            if(prevSessions.length === 0) poly = "0,100 100,100"; if(sessions.length === 0 && (!isSelectedToday || todayData.pts.length === 1)) line = "0,100 100,100";
+            document.getElementById('dd-poly').setAttribute('points', poly); document.getElementById('dd-line').setAttribute('points', line);
         }
 
         function deleteDayRecords(e, dateStr) { e.preventDefault(); pushUndoState(); detailedSessions = detailedSessions.filter(s => s.date !== dateStr); saveDataToFirebase(); updateDayViewDate(); updateStatsUI(); renderCalendar(); }
-
         function openManualTimeModal(dateStr) { document.getElementById('manual-time-date').innerText = dateStr; document.getElementById('manual-time-date-val').value = dateStr; document.getElementById('manual-time-input').value = "0:00:00"; document.getElementById('manual-time-modal').style.display = "flex"; }
         function submitManualTime() { try { pushUndoState(); let dateStr = document.getElementById('manual-time-date-val').value; let val = document.getElementById('manual-time-input').value; if (!val) return; let parts = val.split(':'); if (parts.length !== 3) { alert("반드시 시:분:초 (H:MM:SS) 형식으로 입력해주세요."); return; } let totalSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0); if (totalSecs <= 0) { closeAllModals(); return; } detailedSessions.push({ id: Date.now().toString(), date: dateStr, subId: "manual", start: "0:00", end: "0:00", duration: totalSecs, isManual: true }); saveDataToFirebase(); updateDayViewDate(); } catch(e) { console.log(e); } closeAllModals(); }
 
@@ -1869,187 +1555,56 @@
             document.getElementById('month-total-time').innerText = formatTimeDuration(monthTotalSecs); document.getElementById('month-daily-avg').innerText = formatTimeDuration(Math.floor(monthTotalSecs / daysInMonth)); updateDonut('month', monthTotalSecs, monthSubSecs);
             
             let mPts = []; let sumSh=0, sumEh=0, mCount=0;
-            detailedSessions.forEach(s => { 
-                if(s && s.date && s.date.startsWith(prefix) && !s.isManual) {
-                    if(!s.start || !s.end) return; 
-                    let sParts = s.start.split(':'); let eParts = s.end.split(':'); 
-                    if(sParts.length<2 || eParts.length<2) return; 
-                    let sh = parseInt(sParts[0]) + parseInt(sParts[1])/60; 
-                    let eh = parseInt(eParts[0]) + parseInt(eParts[1])/60; 
-                    mPts.push({sh, eh}); sumSh+=sh; sumEh+=eh; mCount++;
-                }
-            });
+            detailedSessions.forEach(s => { if(s && s.date && s.date.startsWith(prefix) && !s.isManual) { if(!s.start || !s.end) return; let sParts = s.start.split(':'); let eParts = s.end.split(':'); if(sParts.length<2 || eParts.length<2) return; let sh = parseInt(sParts[0]) + parseInt(sParts[1])/60; let eh = parseInt(eParts[0]) + parseInt(eParts[1])/60; mPts.push({sh, eh}); sumSh+=sh; sumEh+=eh; mCount++; } });
             const sCont = document.getElementById('month-scatter-dots'); sCont.innerHTML = '';
-            if(mCount > 0) {
-                let avgSh = sumSh/mCount; let avgEh = sumEh/mCount; let avgDur = (sumEh-sumSh); if(avgDur<0) avgDur+=24;
-                let formatHHMM = h => `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`;
-                document.getElementById('scatter-x-start').innerText = formatHHMM(avgSh);
-                document.getElementById('scatter-x-end').innerText = formatHHMM(avgEh);
-                document.getElementById('scatter-y-val').innerText = formatHHMM(avgDur);
-                
-                mPts.forEach(p => {
-                    let sPctX = 30 + (Math.random()*15-7.5); let sPctY = 100 - (p.sh/24*100);
-                    sCont.innerHTML += `<div class="scatter-dot start-dot" style="left:${sPctX}%; top:${sPctY}%;"></div>`;
-                    let ePctX = 75 + (Math.random()*15-7.5); let ePctY = 100 - (p.eh/24*100);
-                    sCont.innerHTML += `<div class="scatter-dot end-dot" style="left:${ePctX}%; top:${ePctY}%;"></div>`;
-                });
-            } else {
-                document.getElementById('scatter-x-start').innerText = "0:00";
-                document.getElementById('scatter-x-end').innerText = "0:00";
-                document.getElementById('scatter-y-val').innerText = "0:00";
-            }
+            if(mCount > 0) { let avgSh = sumSh/mCount; let avgEh = sumEh/mCount; let avgDur = (sumEh-sumSh); if(avgDur<0) avgDur+=24; let formatHHMM = h => `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`; document.getElementById('scatter-x-start').innerText = formatHHMM(avgSh); document.getElementById('scatter-x-end').innerText = formatHHMM(avgEh); document.getElementById('scatter-y-val').innerText = formatHHMM(avgDur); mPts.forEach(p => { let sPctX = 30 + (Math.random()*15-7.5); let sPctY = 100 - (p.sh/24*100); sCont.innerHTML += `<div class="scatter-dot start-dot" style="left:${sPctX}%; top:${sPctY}%;"></div>`; let ePctX = 75 + (Math.random()*15-7.5); let ePctY = 100 - (p.eh/24*100); sCont.innerHTML += `<div class="scatter-dot end-dot" style="left:${ePctX}%; top:${ePctY}%;"></div>`; }); } else { document.getElementById('scatter-x-start').innerText = "0:00"; document.getElementById('scatter-x-end').innerText = "0:00"; document.getElementById('scatter-y-val').innerText = "0:00"; }
             
             let d = new Date(statWeekDate); let day = d.getDay(); let diff = d.getDate() - day + (day === 0 ? -6 : 1); let startOfWeek = new Date(d); startOfWeek.setDate(diff); startOfWeek.setHours(0,0,0,0); let endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6); endOfWeek.setHours(23,59,59,999);
             let weekTotalSecs = 0; let weekSubSecs = {}; if(Array.isArray(subjectsData)) subjectsData.forEach(s => weekSubSecs[s.id] = 0);
             detailedSessions.forEach(sess => { if(sess && sess.date) { let sParts = sess.date.split('-'); let sDate = new Date(sParts[0], sParts[1]-1, sParts[2]); if(sDate >= startOfWeek && sDate <= endOfWeek) { weekTotalSecs += sess.duration; if(weekSubSecs[sess.subId] !== undefined) weekSubSecs[sess.subId] += sess.duration; } } });
             document.getElementById('week-total-time').innerText = formatTimeDuration(weekTotalSecs); document.getElementById('week-daily-avg').innerText = formatTimeDuration(Math.floor(weekTotalSecs / 7)); updateDonut('week', weekTotalSecs, weekSubSecs); 
             
-            renderWeeklyTrendChart(startOfWeek);
-            renderDynamicChart(startOfWeek);
-            renderWeeklyBarChart(startOfWeek);
-            if(currentTab === 'trend') renderTrendCharts();
+            renderWeeklyTrendChart(startOfWeek); renderDynamicChart(startOfWeek); renderWeeklyBarChart(startOfWeek); if(currentTab === 'trend') renderTrendCharts();
         }
 
         function renderWeeklyBarChart(startOfWeek) {
-            const barCont = document.getElementById('week-daily-bars'); if(!barCont) return; barCont.innerHTML = '';
-            let dailyData = [];
-            for(let i=0; i<7; i++) {
-                let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate());
-                let dayTotal = 0; let subs = {};
-                detailedSessions.filter(s => s && s.date === dStr).forEach(s => { dayTotal += s.duration; if(!subs[s.subId]) subs[s.subId] = 0; subs[s.subId] += s.duration; });
-                dailyData.push(subs);
-            }
+            const barCont = document.getElementById('week-daily-bars'); if(!barCont) return; barCont.innerHTML = ''; let dailyData = [];
+            for(let i=0; i<7; i++) { let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate()); let dayTotal = 0; let subs = {}; detailedSessions.filter(s => s && s.date === dStr).forEach(s => { dayTotal += s.duration; if(!subs[s.subId]) subs[s.subId] = 0; subs[s.subId] += s.duration; }); dailyData.push(subs); }
             let fixedMaxDaily = 14 * 3600; 
-            dailyData.forEach(daySubs => {
-                let innerHtml = '';
-                for(let subId in daySubs) {
-                    let sub = subjectsData.find(s=>s.id===subId); let color = sub ? sub.color : '#ccc';
-                    let hPct = (daySubs[subId] / fixedMaxDaily) * 100;
-                    innerHtml = `<div class="daily-bar-segment" style="height:${hPct}%; background-color:${color};"></div>` + innerHtml;
-                }
-                barCont.innerHTML += `<div class="daily-bar-col" style="overflow: hidden;">${innerHtml}</div>`;
-            });
+            dailyData.forEach(daySubs => { let innerHtml = ''; for(let subId in daySubs) { let sub = subjectsData.find(s=>s.id===subId); let color = sub ? sub.color : '#ccc'; let hPct = (daySubs[subId] / fixedMaxDaily) * 100; innerHtml = `<div class="daily-bar-segment" style="height:${hPct}%; background-color:${color};"></div>` + innerHtml; } barCont.innerHTML += `<div class="daily-bar-col" style="overflow: hidden;">${innerHtml}</div>`; });
         }
 
         function renderWeeklyTrendChart(startOfThisWeek) {
-            let startOfLastWeek = new Date(startOfThisWeek); startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
-            let thisWeekData = [0,0,0,0,0,0,0]; let lastWeekData = [0,0,0,0,0,0,0];
-
-            detailedSessions.forEach(s => {
-                if(!s || !s.date) return; let parts = s.date.split('-'); let sD = new Date(parts[0], parts[1]-1, parts[2]);
-                if (sD >= startOfThisWeek && sD < new Date(startOfThisWeek.getTime() + 7*24*3600*1000)) { let dIdx = (sD.getDay() + 6) % 7; thisWeekData[dIdx] += s.duration; } 
-                else if (sD >= startOfLastWeek && sD < startOfThisWeek) { let dIdx = (sD.getDay() + 6) % 7; lastWeekData[dIdx] += s.duration; }
-            });
+            let startOfLastWeek = new Date(startOfThisWeek); startOfLastWeek.setDate(startOfLastWeek.getDate() - 7); let thisWeekData = [0,0,0,0,0,0,0]; let lastWeekData = [0,0,0,0,0,0,0];
+            detailedSessions.forEach(s => { if(!s || !s.date) return; let parts = s.date.split('-'); let sD = new Date(parts[0], parts[1]-1, parts[2]); if (sD >= startOfThisWeek && sD < new Date(startOfThisWeek.getTime() + 7*24*3600*1000)) { let dIdx = (sD.getDay() + 6) % 7; thisWeekData[dIdx] += s.duration; } else if (sD >= startOfLastWeek && sD < startOfThisWeek) { let dIdx = (sD.getDay() + 6) % 7; lastWeekData[dIdx] += s.duration; } });
             let today = new Date(); if(today >= startOfThisWeek && today < new Date(startOfThisWeek.getTime() + 7*24*3600*1000) && isRunning && !isBreakTime) { let dIdx = (today.getDay() + 6) % 7; thisWeekData[dIdx] += runningAddedSecs; }
-
-            let thisTotal = thisWeekData.reduce((a,b)=>a+b,0); let lastTotal = lastWeekData.reduce((a,b)=>a+b,0);
-            let diffSec = thisTotal - lastTotal; let diffSign = diffSec >= 0 ? '+' : '-'; let diffAbs = Math.abs(diffSec);
-            let diffStr = `${diffSign}${Math.floor(diffAbs/3600)}:${String(Math.floor((diffAbs%3600)/60)).padStart(2,'0')}:${String(diffAbs%60).padStart(2,'0')}`;
-            document.getElementById('step-chart-diff').innerHTML = `<strong style="font-size:1.4rem; font-weight:700; color:var(--primary-blue)">${diffStr}</strong>`;
-
+            let thisTotal = thisWeekData.reduce((a,b)=>a+b,0); let lastTotal = lastWeekData.reduce((a,b)=>a+b,0); let diffSec = thisTotal - lastTotal; let diffSign = diffSec >= 0 ? '+' : '-'; let diffAbs = Math.abs(diffSec); let diffStr = `${diffSign}${Math.floor(diffAbs/3600)}:${String(Math.floor((diffAbs%3600)/60)).padStart(2,'0')}:${String(diffAbs%60).padStart(2,'0')}`; document.getElementById('step-chart-diff').innerHTML = `<strong style="font-size:1.4rem; font-weight:700; color:var(--primary-blue)">${diffStr}</strong>`;
             let maxVal = Math.max(...thisWeekData, ...lastWeekData, 3600); 
-            
-            let polyPoints = "0,100 "; let curY = 100;
-            for(let i=0; i<7; i++) { 
-                let x1 = (i/7)*100; let x2 = ((i+1)/7)*100; 
-                let y = 100 - (lastWeekData[i] / maxVal * 80); 
-                polyPoints += `${x1},${curY} ${x1},${y} ${x2},${y} `; 
-                curY = y;
-            }
-            polyPoints += "100,100";
-            
-            let linePoints = ""; curY = 100;
-            for(let i=0; i<7; i++) { 
-                let x1 = (i/7)*100; let x2 = ((i+1)/7)*100; 
-                let y = 100 - (thisWeekData[i] / maxVal * 80); 
-                linePoints += `${x1},${curY} ${x1},${y} ${x2},${y} `; 
-                curY = y;
-            }
-
-            document.getElementById('step-chart-polygon').setAttribute('points', polyPoints);
-            document.getElementById('svg-start-line-week').setAttribute('points', linePoints.trim());
-            
-            let todayIdx = (today.getDay() + 6) % 7; let dotX = ((todayIdx + 1)/7)*100; let dotY = 100 - (thisWeekData[todayIdx] / maxVal * 80);
-            let dotEl = document.getElementById('step-chart-dot');
-            dotEl.style.left = `${dotX}%`; dotEl.style.top = `${dotY}%`;
-            let diffTime = today.getTime() - startOfThisWeek.getTime();
-            if(diffTime >= 0 && diffTime < 7*24*3600*1000) dotEl.style.display = 'block'; else dotEl.style.display = 'none';
+            let polyPoints = "0,100 "; let curY = 100; for(let i=0; i<7; i++) { let x1 = (i/7)*100; let x2 = ((i+1)/7)*100; let y = 100 - (lastWeekData[i] / maxVal * 80); polyPoints += `${x1},${curY} ${x1},${y} ${x2},${y} `; curY = y; } polyPoints += "100,100";
+            let linePoints = ""; curY = 100; for(let i=0; i<7; i++) { let x1 = (i/7)*100; let x2 = ((i+1)/7)*100; let y = 100 - (thisWeekData[i] / maxVal * 80); linePoints += `${x1},${curY} ${x1},${y} ${x2},${y} `; curY = y; }
+            document.getElementById('step-chart-polygon').setAttribute('points', polyPoints); document.getElementById('svg-start-line-week').setAttribute('points', linePoints.trim());
+            let todayIdx = (today.getDay() + 6) % 7; let dotX = ((todayIdx + 1)/7)*100; let dotY = 100 - (thisWeekData[todayIdx] / maxVal * 80); let dotEl = document.getElementById('step-chart-dot'); dotEl.style.left = `${dotX}%`; dotEl.style.top = `${dotY}%`; let diffTime = today.getTime() - startOfThisWeek.getTime(); if(diffTime >= 0 && diffTime < 7*24*3600*1000) dotEl.style.display = 'block'; else dotEl.style.display = 'none';
         }
 
         function renderDynamicChart(startOfWeek) {
-            const chartGrid = document.getElementById('chart-bars-container');
-            const svgStart = document.getElementById('svg-start-line');
-            const svgEnd = document.getElementById('svg-end-line');
-            const svgArea = document.getElementById('svg-area');
-            const dotsContainer = document.getElementById('chart-dots-container');
-            if(!chartGrid || !svgStart || !svgEnd || !svgArea || !dotsContainer) return;
-            
-            chartGrid.innerHTML = ''; 
-            let validPts = []; 
-            let dotsStr = '';
-            
-            let today = new Date();
-            
+            const chartGrid = document.getElementById('chart-bars-container'); const svgStart = document.getElementById('svg-start-line'); const svgEnd = document.getElementById('svg-end-line'); const svgArea = document.getElementById('svg-area'); const dotsContainer = document.getElementById('chart-dots-container'); if(!chartGrid || !svgStart || !svgEnd || !svgArea || !dotsContainer) return;
+            chartGrid.innerHTML = ''; let validPts = []; let dotsStr = ''; let today = new Date();
             for(let i=0; i<7; i++) {
-                let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); 
-                let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate()); 
-                let sessions = detailedSessions.filter(s => s && s.date === dStr && !s.isManual);
-                
-                let cx = i * 100 + 50; 
-                let pcx = (cx / 700) * 100; 
-                
-                let minH = 24, maxH = 0; 
-                let hasData = false;
-
-                if(sessions.length > 0) {
-                    hasData = true;
-                    sessions.forEach(s => { 
-                        if(!s.start || !s.end) return; 
-                        let sParts = s.start.split(':'); let eParts = s.end.split(':'); 
-                        if(sParts.length<2 || eParts.length<2) return; 
-                        let sh = parseInt(sParts[0]) + parseInt(sParts[1])/60; 
-                        let eh = parseInt(eParts[0]) + parseInt(eParts[1])/60; 
-                        if(sh < minH) minH = sh; 
-                        if(eh > maxH) maxH = eh; 
-                    });
-                }
-                
-                if (curr.toDateString() === today.toDateString() && isRunning && !isBreakTime) {
-                    hasData = true;
-                    let currH = today.getHours() + today.getMinutes() / 60;
-                    if (currH > maxH) maxH = currH;
-                    if (minH === 24 && currentTimerStartTime) {
-                        minH = currentTimerStartTime.getHours() + currentTimerStartTime.getMinutes() / 60;
-                    }
-                }
-                
+                let curr = new Date(startOfWeek); curr.setDate(curr.getDate() + i); let dStr = formatDateStr(curr.getFullYear(), curr.getMonth(), curr.getDate()); let sessions = detailedSessions.filter(s => s && s.date === dStr && !s.isManual);
+                let cx = i * 100 + 50; let pcx = (cx / 700) * 100; let minH = 24, maxH = 0; let hasData = false;
+                if(sessions.length > 0) { hasData = true; sessions.forEach(s => { if(!s.start || !s.end) return; let sParts = s.start.split(':'); let eParts = s.end.split(':'); if(sParts.length<2 || eParts.length<2) return; let sh = parseInt(sParts[0]) + parseInt(sParts[1])/60; let eh = parseInt(eParts[0]) + parseInt(eParts[1])/60; if(sh < minH) minH = sh; if(eh > maxH) maxH = eh; }); }
+                if (curr.toDateString() === today.toDateString() && isRunning && !isBreakTime) { hasData = true; let currH = today.getHours() + today.getMinutes() / 60; if (currH > maxH) maxH = currH; if (minH === 24 && currentTimerStartTime) { minH = currentTimerStartTime.getHours() + currentTimerStartTime.getMinutes() / 60; } }
                 if(hasData) {
-                    let sy = 100 - (minH / 24 * 100); 
-                    let ey = 100 - (maxH / 24 * 100); 
-                    let formatHHMM = h => `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`;
-                    
+                    let sy = 100 - (minH / 24 * 100); let ey = 100 - (maxH / 24 * 100); let formatHHMM = h => `${Math.floor(h)}:${String(Math.floor((h%1)*60)).padStart(2,'0')}`;
                     validPts.push({cx, sy, ey});
-                    
                     dotsStr += `<div style="position:absolute; left: ${pcx}%; top: ${sy}%; z-index:5;"><div style="position:absolute; background: #fff; border: 2px solid var(--grey-text); width:8px; height:8px; border-radius:50%; transform:translate(-50%,-50%);"></div><span style="position:absolute; top:8px; left:8px; font-size:0.5rem; font-weight:700; color:var(--grey-text);">AM ${formatHHMM(minH)}</span></div>`;
                     dotsStr += `<div style="position:absolute; left: ${pcx}%; top: ${ey}%; z-index:5;"><div style="position:absolute; background: var(--primary-blue); border: 2px solid #fff; width:8px; height:8px; border-radius:50%; transform:translate(-50%,-50%);"></div><span style="position:absolute; top:-14px; left:8px; font-size:0.5rem; font-weight:700; color:var(--primary-blue);">PM ${formatHHMM(maxH)}</span></div>`;
-                    
                     chartGrid.innerHTML += `<div class="chart-col"><div style="position:absolute; top:${ey}%; height:${sy-ey}%; width:4px; background:rgba(42,85,140,0.1); border-radius:2px;"></div></div>`;
-                } else { 
-                    chartGrid.innerHTML += `<div class="chart-col"></div>`; 
-                }
+                } else { chartGrid.innerHTML += `<div class="chart-col"></div>`; }
             }
-            
             let areaStr = ""; let startLineStr = ""; let endLineStr = "";
-            if (validPts.length > 0) {
-                validPts.forEach(v => { startLineStr += `${v.cx},${v.sy} `; });
-                validPts.forEach(v => { endLineStr += `${v.cx},${v.ey} `; });
-                validPts.forEach(v => { areaStr += `${v.cx},${v.sy} `; });
-                [...validPts].reverse().forEach(v => { areaStr += `${v.cx},${v.ey} `; });
-            }
-            svgStart.setAttribute('points', startLineStr.trim());
-            svgEnd.setAttribute('points', endLineStr.trim());
-            svgArea.setAttribute('points', areaStr.trim());
-            dotsContainer.innerHTML = dotsStr;
+            if (validPts.length > 0) { validPts.forEach(v => { startLineStr += `${v.cx},${v.sy} `; }); validPts.forEach(v => { endLineStr += `${v.cx},${v.ey} `; }); validPts.forEach(v => { areaStr += `${v.cx},${v.sy} `; }); [...validPts].reverse().forEach(v => { areaStr += `${v.cx},${v.ey} `; }); }
+            svgStart.setAttribute('points', startLineStr.trim()); svgEnd.setAttribute('points', endLineStr.trim()); svgArea.setAttribute('points', areaStr.trim()); dotsContainer.innerHTML = dotsStr;
         }
 
         function updateDonut(prefix, totalSecs, subSecs) {
@@ -2061,87 +1616,26 @@
         let currentRepEdit = null;
         function addRepCol() { pushUndoState(); if(!Array.isArray(repCols)) repCols=[]; if(!Array.isArray(repData)) repData=[]; let name = prompt("추가할 항목 이름 (예: 모의고사, OX):"); if(name && name.trim()) { repCols.push(name.trim()); repData.forEach(item => { if(!Array.isArray(item.counts)) item.counts=[]; item.counts.push(0); }); renderRep(); saveDataToFirebase(); } }
         function addRepItem() { pushUndoState(); if(!Array.isArray(repCols)) repCols=[]; if(!Array.isArray(repData)) repData=[]; let name = prompt("추가할 과목 이름 (예: CON 기출문제집):"); if(name && name.trim()) { repData.push({ id: Date.now(), name: name.trim(), counts: new Array(repCols.length).fill(0) }); renderRep(); saveDataToFirebase(); } }
-
         let repContextTarget = null;
         function showRepMenu(e, type, id) { e.preventDefault(); e.stopPropagation(); closeAllModals(); repContextTarget = { type, id }; let menu = document.getElementById('rep-context-menu'); menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; }
-        function execRepContext(action) {
-            document.getElementById('rep-context-menu').style.display = 'none';
-            if(!repContextTarget) return; let { type, id } = repContextTarget;
-            if(action === 'edit') {
-                if(type === 'col') { let div = document.getElementById(`rep-col-${id}`); div.innerHTML = `<input type="text" id="rep-edit-col-${id}" value="${repCols[id]}" style="width:100%; border:1px solid var(--primary-blue); font-family:'GmarketSansChrono'; outline:none; padding:2px; text-align:center; box-sizing:border-box;" onblur="saveRepColName(${id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">`; setTimeout(()=>document.getElementById(`rep-edit-col-${id}`).focus(), 10); } 
-                else if(type === 'row') { let item = repData.find(x=>x.id===id); let div = document.getElementById(`rep-name-${id}`); div.innerHTML = `<input type="text" id="rep-edit-row-${id}" value="${item.name}" style="width:100%; border:1px solid var(--primary-blue); font-family:'GmarketSansChrono'; outline:none; padding:2px; box-sizing:border-box;" onblur="saveRepRowName(${id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">`; setTimeout(()=>document.getElementById(`rep-edit-row-${id}`).focus(), 10); } 
-                else if(type === 'hist') { let h = repHistory.find(x=>x.id===id); if(h) { let res = prompt(`수정할 내용을 입력하세요.`, `${h.name} / ${h.type} / ${h.date}`); if(res && res.trim()) { pushUndoState(); h.name = res.split('/')[0]?.trim() || h.name; h.type = res.split('/')[1]?.trim() || h.type; h.date = res.split('/')[2]?.trim() || h.date; renderRep(); saveDataToFirebase(); } } }
-            } else if(action === 'delete') {
-                pushUndoState();
-                if(type === 'col') { repCols.splice(id, 1); repData.forEach(item => item.counts.splice(id, 1)); }
-                else if(type === 'row') { repData = repData.filter(x => x.id !== id); repHistory = repHistory.filter(x => x.itemId !== id); }
-                else if(type === 'hist') { repHistory = repHistory.filter(x => x.id !== id); }
-                renderRep(); saveDataToFirebase(); 
-            }
-        }
+        function execRepContext(action) { document.getElementById('rep-context-menu').style.display = 'none'; if(!repContextTarget) return; let { type, id } = repContextTarget; if(action === 'edit') { if(type === 'col') { let div = document.getElementById(`rep-col-${id}`); div.innerHTML = `<input type="text" id="rep-edit-col-${id}" value="${repCols[id]}" style="width:100%; border:1px solid var(--primary-blue); font-family:'GmarketSansChrono'; outline:none; padding:2px; text-align:center; box-sizing:border-box;" onblur="saveRepColName(${id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">`; setTimeout(()=>document.getElementById(`rep-edit-col-${id}`).focus(), 10); } else if(type === 'row') { let item = repData.find(x=>x.id===id); let div = document.getElementById(`rep-name-${id}`); div.innerHTML = `<input type="text" id="rep-edit-row-${id}" value="${item.name}" style="width:100%; border:1px solid var(--primary-blue); font-family:'GmarketSansChrono'; outline:none; padding:2px; box-sizing:border-box;" onblur="saveRepRowName(${id}, this.value)" onkeydown="if(event.key==='Enter') this.blur();">`; setTimeout(()=>document.getElementById(`rep-edit-row-${id}`).focus(), 10); } else if(type === 'hist') { let h = repHistory.find(x=>x.id===id); if(h) { let res = prompt(`수정할 내용을 입력하세요.`, `${h.name} / ${h.type} / ${h.date}`); if(res && res.trim()) { pushUndoState(); h.name = res.split('/')[0]?.trim() || h.name; h.type = res.split('/')[1]?.trim() || h.type; h.date = res.split('/')[2]?.trim() || h.date; renderRep(); saveDataToFirebase(); } } } } else if(action === 'delete') { pushUndoState(); if(type === 'col') { repCols.splice(id, 1); repData.forEach(item => item.counts.splice(id, 1)); } else if(type === 'row') { repData = repData.filter(x => x.id !== id); repHistory = repHistory.filter(x => x.itemId !== id); } else if(type === 'hist') { repHistory = repHistory.filter(x => x.id !== id); } renderRep(); saveDataToFirebase(); } }
         function saveRepColName(idx, val) { pushUndoState(); if(val.trim()) repCols[idx] = val.trim(); renderRep(); saveDataToFirebase(); }
         function saveRepRowName(id, val) { pushUndoState(); let item = repData.find(x=>x.id===id); if(item && val.trim()) item.name = val.trim(); renderRep(); saveDataToFirebase(); }
         function saveRepMainHeader(val) { pushUndoState(); localStorage.setItem('repMainHeader', val.trim() || '이름'); renderRep(); }
 
-        function openRepPop(e, itemId, colIdx) {
-            e.stopPropagation(); currentRepEdit = { itemId, colIdx };
-            let item = repData.find(x => x.id === itemId); document.getElementById('rep-pop-count').innerText = item.counts[colIdx];
-            let pop = document.getElementById('rep-inline-pop'); pop.style.display = 'flex';
-            let rect = e.currentTarget.getBoundingClientRect(); pop.style.top = (rect.bottom + window.scrollY + 5) + 'px'; pop.style.left = (rect.left + window.scrollX - 20) + 'px';
-        }
-        
-        function changeRepCount(delta) {
-            if(!currentRepEdit) return; pushUndoState();
-            let item = repData.find(x => x.id === currentRepEdit.itemId); let oldVal = item.counts[currentRepEdit.colIdx]; let newVal = Math.max(0, oldVal + delta);
-            item.counts[currentRepEdit.colIdx] = newVal; document.getElementById('rep-pop-count').innerText = newVal;
-            
-            if (delta > 0) {
-                let d = new Date(); let dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
-                repHistory.push({ id: Date.now()+Math.random(), itemId: item.id, name: item.name, type: repCols[currentRepEdit.colIdx], date: dateStr, rawDate: new Date().getTime() });
-            } else if (delta < 0) {
-                let idx = repHistory.slice().reverse().findIndex(x => x.itemId === item.id && x.type === repCols[currentRepEdit.colIdx]);
-                if (idx !== -1) { let realIdx = repHistory.length - 1 - idx; repHistory.splice(realIdx, 1); }
-            }
-            renderRep(); saveDataToFirebase(); 
-        }
+        function openRepPop(e, itemId, colIdx) { e.stopPropagation(); currentRepEdit = { itemId, colIdx }; let item = repData.find(x => x.id === itemId); document.getElementById('rep-pop-count').innerText = item.counts[colIdx]; let pop = document.getElementById('rep-inline-pop'); pop.style.display = 'flex'; let rect = e.currentTarget.getBoundingClientRect(); pop.style.top = (rect.bottom + window.scrollY + 5) + 'px'; pop.style.left = (rect.left + window.scrollX - 20) + 'px'; }
+        function changeRepCount(delta) { if(!currentRepEdit) return; pushUndoState(); let item = repData.find(x => x.id === currentRepEdit.itemId); let oldVal = item.counts[currentRepEdit.colIdx]; let newVal = Math.max(0, oldVal + delta); item.counts[currentRepEdit.colIdx] = newVal; document.getElementById('rep-pop-count').innerText = newVal; if (delta > 0) { let d = new Date(); let dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`; repHistory.push({ id: Date.now()+Math.random(), itemId: item.id, name: item.name, type: repCols[currentRepEdit.colIdx], date: dateStr, rawDate: new Date().getTime() }); } else if (delta < 0) { let idx = repHistory.slice().reverse().findIndex(x => x.itemId === item.id && x.type === repCols[currentRepEdit.colIdx]); if (idx !== -1) { let realIdx = repHistory.length - 1 - idx; repHistory.splice(realIdx, 1); } } renderRep(); saveDataToFirebase(); }
 
         function renderRep() {
             const header = document.getElementById('rep-header'); const list = document.getElementById('rep-list'); if(!header || !list) return;
-            let colCount = Array.isArray(repCols) ? repCols.length : 0;
-            let gridTemplate = `1.2fr repeat(${colCount}, 1fr)`; header.style.gridTemplateColumns = gridTemplate;
-            
-            let mainHead = localStorage.getItem('repMainHeader') || '이름';
-            let hHtml = `<div><input type="text" value="${mainHead}" onblur="saveRepMainHeader(this.value)" style="width:100%; border:none; background:transparent; font-weight:700; color:var(--grey-text); font-family:'GmarketSansChrono', sans-serif; font-size:0.85rem; outline:none;"></div>`;
-            
+            let colCount = Array.isArray(repCols) ? repCols.length : 0; let gridTemplate = `1.2fr repeat(${colCount}, 1fr)`; header.style.gridTemplateColumns = gridTemplate;
+            let mainHead = localStorage.getItem('repMainHeader') || '이름'; let hHtml = `<div><input type="text" value="${mainHead}" onblur="saveRepMainHeader(this.value)" style="width:100%; border:none; background:transparent; font-weight:700; color:var(--grey-text); font-family:'GmarketSansChrono', sans-serif; font-size:0.85rem; outline:none;"></div>`;
             if (colCount > 0) { repCols.forEach((c, i) => { hHtml += `<div id="rep-col-${i}" style="text-align:center; cursor:pointer;" oncontextmenu="showRepMenu(event, 'col', ${i})">${c}</div>`; }); }
             header.innerHTML = hHtml; list.innerHTML = '';
-            if(Array.isArray(repData)) {
-                repData.forEach(item => {
-                    if(!Array.isArray(item.counts)) item.counts = []; while(item.counts.length < colCount) item.counts.push(0);
-                    let html = `<div style="display:grid; grid-template-columns: ${gridTemplate}; gap:10px; align-items:center; padding:10px 0; border-bottom:1px dashed #eee; font-size:0.9rem;">`;
-                    html += `<div id="rep-name-${item.id}" style="font-weight:600; cursor:pointer; color:var(--primary-blue);" oncontextmenu="showRepMenu(event, 'row', ${item.id})">${item.name}</div>`;
-                    for(let i=0; i<colCount; i++) {
-                        let count = item.counts[i] || 0; let hearts = count === 0 ? '<span style="color:#ddd; font-size:0.8rem; font-weight:700;">+</span>' : svgHeart.repeat(count);
-                        html += `<div style="cursor:pointer; display:flex; justify-content:center; align-items:center; min-height:22px; user-select:none;" onclick="openRepPop(event, ${item.id}, ${i})">${hearts}</div>`;
-                    }
-                    html += `</div>`; list.innerHTML += html;
-                }); 
-            }
+            if(Array.isArray(repData)) { repData.forEach(item => { if(!Array.isArray(item.counts)) item.counts = []; while(item.counts.length < colCount) item.counts.push(0); let html = `<div style="display:grid; grid-template-columns: ${gridTemplate}; gap:10px; align-items:center; padding:10px 0; border-bottom:1px dashed #eee; font-size:0.9rem;">`; html += `<div id="rep-name-${item.id}" style="font-weight:600; cursor:pointer; color:var(--primary-blue);" oncontextmenu="showRepMenu(event, 'row', ${item.id})">${item.name}</div>`; for(let i=0; i<colCount; i++) { let count = item.counts[i] || 0; let hearts = count === 0 ? '<span style="color:#ddd; font-size:0.8rem; font-weight:700;">+</span>' : svgHeart.repeat(count); html += `<div style="cursor:pointer; display:flex; justify-content:center; align-items:center; min-height:22px; user-select:none;" onclick="openRepPop(event, ${item.id}, ${i})">${hearts}</div>`; } html += `</div>`; list.innerHTML += html; }); }
             renderRepHistory();
         }
-        
-        function renderRepHistory() {
-            const list = document.getElementById('rep-history-list'); if(!list) return; list.innerHTML = '';
-            if(!Array.isArray(repHistory)) return;
-            let sorted = [...repHistory].sort((a,b) => b.rawDate - a.rawDate);
-            sorted.forEach(h => {
-                let cleanDate = h.date.replace(/년 |월 /g, '.').replace(/일/g, '').replace(/ \//g, '.').replace(/\//g, '.');
-                let div = document.createElement('div'); div.className = "rep-history-row";
-                div.innerHTML = `<span class="rep-history-name">${h.name} ${h.type}</span><span class="rep-history-date">${cleanDate}</span>`;
-                div.oncontextmenu = (e) => { showRepMenu(e, 'hist', h.id); };
-                list.appendChild(div);
-            });
-        }
+        function renderRepHistory() { const list = document.getElementById('rep-history-list'); if(!list) return; list.innerHTML = ''; if(!Array.isArray(repHistory)) return; let sorted = [...repHistory].sort((a,b) => b.rawDate - a.rawDate); sorted.forEach(h => { let cleanDate = h.date.replace(/년 |월 /g, '.').replace(/일/g, '').replace(/ \//g, '.').replace(/\//g, '.'); let div = document.createElement('div'); div.className = "rep-history-row"; div.innerHTML = `<span class="rep-history-name">${h.name} ${h.type}</span><span class="rep-history-date">${cleanDate}</span>`; div.oncontextmenu = (e) => { showRepMenu(e, 'hist', h.id); }; list.appendChild(div); }); }
 
         function switchStatTab(t) {
             currentTab = t; localStorage.setItem('lastStatTab', t);
@@ -2150,16 +1644,7 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('tab-' + t).classList.add('active');
             if(t === 'trend') { document.getElementById('main-stat-nav').style.visibility = 'hidden'; renderTrendCharts(); } 
-            else { 
-                document.getElementById('main-stat-nav').style.visibility = 'visible'; 
-                updateStatNavigatorText(); 
-                renderCalendar(); 
-                if (t === 'week') {
-                    renderWeeklyRecords();
-                    let todayDateObj = new Date();
-                    selectDailyDetail(formatDateStr(todayDateObj.getFullYear(), todayDateObj.getMonth(), todayDateObj.getDate()));
-                }
-            }
+            else { document.getElementById('main-stat-nav').style.visibility = 'visible'; updateStatNavigatorText(); renderCalendar(); if (t === 'week') { renderWeeklyRecords(); let todayDateObj = new Date(); selectDailyDetail(formatDateStr(todayDateObj.getFullYear(), todayDateObj.getMonth(), todayDateObj.getDate())); } }
         }
 
         function showChronoTab(t) {
@@ -2169,9 +1654,7 @@
             document.querySelectorAll('#chrono-view .chrono-tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('content-' + t).classList.add('active');
             document.getElementById('floating-nav').style.display = (t === 'tl') ? 'flex' : 'none';
-            if(t==='tl') renderTimeline(); 
-            if(t==='qz') { updateProgress(); generateQuiz(); } 
-            if(t==='dt') renderGraduatedList();
+            if(t==='tl') renderTimeline(); if(t==='qz') { updateProgress(); generateQuiz(); } if(t==='dt') renderGraduatedList();
         }
 
         function showPage(p) { 
@@ -2180,118 +1663,29 @@
             document.getElementById('stats-view').style.display = p === 'stats' ? 'block' : 'none'; 
             document.getElementById('tracker-view').style.display = p === 'tracker' ? 'block' : 'none';
             document.getElementById('chrono-view').style.display = p === 'chrono' ? 'block' : 'none';
-
             document.getElementById('nav-day').className = p === 'main' ? 'active' : 'inactive'; 
             document.getElementById('nav-stats').className = p === 'stats' ? 'active' : 'inactive'; 
             document.getElementById('nav-tracker').className = p === 'tracker' ? 'active' : 'inactive';
             document.getElementById('nav-chrono').className = p === 'chrono' ? 'active' : 'inactive';
-
             if (p === 'stats') { statWeekDate = new Date(currentDayViewDate); statMonthDate = new Date(currentDayViewDate); let lastTab = localStorage.getItem('lastStatTab') || 'week'; switchStatTab(lastTab); }
             if (p === 'tracker') { renderTrackerNav(); }
-            if (p === 'chrono') { document.getElementById('floating-nav').style.display = document.getElementById('tab-tl').classList.contains('active') ? 'flex' : 'none'; renderTimeline(); } 
-            else { if(document.getElementById('floating-nav')) document.getElementById('floating-nav').style.display = 'none'; }
+            if (p === 'chrono') { document.getElementById('floating-nav').style.display = document.getElementById('tab-tl').classList.contains('active') ? 'flex' : 'none'; renderTimeline(); } else { if(document.getElementById('floating-nav')) document.getElementById('floating-nav').style.display = 'none'; }
         }
 
-        function closeAllModals() { 
-            try {
-                document.querySelectorAll('.modal-overlay, .chrono-modal-overlay, .inline-tag-modal').forEach(el => el.style.display = 'none'); 
-                let repPop = document.getElementById('rep-inline-pop'); if(repPop) repPop.style.display = 'none';
-                let repMenu = document.getElementById('rep-context-menu'); if(repMenu) repMenu.style.display = 'none';
-                let trackerMenu = document.getElementById('tracker-context-menu'); if(trackerMenu) trackerMenu.style.display = 'none';
-            } catch(e) {}
-        }
-        
-        document.addEventListener('keydown', e => { 
-            if (e.key === 'Escape') closeAllModals(); 
-            if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyZ' || e.key.toLowerCase() === 'z')) {
-                const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
-                if (activeTag !== 'input' && activeTag !== 'textarea' && !(document.activeElement && document.activeElement.isContentEditable)) {
-                    e.preventDefault(); triggerUndo();
-                }
-            }
-        });
-        
+        function closeAllModals() { try { document.querySelectorAll('.modal-overlay, .chrono-modal-overlay, .inline-tag-modal').forEach(el => el.style.display = 'none'); let repPop = document.getElementById('rep-inline-pop'); if(repPop) repPop.style.display = 'none'; let repMenu = document.getElementById('rep-context-menu'); if(repMenu) repMenu.style.display = 'none'; let trackerMenu = document.getElementById('tracker-context-menu'); if(trackerMenu) trackerMenu.style.display = 'none'; } catch(e) {} }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyZ' || e.key.toLowerCase() === 'z')) { const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : ''; if (activeTag !== 'input' && activeTag !== 'textarea' && !(document.activeElement && document.activeElement.isContentEditable)) { e.preventDefault(); triggerUndo(); } } });
         document.addEventListener('click', e => { closeAllModals(); });
-
         function openTimelineModal() { document.getElementById('timeline-modal').style.display = "flex"; }
         function toggleMenu(id, e) { e.stopPropagation(); document.getElementById(`menu-${id}`).classList.toggle('show'); }
         function deleteSession(id) { pushUndoState(); detailedSessions = detailedSessions.filter(s => s.id !== id); updateDayViewDate(); saveDataToFirebase(); closeAllModals(); }
         function openEditModal(id) { const sess = detailedSessions.find(s => s.id === id); document.getElementById('modal-title').innerText = "Edit Record"; document.getElementById('modal-session-id').value = id; document.getElementById('modal-session-date').value = sess.date; document.getElementById('modal-start-time').value = stripLeadingZero(sess.start); document.getElementById('modal-end-time').value = stripLeadingZero(sess.end); const sel = document.getElementById('modal-subject'); sel.innerHTML = ""; if(Array.isArray(subjectsData)) subjectsData.forEach(s => sel.innerHTML += `<option value="${s.id}" ${s.id===sess.subId?'selected':''}>${s.name}</option>`); document.getElementById('manual-modal').style.display = "flex"; }
         function openModalForDate(dateStr) { document.getElementById('modal-title').innerText = "Add Record"; document.getElementById('modal-session-id').value = ""; document.getElementById('modal-session-date').value = dateStr; document.getElementById('modal-start-time').value = "9:00"; document.getElementById('modal-end-time').value = "10:00"; const sel = document.getElementById('modal-subject'); sel.innerHTML = ""; if(Array.isArray(subjectsData)) subjectsData.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`); document.getElementById('manual-modal').style.display = "flex"; }
-        function submitModal() { 
-            pushUndoState();
-            const id = document.getElementById('modal-session-id').value || Date.now().toString(); 
-            const start = document.getElementById('modal-start-time').value; const end = document.getElementById('modal-end-time').value; const date = document.getElementById('modal-session-date').value; const subId = document.getElementById('modal-subject').value; 
-            if(!start || !end) return alert("시간을 입력해주세요.");
-            const parse = (s) => { const parts = s.split(':'); if(parts.length<2) return 0; return Number(parts[0])*3600+Number(parts[1])*60; }; 
-            let dur = parse(end)-parse(start); if(dur<0) dur+=86400; 
-            const session = { id, date, start, end, subId, duration: dur }; 
-            if(document.getElementById('modal-session-id').value) detailedSessions = detailedSessions.map(s=>s.id===id?session:s); else detailedSessions.push(session); 
-            closeAllModals(); updateDayViewDate(); saveDataToFirebase(); 
-        }
+        function submitModal() { pushUndoState(); const id = document.getElementById('modal-session-id').value || Date.now().toString(); const start = document.getElementById('modal-start-time').value; const end = document.getElementById('modal-end-time').value; const date = document.getElementById('modal-session-date').value; const subId = document.getElementById('modal-subject').value; if(!start || !end) return alert("시간을 입력해주세요."); const parse = (s) => { const parts = s.split(':'); if(parts.length<2) return 0; return Number(parts[0])*3600+Number(parts[1])*60; }; let dur = parse(end)-parse(start); if(dur<0) dur+=86400; const session = { id, date, start, end, subId, duration: dur }; if(document.getElementById('modal-session-id').value) detailedSessions = detailedSessions.map(s=>s.id===id?session:s); else detailedSessions.push(session); closeAllModals(); updateDayViewDate(); saveDataToFirebase(); }
         
         let timerInt = null, stopwatchSecs = 0, isPomodoro = false, isRunning = false; let pomodoroSeconds = 25 * 60; let isBreakTime = false; let currentTimerStartTime = null; let runningAddedSecs = 0;
-        function toggleTimerMode() { 
-            if(isRunning) timerAction('pause'); 
-            isPomodoro = !isPomodoro; isBreakTime = false; 
-            if(isPomodoro) {
-                document.getElementById('timer-box').classList.add('mode-active');
-            } else {
-                document.getElementById('timer-box').classList.remove('mode-active');
-            }
-            const tomatoBtn = document.getElementById('tomato-btn'); 
-            if(isPomodoro) tomatoBtn.classList.add('pressed'); else tomatoBtn.classList.remove('pressed'); 
-            document.getElementById('display').style.color = 'var(--primary-blue)'; 
-            if(isPomodoro) { updatePomodoroTime(); } else { stopwatchSecs = 0; document.getElementById('display').innerText = "0:00:00"; } 
-        }
+        function toggleTimerMode() { if(isRunning) timerAction('pause'); isPomodoro = !isPomodoro; isBreakTime = false; if(isPomodoro) { document.getElementById('timer-box').classList.add('mode-active'); } else { document.getElementById('timer-box').classList.remove('mode-active'); } const tomatoBtn = document.getElementById('tomato-btn'); if(isPomodoro) tomatoBtn.classList.add('pressed'); else tomatoBtn.classList.remove('pressed'); document.getElementById('display').style.color = 'var(--primary-blue)'; if(isPomodoro) { updatePomodoroTime(); } else { stopwatchSecs = 0; document.getElementById('display').innerText = "0:00:00"; } }
         function updatePomodoroTime() { if(!isPomodoro) return; const studyMins = parseInt(document.getElementById('study-min').value) || 25; const breakMins = parseInt(document.getElementById('break-min').value) || 5; pomodoroSeconds = isBreakTime ? breakMins * 60 : studyMins * 60; document.getElementById('display').innerText = formatTimeDuration(pomodoroSeconds); }
-       function timerAction(act) { 
-            if(act === 'start') { 
-                if(!selectedSubId && !isBreakTime) return alert('과목을 선택하세요.'); 
-                if(isRunning) return; isRunning = true; document.getElementById('btn-start').classList.add('active-control'); document.getElementById('btn-pause').classList.remove('active-control'); 
-                if(!isBreakTime) { currentTimerStartTime = new Date(); runningAddedSecs = 0; }
-                timerInt = setInterval(() => { 
-                    if(isPomodoro) { 
-                        if(pomodoroSeconds > 0) { pomodoroSeconds--; document.getElementById('display').innerText = formatTimeDuration(pomodoroSeconds); } 
-                        else { 
-                            if(!isBreakTime) { isBreakTime = true; timerAction('pause'); document.getElementById('display').style.color = '#4caf50'; updatePomodoroTime(); alert("Focus Session Completed! Take a Break."); timerAction('start'); } 
-                            else { isBreakTime = false; timerAction('pause'); document.getElementById('display').style.color = 'var(--primary-blue)'; updatePomodoroTime(); alert("Break Over! Ready to Focus?"); } 
-                        } 
-                    } else { stopwatchSecs++; document.getElementById('display').innerText = formatTimeDuration(stopwatchSecs); } 
-                    if(!isBreakTime) { runningAddedSecs++; }
-                }, 1000); 
-            } else if (act === 'pause') { 
-                if(!isRunning) return; clearInterval(timerInt); isRunning = false; 
-                document.getElementById('btn-start').classList.remove('active-control'); 
-                document.getElementById('btn-pause').classList.add('active-control'); 
-                
-                if(!isBreakTime && currentTimerStartTime) { 
-                    pushUndoState();
-                    const endTime = new Date(); 
-                    const addedSecs = Math.floor((endTime - currentTimerStartTime) / 1000); 
-                    
-                    if(addedSecs > 0) { 
-                        const dateStr = formatDateStr(endTime.getFullYear(), endTime.getMonth(), endTime.getDate()); 
-                        const formatHHMM = (d) => `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; 
-                        
-                        detailedSessions.push({ 
-                            id: Date.now().toString(), 
-                            date: dateStr, 
-                            subId: selectedSubId, 
-                            start: formatHHMM(currentTimerStartTime), 
-                            end: formatHHMM(endTime), 
-                            duration: addedSecs 
-                        }); 
-                        
-                        runningAddedSecs = 0; 
-                        stopwatchSecs = 0; // 스톱워치 초기화
-                        saveDataToFirebase(); 
-                        updateDayViewDate(); // ★ 이 코드가 있어야 타임테이블이 즉시 새로 그려집니다![cite: 3]
-                    } 
-                } 
-                currentTimerStartTime = null; 
-            } 
-        }
+        function timerAction(act) { if(act === 'start') { if(!selectedSubId && !isBreakTime) return alert('과목을 선택하세요.'); if(isRunning) return; isRunning = true; document.getElementById('btn-start').classList.add('active-control'); document.getElementById('btn-pause').classList.remove('active-control'); if(!isBreakTime) { currentTimerStartTime = new Date(); runningAddedSecs = 0; } timerInt = setInterval(() => { if(isPomodoro) { if(pomodoroSeconds > 0) { pomodoroSeconds--; document.getElementById('display').innerText = formatTimeDuration(pomodoroSeconds); } else { if(!isBreakTime) { isBreakTime = true; timerAction('pause'); document.getElementById('display').style.color = '#4caf50'; updatePomodoroTime(); alert("Focus Session Completed! Take a Break."); timerAction('start'); } else { isBreakTime = false; timerAction('pause'); document.getElementById('display').style.color = 'var(--primary-blue)'; updatePomodoroTime(); alert("Break Over! Ready to Focus?"); } } } else { stopwatchSecs++; document.getElementById('display').innerText = formatTimeDuration(stopwatchSecs); } if(!isBreakTime) { runningAddedSecs++; } }, 1000); } else if (act === 'pause') { if(!isRunning) return; clearInterval(timerInt); isRunning = false; document.getElementById('btn-start').classList.remove('active-control'); document.getElementById('btn-pause').classList.add('active-control'); if(!isBreakTime && currentTimerStartTime) { pushUndoState(); const endTime = new Date(); const addedSecs = Math.floor((endTime - currentTimerStartTime) / 1000); if(addedSecs > 0) { const dateStr = formatDateStr(endTime.getFullYear(), endTime.getMonth(), endTime.getDate()); const formatHHMM = (d) => `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`; detailedSessions.push({ id: Date.now().toString(), date: dateStr, subId: selectedSubId, start: formatHHMM(currentTimerStartTime), end: formatHHMM(endTime), duration: addedSecs }); runningAddedSecs = 0; stopwatchSecs = 0; saveDataToFirebase(); updateDayViewDate(); } } currentTimerStartTime = null; } }
 
         function toggleFilterPanel(e) { e.stopPropagation(); document.getElementById('filter-panel').classList.toggle('show'); buildFilterUI(); }
         function buildFilterUI() { let sSet = new Set(), kSet = new Set(); chronoEvents.forEach(e => { if(e.subject) String(e.subject).split(',').forEach(x => { if(x.trim()) sSet.add(x.trim()); }); if(e.keywords) String(e.keywords).split(',').forEach(x => { if(x.trim()) kSet.add(x.trim()); }); }); const subCon = document.getElementById('filter-subs'); subCon.innerHTML = ''; [...sSet].sort().forEach(s => { let d = document.createElement('div'); d.className = `tag-chk ${filterSubs.includes(s) ? 'active':''}`; d.innerText = s; d.onclick = () => { if(filterSubs.includes(s)) filterSubs=filterSubs.filter(x=>x!==s); else filterSubs.push(s); d.classList.toggle('active'); renderTimeline(); }; subCon.appendChild(d); }); const kwCon = document.getElementById('filter-kws'); kwCon.innerHTML = ''; [...kSet].sort().forEach(k => { let d = document.createElement('div'); d.className = `tag-chk ${filterKws.includes(k) ? 'active':''}`; d.innerText = k; d.onclick = () => { if(filterKws.includes(k)) filterKws=filterKws.filter(x=>x!==k); else filterKws.push(k); d.classList.toggle('active'); renderTimeline(); }; kwCon.appendChild(d); }); }
@@ -2301,22 +1695,8 @@
         function jumpTo(y) { let el = document.getElementById('jump-'+y); if(el) { let offset = el.getBoundingClientRect().top + window.pageYOffset - 100; window.scrollTo({top: offset, behavior: 'smooth'}); } else alert("해당 연도 데이터가 현재 필터 목록에 없습니다."); }
 
         let currentDetailId = null;
-        function openMobileDetailModal(id) {
-            let ev = chronoEvents.find(x => x.id === id); if(!ev) return;
-            currentDetailId = id;
-            document.getElementById('md-name').innerText = ev.name || '제목 없음';
-            document.getElementById('md-year').innerText = ev.year || '-';
-            document.getElementById('md-date').innerText = ev.date || '-';
-            document.getElementById('md-kws').innerText = ev.keywords || '-';
-            document.getElementById('md-sub').innerText = getSubShort(ev.subject) || '-';
-            document.getElementById('md-imp').innerText = "★".repeat(Math.min(3, parseInt(ev.importance) || 1));
-            document.getElementById('md-chk').innerText = ev.target ? "O" : "X";
-            document.getElementById('mobile-detail-modal').style.display = 'flex';
-        }
-        function openMobileEditFromDetail() {
-            document.getElementById('mobile-detail-modal').style.display = 'none';
-            openMobileEditModal(currentDetailId);
-        }
+        function openMobileDetailModal(id) { let ev = chronoEvents.find(x => x.id === id); if(!ev) return; currentDetailId = id; document.getElementById('md-name').innerText = ev.name || '제목 없음'; document.getElementById('md-year').innerText = ev.year || '-'; document.getElementById('md-date').innerText = ev.date || '-'; document.getElementById('md-kws').innerText = ev.keywords || '-'; document.getElementById('md-sub').innerText = getSubShort(ev.subject) || '-'; document.getElementById('md-imp').innerText = "★".repeat(Math.min(3, parseInt(ev.importance) || 1)); document.getElementById('md-chk').innerText = ev.target ? "O" : "X"; document.getElementById('mobile-detail-modal').style.display = 'flex'; }
+        function openMobileEditFromDetail() { document.getElementById('mobile-detail-modal').style.display = 'none'; openMobileEditModal(currentDetailId); }
 
         // ★ THE ONE AND ONLY renderTimeline FUNCTION ★
         function renderTimeline() {
@@ -2374,10 +1754,18 @@
                         <div class="tl-chk tl-col-chk" onclick="toggleTarget(${ev.id}, ${!ev.target})" style="cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;">${chkSvg}</div>
                     `;
                     
-                    // ★ 깔끔하고 확실한 터치(클릭) 이벤트
+                    // ★ 아이폰/안드로이드 터치 완벽 호환 이벤트
+                    let isScrolling = false;
+                    row.addEventListener('touchmove', () => { isScrolling = true; }, { passive: true });
+                    row.addEventListener('touchend', (e) => {
+                        if (window.innerWidth <= 850 && !isScrolling) {
+                            if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
+                            e.preventDefault(); openMobileDetailModal(ev.id);
+                        }
+                        isScrolling = false;
+                    });
                     row.onclick = (e) => {
                         if (window.innerWidth <= 850) {
-                            // 내부 버튼 클릭 시엔 팝업 무시
                             if (e.target.closest('.tl-star') || e.target.closest('.tl-chk') || e.target.closest('.tl-kws') || e.target.closest('.tl-sub')) return;
                             openMobileDetailModal(ev.id);
                         }
