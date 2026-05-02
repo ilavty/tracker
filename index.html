@@ -653,9 +653,15 @@
                 overflow-x: hidden !important;
             }
             #chrono-view .tl-row {
-                cursor: pointer !important; /* 터치 인식 보조 */
-                user-select: none !important; 
-                -webkit-user-select: none !important; 
+                cursor: pointer !important; 
+            }
+            /* 텍스트 영역 터치 시, 글자 선택을 막고 터치를 부모(행)로 통과시킴 */
+            #chrono-view .tl-year, 
+            #chrono-view .tl-date, 
+            #chrono-view .tl-name,
+            #chrono-view .tl-effect,
+            #chrono-view .tl-korEffect {
+                pointer-events: none !important;
             }
             #chrono-view .tl-year, 
             #chrono-view .tl-date, 
