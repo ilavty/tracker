@@ -1465,22 +1465,81 @@
                 let defCats = parsedDef[subject] ? Object.keys(parsedDef[subject]) : [];
                 cycle.cats = toArray(cycle.cats); cycle.cats.sort((a, b) => { let aIdx = defCats.indexOf(a.name); let bIdx = defCats.indexOf(b.name); if (aIdx === -1) aIdx = 999; if (bIdx === -1) bIdx = 999; return aIdx - bIdx; });
                 
-                let allDates = []; cycle.cats.forEach(cat => toArray(cat.sessions).forEach(sess => toArray(sess.bars).forEach(bar => { let parts = bar.text.trim().split('.'); if(parts.length === 2) { let m = parseInt(parts[0]); let d = parseInt(parts[1]); if(!isNaN(m) && !isNaN(d)) allDates.push(new Date(new Date().getFullYear(), m - 1, d)); } })));
-                let isCycleCompleted = true; cycle.cats.forEach((cat) => { let N = toArray(cat.topics).length; let isCatCompleted = false; let sessions = toArray(cat.sessions); if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) { isCatCompleted = true; } } if (!isCatCompleted) isCycleCompleted = false; });
+                let allDates = []; 
+                let isCycleCompleted = true; // 5회독 전체 완료 여부
                 
-                let dateStrHtml = `<span class="in-progress-text">IN PROGRESS</span>`;
-                if(allDates.length > 0) {
-                    let minD = new Date(Math.min(...allDates)); let maxD = new Date(Math.max(...allDates)); let diffDays = Math.floor((maxD - minD) / (1000 * 60 * 60 * 24)) + 1; let minStr = `${minD.getMonth()+1}.${minD.getDate()}`; let maxStr = `${maxD.getMonth()+1}.${maxD.getDate()}`;
-                    if(isCycleCompleted) dateStrHtml = `<span style="color: #000; font-size:0.9rem;"><span class="completed-text">COMPLETED</span> <span style="font-weight: 500;">(${minStr} - ${maxStr}) : ${diffDays} DAYS</span></span>`; else dateStrHtml = `<span class="in-progress-text">IN PROGRESS: ${minStr} ~</span>`;
+                cycle.cats.forEach((cat) => {
+                    let N = toArray(cat.topics).length; 
+                    let isCatCompleted = false; 
+                    let sessions = toArray(cat.sessions); 
+                    // 전체 카테고리가 5번째 줄(index 4)까지 꽉 차있는지 검사
+                    if (sessions.length >= 5) { 
+                        let fifthSession = sessions[4]; 
+                        if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) { 
+                            isCatCompleted = true; 
+                        } 
+                    } 
+                    if (!isCatCompleted) isCycleCompleted = false;
+                    
+                    sessions.forEach(sess => {
+                        toArray(sess.bars).forEach(bar => {
+                            let parts = bar.text.trim().split('.');
+                            if(parts.length === 2) { 
+                                let m = parseInt(parts[0]); let d = parseInt(parts[1]); 
+                                if(!isNaN(m) && !isNaN(d)) allDates.push(new Date(new Date().getFullYear(), m - 1, d)); 
+                            }
+                        });
+                    });
+                });
+
+                // ★ 기간 계산 기준: 마지막 카테고리의 1번째 줄(세션 index 0)의 마지막 칸(N-1) 날짜
+                let lastCat = cycle.cats[cycle.cats.length - 1];
+                let isAnchorDone = false;
+                let anchorDate = null;
+
+                if (lastCat && toArray(lastCat.sessions).length > 0) {
+                    let N = toArray(lastCat.topics).length;
+                    let firstSess = toArray(lastCat.sessions)[0];
+                    let endBar = toArray(firstSess.bars).find(b => b.end === N - 1);
+                    if (endBar) {
+                        isAnchorDone = true;
+                        let parts = endBar.text.trim().split('.');
+                        if(parts.length === 2) {
+                            let m = parseInt(parts[0]); let d = parseInt(parts[1]);
+                            if(!isNaN(m) && !isNaN(d)) anchorDate = new Date(new Date().getFullYear(), m - 1, d);
+                        }
+                    }
                 }
 
+                let dateStrHtml = `<span class="in-progress-text">IN PROGRESS</span>`;
+                if(allDates.length > 0) {
+                    let minD = new Date(Math.min(...allDates)); 
+                    let minStr = `${minD.getMonth()+1}.${minD.getDate()}`;
+                    
+                    if(isAnchorDone && anchorDate) {
+                        // 마지막 카테고리 1회독 끝에 도달 -> 기간 고정
+                        let diffDays = Math.floor((anchorDate - minD) / (1000 * 60 * 60 * 24)) + 1;
+                        let maxStr = `${anchorDate.getMonth()+1}.${anchorDate.getDate()}`;
+                        
+                        if(isCycleCompleted) {
+                            // 5회독 전체 완료 -> COMPLETED
+                            dateStrHtml = `<span style="color: #000; font-size:0.9rem;"><span class="completed-text">COMPLETED</span> <span style="font-weight: 500;">(${minStr} - ${maxStr}) : ${diffDays} DAYS</span></span>`;
+                        } else {
+                            // 전체 5회독은 덜 끝남 -> IN PROGRESS (기간은 고정)
+                            dateStrHtml = `<span style="color: #000; font-size:0.9rem;"><span class="in-progress-text">IN PROGRESS</span> <span style="font-weight: 500;">(${minStr} - ${maxStr}) : ${diffDays} DAYS</span></span>`;
+                        }
+                    } else {
+                        // 아직 마지막 카테고리 1회독이 덜 끝남 -> 진행 중
+                        dateStrHtml = `<span class="in-progress-text">IN PROGRESS: ${minStr} ~</span>`;
+                    }
+                }
                 let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><span class="cycle-num-input" style="font-weight:400; width:40px; display:inline-block; padding-left:3px;">${cycle.num}</span></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
                 
                 cycle.cats.forEach((cat, catIdx) => {
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
                     let sessions = toArray(cat.sessions); if (sessions.length >= 5) { let fifthSession = sessions[4]; if (fifthSession && toArray(fifthSession.bars).some(b => b.end === N - 1)) isCatCompleted = true; }
                     
-                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => `<div class="topic-cell" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.15 + (sIdx * 0.15); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 4 ? "#fff" : "#000";
+                    html += `<div class="cat-box" style="background-color: rgba(${bgRgb}, 0.05) !important;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div class="cat-pill" style="margin-bottom:0;">${cat.name}</div><div style="font-size: 0.8rem; font-weight: ${isCatCompleted ? '700' : '500'}; color: ${isCatCompleted ? '#000' : '#aaa'}; letter-spacing: 0;">${isCatCompleted ? '<span class="completed-text">COMPLETED</span>' : '<span class="in-progress-text">IN PROGRESS</span>'}</div></div><div style="position: relative;"><div class="topics-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, tIdx) => `<div class="topic-cell" onclick="handleTopicClick(${cIdx}, ${catIdx}, ${tIdx})" oncontextmenu="showTrackerMenu(event, 'topic', ${cIdx}, ${catIdx}, ${tIdx})" title="${t.name}">${t.name}</div>`).join('')}</div>${sessions.map((sess, sIdx) => { let shadeOpacity = 0.15 + (sIdx * 0.15); let barColor = `rgba(${bgRgb}, ${shadeOpacity})`; let textColor = sIdx >= 3 ? "#fff" : "#000";
                         return `<div class="session-row" style="grid-template-columns: repeat(${N}, 1fr);">${topics.map((t, colIdx) => `<div class="grid-cell" onclick="handleCellTouch(${cIdx}, ${catIdx}, ${sIdx}, ${colIdx})" onmousedown="if(!isTrackerEditMode) startDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})" onmouseenter="if(!isTrackerEditMode) onDrag(event, ${cIdx}, ${catIdx}, ${sIdx}, ${colIdx}, ${N})"></div>`).join('')}${toArray(sess.bars).map((bar, bIdx) => `<div class="tracker-bar" style="left: calc(${bar.start / N * 100}% + 2px); width: calc(${(bar.end - bar.start + 1) / N * 100}% - 4px); background: ${barColor}; color: ${textColor};" onclick="event.stopPropagation();"><input type="text" value="${bar.text}" onchange="updateBarText(${cIdx}, ${catIdx}, ${sIdx}, ${bIdx}, this.value)" style="width: 100%; background: transparent; border: none; color: inherit; text-align: center; font-size: inherit; font-family: inherit; outline: none;"><span class="bar-delete-btn" onclick="event.stopPropagation(); pushUndoState(); trackerData.data[trackerData.currentSubject].cycles[${cIdx}].cats[${catIdx}].sessions[${sIdx}].bars.splice(${bIdx}, 1); renderTrackerCycles(); saveDataToFirebase();">×</span></div>`).join('')}<div id="hl-${cIdx}-${catIdx}-${sIdx}" style="position: absolute; top: 4px; bottom: 4px; background: rgba(0,0,0,0.1); border-radius: 8px; display: none; pointer-events: none; z-index: 2;"></div></div>`; 
                     }).join('')}${!isCatCompleted ? `<div class="add-session-btn" onclick="addTrackerSession(${cIdx}, ${catIdx})">+ Add Session</div>` : ''}</div></div>`;
                 });
