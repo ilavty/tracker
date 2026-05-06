@@ -198,7 +198,7 @@
         /* v72 반영: 사이클 간격 축소 */
         .cycle-box { border: 1px solid var(--line-color); border-radius: 12px; margin-bottom: 15px; background: #fff; overflow: hidden; }
         .cycle-header { padding: 25px 25px 20px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: none !important; background: #fff; cursor: pointer; user-select: none; position: relative; z-index: 20; }
-        .cycle-num-input { width: 40px; background: transparent; border: none !important; font-size: 1.3rem; font-weight: 400; color: #000; outline: none !important; text-align: left; padding: 0; font-family: 'GmarketSansChrono', sans-serif !important;}
+        .cycle-num-input { width: auto; min-width: 40px; white-space: nowrap; background: transparent; border: none !important; font-size: 1.3rem; font-weight: 400; color: #000; outline: none !important; text-align: left; padding: 0; font-family: 'GmarketSansChrono', sans-serif !important;}
         
         .cycle-body { padding: 10px 20px 25px 20px; display: flex; flex-direction: column; gap: 15px; background: #fff; }
         .cat-box { border: 1px solid var(--line-color); border-radius: 12px; padding: 15px; }
@@ -1533,7 +1533,7 @@
                         dateStrHtml = `<span class="in-progress-text">IN PROGRESS: ${minStr} ~</span>`;
                     }
                 }
-                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><span class="cycle-num-input" style="font-weight:400; width:40px; display:inline-block; padding-left:3px;">${cycle.num}</span></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
+                let html = `<div class="cycle-box"><div class="cycle-header" onclick="toggleCycle(event, ${cIdx})" oncontextmenu="showTrackerMenu(event, 'cycle', ${cIdx})"><div style="display:flex; align-items:baseline; gap:0px;"><span style="font-size:1.3rem; font-weight:400; letter-spacing:-0.5px; color:#000; pointer-events:none;">CYCLE&nbsp;</span><span class="cycle-num-input" style="font-weight:400; width:auto; display:inline-block; padding-left:3px;">${cycle.num}</span></div><div style="display:flex; align-items:center; gap:20px; font-size: 0.85rem;">${dateStrHtml}</div></div><div class="cycle-body" style="display:${isClosed ? 'none' : 'flex'};">`;
                 
                 cycle.cats.forEach((cat, catIdx) => {
                     const topics = toArray(cat.topics); const N = topics.length; let isCatCompleted = false;
