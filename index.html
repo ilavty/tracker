@@ -1395,7 +1395,7 @@
             else { btn.style.background = '#fff'; btn.style.color = 'var(--line-color)'; view.classList.remove('edit-active'); }
         }
 
-        function handleCellTouch(cIdx, catIdx, sIdx, colIdx) {
+       function handleCellTouch(cIdx, catIdx, sIdx, colIdx) {
             if (!isTrackerEditMode) return; pushUndoState();
             let session = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx].sessions[sIdx];
             if (!session.bars) session.bars = [];
@@ -1403,9 +1403,9 @@
             let existingIdx = session.bars.findIndex(b => colIdx >= b.start && colIdx <= b.end);
             if (existingIdx !== -1) { session.bars.splice(existingIdx, 1); } else {
                 let newStart = colIdx; let newEnd = colIdx;
-                let leftBarIdx = session.bars.findIndex(b => b.end === colIdx - 1);
+                let leftBarIdx = session.bars.findIndex(b => b.end === colIdx - 1 && b.text === todayStr);
                 if (leftBarIdx !== -1) { newStart = session.bars[leftBarIdx].start; session.bars.splice(leftBarIdx, 1); }
-                let rightBarIdx = session.bars.findIndex(b => b.start === colIdx + 1);
+                let rightBarIdx = session.bars.findIndex(b => b.start === colIdx + 1 && b.text === todayStr);
                 if (rightBarIdx !== -1) { newEnd = session.bars[rightBarIdx].end; session.bars.splice(rightBarIdx, 1); }
                 session.bars.push({ id: Date.now() + Math.random(), start: newStart, end: newEnd, text: todayStr });
             }
