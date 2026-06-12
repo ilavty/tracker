@@ -2210,15 +2210,14 @@
         window.addEventListener('mouseup', endDragGlobal);
     </script>
 
-    <style>
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap');
-/* Montserrat 폰트는 원본 대시보드에서 이미 로드 중이므로 바로 적용 가능합니다 */
 
 #planner-view, #planner-view * {
     font-family: 'GmarketSansChrono', sans-serif !important;
 }
 
-/* 상단 대시보드 (메모/투두 & 버튼) */
+/* 상단 대시보드 (원상복구: 좌측 박스 + 우측 버튼) */
 .pl-top-dashboard {
     display: flex;
     justify-content: space-between;
@@ -2226,36 +2225,57 @@
     margin-bottom: 20px;
     gap: 20px;
 }
+
+/* 박스 내부를 3열 메모장으로 구성 */
 .pl-top-box {
     flex: 1;
-    display: grid;
-    grid-template-columns: 1.2fr 1fr; 
     background-color: #f0f4f8; 
     border: 1px solid rgba(42, 85, 140, 0.1);
     border-radius: 8px;
     padding: 15px;
-    gap: 15px;
-}
-.pl-top-todo-col {
     display: flex;
     flex-direction: column;
+}
+.pl-memo-container {
+    display: flex;
+    width: 100%;
+    gap: 15px;
+}
+.pl-memo-textarea {
+    flex: 1;
+    width: 100%;
+    min-height: 80px;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-size: 0.85rem;
+    outline: none;
+    color: #111;
+    box-sizing: border-box;
+}
+.pl-memo-textarea:not(:last-child) {
     border-right: 1px dashed rgba(42, 85, 140, 0.2);
     padding-right: 15px;
 }
-.pl-top-memo-col {
+
+/* 우측 버튼 (작은 크기 유지) */
+.pl-top-buttons {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
 }
+
 @media (max-width: 650px) {
     .pl-top-dashboard { flex-direction: column-reverse; }
-    .pl-top-box { width: 100%; box-sizing: border-box; grid-template-columns: 1fr; border-right: none; }
-    .pl-top-todo-col { border-right: none; border-bottom: 1px dashed rgba(42, 85, 140, 0.2); padding-right: 0; padding-bottom: 15px; }
+    .pl-memo-container { flex-direction: column; gap: 0; }
+    .pl-memo-textarea:not(:last-child) { border-right: none; border-bottom: 1px dashed rgba(42, 85, 140, 0.2); padding-right: 0; padding-bottom: 15px; margin-bottom: 15px; }
 }
 
 /* 스크롤바 최적화 */
-#pl-toptodo-list::-webkit-scrollbar, #pl-top-memo::-webkit-scrollbar { width: 4px; }
-#pl-toptodo-list::-webkit-scrollbar-thumb, #pl-top-memo::-webkit-scrollbar-thumb { background: rgba(0,0,0,0); border-radius: 4px; }
-#pl-toptodo-list:hover::-webkit-scrollbar-thumb, #pl-top-memo:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+.pl-memo-textarea::-webkit-scrollbar { width: 4px; }
+.pl-memo-textarea::-webkit-scrollbar-thumb { background: rgba(0,0,0,0); border-radius: 4px; }
+.pl-memo-textarea:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
 
 /* 3열 강제 배치 (Grid) */
 #planner-scroll-container {
@@ -2283,7 +2303,7 @@
     opacity: 0.5;
 }
 
-/* 카드 상단 헤더 (공부시간 + 날짜) */
+/* 카드 상단 헤더 */
 .pl-card-header {
     display: flex;
     justify-content: space-between;
@@ -2293,7 +2313,7 @@
     padding-bottom: 6px;
 }
 
-/* 공부 시간 입력칸 (Montserrat, 연하게) */
+/* 공부 시간 입력칸 */
 .pl-study-time {
     font-family: 'Montserrat', sans-serif !important;
     font-size: 0.85rem;
@@ -2313,7 +2333,7 @@
     border-bottom: 1px solid rgba(42, 85, 140, 0.3);
 }
 
-/* 날짜: 굵기 감소(600), 우측 상단 배치 */
+/* 날짜 */
 .pl-date-title {
     font-family: 'Playfair Display', serif !important;
     font-size: 0.85rem;
@@ -2343,23 +2363,13 @@
     align-items: center;
     gap: 10px;
 }
-.pl-main-row.done { opacity: 0.6; }
 .pl-row-strike-target {
     display: flex;
     align-items: center;
     gap: 8px;
     flex: 1;
     position: relative;
-}
-.pl-main-row.done .pl-row-strike-target::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 100%;
-    height: 2px;
-    background: rgba(0, 0, 0, 0.4); 
-    pointer-events: none;
+    cursor: pointer;
 }
 
 .pl-tag {
@@ -2369,7 +2379,10 @@
     font-weight: 700;
     color: #fff;
     white-space: nowrap;
+    position: relative;
+    z-index: 2;
 }
+
 .pl-item-text {
     font-size: 0.85rem;
     font-weight: 400;
@@ -2378,40 +2391,44 @@
     line-height: 1.3;
 }
 
-.pl-check-icon {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
+/* 리얼 형광펜 디자인 (대각선 마감 처리) */
+.pl-hl-text {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    padding: 0 4px;
 }
-.pl-check-icon svg { display: none; stroke: var(--primary-blue); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; width: 15px; height: 15px; }
-.pl-main-row.done .pl-check-icon svg { display: block; }
+.pl-hl-text::before {
+    content: '';
+    position: absolute;
+    top: 2px; 
+    bottom: 2px; 
+    left: -2px; 
+    right: -2px;
+    background-color: var(--hl-color, transparent);
+    z-index: -1;
+    transform: skewX(-12deg); 
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
 
-/* └ 기호를 태그가 아닌 실제 텍스트 시작점에 완벽하게 맞춤 */
+/* └ 기호 정렬 */
 .pl-sub-item {
     font-size: 0.75rem;
     color: #555;
-    padding-left: 56px; /* 과목(태그) 너비만큼 띄워서 텍스트 라인에 맞춤 */
+    padding-left: 56px; 
     margin-top: 5px;
     position: relative;
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
 .pl-sub-item::before {
     content: '└';
     position: absolute;
-    left: 44px; /* 태그 영역을 완전히 건너뛰고 텍스트 첫 글자 바로 밑으로 이동 */
+    left: 44px; 
     top: -1px;
     color: #999;
-}
-.pl-sub-item.done { opacity: 0.6; }
-.pl-sub-item.done .pl-item-text {
-    text-decoration: line-through;
-    text-decoration-thickness: 1.5px;
-    text-decoration-color: rgba(0,0,0,0.4);
 }
 
 .pl-input-box {
@@ -2460,13 +2477,18 @@
 .pl-tag-row { display: grid; grid-template-columns: 2fr 1fr 30px; gap: 10px; align-items: center; margin-bottom: 10px; }
 .pl-bg-wrap { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 10px; }
 
-.tag-color-in, .bg-color-in {
+.tag-color-in, .bg-color-in, .hl-color-in {
     -webkit-appearance: none; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; padding: 0; background: transparent; margin: auto; transition: transform 0.1s;
 }
-.bg-color-in:hover { transform: scale(1.1); }
-.tag-color-in::-webkit-color-swatch-wrapper, .bg-color-in::-webkit-color-swatch-wrapper { padding: 0; }
-.tag-color-in::-webkit-color-swatch, .bg-color-in::-webkit-color-swatch { border: none; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+.bg-color-in:hover, .hl-color-in:hover { transform: scale(1.1); }
+.tag-color-in::-webkit-color-swatch-wrapper, .bg-color-in::-webkit-color-swatch-wrapper, .hl-color-in::-webkit-color-swatch-wrapper { padding: 0; }
+.tag-color-in::-webkit-color-swatch, .bg-color-in::-webkit-color-swatch, .hl-color-in::-webkit-color-swatch { border: none; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
 .pl-del-btn { border: none !important; background: transparent !important; color: #d32f2f !important; font-weight: 800; font-size: 1.1rem; cursor: pointer; padding: 0; }
+
+/* 형광펜 동그라미(퀵셀렉트) - 검은 테두리 및 그림자 */
+.hl-circle { width:22px; height:22px; border-radius:50%; cursor:pointer; border:1px solid #000; transition:transform 0.1s; flex-shrink:0;}
+.hl-circle:hover { transform:scale(1.1); }
+.hl-circle.active { border:1px solid #000; transform:scale(1.15); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -2475,21 +2497,19 @@
     
     <div class="pl-top-dashboard">
         <div class="pl-top-box">
-            <div class="pl-top-todo-col">
-                <div style="font-size:0.75rem; font-weight:800; color:var(--primary-blue); margin-bottom:10px;">
-                    MASTER TO-DO <span style="font-size:0.65rem; font-weight:400; color:#666;"></span>
-                </div>
-                <div id="pl-toptodo-list" style="flex:1; display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:min-content; align-content:start; gap:6px 15px; max-height:80px; overflow-y:auto; overflow-x:hidden;"></div>
-                <input type="text" id="pl-toptodo-inp" placeholder="" autocomplete="off" style="margin-top:10px; border:none; border-bottom:1px solid rgba(0,0,0,0.1); background:transparent; font-size:0.8rem; outline:none; color:#000;" onkeydown="if(event.key==='Enter') pl_addTopTodo()">
-            </div>
-            <div class="pl-top-memo-col">
-                <div style="font-size:0.75rem; font-weight:800; color:var(--primary-blue); margin-bottom:10px;">MEMO</div>
-                <textarea id="pl-top-memo" placeholder="" style="flex:1; width:100%; min-height:80px; border:none; background:transparent; resize:none; font-size:0.85rem; outline:none; color:#111;" oninput="pl_saveTopMemo()"></textarea>
+            <div style="font-size:0.75rem; font-weight:800; color:var(--primary-blue); margin-bottom:10px;">MEMO</div>
+            <div class="pl-memo-container">
+                <textarea id="pl-top-memo-1" class="pl-memo-textarea" placeholder="" oninput="pl_saveTopMemo()"></textarea>
+                <textarea id="pl-top-memo-2" class="pl-memo-textarea" placeholder="" oninput="pl_saveTopMemo()"></textarea>
+                <textarea id="pl-top-memo-3" class="pl-memo-textarea" placeholder="" oninput="pl_saveTopMemo()"></textarea>
             </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
+        
+        <div class="pl-top-buttons">
             <button onclick="pl_openSubjectOnlyModal()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">SUBJECT</button>
             <button onclick="pl_openColorOnlyModal()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">COLORS</button>
+            <div id="hl-quick-select" title="우클릭 시 형광펜 편집" style="display:flex; justify-content:space-evenly; align-items:center; padding: 4px 10px; border:1px solid #000; border-radius:20px; background:#fff; height: 34px; box-sizing: border-box;" oncontextmenu="pl_openHlModal(event)">
+                </div>
         </div>
     </div>
 
@@ -2498,9 +2518,9 @@
 
 <div id="pl-card-menu" class="pl-menu" onmouseleave="this.style.display='none'">
     <div id="pl-color-swatches" style="padding: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-blue);"></div>
-    <div class="pl-menu-item" onclick="pl_toggleEditMode()">수정</div>
+    <div class="pl-menu-item" onclick="pl_toggleEditMode()">할 일 추가/수정</div>
     <div class="pl-menu-item" onclick="pl_editCardDate()">날짜 수정</div>
-    <div class="pl-menu-item delete" onclick="pl_deleteCard()">계획 삭제</div>
+    <div class="pl-menu-item delete" onclick="pl_deleteCard()">카드 삭제</div>
 </div>
 
 <div id="pl-item-menu" class="pl-menu" onmouseleave="this.style.display='none'">
@@ -2510,7 +2530,6 @@
 
 <div id="pl-subject-modal" class="pl-modal-overlay" onclick="this.style.display='none'">
     <div class="pl-modal-content" onclick="event.stopPropagation()">
-        
         <div id="pl-subject-section" style="margin-bottom: 30px;">
             <div style="display:grid; grid-template-columns: 2fr 1fr 30px; gap:10px; font-size:0.75rem; font-weight:700; color:var(--primary-blue); margin-bottom:10px; text-align:center; border-bottom: 1px solid var(--primary-blue); padding-bottom: 5px;">
                 <div>TAG NAME</div><div>COLOR</div><div>DEL</div>
@@ -2520,7 +2539,6 @@
                 <span style="font-size: 0.8rem; font-weight:700; color:var(--grey-text); cursor:pointer;" onclick="pl_addTagRow()">+ Add Subject</span>
             </div>
         </div>
-
         <div id="pl-color-section" style="margin-bottom: 20px;">
             <div style="font-size:0.75rem; font-weight:700; color:var(--primary-blue); margin-bottom:15px; text-align:center; border-bottom: 1px solid var(--primary-blue); padding-bottom: 5px;">
                 BACKGROUND PRESETS <span style="font-size:0.6rem; color:#888;">(우클릭 시 삭제)</span>
@@ -2530,10 +2548,32 @@
                 <span style="font-size: 0.8rem; font-weight:700; color:var(--grey-text); cursor:pointer;" onclick="pl_addBgRow()">+ Add Color</span>
             </div>
         </div>
-
         <div style="display:flex; gap:10px; margin-top:25px;">
             <button class="chrono-btn" style="flex:1;" onclick="document.getElementById('pl-subject-modal').style.display='none'">취소</button>
             <button class="chrono-btn primary" style="flex:1; background: var(--primary-blue); color: #fff;" onclick="pl_saveSubjectTags()">저장</button>
+        </div>
+    </div>
+</div>
+
+<div id="pl-hl-modal" class="pl-modal-overlay" onclick="this.style.display='none'">
+    <div class="pl-modal-content" onclick="event.stopPropagation()">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--primary-blue); margin-bottom:15px; text-align:center; border-bottom: 1px solid var(--primary-blue); padding-bottom: 5px;">
+            HIGHLIGHTER PRESETS <br><span style="font-size:0.65rem; color:#888;">(우클릭 시 삭제)</span>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 15px;">
+            <button id="hl-select-mode-btn" class="chrono-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="pl_toggleHlSelectMode()">대표 컬러 설정 (OFF)</button>
+            <div style="font-size:0.65rem; color:#666; margin-top:5px;">버튼을 켜고 동그라미를 클릭하면 메인 3개가 선택됩니다.</div>
+        </div>
+
+        <div id="pl-hl-list" class="pl-bg-wrap" style="gap:15px; padding: 10px 0;"></div>
+        
+        <div style="text-align:center; margin-top:15px;">
+            <span style="font-size: 0.8rem; font-weight:700; color:var(--grey-text); cursor:pointer;" onclick="pl_addHlRow()">+ Add Color</span>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:25px;">
+            <button class="chrono-btn" style="flex:1;" onclick="document.getElementById('pl-hl-modal').style.display='none'">취소</button>
+            <button class="chrono-btn primary" style="flex:1; background: var(--primary-blue); color: #fff;" onclick="pl_saveHlTags()">저장</button>
         </div>
     </div>
 </div>
@@ -2544,73 +2584,52 @@
         catch (e) { return fallback; } 
     }
 
-    const PLANNER_DB = 'isolated_planner_data_v18'; 
-    const PLANNER_TAGS = 'isolated_planner_tags_v18'; 
-    const PLANNER_BGS = 'isolated_planner_bgs_v18';
-    const PLANNER_TOP_TODO = 'isolated_planner_toptodo_v18';
-    const PLANNER_TOP_MEMO = 'isolated_planner_topmemo_v18';
+    const PLANNER_DB = 'isolated_planner_data_v22'; 
+    const PLANNER_TAGS = 'isolated_planner_tags_v22'; 
+    const PLANNER_BGS = 'isolated_planner_bgs_v22';
+    const PLANNER_TOP_MEMO = 'isolated_planner_topmemo_v22';
+    const PLANNER_HLS = 'isolated_planner_hls_v22';
     
     let pTags = plSafeJSON(PLANNER_TAGS, [ { id: 'CON', name: 'CON', color: '#5a97eb' }, { id: 'IR', name: 'IR', color: '#ff6b6b' }, { id: 'IL', name: 'IL', color: '#4ecdc4' }, { id: 'PSAT', name: 'PSAT', color: '#ffa62b' } ]);
     let pBgColors = plSafeJSON(PLANNER_BGS, ['#e8f1f9', '#f2e1e1', '#e1cfa1', '#ffffff']);
     let pData = plSafeJSON(PLANNER_DB, {}); 
-    let pTopTodos = plSafeJSON(PLANNER_TOP_TODO, []);
-    let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, "");
+    
+    let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, ["", "", ""]);
+    if (typeof pTopMemo === 'string') pTopMemo = [pTopMemo, "", ""]; // 배열 형태 마이그레이션
+    
+    // 형광펜 기본 데이터 (노랑, 핑크, 초록)
+    let pHighlighters = plSafeJSON(PLANNER_HLS, [
+        { id: 1, c: '#fff59d', m: true },
+        { id: 2, c: '#ffcdd2', m: true },
+        { id: 3, c: '#c8e6c9', m: true }
+    ]);
+    let currentHl = pHighlighters.find(x => x.m)?.c || '#fff59d';
+    let isHlSelectMode = false;
     
     let currentContextDate = null;
     let currentItemContext = { dateStr: null, id: null };
 
     function pl_getLogicalDateStr() { let d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getMonth() + 1}.${d.getDate()}`; }
 
-    // 마스터 투두 렌더링
+    // 탑 대시보드 (메모 3열 반영)
     function pl_renderTopDashboard() {
-        const listEl = document.getElementById('pl-toptodo-list');
-        if(listEl) {
-            listEl.innerHTML = pTopTodos.map(t => `
-                <div class="pl-main-row ${t.done ? 'done' : ''}" style="gap:8px; padding:2px 0;">
-                    <div class="pl-check-icon" onclick="pl_toggleTopTodo(${t.id}, ${!t.done})">
-                        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </div>
-                    <span class="pl-item-text" style="${t.done ? 'text-decoration:line-through; text-decoration-thickness:1.5px; text-decoration-color:rgba(0,0,0,0.4);' : ''}">${t.text}</span>
-                    <span style="cursor:pointer; color:rgba(42, 85, 140, 0.4); font-size:1.2rem; font-weight:300; line-height:1; flex-shrink:0; padding-left:5px;" onclick="pl_deleteTopTodo(${t.id})">×</span>
-                </div>
-            `).join('');
+        for(let i=1; i<=3; i++) {
+            const memoEl = document.getElementById('pl-top-memo-' + i);
+            if(memoEl && memoEl.value === "") memoEl.value = pTopMemo[i-1] || "";
         }
-        const memoEl = document.getElementById('pl-top-memo');
-        if(memoEl && memoEl.value === "") memoEl.value = pTopMemo;
-    }
-
-    function pl_addTopTodo() {
-        const inp = document.getElementById('pl-toptodo-inp');
-        const txt = inp.value.trim();
-        if(!txt) return;
-        pTopTodos.push({ id: Date.now(), text: txt, done: false });
-        inp.value = '';
-        localStorage.setItem(PLANNER_TOP_TODO, JSON.stringify(pTopTodos));
-        pl_renderTopDashboard();
-    }
-
-    function pl_toggleTopTodo(id, isDone) {
-        let t = pTopTodos.find(x => x.id === id);
-        if(t) t.done = isDone;
-        localStorage.setItem(PLANNER_TOP_TODO, JSON.stringify(pTopTodos));
-        pl_renderTopDashboard();
-    }
-
-    function pl_deleteTopTodo(id) {
-        pTopTodos = pTopTodos.filter(x => x.id !== id);
-        localStorage.setItem(PLANNER_TOP_TODO, JSON.stringify(pTopTodos));
-        pl_renderTopDashboard();
     }
 
     function pl_saveTopMemo() {
-        const val = document.getElementById('pl-top-memo').value;
-        localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(val));
+        pTopMemo[0] = document.getElementById('pl-top-memo-1').value;
+        pTopMemo[1] = document.getElementById('pl-top-memo-2').value;
+        pTopMemo[2] = document.getElementById('pl-top-memo-3').value;
+        localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(pTopMemo));
     }
 
     if (Object.keys(pData).length === 0) {
         for (let i = 12; i >= 0; i--) {
             let d = new Date(); d.setDate(d.getDate() - i); let ds = `${d.getMonth() + 1}.${d.getDate()}`;
-            pData[ds] = { bgColor: pBgColors[i % pBgColors.length] || '#ffffff', studyTime: "", items: [ { id: Math.random(), tag: 'CON', text: '헌법 기출문제 1회독', done: (i > 2) }, { id: Math.random(), tag: 'IR', text: '국제정치학 이론 백지복습', done: (i > 4) } ] };
+            pData[ds] = { bgColor: pBgColors[i % pBgColors.length] || '#ffffff', studyTime: "", items: [ { id: Math.random(), tag: 'CON', text: '헌법 기출문제 1회독', hl: null }, { id: Math.random(), tag: 'IR', text: '국제정치학 이론 백지복습', hl: null } ] };
         }
         pl_savePlanner();
     }
@@ -2623,6 +2642,7 @@
 
     function pl_renderPlanner() {
         pl_renderTopDashboard();
+        pl_renderHlQuick();
 
         const container = document.getElementById('planner-scroll-container'); 
         if(!container) return;
@@ -2658,22 +2678,22 @@
                     <div id="pl-list-${dateStr}" class="planner-sortable-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; min-height: 50px;">
                         ${cardData.items.map(item => {
                             let tInfo = pTags.find(x => x.id === item.tag) || { color: '#ccc' };
+                            let hlColor = item.hl || 'transparent';
                             return `
-                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this)" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})">
-                                <div class="pl-main-row ${item.done ? 'done' : ''}">
+                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})">
+                                <div class="pl-main-row">
                                     <div class="pl-row-strike-target">
                                         <span class="pl-tag" style="background:${tInfo.color};">${item.tag}</span>
-                                        <span class="pl-item-text">${item.text}</span>
-                                    </div>
-                                    <div class="pl-check-icon" onclick="pl_toggleDone(event, '${dateStr}', ${item.id}, ${!item.done})">
-                                        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        <span class="pl-item-text pl-hl-text" style="--hl-color:${hlColor};">${item.text}</span>
                                     </div>
                                 </div>
-                                ${item.subItems ? item.subItems.map((sub, sIdx) => `
-                                    <div class="pl-sub-item ${sub.done ? 'done' : ''}">
-                                        <span class="pl-item-text" onclick="pl_toggleSubDone('${dateStr}', ${item.id}, ${sIdx}, ${!sub.done})">${sub.text}</span>
-                                    </div>
-                                `).join('') : ''}
+                                ${item.subItems ? item.subItems.map((sub, sIdx) => {
+                                    let subHlColor = sub.hl || 'transparent';
+                                    return `
+                                    <div class="pl-sub-item" onclick="pl_subItemClick(event, '${dateStr}', ${item.id}, ${sIdx})">
+                                        <span class="pl-item-text pl-hl-text" style="--hl-color:${subHlColor};">${sub.text}</span>
+                                    </div>`
+                                }).join('') : ''}
                             </div>`;
                         }).join('')}
                     </div>
@@ -2686,14 +2706,36 @@
                 </div>`;
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
-        document.querySelectorAll('.planner-sortable-list').forEach(el => { new Sortable(el, { group: 'planner', animation: 150, multiDrag: true, selectedClass: 'pl-selected', fallbackTolerance: 3, onEnd: function() { pl_syncAfterDrag(); } }); });
+        document.querySelectorAll('.planner-sortable-list').forEach(el => { new Sortable(el, { group: 'planner', animation: 150, fallbackTolerance: 3, onEnd: function() { pl_syncAfterDrag(); } }); });
     }
 
-    function pl_itemClick(e, el) {
+    // 클릭 시 형광펜 칠하기 (다중 선택 기능 유지)
+    function pl_itemClick(e, el, dateStr, id) {
         if(e.shiftKey || e.ctrlKey || e.metaKey) {
             el.classList.toggle('pl-selected');
         } else {
+            let item = pData[dateStr].items.find(x => x.id === id);
+            if(item) {
+                let currentColor = item.hl || null;
+                if (currentColor === currentHl) { item.hl = null; item.done = false; }
+                else { item.hl = currentHl; item.done = true; }
+                pl_savePlanner(); pl_renderPlanner();
+            }
             document.querySelectorAll('.pl-item-wrapper.pl-selected').forEach(sel => sel.classList.remove('pl-selected'));
+        }
+    }
+
+    function pl_subItemClick(e, dateStr, id, sIdx) {
+        e.stopPropagation();
+        if(e.shiftKey || e.ctrlKey || e.metaKey) return; 
+        
+        let item = pData[dateStr].items.find(x => x.id === id);
+        if(item && item.subItems[sIdx]) {
+            let sub = item.subItems[sIdx];
+            let currentColor = sub.hl || null;
+            if (currentColor === currentHl) { sub.hl = null; sub.done = false; } 
+            else { sub.hl = currentHl; sub.done = true; }
+            pl_savePlanner(); pl_renderPlanner();
         }
     }
 
@@ -2702,14 +2744,11 @@
         let tagInput = document.getElementById(`pl-tag-${dateStr}`); 
         let text = textInput.value.trim(); 
         if (!text) return; 
-        pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false }); 
+        pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false, hl: null }); 
         textInput.value = '';
         pl_savePlanner(); pl_renderPlanner();
         document.getElementById('card-' + dateStr).classList.add('edit-mode');
     }
-    
-    function pl_toggleDone(e, dateStr, id, isDone) { e.stopPropagation(); let item = pData[dateStr].items.find(x => x.id === id); if (item) item.done = isDone; pl_savePlanner(); pl_renderPlanner(); }
-    function pl_toggleSubDone(dateStr, id, sIdx, isDone) { let item = pData[dateStr].items.find(x => x.id === id); if (item && item.subItems[sIdx]) item.subItems[sIdx].done = isDone; pl_savePlanner(); pl_renderPlanner(); }
     
     function pl_syncAfterDrag() { let newPData = JSON.parse(JSON.stringify(pData)); document.querySelectorAll('.planner-sortable-list').forEach(listEl => { let dateStr = listEl.id.replace('pl-list-', ''); newPData[dateStr].items = []; listEl.querySelectorAll('.pl-item-wrapper').forEach(itemEl => { let id = parseFloat(itemEl.getAttribute('data-id')); let origItem = null; for (let d in pData) { let found = pData[d].items.find(x => x.id === id); if (found) { origItem = found; break; } } if (origItem) newPData[dateStr].items.push(origItem); }); }); pData = newPData; pl_savePlanner(); }
 
@@ -2745,7 +2784,7 @@
         let parent = itemsToMerge[0];
         if (!parent.subItems) parent.subItems = [];
         for(let i = 1; i < itemsToMerge.length; i++) {
-            parent.subItems.push({ text: itemsToMerge[i].text, done: itemsToMerge[i].done });
+            parent.subItems.push({ text: itemsToMerge[i].text, done: itemsToMerge[i].done, hl: itemsToMerge[i].hl });
             if(itemsToMerge[i].subItems) {
                 itemsToMerge[i].subItems.forEach(sub => parent.subItems.push(sub));
             }
@@ -2764,13 +2803,114 @@
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            const modal = document.getElementById('pl-subject-modal');
-            if (modal && modal.style.display === 'flex') {
-                modal.style.display = 'none';
-            }
+            ['pl-subject-modal', 'pl-hl-modal'].forEach(id => {
+                let m = document.getElementById(id);
+                if (m && m.style.display === 'flex') m.style.display = 'none';
+            });
         }
     });
 
+    // --- 형광펜 관리 모달 로직 ---
+    function pl_setHl(color) {
+        currentHl = color;
+        pl_renderHlQuick();
+    }
+
+    function pl_openHlModal(e) {
+        e.preventDefault();
+        isHlSelectMode = false;
+        pl_renderHlRows();
+        document.getElementById('pl-hl-modal').style.display = 'flex';
+    }
+
+    function pl_toggleHlSelectMode() {
+        isHlSelectMode = !isHlSelectMode;
+        pl_renderHlRows();
+    }
+
+    function pl_renderHlRows() {
+        const list = document.getElementById('pl-hl-list');
+        const btn = document.getElementById('hl-select-mode-btn');
+        
+        if (isHlSelectMode) {
+            btn.innerText = "대표 컬러 설정 (ON)";
+            btn.style.background = "var(--primary-blue)";
+            btn.style.color = "#fff";
+        } else {
+            btn.innerText = "대표 컬러 설정 (OFF)";
+            btn.style.background = "#fff";
+            btn.style.color = "var(--line-color)";
+        }
+
+        list.innerHTML = pHighlighters.map((h, i) => `
+            <div oncontextmenu="pl_removeHl(${i}, event)" onclick="pl_clickHl(${i}, event)" style="position:relative; width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s; border: 1px solid #000; ${h.m ? 'box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform:scale(1.15);' : ''}">
+                <input type="color" class="hl-color-in" value="${h.c}" onchange="pl_updateHl(${i}, this.value)" style="margin:0; width:100%; height:100%; padding:0; ${isHlSelectMode ? 'pointer-events:none;' : ''}">
+            </div>
+        `).join('');
+    }
+
+    function pl_clickHl(idx, e) {
+        if (isHlSelectMode) {
+            let h = pHighlighters[idx];
+            if (h.m) {
+                h.m = false;
+            } else {
+                let mainCount = pHighlighters.filter(x => x.m).length;
+                if (mainCount >= 3) {
+                    alert("대표 컬러는 최대 3개까지만 설정할 수 있습니다.");
+                    return;
+                }
+                h.m = true;
+            }
+            pl_renderHlRows();
+        }
+    }
+
+    function pl_addHlRow() {
+        pHighlighters.push({ id: Date.now() + Math.random(), c: '#ffffff', m: false });
+        pl_renderHlRows();
+    }
+
+    function pl_removeHl(idx, e) {
+        e.preventDefault();
+        if (confirm('해당 색상을 프리셋에서 삭제하시겠습니까?')) {
+            pHighlighters.splice(idx, 1);
+            pl_renderHlRows();
+        }
+    }
+
+    function pl_updateHl(idx, val) {
+        pHighlighters[idx].c = val;
+    }
+
+    function pl_saveHlTags() {
+        let mainCount = pHighlighters.filter(x => x.m).length;
+        if(mainCount !== 3 && pHighlighters.length >= 3) {
+            alert("메인 퀵바에 노출될 대표 컬러를 정확히 3개 체크해주세요.");
+            return;
+        }
+        localStorage.setItem(PLANNER_HLS, JSON.stringify(pHighlighters));
+        
+        if(!pHighlighters.find(x => x.c === currentHl && x.m)) {
+            currentHl = pHighlighters.find(x => x.m)?.c || pHighlighters[0]?.c;
+        }
+        pl_renderHlQuick();
+        document.getElementById('pl-hl-modal').style.display = 'none';
+    }
+
+    function pl_renderHlQuick() {
+        const wrap = document.getElementById('hl-quick-select');
+        if(!wrap) return;
+        let mains = pHighlighters.filter(x => x.m).slice(0,3);
+        if(mains.length === 0) mains = pHighlighters.slice(0,3);
+        wrap.innerHTML = mains.map(h => `
+            <div class="hl-circle ${currentHl === h.c ? 'active' : ''}" 
+                 style="background:${h.c};" 
+                 onclick="pl_setHl('${h.c}')"></div>
+        `).join('');
+    }
+
+    // --- 기존 설정 모달 ---
     function pl_openSubjectOnlyModal() { 
         pl_renderSubjectRows(); 
         document.getElementById('pl-subject-section').style.display = 'block';
@@ -2809,7 +2949,6 @@
             if (n) newTags.push({ id: n, name: n, color: c }); 
         }); 
         if (newTags.length > 0) pTags = newTags;
-        
         if (pBgColors.length === 0) pBgColors = ['#ffffff']; 
         
         pl_savePlanner(); pl_renderPlanner(); 
@@ -2850,5 +2989,6 @@
         }
     }, 400);
 </script>
+    
 </body>
 </html>
