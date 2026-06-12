@@ -2217,7 +2217,7 @@
     font-family: 'GmarketSansChrono', sans-serif !important;
 }
 
-/* 상단 대시보드 */
+/* 상단 대시보드 (좌측 박스 + 우측 버튼) */
 .pl-top-dashboard {
     display: flex;
     justify-content: space-between;
@@ -2225,10 +2225,12 @@
     margin-bottom: 20px;
     gap: 20px;
 }
+
+/* 박스 내부 3열 메모장 */
 .pl-top-box {
     flex: 1;
     background-color: #f0f4f8; 
-    border: 1px solid rgba(42, 85, 140, 0.2); /* 메모장 외부 테두리 */
+    border: 1px solid rgba(42, 85, 140, 0.1);
     border-radius: 8px;
     padding: 15px;
     display: flex;
@@ -2239,8 +2241,6 @@
     width: 100%;
     gap: 15px;
 }
-
-/* 메모장 텍스트 가이드라인 (줄무늬 효과) */
 .pl-memo-textarea {
     flex: 1;
     width: 100%;
@@ -2252,9 +2252,13 @@
     outline: none;
     color: #111;
     box-sizing: border-box;
+    /* 텍스트를 칠 때만 연한 밑줄이 나오도록 설정 */
     line-height: 1.6;
-    background-image: repeating-linear-gradient(transparent, transparent 23px, rgba(42,85,140,0.1) 24px); /* 가이드라인 줄 */
+    text-decoration: underline;
+    text-decoration-color: rgba(42, 85, 140, 0.25);
+    text-underline-offset: 4px;
 }
+/* 기존에 있던 .pl-memo-textarea:not(:last-child) 세로선 코드는 삭제됨 */
 .pl-memo-textarea:not(:last-child) {
     border-right: 1px dashed rgba(42, 85, 140, 0.2);
     padding-right: 15px;
@@ -2270,8 +2274,16 @@
 
 @media (max-width: 650px) {
     .pl-top-dashboard { flex-direction: column-reverse; }
-    .pl-memo-container { flex-direction: column; gap: 0; }
-    .pl-memo-textarea:not(:last-child) { border-right: none; border-bottom: 1px dashed rgba(42, 85, 140, 0.2); padding-right: 0; padding-bottom: 15px; margin-bottom: 15px; }
+    .pl-memo-container { flex-direction: column; gap: 10px; }
+}
+
+/* 스크롤바 완전 숨김 (스크롤 기능은 유지) */
+.pl-memo-textarea::-webkit-scrollbar { 
+    display: none; 
+}
+.pl-memo-textarea { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
 }
 
 /* 3열 강제 배치 (Grid) */
@@ -2294,10 +2306,14 @@
     height: fit-content;
     transition: opacity 0.2s, background 0.2s;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid rgba(42, 85, 140, 0.15); /* 연한 바깥 테두리 추가 */
 }
 
-.planner-card.empty { opacity: 0.5; }
+.planner-card.empty {
+    opacity: 0.5;
+}
 
+/* 카드 상단 헤더 */
 .pl-card-header {
     display: flex;
     justify-content: space-between;
@@ -2307,6 +2323,7 @@
     padding-bottom: 6px;
 }
 
+/* 공부 시간 입력칸 */
 .pl-study-time {
     font-family: 'Montserrat', sans-serif !important;
     font-size: 0.85rem;
@@ -2321,8 +2338,12 @@
     padding: 0;
     transition: opacity 0.2s;
 }
-.pl-study-time:focus { opacity: 0.9; border-bottom: 1px solid rgba(42, 85, 140, 0.3); }
+.pl-study-time:focus {
+    opacity: 0.9;
+    border-bottom: 1px solid rgba(42, 85, 140, 0.3);
+}
 
+/* 날짜 */
 .pl-date-title {
     font-family: 'Playfair Display', serif !important;
     font-size: 0.85rem;
@@ -2380,26 +2401,42 @@
     line-height: 1.3;
 }
 
+/* 리얼 형광펜 디자인 */
+/* 가로 스크롤바 원천 차단 */
+.planner-sortable-list {
+    overflow-x: hidden !important; 
+}
+
 .pl-hl-text {
     position: relative;
     z-index: 1;
     display: inline-block;
     padding: 0 4px;
 }
+
 .pl-hl-text::before {
     content: '';
     position: absolute;
     top: 2px; 
     bottom: 2px; 
-    left: -2px; 
-    right: -2px;
+    /* 삐져나가지 않도록 형광펜 가로폭 축소 (스크롤바 원인 제거) */
+    left: 2px; 
+    right: 2px;
     background-color: var(--hl-color, transparent);
+    /* 중앙 연하게, 양끝 4px 진하게 (딱 찍어 긋는 느낌) */
+    background-image: linear-gradient(90deg, transparent 0px, transparent 4px, rgba(255, 255, 255, 0.55) 4px, rgba(255, 255, 255, 0.55) calc(100% - 4px), transparent calc(100% - 4px), transparent 100%);
     z-index: -1;
-    transform: skewX(-12deg); 
+    transform: skewX(-15deg); 
     border-radius: 3px;
     transition: background-color 0.2s;
 }
 
+/* 색을 칠하지 않은 기본 상태에서는 하얀색 필터도 아예 안 보이게 완벽히 숨김 */
+.pl-hl-text[style*="transparent"]::before {
+    background-image: none !important;
+}
+
+/* └ 기호 정렬 */
 .pl-sub-item {
     font-size: 0.75rem;
     color: #555;
@@ -2472,6 +2509,7 @@
 .tag-color-in::-webkit-color-swatch, .bg-color-in::-webkit-color-swatch, .hl-color-in::-webkit-color-swatch { border: none; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
 .pl-del-btn { border: none !important; background: transparent !important; color: #d32f2f !important; font-weight: 800; font-size: 1.1rem; cursor: pointer; padding: 0; }
 
+/* 형광펜 동그라미(퀵셀렉트) - 검은 테두리 및 그림자 */
 .hl-circle { width:22px; height:22px; border-radius:50%; cursor:pointer; border:1px solid #000; transition:transform 0.1s; flex-shrink:0;}
 .hl-circle:hover { transform:scale(1.1); }
 .hl-circle.active { border:1px solid #000; transform:scale(1.15); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
@@ -2546,10 +2584,14 @@
         <div style="font-size:0.75rem; font-weight:700; color:var(--primary-blue); margin-bottom:15px; text-align:center; border-bottom: 1px solid var(--primary-blue); padding-bottom: 5px;">
             HIGHLIGHTER PRESETS <br><span style="font-size:0.65rem; color:#888;">(우클릭 시 삭제)</span>
         </div>
+        
         <div style="text-align: center; margin-bottom: 15px;">
             <button id="hl-select-mode-btn" class="chrono-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="pl_toggleHlSelectMode()">대표 컬러 설정 (OFF)</button>
+            <div style="font-size:0.65rem; color:#666; margin-top:5px;">버튼을 켜고 동그라미를 클릭하면 메인 3개가 선택됩니다.</div>
         </div>
+
         <div id="pl-hl-list" class="pl-bg-wrap" style="gap:15px; padding: 10px 0;"></div>
+        
         <div style="text-align:center; margin-top:15px;">
             <span style="font-size: 0.8rem; font-weight:700; color:var(--grey-text); cursor:pointer;" onclick="pl_addHlRow()">+ Add Color</span>
         </div>
@@ -2566,31 +2608,43 @@
         catch (e) { return fallback; } 
     }
 
-    const PLANNER_DB = 'isolated_planner_data_v24'; 
-    const PLANNER_TAGS = 'isolated_planner_tags_v24'; 
-    const PLANNER_BGS = 'isolated_planner_bgs_v24';
-    const PLANNER_TOP_MEMO = 'isolated_planner_topmemo_v24';
-    const PLANNER_HLS = 'isolated_planner_hls_v24';
-    const PLANNER_LAST_TAGS = 'isolated_planner_lasttags_v24';
+    const PLANNER_DB = 'isolated_planner_data_v23'; 
+    const PLANNER_TAGS = 'isolated_planner_tags_v23'; 
+    const PLANNER_BGS = 'isolated_planner_bgs_v23';
+    const PLANNER_TOP_MEMO = 'isolated_planner_topmemo_v23';
+    const PLANNER_HLS = 'isolated_planner_hls_v23';
+    const PLANNER_LAST_TAGS = 'isolated_planner_lasttags_v23';
     
-    let pTags = plSafeJSON(PLANNER_TAGS, [ { id: 'CON', name: 'CON', color: '#5a97eb' }, { id: 'IR', name: 'IR', color: '#ff6b6b' }, { id: 'IL', name: 'IL', color: '#4ecdc4' }, { id: 'PSAT', name: 'PSAT', color: '#ffa62b' } ]);
-    let pBgColors = plSafeJSON(PLANNER_BGS, ['#e8f1f9', '#f2e1e1', '#e1cfa1', '#ffffff']);
-    let pData = plSafeJSON(PLANNER_DB, {}); 
-    let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, ["", "", ""]);
-    let pHighlighters = plSafeJSON(PLANNER_HLS, [{ id: 1, c: '#fff59d', m: true }, { id: 2, c: '#ffcdd2', m: true }, { id: 3, c: '#c8e6c9', m: true }]);
+    // 데이터 마이그레이션 (이전 버전 V22 데이터 유지)
+    let pTags = plSafeJSON(PLANNER_TAGS, plSafeJSON('isolated_planner_tags_v22', [ { id: 'CON', name: 'CON', color: '#5a97eb' }, { id: 'IR', name: 'IR', color: '#ff6b6b' }, { id: 'IL', name: 'IL', color: '#4ecdc4' }, { id: 'PSAT', name: 'PSAT', color: '#ffa62b' } ]));
+    let pBgColors = plSafeJSON(PLANNER_BGS, plSafeJSON('isolated_planner_bgs_v22', ['#e8f1f9', '#f2e1e1', '#e1cfa1', '#ffffff']));
+    let pData = plSafeJSON(PLANNER_DB, plSafeJSON('isolated_planner_data_v22', {})); 
+    
+    let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, plSafeJSON('isolated_planner_topmemo_v22', ["", "", ""]));
+    if (typeof pTopMemo === 'string') pTopMemo = [pTopMemo, "", ""]; 
+    
+    let pHighlighters = plSafeJSON(PLANNER_HLS, plSafeJSON('isolated_planner_hls_v22', [
+        { id: 1, c: '#fff59d', m: true },
+        { id: 2, c: '#ffcdd2', m: true },
+        { id: 3, c: '#c8e6c9', m: true }
+    ]));
+    
+    // 이전 선택 과목 기억용 객체
     let pLastTags = plSafeJSON(PLANNER_LAST_TAGS, {});
 
     let currentHl = pHighlighters.find(x => x.m)?.c || '#fff59d';
     let isHlSelectMode = false;
+    
     let currentContextDate = null;
     let currentItemContext = { dateStr: null, id: null };
 
     function pl_getLogicalDateStr() { let d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getMonth() + 1}.${d.getDate()}`; }
-    
+
+    // 탑 대시보드
     function pl_renderTopDashboard() {
         for(let i=1; i<=3; i++) {
             const memoEl = document.getElementById('pl-top-memo-' + i);
-            if(memoEl) memoEl.value = pTopMemo[i-1] || "";
+            if(memoEl && memoEl.value === "") memoEl.value = pTopMemo[i-1] || "";
         }
     }
 
@@ -2608,8 +2662,15 @@
         localStorage.setItem(PLANNER_LAST_TAGS, JSON.stringify(pLastTags));
     }
     
-    function pl_updateStudyTime(dateStr, val) { if (pData[dateStr]) { pData[dateStr].studyTime = val; pl_savePlanner(); } }
-    function pl_updateLastTag(dateStr, val) { pLastTags[dateStr] = val; pl_savePlanner(); }
+    function pl_updateStudyTime(dateStr, val) {
+        if (pData[dateStr]) { pData[dateStr].studyTime = val; pl_savePlanner(); }
+    }
+
+    // 선택 박스 값 변경 시 마지막 태그 업데이트
+    function pl_updateLastTag(dateStr, val) {
+        pLastTags[dateStr] = val;
+        pl_savePlanner();
+    }
 
     function pl_renderPlanner() {
         pl_renderTopDashboard();
@@ -2639,6 +2700,7 @@
             else if (cm > tm || (cm === tm && cd > td)) { timeClass = 'is-future'; }
             else { timeClass = 'is-past'; }
 
+            // 해당 날짜의 이전에 선택했던 태그를 불러옴. 없으면 전체 태그 중 첫번째 값으로 폴백.
             let currentSelectedTag = pLastTags[dateStr] || (pTags.length > 0 ? pTags[0].id : '');
 
             let cardHtml = `
@@ -2682,7 +2744,6 @@
         document.querySelectorAll('.planner-sortable-list').forEach(el => { new Sortable(el, { group: 'planner', animation: 150, fallbackTolerance: 3, onEnd: function() { pl_syncAfterDrag(); } }); });
     }
 
-    // [클릭 및 드래그 관련 스크립트 생략 (기존과 동일하므로 유지)]
     function pl_itemClick(e, el, dateStr, id) {
         if(e.shiftKey || e.ctrlKey || e.metaKey) {
             el.classList.toggle('pl-selected');
@@ -2697,10 +2758,11 @@
             document.querySelectorAll('.pl-item-wrapper.pl-selected').forEach(sel => sel.classList.remove('pl-selected'));
         }
     }
-    
+
     function pl_subItemClick(e, dateStr, id, sIdx) {
         e.stopPropagation();
         if(e.shiftKey || e.ctrlKey || e.metaKey) return; 
+        
         let item = pData[dateStr].items.find(x => x.id === id);
         if(item && item.subItems[sIdx]) {
             let sub = item.subItems[sIdx];
@@ -2718,7 +2780,10 @@
         if (!text) return; 
         pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false, hl: null }); 
         textInput.value = '';
+        
+        // 새로 추가 시 방금 추가한 과목 값을 저장
         pLastTags[dateStr] = tagInput.value;
+        
         pl_savePlanner(); pl_renderPlanner();
         document.getElementById('card-' + dateStr).classList.add('edit-mode');
     }
@@ -2742,7 +2807,12 @@
         let { dateStr } = currentItemContext; if(!dateStr) return;
         let listEl = document.getElementById(`pl-list-${dateStr}`);
         let selectedEls = listEl.querySelectorAll('.pl-selected');
-        if (selectedEls.length < 2) { alert("통합할 항목을 여러 개 선택해주세요."); return; }
+        
+        if (selectedEls.length < 2) { 
+            alert("통합 오류: Ctrl 키를 누른 채로 항목을 여러 개 클릭하여 초록색으로 선택한 후 우클릭해 주세요."); 
+            document.getElementById('pl-item-menu').style.display = 'none';
+            return; 
+        }
         
         let ids = Array.from(selectedEls).map(el => parseFloat(el.getAttribute('data-id')));
         let domIds = Array.from(listEl.querySelectorAll('.pl-item-wrapper')).map(el => parseFloat(el.getAttribute('data-id')));
@@ -2778,63 +2848,184 @@
         }
     });
 
-    function pl_setHl(color) { currentHl = color; pl_renderHlQuick(); }
-    function pl_openHlModal(e) { e.preventDefault(); isHlSelectMode = false; pl_renderHlRows(); document.getElementById('pl-hl-modal').style.display = 'flex'; }
-    function pl_toggleHlSelectMode() { isHlSelectMode = !isHlSelectMode; pl_renderHlRows(); }
+    // --- 형광펜 관리 모달 로직 ---
+    function pl_setHl(color) {
+        currentHl = color;
+        pl_renderHlQuick();
+    }
+
+    function pl_openHlModal(e) {
+        e.preventDefault();
+        isHlSelectMode = false;
+        pl_renderHlRows();
+        document.getElementById('pl-hl-modal').style.display = 'flex';
+    }
+
+    function pl_toggleHlSelectMode() {
+        isHlSelectMode = !isHlSelectMode;
+        pl_renderHlRows();
+    }
+
     function pl_renderHlRows() {
         const list = document.getElementById('pl-hl-list');
         const btn = document.getElementById('hl-select-mode-btn');
-        btn.innerText = isHlSelectMode ? "대표 컬러 설정 (ON)" : "대표 컬러 설정 (OFF)";
-        btn.style.background = isHlSelectMode ? "var(--primary-blue)" : "#fff";
-        btn.style.color = isHlSelectMode ? "#fff" : "var(--line-color)";
+        
+        if (isHlSelectMode) {
+            btn.innerText = "대표 컬러 설정 (ON)";
+            btn.style.background = "var(--primary-blue)";
+            btn.style.color = "#fff";
+        } else {
+            btn.innerText = "대표 컬러 설정 (OFF)";
+            btn.style.background = "#fff";
+            btn.style.color = "var(--line-color)";
+        }
+
         list.innerHTML = pHighlighters.map((h, i) => `
             <div oncontextmenu="pl_removeHl(${i}, event)" onclick="pl_clickHl(${i}, event)" style="position:relative; width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s; border: 1px solid #000; ${h.m ? 'box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform:scale(1.15);' : ''}">
                 <input type="color" class="hl-color-in" value="${h.c}" onchange="pl_updateHl(${i}, this.value)" style="margin:0; width:100%; height:100%; padding:0; ${isHlSelectMode ? 'pointer-events:none;' : ''}">
             </div>
         `).join('');
     }
+
     function pl_clickHl(idx, e) {
         if (isHlSelectMode) {
             let h = pHighlighters[idx];
-            if (h.m) h.m = false;
-            else {
-                if (pHighlighters.filter(x => x.m).length >= 3) { alert("대표 컬러는 최대 3개까지만 가능합니다."); return; }
+            if (h.m) {
+                h.m = false;
+            } else {
+                let mainCount = pHighlighters.filter(x => x.m).length;
+                if (mainCount >= 3) {
+                    alert("대표 컬러는 최대 3개까지만 설정할 수 있습니다.");
+                    return;
+                }
                 h.m = true;
             }
             pl_renderHlRows();
         }
     }
-    function pl_addHlRow() { pHighlighters.push({ id: Date.now() + Math.random(), c: '#ffffff', m: false }); pl_renderHlRows(); }
-    function pl_removeHl(idx, e) { e.preventDefault(); if (confirm('삭제하시겠습니까?')) { pHighlighters.splice(idx, 1); pl_renderHlRows(); } }
-    function pl_updateHl(idx, val) { pHighlighters[idx].c = val; }
-    function pl_saveHlTags() {
-        if(pHighlighters.filter(x => x.m).length !== 3 && pHighlighters.length >= 3) { alert("대표 컬러를 정확히 3개 체크해주세요."); return; }
-        localStorage.setItem(PLANNER_HLS, JSON.stringify(pHighlighters));
-        if(!pHighlighters.find(x => x.c === currentHl && x.m)) currentHl = pHighlighters.find(x => x.m)?.c || pHighlighters[0]?.c;
-        pl_renderHlQuick(); document.getElementById('pl-hl-modal').style.display = 'none';
+
+    function pl_addHlRow() {
+        pHighlighters.push({ id: Date.now() + Math.random(), c: '#ffffff', m: false });
+        pl_renderHlRows();
     }
+
+    function pl_removeHl(idx, e) {
+        e.preventDefault();
+        if (confirm('해당 색상을 프리셋에서 삭제하시겠습니까?')) {
+            pHighlighters.splice(idx, 1);
+            pl_renderHlRows();
+        }
+    }
+
+    function pl_updateHl(idx, val) {
+        pHighlighters[idx].c = val;
+    }
+
+    function pl_saveHlTags() {
+        let mainCount = pHighlighters.filter(x => x.m).length;
+        if(mainCount !== 3 && pHighlighters.length >= 3) {
+            alert("메인 퀵바에 노출될 대표 컬러를 정확히 3개 체크해주세요.");
+            return;
+        }
+        localStorage.setItem(PLANNER_HLS, JSON.stringify(pHighlighters));
+        
+        if(!pHighlighters.find(x => x.c === currentHl && x.m)) {
+            currentHl = pHighlighters.find(x => x.m)?.c || pHighlighters[0]?.c;
+        }
+        pl_renderHlQuick();
+        document.getElementById('pl-hl-modal').style.display = 'none';
+    }
+
     function pl_renderHlQuick() {
         const wrap = document.getElementById('hl-quick-select');
         if(!wrap) return;
         let mains = pHighlighters.filter(x => x.m).slice(0,3);
         if(mains.length === 0) mains = pHighlighters.slice(0,3);
-        wrap.innerHTML = mains.map(h => `<div class="hl-circle ${currentHl === h.c ? 'active' : ''}" style="background:${h.c};" onclick="pl_setHl('${h.c}')"></div>`).join('');
+        wrap.innerHTML = mains.map(h => `
+            <div class="hl-circle ${currentHl === h.c ? 'active' : ''}" 
+                 style="background:${h.c};" 
+                 onclick="pl_setHl('${h.c}')"></div>
+        `).join('');
     }
-    function pl_openSubjectOnlyModal() { pl_renderSubjectRows(); document.getElementById('pl-subject-section').style.display = 'block'; document.getElementById('pl-color-section').style.display = 'none'; document.getElementById('pl-subject-modal').style.display = 'flex'; }
-    function pl_openColorOnlyModal() { pl_renderBgRows(); document.getElementById('pl-subject-section').style.display = 'none'; document.getElementById('pl-color-section').style.display = 'block'; document.getElementById('pl-subject-modal').style.display = 'flex'; }
+
+    // --- 기존 설정 모달 ---
+    function pl_openSubjectOnlyModal() { 
+        pl_renderSubjectRows(); 
+        document.getElementById('pl-subject-section').style.display = 'block';
+        document.getElementById('pl-color-section').style.display = 'none';
+        document.getElementById('pl-subject-modal').style.display = 'flex'; 
+    }
+    
+    function pl_openColorOnlyModal() { 
+        pl_renderBgRows(); 
+        document.getElementById('pl-subject-section').style.display = 'none';
+        document.getElementById('pl-color-section').style.display = 'block';
+        document.getElementById('pl-subject-modal').style.display = 'flex'; 
+    }
+
     function pl_renderSubjectRows() { const list = document.getElementById('pl-tag-list'); list.innerHTML = ''; pTags.forEach((t, i) => { list.insertAdjacentHTML('beforeend', pl_getTagRowHTML(t, i)); }); }
     function pl_getTagRowHTML(t, idx) { return `<div class="pl-tag-row" id="tag-row-${idx}"><input type="text" class="chrono-input-text tag-name-in" value="${t.name}" style="border:1px solid #ccc; border-radius:4px; padding:6px; font-weight:700; text-align:center;"><input type="color" class="tag-color-in" value="${t.color}"><button class="pl-del-btn" onclick="document.getElementById('tag-row-${idx}').remove()">X</button></div>`; }
     function pl_addTagRow() { document.getElementById('pl-tag-list').insertAdjacentHTML('beforeend', pl_getTagRowHTML({name:'', color:'#5a97eb'}, Date.now())); }
-    function pl_renderBgRows() { const list = document.getElementById('pl-bg-list'); list.innerHTML = pBgColors.map((c, i) => `<div oncontextmenu="pl_removeBg(${i}, event)"><input type="color" class="bg-color-in" value="${c}" onchange="pl_updateBg(${i}, this.value)"></div>`).join(''); }
-    function pl_addBgRow() { pBgColors.push('#ffffff'); pl_renderBgRows(); }
-    function pl_removeBg(idx, e) { e.preventDefault(); if(confirm('삭제하시겠습니까?')) { pBgColors.splice(idx, 1); pl_renderBgRows(); } }
-    function pl_updateBg(idx, val) { pBgColors[idx] = val; }
-    function pl_saveSubjectTags() { 
-        let newTags = []; document.querySelectorAll('.pl-tag-row').forEach(row => { let n = row.querySelector('.tag-name-in').value.trim(); let c = row.querySelector('.tag-color-in').value; if (n) newTags.push({ id: n, name: n, color: c }); }); 
-        if (newTags.length > 0) pTags = newTags; if (pBgColors.length === 0) pBgColors = ['#ffffff']; 
-        pl_savePlanner(); pl_renderPlanner(); document.getElementById('pl-subject-modal').style.display = 'none'; 
-    }
-</script>
     
+    function pl_renderBgRows() { 
+        const list = document.getElementById('pl-bg-list'); 
+        list.innerHTML = pBgColors.map((c, i) => `
+            <div oncontextmenu="pl_removeBg(${i}, event)">
+                <input type="color" class="bg-color-in" value="${c}" onchange="pl_updateBg(${i}, this.value)">
+            </div>
+        `).join(''); 
+    }
+    function pl_addBgRow() { pBgColors.push('#ffffff'); pl_renderBgRows(); }
+    function pl_removeBg(idx, e) { e.preventDefault(); if(confirm('해당 색상을 프리셋에서 삭제하시겠습니까?')) { pBgColors.splice(idx, 1); pl_renderBgRows(); } }
+    function pl_updateBg(idx, val) { pBgColors[idx] = val; }
+
+    function pl_saveSubjectTags() { 
+        let newTags = []; 
+        document.querySelectorAll('.pl-tag-row').forEach(row => { 
+            let n = row.querySelector('.tag-name-in').value.trim(); 
+            let c = row.querySelector('.tag-color-in').value; 
+            if (n) newTags.push({ id: n, name: n, color: c }); 
+        }); 
+        if (newTags.length > 0) pTags = newTags;
+        if (pBgColors.length === 0) pBgColors = ['#ffffff']; 
+        
+        pl_savePlanner(); pl_renderPlanner(); 
+        document.getElementById('pl-subject-modal').style.display = 'none'; 
+    }
+
+    document.addEventListener('click', () => { 
+        if(document.getElementById('pl-card-menu')) document.getElementById('pl-card-menu').style.display = 'none'; 
+        if(document.getElementById('pl-item-menu')) document.getElementById('pl-item-menu').style.display = 'none'; 
+    });
+
+    setTimeout(() => {
+        const appWrapper = document.querySelector('.app-wrapper');
+        const plView = document.getElementById('planner-view');
+        const navLinks = document.querySelector('.nav-links');
+        
+        if (appWrapper && plView) appWrapper.appendChild(plView);
+        if (navLinks && !document.getElementById('nav-planner')) {
+            const btn = document.createElement('span');
+            btn.id = 'nav-planner';
+            btn.className = 'inactive';
+            btn.innerText = 'PLANNER';
+            btn.onclick = () => showPage('planner');
+            navLinks.appendChild(btn);
+        }
+
+        const __originalShowPage = window.showPage || function(){};
+        window.showPage = function(p) {
+            __originalShowPage(p); 
+            if(plView) plView.style.display = (p === 'planner') ? 'block' : 'none';
+            const navP = document.getElementById('nav-planner');
+            if(navP) navP.className = (p === 'planner') ? 'active' : 'inactive';
+            if(p === 'planner') pl_renderPlanner();
+        };
+        
+        if(localStorage.getItem('lastPage') === 'planner') {
+            showPage('planner');
+        }
+    }, 400);
+</script>
 </body>
 </html>
