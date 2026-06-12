@@ -2548,6 +2548,7 @@
 </div>
 
 <div id="pl-item-menu" class="pl-menu" onmouseleave="this.style.display='none'">
+    <div class="pl-menu-item" onclick="pl_editSelectedItem()">수정하기</div>
     <div class="pl-menu-item" style="color:var(--primary-blue);" onclick="pl_mergeSelectedItems()">선택 항목 통합하기</div>
     <div class="pl-menu-item delete" onclick="pl_deleteSelectedItem()">삭제하기</div>
 </div>
@@ -2836,6 +2837,19 @@
         let { dateStr, id } = currentItemContext; if(!dateStr || !id) return;
         pData[dateStr].items = pData[dateStr].items.filter(x => x.id !== id);
         pl_savePlanner(); pl_renderPlanner();
+        document.getElementById('pl-item-menu').style.display = 'none';
+    }
+
+    function pl_editSelectedItem() {
+        let { dateStr, id } = currentItemContext; if(!dateStr || !id) return;
+        let item = pData[dateStr].items.find(x => x.id === id);
+        if(item) {
+            let newText = prompt("내용 수정:", item.text);
+            if(newText !== null && newText.trim() !== "") {
+                item.text = newText.trim();
+                pl_savePlanner(); pl_renderPlanner();
+            }
+        }
         document.getElementById('pl-item-menu').style.display = 'none';
     }
 
