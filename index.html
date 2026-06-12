@@ -2217,7 +2217,7 @@
     font-family: 'GmarketSansChrono', sans-serif !important;
 }
 
-/* 상단 대시보드 (원상복구: 좌측 박스 + 우측 버튼) */
+/* 상단 대시보드 (좌측 박스 + 우측 버튼) */
 .pl-top-dashboard {
     display: flex;
     justify-content: space-between;
@@ -2226,7 +2226,7 @@
     gap: 20px;
 }
 
-/* 박스 내부를 3열 메모장으로 구성 */
+/* 박스 내부 3열 메모장 */
 .pl-top-box {
     flex: 1;
     background-color: #f0f4f8; 
@@ -2258,7 +2258,7 @@
     padding-right: 15px;
 }
 
-/* 우측 버튼 (작은 크기 유지) */
+/* 우측 버튼 */
 .pl-top-buttons {
     display: flex;
     flex-direction: column;
@@ -2391,7 +2391,7 @@
     line-height: 1.3;
 }
 
-/* 리얼 형광펜 디자인 (대각선 마감 처리) */
+/* 리얼 형광펜 디자인 */
 .pl-hl-text {
     position: relative;
     z-index: 1;
@@ -2509,7 +2509,7 @@
             <button onclick="pl_openSubjectOnlyModal()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">SUBJECT</button>
             <button onclick="pl_openColorOnlyModal()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">COLORS</button>
             <div id="hl-quick-select" title="우클릭 시 형광펜 편집" style="display:flex; justify-content:space-evenly; align-items:center; padding: 4px 10px; border:1px solid #000; border-radius:20px; background:#fff; height: 34px; box-sizing: border-box;" oncontextmenu="pl_openHlModal(event)">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -2584,25 +2584,30 @@
         catch (e) { return fallback; } 
     }
 
-    const PLANNER_DB = 'isolated_planner_data_v22'; 
-    const PLANNER_TAGS = 'isolated_planner_tags_v22'; 
-    const PLANNER_BGS = 'isolated_planner_bgs_v22';
-    const PLANNER_TOP_MEMO = 'isolated_planner_topmemo_v22';
-    const PLANNER_HLS = 'isolated_planner_hls_v22';
+    const PLANNER_DB = 'isolated_planner_data_v23'; 
+    const PLANNER_TAGS = 'isolated_planner_tags_v23'; 
+    const PLANNER_BGS = 'isolated_planner_bgs_v23';
+    const PLANNER_TOP_MEMO = 'isolated_planner_topmemo_v23';
+    const PLANNER_HLS = 'isolated_planner_hls_v23';
+    const PLANNER_LAST_TAGS = 'isolated_planner_lasttags_v23';
     
-    let pTags = plSafeJSON(PLANNER_TAGS, [ { id: 'CON', name: 'CON', color: '#5a97eb' }, { id: 'IR', name: 'IR', color: '#ff6b6b' }, { id: 'IL', name: 'IL', color: '#4ecdc4' }, { id: 'PSAT', name: 'PSAT', color: '#ffa62b' } ]);
-    let pBgColors = plSafeJSON(PLANNER_BGS, ['#e8f1f9', '#f2e1e1', '#e1cfa1', '#ffffff']);
-    let pData = plSafeJSON(PLANNER_DB, {}); 
+    // 데이터 마이그레이션 (이전 버전 V22 데이터 유지)
+    let pTags = plSafeJSON(PLANNER_TAGS, plSafeJSON('isolated_planner_tags_v22', [ { id: 'CON', name: 'CON', color: '#5a97eb' }, { id: 'IR', name: 'IR', color: '#ff6b6b' }, { id: 'IL', name: 'IL', color: '#4ecdc4' }, { id: 'PSAT', name: 'PSAT', color: '#ffa62b' } ]));
+    let pBgColors = plSafeJSON(PLANNER_BGS, plSafeJSON('isolated_planner_bgs_v22', ['#e8f1f9', '#f2e1e1', '#e1cfa1', '#ffffff']));
+    let pData = plSafeJSON(PLANNER_DB, plSafeJSON('isolated_planner_data_v22', {})); 
     
-    let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, ["", "", ""]);
-    if (typeof pTopMemo === 'string') pTopMemo = [pTopMemo, "", ""]; // 배열 형태 마이그레이션
+    let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, plSafeJSON('isolated_planner_topmemo_v22', ["", "", ""]));
+    if (typeof pTopMemo === 'string') pTopMemo = [pTopMemo, "", ""]; 
     
-    // 형광펜 기본 데이터 (노랑, 핑크, 초록)
-    let pHighlighters = plSafeJSON(PLANNER_HLS, [
+    let pHighlighters = plSafeJSON(PLANNER_HLS, plSafeJSON('isolated_planner_hls_v22', [
         { id: 1, c: '#fff59d', m: true },
         { id: 2, c: '#ffcdd2', m: true },
         { id: 3, c: '#c8e6c9', m: true }
-    ]);
+    ]));
+    
+    // 이전 선택 과목 기억용 객체
+    let pLastTags = plSafeJSON(PLANNER_LAST_TAGS, {});
+
     let currentHl = pHighlighters.find(x => x.m)?.c || '#fff59d';
     let isHlSelectMode = false;
     
@@ -2611,7 +2616,7 @@
 
     function pl_getLogicalDateStr() { let d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1); return `${d.getMonth() + 1}.${d.getDate()}`; }
 
-    // 탑 대시보드 (메모 3열 반영)
+    // 탑 대시보드
     function pl_renderTopDashboard() {
         for(let i=1; i<=3; i++) {
             const memoEl = document.getElementById('pl-top-memo-' + i);
@@ -2626,18 +2631,21 @@
         localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(pTopMemo));
     }
 
-    if (Object.keys(pData).length === 0) {
-        for (let i = 12; i >= 0; i--) {
-            let d = new Date(); d.setDate(d.getDate() - i); let ds = `${d.getMonth() + 1}.${d.getDate()}`;
-            pData[ds] = { bgColor: pBgColors[i % pBgColors.length] || '#ffffff', studyTime: "", items: [ { id: Math.random(), tag: 'CON', text: '헌법 기출문제 1회독', hl: null }, { id: Math.random(), tag: 'IR', text: '국제정치학 이론 백지복습', hl: null } ] };
-        }
-        pl_savePlanner();
+    function pl_savePlanner() { 
+        localStorage.setItem(PLANNER_DB, JSON.stringify(pData)); 
+        localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags)); 
+        localStorage.setItem(PLANNER_BGS, JSON.stringify(pBgColors)); 
+        localStorage.setItem(PLANNER_LAST_TAGS, JSON.stringify(pLastTags));
     }
-
-    function pl_savePlanner() { localStorage.setItem(PLANNER_DB, JSON.stringify(pData)); localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags)); localStorage.setItem(PLANNER_BGS, JSON.stringify(pBgColors)); }
     
     function pl_updateStudyTime(dateStr, val) {
         if (pData[dateStr]) { pData[dateStr].studyTime = val; pl_savePlanner(); }
+    }
+
+    // 선택 박스 값 변경 시 마지막 태그 업데이트
+    function pl_updateLastTag(dateStr, val) {
+        pLastTags[dateStr] = val;
+        pl_savePlanner();
     }
 
     function pl_renderPlanner() {
@@ -2667,6 +2675,9 @@
             if (dateStr === todayStr) { timeClass = 'is-today'; }
             else if (cm > tm || (cm === tm && cd > td)) { timeClass = 'is-future'; }
             else { timeClass = 'is-past'; }
+
+            // 해당 날짜의 이전에 선택했던 태그를 불러옴. 없으면 전체 태그 중 첫번째 값으로 폴백.
+            let currentSelectedTag = pLastTags[dateStr] || (pTags.length > 0 ? pTags[0].id : '');
 
             let cardHtml = `
                 <div class="planner-card ${isEmpty ? 'empty' : ''} ${timeClass}" id="card-${dateStr}" style="background: ${cardData.bgColor};" oncontextmenu="pl_openCardMenu(event, '${dateStr}')">
@@ -2698,8 +2709,8 @@
                         }).join('')}
                     </div>
                     <div class="pl-input-box">
-                        <select id="pl-tag-${dateStr}" class="pl-minimal-select">
-                            ${pTags.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                        <select id="pl-tag-${dateStr}" class="pl-minimal-select" onchange="pl_updateLastTag('${dateStr}', this.value)">
+                            ${pTags.map(t => `<option value="${t.id}" ${t.id === currentSelectedTag ? 'selected' : ''}>${t.name}</option>`).join('')}
                         </select>
                         <input type="text" id="pl-input-${dateStr}" class="pl-text-input" autocomplete="off" onkeydown="if(event.key==='Enter') pl_addItem('${dateStr}')">
                     </div>
@@ -2709,7 +2720,6 @@
         document.querySelectorAll('.planner-sortable-list').forEach(el => { new Sortable(el, { group: 'planner', animation: 150, fallbackTolerance: 3, onEnd: function() { pl_syncAfterDrag(); } }); });
     }
 
-    // 클릭 시 형광펜 칠하기 (다중 선택 기능 유지)
     function pl_itemClick(e, el, dateStr, id) {
         if(e.shiftKey || e.ctrlKey || e.metaKey) {
             el.classList.toggle('pl-selected');
@@ -2746,6 +2756,10 @@
         if (!text) return; 
         pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false, hl: null }); 
         textInput.value = '';
+        
+        // 새로 추가 시 방금 추가한 과목 값을 저장
+        pLastTags[dateStr] = tagInput.value;
+        
         pl_savePlanner(); pl_renderPlanner();
         document.getElementById('card-' + dateStr).classList.add('edit-mode');
     }
@@ -2989,6 +3003,5 @@
         }
     }, 400);
 </script>
-    
 </body>
 </html>
