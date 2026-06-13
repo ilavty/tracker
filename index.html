@@ -701,54 +701,93 @@
         }
         
         /* 사이클 헤더 텍스트 선택 방지 및 터치 피드백 */
+        /* 사이클 헤더 텍스트 선택 방지 및 터치 피드백 */
         .cycle-header {
             user-select: none !important;
             -webkit-user-select: none !important; 
             -webkit-touch-callout: none !important; 
             cursor: pointer;
         }
-}
 
-        /* --- 모바일 플래너 완벽 수리 --- */
-@media (max-width: 850px) {
-    /* 1. 과목 하이라이트 태그 1줄로 고정 및 가로 스크롤 활성화 */
-    #pl-tags-container {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        padding-bottom: 5px !important;
-        justify-content: flex-start !important;
-    }
-    #pl-tags-container::-webkit-scrollbar { 
-        display: none !important; 
-    }
-    .pl-tag-btn {
-        flex-shrink: 0 !important;
-        white-space: nowrap !important;
-        margin: 0 6px 0 0 !important;
-    }
+        /* --- 플래너 모바일 최적화 (2열 배치, 버튼 1줄, 메모장 가로폭) --- */
+        @media (max-width: 850px) {
+            /* 1. SUBJECT, COLORS, 형광펜 버튼 1행으로 가로 배치 */
+            .pl-top-dashboard {
+                flex-direction: column !important; 
+                gap: 10px !important;
+            }
+            .pl-top-buttons {
+                flex-direction: row !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 6px !important;
+            }
+            .pl-top-buttons > button {
+                flex: 1 !important;
+                padding: 8px 0 !important;
+                font-size: 0.7rem !important;
+                margin: 0 !important;
+            }
+            #hl-quick-select {
+                flex: 1.2 !important;
+                padding: 0 5px !important;
+                margin: 0 !important;
+                height: 32px !important;
+            }
+            .hl-circle {
+                width: 18px !important;
+                height: 18px !important;
+            }
 
-    /* 2. 상단 3분할 메모장 가로폭 화면에 딱 맞추기 (오른쪽 짤림 방지) */
-    .pl-memo-textarea {
-        flex: 1 1 0px !important;
-        min-width: 0 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
+            /* 2. 메모장 화면 가로폭에 딱 맞추기 */
+            .pl-top-box {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 12px !important;
+            }
+            .pl-memo-container {
+                flex-direction: column !important; /* 세로로 3칸 분리해서 폭 확보 */
+                gap: 8px !important;
+            }
+            .pl-memo-textarea {
+                width: 100% !important;
+                min-height: 45px !important;
+                border-right: none !important;
+                border-bottom: 1px dashed rgba(42, 85, 140, 0.2) !important;
+                padding-right: 0 !important;
+                padding-bottom: 8px !important;
+            }
+            .pl-memo-textarea:last-child {
+                border-bottom: none !important;
+                padding-bottom: 0 !important;
+            }
 
-    /* 3. 하루 계획 카드들을 바둑판식 2열로 정렬 */
-    #pl-board {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
-        align-items: start !important;
-    }
-    .pl-card {
-        width: 100% !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-    }
-}
+            /* 3. 하루 계획들 바둑판 2열 배치 */
+            #planner-scroll-container {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                padding: 0 5px 40px 5px !important;
+            }
+            .planner-card {
+                padding: 10px !important;
+                box-sizing: border-box !important;
+            }
+            .pl-study-time {
+                width: 50px !important;
+                font-size: 0.75rem !important;
+            }
+            .pl-date-title {
+                font-size: 0.75rem !important;
+            }
+            .pl-item-text {
+                font-size: 0.75rem !important;
+            }
+            .pl-tag {
+                padding: 3px 5px 0px 5px !important;
+                font-size: 0.6rem !important;
+            }
+        }
     </style>
 </head>
 <body>
