@@ -708,6 +708,47 @@
             cursor: pointer;
         }
 }
+
+        /* --- 모바일 플래너 완벽 수리 --- */
+@media (max-width: 850px) {
+    /* 1. 과목 하이라이트 태그 1줄로 고정 및 가로 스크롤 활성화 */
+    #pl-tags-container {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding-bottom: 5px !important;
+        justify-content: flex-start !important;
+    }
+    #pl-tags-container::-webkit-scrollbar { 
+        display: none !important; 
+    }
+    .pl-tag-btn {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        margin: 0 6px 0 0 !important;
+    }
+
+    /* 2. 상단 3분할 메모장 가로폭 화면에 딱 맞추기 (오른쪽 짤림 방지) */
+    .pl-memo-textarea {
+        flex: 1 1 0px !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 3. 하루 계획 카드들을 바둑판식 2열로 정렬 */
+    #pl-board {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        align-items: start !important;
+    }
+    .pl-card {
+        width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+}
     </style>
 </head>
 <body>
