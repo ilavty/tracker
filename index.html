@@ -1366,25 +1366,15 @@
                         if(data.repHistory_v5) repHistory = toArray(data.repHistory_v5);
                         if(data.chronoEvents_v5) chronoEvents = toArray(data.chronoEvents_v5);
                         
-                        // ▼ 서버에서 플래너 데이터 내려받기 (빈 배열 증발 방어 로직 추가) ▼
-                        if(data.plannerData) {
-                            pData = data.plannerData;
-                            for(let dKey in pData) {
-                                if(!pData[dKey].items) {
-                                    pData[dKey].items = []; // 증발한 배열 강제 재생성
-                                } else {
-                                    pData[dKey].items = toArray(pData[dKey].items);
-                                    pData[dKey].items.forEach(it => { if(it.subItems) it.subItems = toArray(it.subItems); });
-                                }
-                            }
-                        }
-                        if(data.plannerTags) pTags = toArray(data.plannerTags);
-                        if(data.plannerBgs) pBgColors = toArray(data.plannerBgs);
-                        if(data.plannerMemo) pTopMemo = toArray(data.plannerMemo);
-                        if(data.plannerHls) pHighlighters = toArray(data.plannerHls);
-                        if(data.plannerLastTags) pLastTags = data.plannerLastTags;
+                        // ▼ 서버에서 플래너 데이터 내려받기 (압축 풀기) ▼
+                        if(data.plannerData) { try { pData = typeof data.plannerData === 'string' ? JSON.parse(data.plannerData) : data.plannerData; } catch(e){} }
+                        if(data.plannerTags) { try { pTags = typeof data.plannerTags === 'string' ? JSON.parse(data.plannerTags) : toArray(data.plannerTags); } catch(e){} }
+                        if(data.plannerBgs) { try { pBgColors = typeof data.plannerBgs === 'string' ? JSON.parse(data.plannerBgs) : toArray(data.plannerBgs); } catch(e){} }
+                        if(data.plannerMemo) { try { pTopMemo = typeof data.plannerMemo === 'string' ? JSON.parse(data.plannerMemo) : toArray(data.plannerMemo); } catch(e){} }
+                        if(data.plannerHls) { try { pHighlighters = typeof data.plannerHls === 'string' ? JSON.parse(data.plannerHls) : toArray(data.plannerHls); } catch(e){} }
+                        if(data.plannerLastTags) { try { pLastTags = typeof data.plannerLastTags === 'string' ? JSON.parse(data.plannerLastTags) : data.plannerLastTags; } catch(e){} }
 
-                        // 다운받은 데이터를 모바일 로컬 캐시에도 즉각 덮어쓰기
+                        // 다운받은 즉시 모바일 로컬에 강제 덮어쓰기
                         if(typeof PLANNER_DB !== 'undefined') {
                             localStorage.setItem(PLANNER_DB, JSON.stringify(pData));
                             localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags));
@@ -1425,13 +1415,13 @@
             if(!db) return; 
             db.ref("study_records/" + USER_DOC_ID).set({ 
                 subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [],
-                // ▼ 서버로 플래너 데이터 전송 ▼
-                plannerData: typeof pData !== 'undefined' ? pData : {},
-                plannerTags: typeof pTags !== 'undefined' ? pTags : [],
-                plannerBgs: typeof pBgColors !== 'undefined' ? pBgColors : [],
-                plannerMemo: typeof pTopMemo !== 'undefined' ? pTopMemo : ["", "", ""],
-                plannerHls: typeof pHighlighters !== 'undefined' ? pHighlighters : [],
-                plannerLastTags: typeof pLastTags !== 'undefined' ? pLastTags : {}
+                // ▼ 서버 전송 시 6.13 같은 점(.) 에러 방지를 위해 데이터를 문자열로 압축해서 전송 ▼
+                plannerData: typeof pData !== 'undefined' ? JSON.stringify(pData) : "{}",
+                plannerTags: typeof pTags !== 'undefined' ? JSON.stringify(pTags) : "[]",
+                plannerBgs: typeof pBgColors !== 'undefined' ? JSON.stringify(pBgColors) : "[]",
+                plannerMemo: typeof pTopMemo !== 'undefined' ? JSON.stringify(pTopMemo) : "[]",
+                plannerHls: typeof pHighlighters !== 'undefined' ? JSON.stringify(pHighlighters) : "[]",
+                plannerLastTags: typeof pLastTags !== 'undefined' ? JSON.stringify(pLastTags) : "{}"
             }); 
         }
         let dragInfo = null; let isTrackerEditMode = false;
