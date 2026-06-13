@@ -804,9 +804,12 @@
                 font-size: 0.75rem !important;
             }
             .pl-tag {
-                padding: 2px 5px 0px 5px !important;
-                font-size: 0.6rem !important;
+                padding: 1px 4px 0px 4px !important; /* 패딩 축소 */
+                font-size: 0.42rem !important; /* 딱 70% 크기로 폰트 축소 (기존 0.6rem) */
+                border-radius: 3px !important; /* 크기에 맞춰 둥글기 축소 */
                 flex-shrink: 0 !important; 
+                top: 0px !important; /* 작아진 박스에 맞춰 수평 라인 재조정 */
+            }
             }
             .pl-sub-item {
                 padding-left: 36px !important;
