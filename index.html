@@ -1366,13 +1366,33 @@
                         if(data.repHistory_v5) repHistory = toArray(data.repHistory_v5);
                         if(data.chronoEvents_v5) chronoEvents = toArray(data.chronoEvents_v5);
                         
-                        // ▼ 서버에서 플래너 데이터 내려받기 ▼
-                        if(data.plannerData) pData = data.plannerData;
+                        // ▼ 서버에서 플래너 데이터 내려받기 (빈 배열 증발 방어 로직 추가) ▼
+                        if(data.plannerData) {
+                            pData = data.plannerData;
+                            for(let dKey in pData) {
+                                if(!pData[dKey].items) {
+                                    pData[dKey].items = []; // 증발한 배열 강제 재생성
+                                } else {
+                                    pData[dKey].items = toArray(pData[dKey].items);
+                                    pData[dKey].items.forEach(it => { if(it.subItems) it.subItems = toArray(it.subItems); });
+                                }
+                            }
+                        }
                         if(data.plannerTags) pTags = toArray(data.plannerTags);
                         if(data.plannerBgs) pBgColors = toArray(data.plannerBgs);
                         if(data.plannerMemo) pTopMemo = toArray(data.plannerMemo);
                         if(data.plannerHls) pHighlighters = toArray(data.plannerHls);
                         if(data.plannerLastTags) pLastTags = data.plannerLastTags;
+
+                        // 다운받은 데이터를 모바일 로컬 캐시에도 즉각 덮어쓰기
+                        if(typeof PLANNER_DB !== 'undefined') {
+                            localStorage.setItem(PLANNER_DB, JSON.stringify(pData));
+                            localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags));
+                            localStorage.setItem(PLANNER_BGS, JSON.stringify(pBgColors));
+                            localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(pTopMemo));
+                            localStorage.setItem(PLANNER_HLS, JSON.stringify(pHighlighters));
+                            localStorage.setItem(PLANNER_LAST_TAGS, JSON.stringify(pLastTags));
+                        }
 
                         saveAllToLocal();
                     } catch(e) { console.error("Firebase Sync Error", e); }
@@ -1380,7 +1400,7 @@
                 isInitialLoadDone = true; 
                 if(localStorage.getItem('lastTrackerSub') && trackerData.subjectDef && trackerData.subjectDef[localStorage.getItem('lastTrackerSub')]) { trackerData.currentSubject = localStorage.getItem('lastTrackerSub'); } else if(trackerData.subjectDef) { trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0]; }
                 initialRender();
-                if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); // 👈 로드 후 화면 새로고침
+                if(typeof pl_renderPlanner === 'function') pl_renderPlanner();
             }).catch(e => { 
                 isInitialLoadDone = true; 
                 initialRender(); 
