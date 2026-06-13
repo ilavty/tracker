@@ -1363,12 +1363,25 @@
                         if(data.trackerData) { trackerData = { ...trackerData, ...data.trackerData }; }
                         if(data.repCols_v5) repCols = toArray(data.repCols_v5);
                         if(data.repData_v5) { repData = toArray(data.repData_v5); repData.forEach(r => r.counts = toArray(r.counts)); } ensureRepData();
-                        if(data.repHistory_v5) repHistory = toArray(data.repHistory_v5);
+                       if(data.repHistory_v5) repHistory = toArray(data.repHistory_v5);
                         if(data.chronoEvents_v5) chronoEvents = toArray(data.chronoEvents_v5);
+                        
+                        // ▼ 서버에서 플래너 데이터 내려받기 ▼
+                        if(data.plannerData) pData = data.plannerData;
+                        if(data.plannerTags) pTags = toArray(data.plannerTags);
+                        if(data.plannerBgs) pBgColors = toArray(data.plannerBgs);
+                        if(data.plannerMemo) pTopMemo = toArray(data.plannerMemo);
+                        if(data.plannerHls) pHighlighters = toArray(data.plannerHls);
+                        if(data.plannerLastTags) pLastTags = data.plannerLastTags;
+
                         saveAllToLocal();
                     } catch(e) { console.error("Firebase Sync Error", e); }
                 }
                 isInitialLoadDone = true; 
+                if(localStorage.getItem('lastTrackerSub') && trackerData.subjectDef && trackerData.subjectDef[localStorage.getItem('lastTrackerSub')]) { trackerData.currentSubject = localStorage.getItem('lastTrackerSub'); } else if(trackerData.subjectDef) { trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0]; }
+                initialRender();
+                if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); // 👈 데이터 로드 후 화면 새로고침
+            }).catch(e => { isInitialLoadDone = true; initialRender(); if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); }); 
                 if(localStorage.getItem('lastTrackerSub') && trackerData.subjectDef && trackerData.subjectDef[localStorage.getItem('lastTrackerSub')]) { trackerData.currentSubject = localStorage.getItem('lastTrackerSub'); } else if(trackerData.subjectDef) { trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0]; }
                 initialRender();
             }).catch(e => { isInitialLoadDone = true; initialRender(); });
@@ -1385,8 +1398,21 @@
         }
         
         function saveAllToLocal() { localStorage.setItem('myDetailedSessions_v5', JSON.stringify(detailedSessions)); localStorage.setItem('mySubjectsData_v5', JSON.stringify(subjectsData)); localStorage.setItem('myTrackerData_v5', JSON.stringify(trackerData)); localStorage.setItem('myRepCols_v5', JSON.stringify(repCols)); localStorage.setItem('myRepData_v5', JSON.stringify(repData)); localStorage.setItem('myRepHistory_v5', JSON.stringify(repHistory)); localStorage.setItem('myChronoEvents_v5', JSON.stringify(chronoEvents)); }
-        function saveDataToFirebase() { if(!isInitialLoadDone) return; saveAllToLocal(); if(!db) return; db.ref("study_records/" + USER_DOC_ID).set({ subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [] }); }
-
+        function saveDataToFirebase() { 
+            if(!isInitialLoadDone) return; 
+            saveAllToLocal(); 
+            if(!db) return; 
+            db.ref("study_records/" + USER_DOC_ID).set({ 
+                subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [],
+                // ▼ 서버로 플래너 데이터 전송 ▼
+                plannerData: typeof pData !== 'undefined' ? pData : {},
+                plannerTags: typeof pTags !== 'undefined' ? pTags : [],
+                plannerBgs: typeof pBgColors !== 'undefined' ? pBgColors : [],
+                plannerMemo: typeof pTopMemo !== 'undefined' ? pTopMemo : ["", "", ""],
+                plannerHls: typeof pHighlighters !== 'undefined' ? pHighlighters : [],
+                plannerLastTags: typeof pLastTags !== 'undefined' ? pLastTags : {}
+            }); 
+        }
         let dragInfo = null; let isTrackerEditMode = false;
         function toggleTrackerEditMode() {
             isTrackerEditMode = !isTrackerEditMode;
@@ -2658,6 +2684,7 @@
         pTopMemo[1] = document.getElementById('pl-top-memo-2').value;
         pTopMemo[2] = document.getElementById('pl-top-memo-3').value;
         localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(pTopMemo));
+        if(typeof saveDataToFirebase === 'function') saveDataToFirebase(); // 👈 메모 변경 시 서버 전송
     }
 
     function pl_savePlanner() { 
@@ -2665,6 +2692,7 @@
         localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags)); 
         localStorage.setItem(PLANNER_BGS, JSON.stringify(pBgColors)); 
         localStorage.setItem(PLANNER_LAST_TAGS, JSON.stringify(pLastTags));
+        if(typeof saveDataToFirebase === 'function') saveDataToFirebase(); // 👈 계획 변경 시 서버 전송
     }
     
     function pl_updateStudyTime(dateStr, val) {
