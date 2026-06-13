@@ -1380,7 +1380,7 @@
                 isInitialLoadDone = true; 
                 if(localStorage.getItem('lastTrackerSub') && trackerData.subjectDef && trackerData.subjectDef[localStorage.getItem('lastTrackerSub')]) { trackerData.currentSubject = localStorage.getItem('lastTrackerSub'); } else if(trackerData.subjectDef) { trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0]; }
                 initialRender();
-                if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); // 👈 데이터 로드 후 화면 새로고침
+                if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); // 👈 로드 후 화면 새로고침
             }).catch(e => { 
                 isInitialLoadDone = true; 
                 initialRender(); 
@@ -2685,7 +2685,7 @@
         pTopMemo[1] = document.getElementById('pl-top-memo-2').value;
         pTopMemo[2] = document.getElementById('pl-top-memo-3').value;
         localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(pTopMemo));
-        if(typeof saveDataToFirebase === 'function') saveDataToFirebase(); // 👈 메모 변경 시 서버 전송
+        if(typeof saveDataToFirebase === 'function') saveDataToFirebase(); // 👈 즉시 서버 연동
     }
 
     function pl_savePlanner() { 
@@ -2693,7 +2693,7 @@
         localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags)); 
         localStorage.setItem(PLANNER_BGS, JSON.stringify(pBgColors)); 
         localStorage.setItem(PLANNER_LAST_TAGS, JSON.stringify(pLastTags));
-        if(typeof saveDataToFirebase === 'function') saveDataToFirebase(); // 👈 계획 변경 시 서버 전송
+        if(typeof saveDataToFirebase === 'function') saveDataToFirebase(); // 👈 즉시 서버 연동
     }
     
     function pl_updateStudyTime(dateStr, val) {
