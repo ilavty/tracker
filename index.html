@@ -2591,12 +2591,19 @@
 .pl-sub-item {
     font-size: 0.75rem;
     color: #555;
-    padding-left: 56px; 
+    padding-left: 12px; 
     margin-top: 5px;
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     cursor: pointer;
+}
+.pl-sub-item::before {
+    content: '└';
+    position: absolute;
+    left: 0px; 
+    top: -1px;
+    color: #999;
 }
 .pl-sub-item::before {
     content: '└';
@@ -2826,9 +2833,20 @@
         pl_savePlanner();
     }
 
+    // 모바일 꾹 누르기용 전역 함수
+    let pl_pressTimer;
+    let pl_isDragging = false;
+    function pl_touchStart(e, type, p1, p2) { pl_isDragging = false; pl_pressTimer = setTimeout(() => { if(!pl_isDragging) { if(type === 'item') pl_openItemMenu(e, p1, p2); else if(type === 'card') pl_openCardMenu(e, p1); else if(type === 'hl') pl_openHlModal(e); } }, 400); }
+    function pl_touchMove() { pl_isDragging = true; clearTimeout(pl_pressTimer); }
+    function pl_touchEnd() { clearTimeout(pl_pressTimer); }
+
     function pl_renderPlanner() {
         pl_renderTopDashboard();
         pl_renderHlQuick();
+
+        // 형광펜 퀵바 터치(꾹 누르기) 지원
+        let hlQuick = document.getElementById('hl-quick-select');
+        if(hlQuick) { hlQuick.ontouchstart = (e) => pl_touchStart(e, 'hl'); hlQuick.ontouchmove = pl_touchMove; hlQuick.ontouchend = pl_touchEnd; }
 
         const container = document.getElementById('planner-scroll-container'); 
         if(!container) return;
@@ -2839,8 +2857,7 @@
         if (!pData[todayStr]) pData[todayStr] = { bgColor: pBgColors[0] || '#e8f1f9', studyTime: "", items: [] };
         
         let sortedDates = Object.keys(pData).sort((a, b) => { 
-            let [am, ad] = a.split('.').map(Number); 
-            let [bm, bd] = b.split('.').map(Number); 
+            let [am, ad] = a.split('.').map(Number); let [bm, bd] = b.split('.').map(Number); 
             if (am !== bm) return bm - am; return bd - ad; 
         });
         
@@ -2854,11 +2871,14 @@
             else if (cm > tm || (cm === tm && cd > td)) { timeClass = 'is-future'; }
             else { timeClass = 'is-past'; }
 
-            // 해당 날짜의 이전에 선택했던 태그를 불러옴. 없으면 전체 태그 중 첫번째 값으로 폴백.
+            // ★ 1. 데이터가 없는 지난 과거 날짜는 렌더링 생략
+            if (timeClass === 'is-past' && isEmpty) return;
+
             let currentSelectedTag = pLastTags[dateStr] || (pTags.length > 0 ? pTags[0].id : '');
 
+            // ★ 2. 모바일 롱탭 이벤트 및 3. └ 본문 정렬 구조 개선 적용
             let cardHtml = `
-                <div class="planner-card ${isEmpty ? 'empty' : ''} ${timeClass}" id="card-${dateStr}" style="background: ${cardData.bgColor};" oncontextmenu="pl_openCardMenu(event, '${dateStr}')">
+                <div class="planner-card ${isEmpty ? 'empty' : ''} ${timeClass}" id="card-${dateStr}" style="background: ${cardData.bgColor};" oncontextmenu="pl_openCardMenu(event, '${dateStr}')" ontouchstart="pl_touchStart(event, 'card', '${dateStr}')" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd()">
                     <div class="pl-card-header">
                         <input type="text" class="pl-study-time" placeholder="" value="${cardData.studyTime || ''}" onchange="pl_updateStudyTime('${dateStr}', this.value)">
                         <div class="pl-date-title">${dateStr}</div>
@@ -2869,20 +2889,22 @@
                             let tInfo = pTags.find(x => x.id === item.tag) || { color: '#ccc' };
                             let hlColor = item.hl || 'transparent';
                             return `
-                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})">
-                                <div class="pl-main-row">
-                                    <div class="pl-row-strike-target">
-                                        <span class="pl-tag" style="background:${tInfo.color};">${item.tag}</span>
-                                        <span class="pl-item-text pl-hl-text" style="--hl-color:${hlColor};">${item.text}</span>
+                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})" ontouchstart="pl_touchStart(event, 'item', '${dateStr}', ${item.id})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd()">
+                                <div class="pl-main-row" style="align-items: flex-start;">
+                                    <div class="pl-row-strike-target" style="align-items: flex-start;">
+                                        <span class="pl-tag" style="background:${tInfo.color}; margin-top:2px;">${item.tag}</span>
+                                        <div style="display:flex; flex-direction:column; flex:1; min-width:0;">
+                                            <span class="pl-item-text pl-hl-text" style="--hl-color:${hlColor};">${item.text}</span>
+                                            ${item.subItems ? item.subItems.map((sub, sIdx) => {
+                                                let subHlColor = sub.hl || 'transparent';
+                                                return `
+                                                <div class="pl-sub-item" onclick="pl_subItemClick(event, '${dateStr}', ${item.id}, ${sIdx})">
+                                                    <span class="pl-item-text pl-hl-text" style="--hl-color:${subHlColor};">${sub.text}</span>
+                                                </div>`
+                                            }).join('') : ''}
+                                        </div>
                                     </div>
                                 </div>
-                                ${item.subItems ? item.subItems.map((sub, sIdx) => {
-                                    let subHlColor = sub.hl || 'transparent';
-                                    return `
-                                    <div class="pl-sub-item" onclick="pl_subItemClick(event, '${dateStr}', ${item.id}, ${sIdx})">
-                                        <span class="pl-item-text pl-hl-text" style="--hl-color:${subHlColor};">${sub.text}</span>
-                                    </div>`
-                                }).join('') : ''}
                             </div>`;
                         }).join('')}
                     </div>
@@ -2899,64 +2921,49 @@
     }
 
     function pl_itemClick(e, el, dateStr, id) {
-        if(e.shiftKey || e.ctrlKey || e.metaKey) {
-            el.classList.toggle('pl-selected');
-        } else {
+        if(e.shiftKey || e.ctrlKey || e.metaKey) { el.classList.toggle('pl-selected'); } else {
             let item = pData[dateStr].items.find(x => x.id === id);
-            if(item) {
-                let currentColor = item.hl || null;
-                if (currentColor === currentHl) { item.hl = null; item.done = false; }
-                else { item.hl = currentHl; item.done = true; }
-                pl_savePlanner(); pl_renderPlanner();
-            }
+            if(item) { let currentColor = item.hl || null; if (currentColor === currentHl) { item.hl = null; item.done = false; } else { item.hl = currentHl; item.done = true; } pl_savePlanner(); pl_renderPlanner(); }
             document.querySelectorAll('.pl-item-wrapper.pl-selected').forEach(sel => sel.classList.remove('pl-selected'));
         }
     }
 
     function pl_subItemClick(e, dateStr, id, sIdx) {
-        e.stopPropagation();
-        if(e.shiftKey || e.ctrlKey || e.metaKey) return; 
-        
+        e.stopPropagation(); if(e.shiftKey || e.ctrlKey || e.metaKey) return; 
         let item = pData[dateStr].items.find(x => x.id === id);
-        if(item && item.subItems[sIdx]) {
-            let sub = item.subItems[sIdx];
-            let currentColor = sub.hl || null;
-            if (currentColor === currentHl) { sub.hl = null; sub.done = false; } 
-            else { sub.hl = currentHl; sub.done = true; }
-            pl_savePlanner(); pl_renderPlanner();
-        }
+        if(item && item.subItems[sIdx]) { let sub = item.subItems[sIdx]; let currentColor = sub.hl || null; if (currentColor === currentHl) { sub.hl = null; sub.done = false; } else { sub.hl = currentHl; sub.done = true; } pl_savePlanner(); pl_renderPlanner(); }
     }
 
     function pl_addItem(dateStr) { 
-        let textInput = document.getElementById(`pl-input-${dateStr}`); 
-        let tagInput = document.getElementById(`pl-tag-${dateStr}`); 
-        let text = textInput.value.trim(); 
-        if (!text) return; 
-        pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false, hl: null }); 
-        textInput.value = '';
-        
-        // 새로 추가 시 방금 추가한 과목 값을 저장
-        pLastTags[dateStr] = tagInput.value;
-        
-        pl_savePlanner(); pl_renderPlanner();
-        document.getElementById('card-' + dateStr).classList.add('edit-mode');
+        let textInput = document.getElementById(`pl-input-${dateStr}`); let tagInput = document.getElementById(`pl-tag-${dateStr}`); let text = textInput.value.trim(); 
+        if (!text) return; pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false, hl: null }); textInput.value = ''; pLastTags[dateStr] = tagInput.value; pl_savePlanner(); pl_renderPlanner(); document.getElementById('card-' + dateStr).classList.add('edit-mode');
     }
     
     function pl_syncAfterDrag() { let newPData = JSON.parse(JSON.stringify(pData)); document.querySelectorAll('.planner-sortable-list').forEach(listEl => { let dateStr = listEl.id.replace('pl-list-', ''); newPData[dateStr].items = []; listEl.querySelectorAll('.pl-item-wrapper').forEach(itemEl => { let id = parseFloat(itemEl.getAttribute('data-id')); let origItem = null; for (let d in pData) { let found = pData[d].items.find(x => x.id === id); if (found) { origItem = found; break; } } if (origItem) newPData[dateStr].items.push(origItem); }); }); pData = newPData; pl_savePlanner(); }
 
-    function pl_openCardMenu(e, dateStr) { e.preventDefault(); e.stopPropagation(); currentContextDate = dateStr; let swatches = document.getElementById('pl-color-swatches'); swatches.innerHTML = pBgColors.map(c => `<div style="width:20px; height:20px; background:${c}; border-radius:50%; cursor:pointer; border:1px solid #ccc;" onclick="pl_changeColor('${c}')"></div>`).join(''); let menu = document.getElementById('pl-card-menu'); menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; }
+    // ★ 모바일 터치 좌표 지원 메뉴 함수
+    function pl_openCardMenu(e, dateStr) { 
+        if(e.cancelable) e.preventDefault(); e.stopPropagation(); 
+        currentContextDate = dateStr; 
+        let swatches = document.getElementById('pl-color-swatches'); swatches.innerHTML = pBgColors.map(c => `<div style="width:20px; height:20px; background:${c}; border-radius:50%; cursor:pointer; border:1px solid #ccc;" onclick="pl_changeColor('${c}')"></div>`).join(''); 
+        let menu = document.getElementById('pl-card-menu'); menu.style.display = 'flex'; 
+        let px = e.pageX || (e.touches && e.touches[0] ? e.touches[0].pageX : window.innerWidth / 2);
+        let py = e.pageY || (e.touches && e.touches[0] ? e.touches[0].pageY : window.innerHeight / 2);
+        menu.style.left = px + 'px'; menu.style.top = py + 'px'; 
+    }
     function pl_changeColor(color) { if (!currentContextDate) return; pData[currentContextDate].bgColor = color; pl_savePlanner(); pl_renderPlanner(); document.getElementById('pl-card-menu').style.display = 'none'; }
     function pl_editCardDate() { if (!currentContextDate) return; let newDate = prompt("수정할 날짜 (예: 7.20):", currentContextDate); if (newDate && newDate.trim() !== "" && newDate !== currentContextDate) { if (pData[newDate]) { alert("이미 존재하는 날짜입니다."); return; } pData[newDate] = pData[currentContextDate]; delete pData[currentContextDate]; pl_savePlanner(); pl_renderPlanner(); } document.getElementById('pl-card-menu').style.display = 'none'; }
     function pl_deleteCard() { if (!currentContextDate) return; if (confirm(`${currentContextDate} 일정을 완전히 삭제하시겠습니까?`)) { delete pData[currentContextDate]; pl_savePlanner(); pl_renderPlanner(); } document.getElementById('pl-card-menu').style.display = 'none'; }
-    
-    function pl_toggleEditMode() { 
-        let c = document.getElementById('card-' + currentContextDate); 
-        if(c) c.classList.toggle('edit-mode'); 
-        document.getElementById('pl-card-menu').style.display='none'; 
-    }
+    function pl_toggleEditMode() { let c = document.getElementById('card-' + currentContextDate); if(c) c.classList.toggle('edit-mode'); document.getElementById('pl-card-menu').style.display='none'; }
 
-    function pl_openItemMenu(e, dateStr, id) { e.preventDefault(); e.stopPropagation(); currentItemContext = { dateStr, id }; let menu = document.getElementById('pl-item-menu'); menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; }
-    
+    function pl_openItemMenu(e, dateStr, id) { 
+        if(e.cancelable) e.preventDefault(); e.stopPropagation(); 
+        currentItemContext = { dateStr, id }; 
+        let menu = document.getElementById('pl-item-menu'); menu.style.display = 'flex'; 
+        let px = e.pageX || (e.touches && e.touches[0] ? e.touches[0].pageX : window.innerWidth / 2);
+        let py = e.pageY || (e.touches && e.touches[0] ? e.touches[0].pageY : window.innerHeight / 2);
+        menu.style.left = px + 'px'; menu.style.top = py + 'px'; 
+    }
     function pl_mergeSelectedItems() {
         let { dateStr } = currentItemContext; if(!dateStr) return;
         let listEl = document.getElementById(`pl-list-${dateStr}`);
