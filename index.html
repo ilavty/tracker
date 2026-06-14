@@ -2598,20 +2598,27 @@
     align-items: flex-start;
     cursor: pointer;
 }
-.pl-sub-item::before {
-    content: '└';
-    position: absolute;
-    left: 0px; 
-    top: -1px;
-    color: #999;
+
+/* └ 기호 완벽 정렬 (단일화) */
+.pl-sub-item {
+    font-size: 0.75rem !important;
+    color: #555 !important;
+    padding-left: 14px !important; 
+    margin-top: 5px !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    cursor: pointer !important;
 }
 .pl-sub-item::before {
-    content: '└';
-    position: absolute;
-    left: 44px; 
-    top: -1px;
-    color: #999;
+    content: '└' !important;
+    position: absolute !important;
+    left: 0px !important; 
+    top: -1px !important;
+    color: #999 !important;
 }
+
+
 
 .pl-input-box {
     display: none;
