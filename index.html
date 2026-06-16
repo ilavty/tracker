@@ -3865,6 +3865,7 @@ function pl_unmergeItem() {
 </style>
 
     <script>
+    <script>
     window.aiCompleteCount = window.aiCompleteCount || 0;
     window.aiIsStampPending = window.aiIsStampPending || false;
 
@@ -3904,15 +3905,7 @@ function pl_unmergeItem() {
         }
     });
 
-    function triggerMissionComplete() {
-        window.aiCompleteCount++;
-        const badge = document.getElementById('float-badge');
-        badge.innerText = window.aiCompleteCount;
-        badge.style.display = 'flex';
-        window.aiIsStampPending = true;
-    }
-
-    // 장소(영문) 및 게이지 연동
+    // 장소 영문 배열
     const EN_POSTS = [
       "Tokyo", "Osaka", "Beijing", "Shanghai", "Bangkok",
       "Singapore", "Hanoi", "Jakarta", "Manila", "New Delhi",
@@ -3922,25 +3915,34 @@ function pl_unmergeItem() {
       "Washington D.C.", "New York", "Los Angeles", "Brasilia", "Buenos Aires"
     ];
     
+    // ★ 실시간 타이머 연동 엔진 (iframe 직접 침투 방식)
     setInterval(() => {
         try {
             const floatCity = document.getElementById('floatCityName');
             const floatBar = document.getElementById('floatBarFill');
-            const TARGET_SEC = 180000; 
             
-            const rawData = localStorage.getItem('diplomat_state_v1');
-            if(rawData) {
-                const st = JSON.parse(rawData);
-                if(floatCity && st.idx !== null && EN_POSTS[st.idx]) {
-                    floatCity.innerText = EN_POSTS[st.idx];
+            // index-2.html (팝업창) 내부의 실시간 변수를 1초마다 직접 읽어옴
+            const iframeWin = document.getElementById('index2-iframe').contentWindow;
+            
+            if (iframeWin && typeof iframeWin.elapsed !== 'undefined' && iframeWin.st) {
+                const currentIdx = iframeWin.st.idx;
+                const currentElapsed = iframeWin.elapsed || 0;
+                const targetSec = iframeWin.TARGET || 180000;
+                
+                // 1. 장소 텍스트 업데이트
+                if (floatCity && currentIdx !== null && EN_POSTS[currentIdx]) {
+                    floatCity.innerText = EN_POSTS[currentIdx];
                 }
-                if(floatBar && st.elapsed && st.idx !== null) {
-                    const elapsed = st.elapsed[st.idx] || 0;
-                    const pct = Math.min((elapsed / TARGET_SEC) * 100, 100);
+                
+                // 2. 게이지 실시간 % 업데이트
+                if (floatBar && targetSec > 0) {
+                    const pct = Math.min((currentElapsed / targetSec) * 100, 100);
                     floatBar.style.width = pct + '%';
                 }
             }
-        } catch(e) {}
+        } catch(e) {
+            // 깃허브 서버 연결 지연 시 에러 방지
+        }
     }, 1000);
     </script>
 
