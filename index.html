@@ -3913,45 +3913,68 @@ function pl_unmergeItem() {
       "Washington D.C.", "New York", "Los Angeles", "Brasilia", "Buenos Aires"
     ];
     
-    // 🔥 깃허브 은닉 문제를 우회하는 하이브리드 동기화 엔진
-    let localSimulatedElapsed = 0;
-
+    // 🔥 보안 차단 무력화 3단계 동기화 엔진
     setInterval(() => {
+        const floatCity = document.getElementById('floatCityName');
+        const floatBar = document.getElementById('floatBarFill');
+        if (!floatCity || !floatBar) return;
+
+        const TARGET_SEC = 108000; // 30시간으로 동기화 기준 통일
+        let cIdx = null;
+        let curSec = 0;
+
+        // 1순위: iframe 내부 전역 변수 직접 탈취
         try {
-            const floatCity = document.getElementById('floatCityName');
-            const floatBar = document.getElementById('floatBarFill');
-            const TARGET_SEC = 180000; 
-            
-            let currentIdx = null;
-            let realElapsed = 0;
+            const frm = document.getElementById('index2-iframe').contentWindow;
+            if (frm && frm.st && frm.st.idx !== undefined && frm.st.idx !== null) {
+                cIdx = frm.st.idx;
+                curSec = frm.elapsed || 0;
+            }
+        } catch(e) {}
 
-            // 1. 브라우저 저장소(localStorage)에서 팩트 데이터 추출
-            const rawData = localStorage.getItem('diplomat_state_v1') || localStorage.getItem('diplomat_state');
-            if(rawData) {
-                const st = JSON.parse(rawData);
-                currentIdx = st.idx !== undefined ? st.idx : null;
-                
-                if (typeof st.elapsed === 'object' && st.elapsed !== null) {
-                    realElapsed = st.elapsed[currentIdx] || 0;
-                } else if (typeof st.elapsed === 'number') {
-                    realElapsed = st.elapsed;
+        // 2순위: 변수 접근 차단 시 DOM 요소 텍스트 직접 스크래핑 우회
+        if (cIdx === null) {
+            try {
+                const fDoc = document.getElementById('index2-iframe').contentDocument;
+                if (fDoc) {
+                    const cName = fDoc.getElementById('cityName');
+                    if (cName && cName.innerText && cName.innerText !== '—') {
+                        const korCities = ["도쿄", "오사카", "베이징", "상하이", "방콕", "싱가포르", "하노이", "자카르타", "마닐라", "뉴델리", "뭄바이", "시드니", "캔버라", "파리", "런던", "베를린", "비엔나", "제네바", "마드리드", "로마", "모스크바", "헬싱키", "두바이", "이스탄불", "나이로비", "워싱턴 D.C.", "뉴욕", "로스앤젤레스", "브라질리아", "부에노스아이레스"];
+                        let found = korCities.indexOf(cName.innerText.trim());
+                        if (found !== -1) cIdx = found;
+                    }
+                    const bFill = fDoc.getElementById('barFill');
+                    if (bFill && bFill.style.width) {
+                        let wPct = parseFloat(bFill.style.width);
+                        if (!isNaN(wPct)) curSec = (wPct / 100) * TARGET_SEC;
+                    }
                 }
-            }
+            } catch(e) {}
+        }
 
-            // 2. 저장소가 1초마다 갱신되지 않는 경우를 대비해 1초씩 강제 누적 (부드러운 게이지 효과)
-            if (realElapsed > localSimulatedElapsed || realElapsed === 0) {
-                localSimulatedElapsed = realElapsed; 
-            } else if (realElapsed > 0) {
-                localSimulatedElapsed++; 
-            }
+        // 3순위: 격리된 로컬 스토리지 읽기 (보안 에러 발생 시 해당 블록만 실패 처리)
+        if (cIdx === null) {
+            try {
+                const raw = localStorage.getItem('diplomat_state_v1');
+                if (raw) {
+                    const st = JSON.parse(raw);
+                    cIdx = st.idx;
+                    curSec = (typeof st.elapsed === 'object') ? (st.elapsed[cIdx] || 0) : (st.elapsed || 0);
+                }
+            } catch(e) {}
+        }
 
-            // 3. UI 업데이트
-            if (floatCity && currentIdx !== null && EN_POSTS[currentIdx]) {
-                floatCity.innerText = EN_POSTS[currentIdx];
+        // 추출된 데이터로 버튼 UI 강제 업데이트
+        try {
+            if (cIdx !== null && cIdx !== -1 && EN_POSTS[cIdx]) {
+                floatCity.innerText = EN_POSTS[cIdx];
             }
-            if (floatBar) {
-                const pct = Math.min((localSimulatedElapsed / TARGET_SEC) * 100, 100);
-                floatBar.style.width = pct + '%';
+            if (curSec > 0) {
+                const pct = Math.min((curSec / TARGET_SEC) * 100, 100);
+                // 공부 시간이 1초라도 있으면 최소 1%의 게이지를 보여주어 가시성 확보
+                floatBar.style.width = Math.max(pct, 1) + '%';
+            } else {
+                floatBar.style.width = '0%';
             }
         } catch(e) {}
     }, 1000);
