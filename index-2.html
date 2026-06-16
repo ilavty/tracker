@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>외무영사 드림</title>
+<link href="https://fonts.googleapis.com/css2?family=Diphylleia&family=IM+Fell+English:ital@0;1&family=Montserrat:wght@400;500;600&family=Noto+Serif+KR:wght@300;400;600&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff" rel="preload" as="font" type="font/woff" crossorigin>
+<style>
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff');
+  font-weight: 300;
+}
+
+:root{
+  --sky:#96C7FF;--sky-lt:#AFBAFF;--sky-pale:#daeef9;
+  --mint:#96C7FF;--mint-lt:#AFBAFF;
+  --cream:#f7f5ee;--ink:#2a3540;--ink-fade:#6a7e8a;
+  --gold:#EEE1BF;--white:#ffffff;--bg:#ffffff;
+  --shadow:0 8px 48px rgba(130,180,255,.30), 0 2px 12px rgba(130,180,255,.18), inset 0 1px 0 rgba(255,255,255,.9);
+  --shadow-sm:0 4px 16px rgba(130,180,255,.26);
+  --r:20px;
+  --glass:rgba(255,255,255,0.22);
+  --glass-border:rgba(255,255,255,0.60);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100%;}
+body{background:#ffffff;font-family:'GmarketSans','Noto Serif KR',serif;color:var(--ink);min-height:100vh;position:relative;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background-color:#ffffff;
+  background-image:
+    radial-gradient(ellipse 70% 60% at 5% 10%,  rgba(120,190,255,0.60) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 90% 5%,  rgba(140,190,255,0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 55% at 80% 80%,  rgba(100,175,255,0.45) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 40% at 20% 90%,  rgba(160,210,255,0.40) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 35% at 50% 45%,  rgba(190,220,255,0.25) 0%, transparent 60%);
+  filter:blur(50px);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(80,160,240,0.18) 1px,transparent 1px);
+  background-size:8px 8px;
+}
+
+
+/* ─ HEADER ─ */
+.header{background:rgba(255,255,255,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:2rem 1.5rem 1.8rem;text-align:center;border-bottom:1px solid rgba(255,255,255,0.7);}
+.hstars{display:flex;justify-content:center;align-items:center;gap:.5rem;margin-bottom:.5rem;}
+.hstars::before,.hstars::after{content:'';flex:1;max-width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(180,215,235,.6));}
+.hs{color:var(--sky-lt);font-size:.7rem;}.hs.g{color:var(--gold);font-size:.7rem;}.hs.dot{color:var(--sky);font-size:2.8rem;line-height:1;}
+.htag{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(150,199,255,0.95);margin-bottom:.3rem;}
+.htitle{font-family:'Diphylleia',serif;font-size:1.75rem;color:var(--ink);}
+.htitle span{color:var(--sky);font-style:normal;}
+.hdots{display:flex;justify-content:center;gap:.3rem;margin-top:.65rem;}
+.hd{width:4px;height:4px;border-radius:50%;background:var(--sky-lt);}
+.hd.b{width:6px;height:6px;background:var(--sky);}
+
+/* ─ LAYOUT ─ */
+.main{max-width:660px;margin:0 auto;padding:1.6rem 1rem 5rem;}
+
+/* ─ CARD (shared) ─ */
+.card{background:rgba(255,255,255,0.65);backdrop-filter:blur(40px) saturate(1.8);-webkit-backdrop-filter:blur(40px) saturate(1.8);border-radius:var(--r);box-shadow:0 8px 32px rgba(130,180,255,.28),inset 0 1px 0 rgba(255,255,255,.9);border:2px solid rgba(255,255,255,0.7);margin-bottom:1rem;overflow:hidden;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─ CITY CARD ─ */
+.city-card{animation:fadeUp .5s ease;}
+.cc-corner{position:absolute;top:0;right:0;width:90px;height:90px;background:radial-gradient(circle at top right,rgba(150,199,255,.18) 0%,transparent 70%);pointer-events:none;}
+.cc-corner2{position:absolute;bottom:0;left:0;width:70px;height:70px;background:radial-gradient(circle at bottom left,rgba(175,186,255,.15) 0%,transparent 70%);pointer-events:none;}
+.img-wrap{position:relative;height:220px;background:var(--sky-pale);overflow:hidden;border-radius:var(--r) var(--r) 0 0;}
+.img-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(20,30,50,.65) 100%);pointer-events:none;}
+.city-img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s;}
+.city-img.loaded{opacity:1;}
+.img-loader{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem;}
+.img-loader-star{font-size:1.3rem;color:var(--sky);animation:spin 3s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.img-loader-txt{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.2em;color:var(--sky);text-transform:uppercase;}
+.mission-tag{position:absolute;top:1rem;right:1rem;z-index:3;background:var(--sky);color:var(--white);font-family:'Montserrat',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;padding:.35rem .9rem;border-radius:20px;box-shadow:0 4px 14px rgba(100,160,255,.45);}
+.city-overlay{position:absolute;bottom:1.4rem;left:1.6rem;z-index:2;color:var(--white);}
+.city-overlay-country{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.2em;opacity:.9;text-transform:uppercase;margin-bottom:.2rem;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+.city-overlay-name{font-family:'Diphylleia',serif;font-size:2.1rem;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,.55);}
+.card-body{padding:1.1rem 1.3rem 1.2rem;position:relative;}
+.city-desc{font-size:.8rem;line-height:1.95;color:var(--ink-fade);border-left:2px solid var(--sky-lt);padding-left:.75rem;margin-bottom:.9rem;font-style:italic;font-family:'GmarketSans','Noto Serif KR',sans-serif;}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.45rem 1.4rem;}
+.meta-item{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--sky);letter-spacing:.1em;text-transform:uppercase;}
+.meta-item span{display:block;font-family:'GmarketSans','Noto Serif KR',sans-serif;font-size:.75rem;color:var(--ink);margin-top:.08rem;letter-spacing:0;text-transform:none;}
+
+/* ─ CARD HEADER ─ */
+.card-head{background:linear-gradient(135deg,rgba(150,199,255,0.85) 0%,rgba(175,186,255,0.80) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.4);padding:.6rem 1.2rem;display:flex;align-items:center;justify-content:space-between;}
+.card-head-l{display:flex;align-items:center;gap:.45rem;}
+.card-head-icon{color:var(--white);font-size:.85rem;}
+.card-head-lbl{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:600;}
+.card-head-r{font-family:'Space Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.78);letter-spacing:.06em;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ─ MUSIC ─ */
+.music-cats{display:flex;gap:.35rem;flex-wrap:wrap;padding:.75rem 1.2rem;border-bottom:1px solid var(--sky-pale);}
+.cat-btn{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:.28rem .7rem;border:1.5px solid var(--sky-lt);background:var(--white);color:var(--ink-fade);cursor:pointer;border-radius:20px;transition:all .15s;white-space:nowrap;}
+.cat-btn:hover{border-color:var(--sky);color:var(--sky);}
+.cat-btn.active{background:var(--sky);color:var(--white);border-color:var(--sky);}
+.music-custom{display:flex;gap:.4rem;padding:.65rem 1.2rem;align-items:center;border-bottom:1px solid var(--sky-pale);}
+.music-url-input{flex:1;font-family:'Space Mono',monospace;font-size:.6rem;padding:.38rem .65rem;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:var(--ink);outline:none;border-radius:8px;transition:border-color .15s,background .15s;min-width:0;}
+.music-url-input:focus{border-color:var(--sky);background:rgba(255,255,255,.65);}
+.music-url-input::placeholder{color:var(--ink-fade);opacity:.6;}
+.music-url-btn{font-family:'Space Mono',monospace;font-size:.58rem;padding:.38rem .8rem;background:var(--mint);border:none;color:var(--white);cursor:pointer;border-radius:8px;white-space:nowrap;transition:background .15s;flex-shrink:0;}
+.music-url-btn:hover{background:var(--sky);}
+.tag-pick{font-family:'Space Mono',monospace;font-size:.48rem;padding:.2rem .5rem;border:1.5px solid rgba(175,186,255,.4);border-radius:20px;background:rgba(255,255,255,.55);color:#2a3540;cursor:pointer;transition:all .15s;}
+.tag-pick.sel{background:rgba(150,199,255,.85);color:#fff;border-color:transparent;}
+.music-player{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.2rem;}
+.play-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--sky);background:rgba(150,199,255,.70);backdrop-filter:blur(12px) saturate(1.6);-webkit-backdrop-filter:blur(12px) saturate(1.6);color:transparent;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;box-shadow:0 4px 12px rgba(130,180,255,.2),inset 0 1px 0 rgba(255,255,255,.4);position:relative;overflow:hidden;}
+.play-btn::before{content:'▶';position:absolute;font-size:.75rem;background:linear-gradient(160deg,#fff 60%,rgba(200,230,245,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.play-btn:hover,.play-btn.on{background:rgba(150,199,255,.85);}
+.music-info{flex:1;min-width:0;}
+.music-name{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--ink);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.music-sub{font-family:'Space Mono',monospace;font-size:.53rem;color:var(--ink-fade);margin-top:.12rem;letter-spacing:.04em;}
+.wave{display:flex;align-items:flex-end;gap:2px;height:18px;flex-shrink:0;opacity:.2;}
+.wave.on{opacity:1;}
+.wb{width:3px;background:var(--sky);border-radius:2px;}
+.wave.on .wb:nth-child(1){animation:wv .8s ease-in-out infinite;}
+.wave.on .wb:nth-child(2){animation:wv .9s ease-in-out infinite .1s;}
+.wave.on .wb:nth-child(3){animation:wv .7s ease-in-out infinite .2s;}
+.wave.on .wb:nth-child(4){animation:wv 1s ease-in-out infinite .05s;}
+.wave.on .wb:nth-child(5){animation:wv .85s ease-in-out infinite .15s;}
+@keyframes wv{0%,100%{height:4px}50%{height:16px}}
+
+/* ─ TIMER ─ */
+.timer-body{padding:1.4rem 1.3rem 1.2rem;}
+.timer-lbl{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(150,199,255,0.95);text-align:center;margin-bottom:1rem;}
+
+/* Three donuts row */
+.donuts-row{display:flex;justify-content:center;gap:1.4rem;margin-bottom:1rem;}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:.45rem;}
+.donut-svg{width:90px;height:90px;transform:rotate(-90deg);}
+.donut-track{fill:none;stroke:var(--sky-pale);stroke-width:8;}
+.donut-prog{fill:none;stroke:url(#donutGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .8s ease;stroke-dasharray:245;stroke-dashoffset:245;}
+.donut-center{position:relative;margin-top:-90px;width:90px;height:90px;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.donut-pct{font-family:'IM Fell English',serif;font-size:1.05rem;color:var(--ink);line-height:1;}
+.donut-sublbl{font-family:'Space Mono',monospace;font-size:.52rem;color:var(--ink-fade);letter-spacing:.08em;text-align:center;}
+
+/* stars row */
+.timer-stars{display:flex;justify-content:center;gap:.35rem;margin-bottom:1rem;}
+.ts{font-size:1.4rem;color:#cde8f5;transition:color .4s,transform .5s;}
+.ts.lit{color:#f0d080;transform:scale(1.15);filter:drop-shadow(0 1px 5px rgba(220,190,80,.5));}
+
+/* time add buttons */
+.timer-add-row{display:flex;justify-content:center;gap:.4rem;margin-bottom:.9rem;flex-wrap:wrap;}
+.add-btn{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:.3rem .75rem;border:1.5px solid var(--sky-lt);background:var(--white);color:var(--sky);cursor:pointer;border-radius:20px;transition:all .15s;white-space:nowrap;}
+.add-btn:hover{background:var(--sky);color:var(--white);border-color:var(--sky);}
+
+/* timer controls */
+.timer-ctrl{display:flex;justify-content:center;align-items:center;gap:.5rem;}
+.t-btn{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.38rem .9rem;border:1.5px solid var(--sky-lt);background:var(--white);color:var(--sky);cursor:pointer;border-radius:8px;transition:all .15s;}
+.t-btn:hover{background:var(--sky);color:var(--white);border-color:var(--sky);}
+.t-btn.p{background:var(--sky);color:var(--white);border-color:var(--sky);}
+.t-btn.p:hover{background:var(--sky-lt);color:var(--ink);}
+.timer-prog-txt{font-family:'Space Mono',monospace;font-size:.55rem;color:var(--ink-fade);text-align:center;margin-top:.6rem;}
+
+/* ─ COMPLETE ─ */
+.complete-banner{display:none;margin-bottom:1rem;border-radius:var(--r);box-shadow:var(--shadow);background:rgba(255,255,255,0.65);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:2px solid rgba(255,255,255,0.8);padding:1.3rem;text-align:center;animation:popIn .4s ease;position:relative;overflow:hidden;}
+.complete-banner::before{content:'';display:none;}
+@keyframes popIn{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+.complete-banner.show{display:block;}
+.complete-icon{font-size:1.6rem;margin-bottom:.25rem;}
+.complete-title{font-family:'IM Fell English',serif;font-size:1.05rem;color:var(--mint);font-style:italic;}
+.complete-sub{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--ink-fade);margin-top:.25rem;letter-spacing:.07em;}
+
+/* ─ NEXT ─ */
+.next-sec{display:flex;justify-content:center;margin-bottom:1.3rem;}
+.next-btn{font-family:'IM Fell English',serif;font-size:.92rem;font-style:italic;padding:.65rem 2rem;background:rgba(255,255,255,0.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,0.75);color:var(--sky);cursor:pointer;border-radius:12px;box-shadow:var(--shadow-sm);transition:all .2s;display:flex;align-items:center;gap:.4rem;}
+.next-btn:hover{background:var(--sky);color:var(--white);border-color:var(--sky);}
+
+/* ─ PANELS ─ */
+.panel-head{display:flex;align-items:center;gap:.45rem;padding:.7rem 1.2rem;border-bottom:1px solid rgba(255,255,255,0.4);background:linear-gradient(135deg,rgba(150,199,255,0.85) 0%,rgba(175,186,255,0.80) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.panel-lbl{font-family:'Montserrat',sans-serif;font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(150,199,255,0.95);font-weight:600;}
+.panel-line{flex:1;height:1px;background:linear-gradient(90deg,var(--sky-lt),transparent);}
+.panel-count{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--ink-fade);}
+.map-box{height:270px;position:relative;background:var(--sky-pale);border-radius:0 0 var(--r) var(--r);}
+
+.map-note{position:absolute;bottom:.5rem;right:.6rem;font-family:'Space Mono',monospace;font-size:.52rem;color:var(--ink);background:rgba(255,255,255,.85);padding:.18rem .5rem;letter-spacing:.05em;border-radius:6px;}
+.visited-grid{display:flex;flex-wrap:wrap;gap:.35rem;padding:.8rem 1.2rem .85rem;min-height:46px;}
+.visited-chip{font-family:'Montserrat',sans-serif;font-size:.58rem;font-weight:500;padding:.3rem .8rem;background:rgba(255,255,255,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--sky);border:2px solid rgba(255,255,255,0.7);letter-spacing:.03em;animation:chipIn .3s ease;border-radius:20px;box-shadow:0 4px 12px rgba(130,180,255,.2);cursor:pointer;}
+@keyframes chipIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.visited-empty{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--ink-fade);font-style:italic;align-self:center;}
+.visited-foot{padding:0 1.2rem .75rem;display:flex;justify-content:flex-end;}
+.reset-btn{font-family:'Space Mono',monospace;font-size:.53rem;color:var(--ink-fade);background:none;border:none;cursor:pointer;text-decoration:underline;}
+
+#ytPlayer{display:none;}
+
+
+/* ── 레이아웃 ── */
+.main{max-width:1300px !important;padding:1.2rem 1.5rem 3rem !important;}
+.layout{display:grid;grid-template-columns:4fr 2fr;gap:1rem;align-items:start;}
+.col-left{display:flex;flex-direction:column;}
+.col-right{display:flex;flex-direction:column;gap:1rem;}
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;align-items:start;}
+.img-wrap{height:440px !important;}
+
+/* 모바일 */
+@media(max-width:759px){
+  #hstarsBottom{display:none !important;}
+  .meta-grid{grid-template-columns:1fr 1fr !important;}
+  .card{border-width:1px !important;}
+  .stamp-overlay{border-width:1px !important;}
+  .main{padding:1rem .6rem 4rem !important;}
+  .layout{display:flex !important;flex-direction:column;gap:.6rem;}
+  .col-left,.col-right{display:flex;flex-direction:column;gap:.6rem;}
+  .img-wrap{height:220px !important;}
+  .bottom-row{display:flex !important;flex-direction:column;gap:.6rem;margin-top:0;}
+  .col-right{display:flex !important;flex-direction:column;gap:.6rem;}
+  /* 날씨+발권표 가로 2열, 지도+방문 2:1 */
+  .mobile-row-half{display:flex;flex-direction:column;gap:.5rem;}
+  /* 모바일 지도+방문 레이아웃 변경 */
+  .mobile-row-map{display:flex !important;flex-direction:column !important;gap:.5rem;}
+  /* 지도: 전체 너비, 확대축소 없이 꽉 차게 */
+  #mapCard{width:100%;}
+  #svgMapWrap svg{transform:scale(1.15) translateY(-5%) !important;transform-origin:center top !important;transition:none !important;}
+  /* 줌 버튼 숨기기 */
+  #mapCard button[onclick*="mapZoom"]{display:none !important;}
+  /* places: 지도 아래 전체너비, 헤더 숨기기 */
+  #visitedCard{width:100%;}
+  #visitedCard .panel-head{display:none !important;}
+  #visitedCard .visited-foot{display:none !important;}
+  /* 날씨 내부: 1행 2열 (좌우에 도시) */
+  #wResult{display:grid !important;grid-template-columns:1fr 1fr !important;flex-direction:unset !important;}
+  #wResult>div{border-right:none !important;border-bottom:none !important;min-height:auto !important;padding:.5rem .6rem !important;}
+  #wResult>div:first-child{border-right:1px dashed rgba(175,186,255,.25) !important;}
+  /* 발권표 가로형 compact */
+  .stamp-overlay{overflow-x:hidden;}
+  /* MOFA→목적지 한줄 */
+  .stamp-overlay [style*="1.04rem"]{font-size:.75rem !important;}
+  .stamp-overlay [style*="1.75rem"]{font-size:1.1rem !important;}
+  .ticket-plane svg{width:28px !important;height:28px !important;}
+  /* mission brief 섹션 compact */
+  .stamp-overlay [style*="height:160px"]{height:auto !important;}
+  .stamp-overlay [style*=".9rem"]{font-size:.75rem !important;}
+  .stamp-overlay [style*=".46rem"]{font-size:.38rem !important;}
+  .stamp-overlay [style*=".6rem"]{font-size:.5rem !important;}
+  /* 숨기기 */
+  #wStatus{display:none !important;}
+  #musicNow{display:none !important;}
+  #timerTotalTxt{display:none !important;}
+  #visitedCard .panel-lbl{display:none !important;}
+  /* start/pause/reset 원형 */
+  #startBtn,#pauseBtn{width:34px !important;height:34px !important;border-radius:50% !important;padding:0 !important;font-size:.85rem;}
+  .t-btn[onclick="resetTimer()"]{width:34px !important;height:34px !important;border-radius:50% !important;padding:0 !important;font-size:.85rem;}
+  .music-sub{display:none !important;}
+  /* 음악 플레이어 넘침 방지 */
+  .music-player{overflow:hidden;min-width:0;}
+  .music-info{min-width:0;overflow:hidden;}
+  .music-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .music-mobile-left,.music-mobile-wrap{min-width:0;overflow:hidden;}
+  /* 모바일 지도 세로 늘리기 */
+  #svgMapWrap{min-height:220px;}
+  /* 모바일 티켓: 크기만 줄이기 */
+  .stamp-overlay [style*="2.2rem"]{font-size:1.3rem !important;}
+  .stamp-overlay [style*="1.04rem"]{font-size:.85rem !important;}
+  .ticket-plane svg{width:28px !important;height:28px !important;}
+  .stamp-overlay [style*="height:160px"]{height:auto !important;}
+  /* BGM 내부 2열 */
+  .music-mobile-wrap{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;align-items:start;}
+  .music-mobile-left,.music-mobile-right{display:flex;flex-direction:column;gap:.3rem;}
+  /* 타이머 내부 2열 */
+  .timer-mobile-wrap{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;align-items:start;}
+  .timer-mobile-left,.timer-mobile-right{display:flex;flex-direction:column;gap:.3rem;}
+  /* cat 버튼 작게 */
+  .cat-btn{font-size:.38rem !important;padding:.14rem .26rem !important;}
+  /* 발권표 compact */
+  .ticket-plane{font-size:1rem !important;}
+}
+/* stamp */
+@keyframes stampHit{0%{opacity:0;transform:scale(2) rotate(-18deg);}55%{opacity:1;transform:scale(.92) rotate(4deg);}100%{opacity:.85;transform:scale(1) rotate(-3deg);}}
+#stampSvg.stamped{animation:stampHit .6s cubic-bezier(.175,.885,.32,1.275) forwards !important;}
+.stamp-overlay{position:relative;margin-bottom:1rem;border-radius:18px;overflow:hidden;box-shadow:0 8px 36px rgba(100,160,240,.32);border:2px solid rgba(255,255,255,0.7);}
+/* 타이머 버튼 3D */
+.t-btn{border-bottom:4px solid rgba(120,170,255,.8) !important;background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(200,225,255,.88) 100%) !important;box-shadow:0 5px 14px rgba(130,180,255,.3),0 2px 4px rgba(130,180,255,.2) !important;color:var(--sky) !important;}
+.t-btn.p{background:linear-gradient(180deg,rgba(150,199,255,.98) 0%,rgba(120,170,255,.92) 100%) !important;color:var(--white) !important;border-bottom:4px solid rgba(100,140,240,.85) !important;box-shadow:0 5px 14px rgba(130,180,255,.35),0 2px 4px rgba(130,180,255,.25) !important;}
+.t-btn:active{transform:translateY(2px) !important;}
+.add-btn{border-bottom:4px solid rgba(120,170,255,.75) !important;box-shadow:0 5px 14px rgba(130,180,255,.28),0 2px 4px rgba(130,180,255,.18) !important;}
+.add-btn:active{transform:translateY(2px) !important;}
+/* 날씨 */
+.wbody{padding:.65rem .9rem .75rem;}
+.winp{width:100%;font-family:'Space Mono',monospace;font-size:.52rem;padding:.25rem .46rem;border:1.5px solid rgba(175,186,255,.38);background:rgba(255,255,255,.62);color:#2a3540;outline:none;border-radius:6px;}
+.winp[readonly]{background:rgba(255,255,255,.32);color:#6a7e8a;cursor:default;}
+.weditrow{display:flex;gap:.22rem;}
+.wsavebtn{font-family:'Space Mono',monospace;font-size:.46rem;padding:.25rem .46rem;background:rgba(150,199,255,.8);border:none;color:#fff;cursor:pointer;border-radius:6px;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.wsearch{width:100%;font-family:'Space Mono',monospace;font-size:.46rem;padding:.26rem;background:linear-gradient(135deg,rgba(150,199,255,0.85),rgba(175,186,255,0.80));border:1px solid rgba(255,255,255,.4);border-bottom:2px solid rgba(130,160,255,.5);color:#fff;cursor:pointer;border-radius:6px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+#wResult{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;}
+#wResult .wcell{background:rgba(255,255,255,.18);border:none;border-radius:12px;padding:.7rem .8rem;text-align:center;}
+#wResult .wcity{font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(130,180,255,.7);margin-bottom:.2rem;}
+#wResult .wicon{font-size:2rem;line-height:1;margin-bottom:.25rem;}
+#wResult .wtemp{font-family:'IM Fell English',serif;font-size:2rem;color:#2a3540;line-height:1;}
+#wResult .wtemp span{font-family:'Space Mono',monospace;font-size:.65rem;}
+#wResult .wdesc{font-family:'Space Mono',monospace;font-size:.42rem;color:#6a7e8a;margin-top:.25rem;}
+#wResult .wfeel{font-family:'Space Mono',monospace;font-size:.38rem;color:#9ab;margin-top:.08rem;}
+/* 완료 배너 */
+.complete-banner{display:none;background:linear-gradient(135deg,rgba(130,180,255,.15),rgba(100,170,255,.12));border:1.5px solid rgba(150,199,255,.32);border-radius:12px;padding:.7rem 1rem;margin-bottom:.85rem;align-items:center;gap:.7rem;}
+
+/* 스크롤바 원천 차단 */
+::-webkit-scrollbar { 
+    display: none !important; 
+    width: 0 !important; 
+    height: 0 !important; 
+}
+html, body { 
+    -ms-overflow-style: none !important; 
+    scrollbar-width: none !important; 
+}
+
+/* 배경 투명화 및 테두리선을 90% 투명한 흰색(alpha: 0.1)으로 강제 덮어쓰기 */
+body, html, main, .app-wrapper, .layout {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.card, .city-card, .stamp-overlay, .panel-head, .card-head {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+</style>
+<body>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+var _db=null;
+try{
+  var _fbConfig={apiKey:"AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o",projectId:"time-8d30b",databaseURL:"https://tracker-d3a39-default-rtdb.firebaseio.com/"};
+  var _fbApp;
+  try{_fbApp=firebase.app('diplomat');}catch(e){_fbApp=firebase.initializeApp(_fbConfig,'diplomat');}
+  _db=_fbApp.database();
+}catch(e){console.log('Firebase init error',e);}
+var _FB_KEY='diplomat_state_v1';
+function saveToFirebase(){
+  if(!_db)return;
+  try{_db.ref('diplomat/'+_FB_KEY).set(st);}catch(e){}
+}
+function loadFromFirebase(cb){
+  if(!_db){cb();return;}
+  try{
+    _db.ref('diplomat/'+_FB_KEY).once('value').then(function(snap){
+      var data=snap.val();
+      if(data&&typeof data.idx!=='undefined'){
+        // 누락된 필드 보정
+        if(!data.elapsed)data.elapsed={};
+        if(!data.visited)data.visited=[];
+        st=data;
+        try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}
+      }
+      cb();
+    }).catch(function(){cb();});
+  }catch(e){cb();}
+}
+</script>
+<header class="header">
+  <div class="hstars"><span class="hs">✦</span><span class="hs g">★</span><span class="hs dot">·</span><span class="hs g">★</span><span class="hs">✦</span></div>
+  <div class="htag">Ministry of Foreign Affairs</div>
+  <div class="htitle">오늘의 <span>파견지</span></div>
+  <div class="hstars" id="hstarsBottom" style="margin-top:.65rem;margin-bottom:0;"><span class="hs">✦</span><span class="hs g">★</span><span class="hs dot">·</span><span class="hs g">★</span><span class="hs">✦</span></div>
+</header>
+
+<main class="main">
+<div class="layout">
+
+<div class="col-left">
+  <!-- CITY CARD -->
+  <div class="card city-card" id="cityCard" style="position:relative;">
+    <div class="cc-corner"></div><div class="cc-corner2"></div>
+    <div class="img-wrap" id="cityImgWrap" style="cursor:pointer;" onclick="if(event.target===this||event.target===qs('cityImg')){var p=POSTS[st.idx];if(p)openGallery(p);}">
+      <div class="img-loader" id="imgLoader">
+        <div class="img-loader-star">✦</div>
+        <div class="img-loader-txt">Loading</div>
+      </div>
+      <img class="city-img" id="cityImg" alt="" />
+      <div class="mission-tag" id="missionTag">대사관</div>
+      <div class="city-overlay">
+        <div class="city-overlay-country" id="cityCountry">—</div>
+        <div class="city-overlay-name" id="cityName">—</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.55rem;">
+        <span id="cityAddressTxt" style="font-family:'Space Mono',monospace;font-size:.53rem;color:var(--sky);letter-spacing:.03em;">—</span>
+        <span style="font-family:'Space Mono',monospace;font-size:.5rem;color:var(--ink-fade);">·</span>
+        <span id="cityKoreans" style="font-family:'Space Mono',monospace;font-size:.5rem;color:var(--ink-fade);">—</span>
+      </div>
+      <div class="city-desc" id="cityDesc">파견지를 불러오는 중...</div>
+      <div class="meta-grid">
+        <div class="meta-item">Region<span id="mRegion">—</span></div>
+        <div class="meta-item">Type<span id="mType">—</span></div>
+        <div class="meta-item">Timezone<span id="mTZ">—</span></div>
+        <div class="meta-item">Language<span id="mLang">—</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-row">
+    <!-- MUSIC -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-l">
+        <div class="card-head-icon">♫</div>
+        <div class="card-head-lbl">Study BGM</div>
+      </div>
+      <div class="card-head-r" id="musicNow">Select a category</div>
+    </div>
+    <!-- 모바일 2열 래퍼 -->
+    <div class="music-mobile-wrap">
+    <!-- 좌: 재생+태그 -->
+    <div class="music-mobile-left">
+    <!-- 1. 재생 -->
+    <div class="music-player">
+      <button class="play-btn" id="playBtn" onclick="toggleMusic()"></button>
+      <div class="music-info">
+        <div class="music-name" id="musicName">—</div>
+      </div>
+      <div class="wave" id="wave">
+        <div class="wb" style="height:6px"></div>
+        <div class="wb" style="height:12px"></div>
+        <div class="wb" style="height:8px"></div>
+        <div class="wb" style="height:14px"></div>
+        <div class="wb" style="height:5px"></div>
+      </div>
+    </div>
+    <!-- 2. 태그 -->
+    <div class="music-cats">
+      <button class="cat-btn" id="cat-lofi"  onclick="selectCat('lofi')">🎵 lo-fi</button>
+      <button class="cat-btn" id="cat-focus" onclick="selectCat('focus')">🧠 집중</button>
+      <button class="cat-btn" id="cat-plane" onclick="selectCat('plane')">✈️ 비행기</button>
+      <button class="cat-btn" id="cat-fire"  onclick="selectCat('fire')">🪵 장작</button>
+      <button class="cat-btn" id="cat-rain"  onclick="selectCat('rain')">🌧️ 빗소리</button>
+      <button class="cat-btn" id="cat-cafe"  onclick="selectCat('cafe')">☕ 카페</button>
+    </div>
+    </div><!-- /music-mobile-left -->
+    <!-- 우: URL입력+저장리스트 -->
+    <div class="music-mobile-right">
+    <!-- 3. 검색 (inset) -->
+    <div style="padding:.3rem .5rem .3rem;">
+      <div style="display:flex;gap:.3rem;align-items:center;background:rgba(0,0,0,.055);border-radius:10px;padding:.2rem .3rem .2rem .5rem;box-shadow:inset 0 2px 5px rgba(130,180,255,.13),inset 0 1px 2px rgba(0,0,0,.07);">
+        <input class="music-url-input" id="urlInput" type="text" placeholder="YouTube URL..." style="background:transparent;border:none;box-shadow:none;padding:.12rem 0;flex:1;font-size:.48rem;"/>
+        <button class="music-url-btn" onclick="playCustom()" style="border-radius:6px;padding:.2rem .5rem;font-size:.45rem;background:rgba(150,199,255,.85);">Play</button>
+      </div>
+    </div>
+    <!-- 4. 저장 리스트 -->
+    <div style="margin:.2rem .5rem .5rem;position:relative;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;padding:0 .1rem;">
+        <span style="font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(130,180,255,.6);">My Playlist</span>
+        <button onclick="openSaveModal()" style="font-family:'Space Mono',monospace;font-size:.42rem;background:rgba(150,199,255,.8);border:none;color:#fff;border-radius:5px;padding:.1rem .38rem;cursor:pointer;">+ Save</button>
+      </div>
+      <div id="myPlaylist" style="background:transparent;border-radius:12px;padding:.3rem .1rem;display:flex;flex-direction:column;gap:.25rem;max-height:160px;overflow-y:auto;"></div>
+    </div>
+    </div><!-- /music-mobile-right -->
+    </div><!-- /music-mobile-wrap -->
+    <!-- SAVE MODAL -->
+    <div id="saveModal" style="display:none;position:fixed;inset:0;background:rgba(40,80,120,.3);backdrop-filter:blur(8px);z-index:999;align-items:center;justify-content:center;">
+      <div style="background:rgba(240,248,255,.95);border:2px solid rgba(255,255,255,.9);border-radius:16px;padding:1.2rem 1.4rem;width:290px;box-shadow:0 12px 36px rgba(130,180,255,.22),inset 0 1px 0 rgba(255,255,255,1);">
+        <div style="font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--sky);margin-bottom:.7rem;">Save to Playlist</div>
+        <div style="background:rgba(0,0,0,.05);border-radius:8px;padding:.3rem .5rem;box-shadow:inset 0 2px 5px rgba(130,180,255,.12);margin-bottom:.55rem;">
+          <input id="saveUrl" type="text" placeholder="YouTube URL" style="width:100%;font-family:'Space Mono',monospace;font-size:.55rem;border:none;background:transparent;color:#2a3540;outline:none;"/>
+        </div>
+        <div style="font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.12em;text-transform:uppercase;color:#aaa;margin-bottom:.3rem;">Tag</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.65rem;" id="tagBtns">
+          <button onclick="selectTag(this,'lofi')"     class="tag-pick">🎵 lo-fi</button>
+          <button onclick="selectTag(this,'focus')"    class="tag-pick">🧠 집중</button>
+          <button onclick="selectTag(this,'plane')"    class="tag-pick">✈️ 비행기</button>
+          <button onclick="selectTag(this,'fire')"     class="tag-pick">🪵 장작</button>
+          <button onclick="selectTag(this,'rain')"     class="tag-pick">🌧️ 빗소리</button>
+          <button onclick="selectTag(this,'cafe')"     class="tag-pick">☕ 카페</button>
+        </div>
+        <div style="display:flex;gap:.4rem;justify-content:flex-end;">
+          <button onclick="closeSaveModal()" style="font-family:'Space Mono',monospace;font-size:.5rem;padding:.3rem .7rem;border:1px solid rgba(175,186,255,.4);border-radius:7px;background:rgba(255,255,255,.5);color:#6a7e8a;cursor:pointer;">Cancel</button>
+          <button onclick="saveToPlaylist()" style="font-family:'Space Mono',monospace;font-size:.5rem;padding:.3rem .7rem;border:none;border-radius:7px;background:rgba(150,199,255,.85);color:#fff;cursor:pointer;">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    <!-- TIMER -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-head-l">
+        <div class="card-head-icon">⏱</div>
+        <div class="card-head-lbl">Study Timer</div>
+      </div>
+      <div class="card-head-r" id="timerTotalTxt">0 / 12 hrs</div>
+    </div>
+    <div class="timer-body">
+      <div class="timer-lbl" style="display:none;">4h × 3 Sessions</div>
+      <div class="timer-mobile-wrap">
+      <!-- 좌: 진행상태 -->
+      <div class="timer-mobile-left">
+<!-- stars -->
+      <div style="display:flex;gap:.9rem;justify-content:center;margin-bottom:1rem;">
+        <span class="ts" id="ts0">★</span>
+        <span class="ts" id="ts1">★</span>
+        <span class="ts" id="ts2">★</span>
+      </div>
+
+      <div style="padding:0 .2rem;margin-bottom:1.4rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+          <span style="font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-fade);">Mission Progress</span>
+          <span style="font-family:'Space Mono',monospace;font-size:.55rem;color:var(--sky);" id="barPct">0%</span>
+        </div>
+        <div style="position:relative;height:5px;background:rgba(180,218,235,.35);border-radius:10px;overflow:visible;margin-bottom:.5rem;">
+          <div id="barFill" style="height:5px;border-radius:10px;background:linear-gradient(90deg,#a8d8f0,#5aaad4,#2e7fb8);width:0%;transition:width .8s cubic-bezier(.4,0,.2,1);"></div>
+          <div id="barPlane" style="position:absolute;top:50%;left:0%;transform:translateY(-65%) translateX(-50%);transition:left .8s cubic-bezier(.4,0,.2,1);pointer-events:none;">
+          <svg width="32" height="18" viewBox="0 0 64 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(1px 3px 6px rgba(80,160,220,.5));display:block;">
+  <path d="M4,20 C4,14 10,12 18,12 L46,12 C54,12 60,15 60,18 C60,21 54,24 46,24 L18,24 C10,24 4,22 4,20 Z" fill="white" stroke="#96C7FF" stroke-width="1.5"/>
+  <path d="M46,12 C54,12 62,15 63,18 C62,21 54,24 46,24 Z" fill="#e4f4fb" stroke="#96C7FF" stroke-width="1.2"/>
+  <path d="M10,12 L13,4 L18,6 L16,12 Z" fill="#96C7FF"/>
+  <path d="M8,22 L5,28 L13,26 L13,22 Z" fill="#96C7FF" opacity="0.85"/>
+  <path d="M26,24 L20,36 L38,34 L38,24 Z" fill="#96C7FF"/>
+  <ellipse cx="30" cy="34" rx="6" ry="2.2" fill="#9ecfe8" stroke="#96C7FF" stroke-width="1"/>
+  <circle cx="50" cy="17" r="2" fill="#b8e0f4"/>
+  <circle cx="43" cy="17" r="2" fill="#b8e0f4"/>
+  <circle cx="36" cy="17" r="2" fill="#b8e0f4"/>
+  <circle cx="29" cy="17" r="2" fill="#b8e0f4"/>
+  <ellipse cx="3" cy="20" rx="3" ry="1.5" fill="rgba(184,224,244,0.5)"/>
+</svg>
+        </div>
+        </div>
+      </div>
+
+
+
+      </div><!-- /timer-mobile-left -->
+      <!-- 우: 버튼들 -->
+      <div class="timer-mobile-right">
+      <!-- add time -->
+      <div class="timer-add-row">
+        
+        <button class="add-btn" onclick="addTime(30*60)">+30min</button>
+        <button class="add-btn" onclick="addTime(60*60)">+1hr</button>
+        <button class="add-btn" onclick="addTime(2*60*60)">+2hr</button>
+        <button class="add-btn" onclick="addTime(4*60*60)">+4hr</button>
+      </div>
+
+      <!-- controls -->
+      <div class="timer-ctrl">
+        <button class="t-btn p" id="startBtn" onclick="startTimer()">▶</button>
+        <button class="t-btn" id="pauseBtn" onclick="pauseTimer()" style="display:none;">⏸</button>
+        <button class="t-btn" onclick="resetTimer()">↺</button>
+      </div>
+      <div class="timer-prog-txt" id="timerProgTxt">0 / 43,200 sec</div>
+      </div><!-- /timer-mobile-right -->
+      </div><!-- /timer-mobile-wrap -->
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="col-right">
+  <div class="mobile-row-half">
+  <!-- WEATHER -->
+<div class="card" id="weatherCard" style="background:rgba(255,255,255,0.35);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);">
+  <input type="hidden" id="wCity1" value=""/>
+  <div class="card-head"><div class="card-head-l"><div class="card-head-lbl">&#9992; Weather</div></div><div class="card-head-r" id="wStatus">—</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;" id="wResult">
+    <div style="padding:.9rem 1rem 1rem;border-right:1.5px dashed rgba(175,186,255,.35);position:relative;min-height:100px;">
+      <div style="font-family:'Space Mono',monospace;font-size:.33rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(130,180,255,.6);margin-bottom:.25rem;">Posting City</div>
+      <div id="w1city" style="font-family:'IM Fell English',serif;font-size:1.1rem;color:#2a3540;line-height:1.1;">—</div>
+      <div id="w1icon" style="position:absolute;top:.9rem;right:.8rem;font-size:1.4rem;line-height:1;">—</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:.5rem;">
+        <div>
+          <div id="w1desc" style="font-family:'Space Mono',monospace;font-size:.52rem;color:#6a7e8a;">—</div>
+          <div id="w1feel" style="font-family:'Space Mono',monospace;font-size:.48rem;color:#9ab;margin-top:.05rem;">—</div>
+        </div>
+        <div id="w1temp" style="font-family:'IM Fell English',serif;font-size:1.6rem;color:#2a3540;line-height:1;text-align:right;">—</div>
+      </div>
+    </div>
+    <div style="padding:.9rem 1rem 1rem;position:relative;min-height:100px;cursor:context-menu;" oncontextmenu="editMyCity(event)" title="Right-click to change location">
+      <div style="font-family:'Space Mono',monospace;font-size:.33rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(130,180,255,.6);margin-bottom:.25rem;">My Location <span style="opacity:.5;">· right-click</span></div>
+      <div id="w2city" style="font-family:'IM Fell English',serif;font-size:1.1rem;color:#2a3540;line-height:1.1;">—</div>
+      <div id="w2icon" style="position:absolute;top:.9rem;right:.8rem;font-size:1.4rem;line-height:1;">—</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:.5rem;">
+        <div>
+          <div id="w2desc" style="font-family:'Space Mono',monospace;font-size:.52rem;color:#6a7e8a;">—</div>
+          <div id="w2feel" style="font-family:'Space Mono',monospace;font-size:.48rem;color:#9ab;margin-top:.05rem;">—</div>
+        </div>
+        <div id="w2temp" style="font-family:'IM Fell English',serif;font-size:1.6rem;color:#2a3540;line-height:1;text-align:right;">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- STAMP -->
+<div class="stamp-overlay" id="stampOverlay">
+  <div id="stampPages" style="display:flex;transition:transform .38s cubic-bezier(.4,0,.2,1);">
+    <div style="min-width:100%;position:relative;">
+      <div style="background:#fff;overflow:hidden;">
+        <div style="padding:1rem 1.1rem .85rem;border-bottom:1.5px solid #eee;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div>
+              <div style="font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.24em;text-transform:uppercase;color:#AFBAFF;margin-bottom:.18rem;">Korean Foreign Service</div>
+              <div style="font-family:'Space Mono',monospace;font-size:.44rem;color:#96C7FF;margin-top:.12rem;" id="bpSub">—</div>
+            </div>
+            <div style="font-family:'IM Fell English',serif;font-size:1.04rem;color:#2a3540;text-align:right;" id="bpRoute">Seoul → —</div>
+          </div>
+          <hr style="border:none;border-top:1px solid #eee;margin:.7rem 0;"/>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><div style="font-family:'IM Fell English',serif;font-size:2.2rem;color:#2a3540;">MOFA</div><div style="font-family:'Space Mono',monospace;font-size:.4rem;color:#aaa;text-transform:uppercase;">Seoul</div></div>
+            <div class="ticket-plane" style="color:#96C7FF;line-height:1;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="#96C7FF" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(90deg);">
+                <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+              </svg>
+            </div>
+            <div style="text-align:right;"><div style="font-family:'IM Fell English',serif;font-size:2.2rem;color:#2a3540;" id="bpIATA">—</div><div style="font-family:'Space Mono',monospace;font-size:.4rem;color:#aaa;text-transform:uppercase;" id="bpCity2">—</div></div>
+          </div>
+        </div>
+        <div style="display:flex;border-top:1.5px dashed #ccc;height:160px;">
+          <div style="flex:1;padding:.8rem 1.1rem;border-right:1.5px dashed #ccc;overflow:hidden;">
+            <div style="font-family:'Space Mono',monospace;font-size:.36rem;letter-spacing:.2em;text-transform:uppercase;color:#aaa;margin-bottom:.45rem;">Mission Brief</div>
+            <div style="font-family:'IM Fell English',serif;font-size:.9rem;color:#111;margin-bottom:.22rem;" id="bpCity3">—</div>
+            <div style="font-family:'Space Mono',monospace;font-size:.46rem;color:#555;margin-bottom:.55rem;">30-Hour Study Mission Complete</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.2rem .8rem;margin-bottom:.3rem;">
+              <div><div style="font-family:'Space Mono',monospace;font-size:.35rem;letter-spacing:.14em;text-transform:uppercase;color:#aaa;">Country</div><div style="font-size:.6rem;color:#222;margin-top:.04rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="bpCountry">—</div></div>
+              <div><div style="font-family:'Space Mono',monospace;font-size:.35rem;letter-spacing:.14em;text-transform:uppercase;color:#aaa;">Region</div><div style="font-size:.6rem;color:#222;margin-top:.04rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="bpRegion">—</div></div>
+            </div>
+            <div><div style="font-family:'Space Mono',monospace;font-size:.35rem;letter-spacing:.14em;text-transform:uppercase;color:#aaa;">Completed</div><div style="font-size:.6rem;color:#222;margin-top:.04rem;min-height:1em;" id="bpDate">In Progress</div></div>
+          </div>
+          <div style="width:50px;display:flex;align-items:center;justify-content:center;padding:.6rem .4rem;">
+            <svg id="bpBarcode" width="32" height="130" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+        <div style="text-align:center;padding:.33rem;font-family:'Space Mono',monospace;font-size:.38rem;letter-spacing:.26em;text-transform:uppercase;color:#bbb;border-top:1px solid #eee;">Overseas Posting Record</div>
+        <div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:10;">
+          <svg id="stampSvg" width="180" height="180" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" style="opacity:0;transform:scale(2) rotate(-18deg);"></svg>
+        </div>
+      </div>
+    </div>
+    <div style="min-width:100%;background:#EAF3FF;padding:.5rem .7rem .5rem;overflow:hidden;position:relative;background-image:repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(100,170,210,0.1) 18px,rgba(100,170,210,0.1) 19px),repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(100,170,210,0.1) 18px,rgba(100,170,210,0.1) 19px);">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.3rem;">
+        <span style="font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(50,100,150,0.35);">Passport Collection</span>
+        <button onclick="collZoom(-10)" style="font-family:'Space Mono',monospace;font-size:.6rem;background:rgba(255,255,255,.6);border:1px solid rgba(175,186,255,.4);color:#96C7FF;border-radius:4px;width:18px;height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">−</button>
+        <button onclick="collZoom(10)" style="font-family:'Space Mono',monospace;font-size:.6rem;background:rgba(255,255,255,.6);border:1px solid rgba(175,186,255,.4);color:#96C7FF;border-radius:4px;width:18px;height:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">+</button>
+      </div>
+      <div id="collStamps" style="position:relative;height:240px;overflow:hidden;cursor:grab;"></div>
+    </div>
+  </div>
+</div>
+</div><!-- /mobile-row-half -->
+  <div class="mobile-row-map">
+  <!-- MAP -->
+  <div class="card" id="mapCard" style="background:radial-gradient(ellipse at 30% 40%, rgba(150,199,255,0.35) 0%, transparent 60%), radial-gradient(ellipse at 75% 65%, rgba(175,186,255,0.25) 0%, transparent 55%), rgba(210,230,255,0.55);box-shadow:none;position:relative;">
+    <div class="panel-head">
+      <div class="panel-lbl">Visited Map</div>
+      <div class="panel-line"></div>
+      <div class="panel-count" id="mapCount">0 complete</div>
+    </div>
+    <div style="margin:.6rem;border-radius:12px;overflow:hidden;position:relative;background-image:repeating-linear-gradient(0deg,transparent,transparent 22px,rgba(100,170,210,0.07) 22px,rgba(100,170,210,0.07) 23px),repeating-linear-gradient(90deg,transparent,transparent 22px,rgba(100,170,210,0.07) 22px,rgba(100,170,210,0.07) 23px);touch-action:none;user-select:none;-webkit-user-select:none;">
+      <div id="svgMapWrap" style="position:relative;width:100%;cursor:grab;"></div>
+      <!-- zoom buttons -->
+      <div style="position:absolute;top:.4rem;right:.4rem;display:flex;flex-direction:column;gap:.2rem;">
+        <button onclick="mapZoom(1.25)" style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.55);backdrop-filter:blur(8px);font-size:.7rem;cursor:pointer;color:var(--sky);display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+        <button onclick="mapZoom(0.8)" style="width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.55);backdrop-filter:blur(8px);font-size:.7rem;cursor:pointer;color:var(--sky);display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
+      </div>
+      <!-- Now label: floating centered blue glass -->
+      <div id="mapNote" style="position:absolute;bottom:.8rem;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(150,199,255,0.85),rgba(175,186,255,0.80));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.5);border-radius:24px;padding:.35rem 1.2rem;font-family:'Montserrat',sans-serif;font-size:.52rem;font-weight:600;color:#fff;white-space:nowrap;box-shadow:0 6px 20px rgba(130,180,255,.3),inset 0 1px 0 rgba(255,255,255,.35);">Current posting preview</div>
+    </div>
+  </div>
+  <!-- VISITED -->
+  <div class="card" id="visitedCard">
+    <div class="panel-head">
+      <div class="panel-lbl">Places Visited</div>
+      <div class="panel-line"></div>
+      <div class="panel-count" id="visitedCount">0</div>
+    </div>
+    <div class="visited-grid" id="visitedGrid">
+      <div class="visited-empty">No completed postings yet</div>
+    </div>
+    <div class="visited-foot">
+      <button class="reset-btn" onclick="resetAll()">Reset Records</button>
+    </div>
+  </div><!-- /visitedCard -->
+
+</div><!-- /mobile-row-map -->
+</div><!-- /col-right -->
+<!-- GALLERY MODAL -->
+<div id="galleryBg" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(10,20,40,.72);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1.5rem;" onclick="closeGallery(event)">
+  <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1rem;width:100%;max-width:680px;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;">
+      <div style="font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);">Select Photo</div>
+      <button onclick="closeGallery()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:1rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;"></div>
+    <div style="font-family:'Space Mono',monospace;font-size:.42rem;color:rgba(255,255,255,.35);text-align:center;margin-top:.7rem;letter-spacing:.1em;">Click to select · Images refresh hourly</div>
+  </div>
+</div>
+</div>
+
+</div>
+</main>
+
+<div id="modalBg" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(30,50,80,.45);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem;" onclick="closeModal(event)">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:370px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;" onclick="event.stopPropagation()">
+    <div style="background:linear-gradient(135deg,rgba(100,170,255,.92),rgba(100,170,255,.92));padding:1rem 1.2rem .85rem;color:#fff;">
+      <div style="font-size:.42rem;letter-spacing:.24em;text-transform:uppercase;opacity:.72;margin-bottom:.15rem;">Korean Foreign Service</div>
+      <div style="font-family:'IM Fell English',serif;font-size:1.35rem;" id="mTicketHeadline">Seoul → —</div>
+      <div style="font-size:.43rem;opacity:.78;margin-top:.12rem;" id="mTicketSub">—</div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.2);margin:.58rem 0;"/>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div><div style="font-family:'IM Fell English',serif;font-size:1.55rem;">MOFA</div><div style="font-size:.38rem;opacity:.78;">Seoul</div></div>
+        <div style="opacity:.68;">✈</div>
+        <div style="text-align:right;"><div style="font-family:'IM Fell English',serif;font-size:1.55rem;" id="mTicketIATA">—</div><div style="font-size:.38rem;opacity:.78;" id="mTicketCity">—</div></div>
+      </div>
+    </div>
+    <div style="display:flex;border-top:1.5px dashed #d0d0d0;">
+      <div style="flex:1;padding:.78rem 1.05rem;border-right:1.5px dashed #d0d0d0;">
+        <div style="font-family:'IM Fell English',serif;font-size:.85rem;color:#111;margin-bottom:.32rem;" id="mTicketMission">—</div>
+        <div style="display:flex;flex-direction:column;gap:.28rem;">
+          <div><div style="font-size:.33rem;letter-spacing:.13em;text-transform:uppercase;color:#aaa;">City</div><div style="font-size:.64rem;font-weight:700;color:#111;" id="mTicketCityFull">—</div></div>
+          <div><div style="font-size:.33rem;letter-spacing:.13em;text-transform:uppercase;color:#aaa;">Country</div><div style="font-size:.58rem;color:#333;" id="mTicketCountry">—</div></div>
+          <div><div style="font-size:.33rem;letter-spacing:.13em;text-transform:uppercase;color:#aaa;">Region</div><div style="font-size:.58rem;color:#333;" id="mTicketRegion">—</div></div>
+          <div><div style="font-size:.33rem;letter-spacing:.13em;text-transform:uppercase;color:#aaa;">Address</div><div style="font-size:.52rem;color:#555;" id="mTicketAddr">—</div></div>
+        </div>
+      </div>
+      <div style="width:38px;display:flex;align-items:center;justify-content:center;padding:.36rem;">
+        <svg id="mTicketBarcode" width="26" height="110" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+    <div style="border-top:1.5px dashed #ccc;text-align:center;padding:.32rem;font-size:.44rem;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#222;">Overseas Posting Record</div>
+    <button onclick="closeModal()" style="display:block;width:100%;font-size:.44rem;padding:.38rem;background:#f5f5f5;border:none;border-top:1px solid #eee;color:#666;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;touch-action:manipulation;">Close ✕</button>
+  </div>
+</div>
+
+<!-- GALLERY MODAL -->
+<div id="galleryBg" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(10,20,40,.72);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1.5rem;" onclick="closeGallery(event)">
+  <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1rem;width:100%;max-width:680px;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;">
+      <div style="font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6);">Select Photo</div>
+      <button onclick="closeGallery()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:1rem;cursor:pointer;">✕</button>
+    </div>
+    <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;"></div>
+    <div style="font-family:'Space Mono',monospace;font-size:.42rem;color:rgba(255,255,255,.35);text-align:center;margin-top:.7rem;letter-spacing:.1em;">Click to select · Images refresh hourly</div>
+  </div>
+</div>
+<iframe id="ytPlayer" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"></iframe>
+<script>
+
+
+
+
+
+
+var POSTS=[
+  {city:"도쿄",country:"일본",region:"동아시아",type:"대사관",tz:"UTC+9",lang:"일본어",desc:"동북아 최대 공관. 시부야의 네온과 메이지 신궁이 공존하는 도시.",flag:"🇯🇵",lat:35.6762,lng:139.6503,img:"tokyo skyline japan night",address:"東京都港区南麻布4-6-28"},
+  {city:"오사카",country:"일본",region:"동아시아",type:"총영사관",tz:"UTC+9",lang:"일본어",desc:"도톤보리 야경과 문어빵 냄새. 한일 경제 교류 핵심.",flag:"🇯🇵",lat:34.6937,lng:135.5023,img:"osaka dotonbori japan",address:"大阪府大阪市中央区西心斎橋2-3-4"},
+  {city:"베이징",country:"중국",region:"동아시아",type:"대사관",tz:"UTC+8",lang:"중국어",desc:"자금성과 만리장성. 세계 2위 경제대국의 심장.",flag:"🇨🇳",lat:39.9042,lng:116.4074,img:"beijing forbidden city china",address:"北京市朝阳区光华路20号"},
+  {city:"상하이",country:"중국",region:"동아시아",type:"총영사관",tz:"UTC+8",lang:"중국어",desc:"황푸강변 와이탄의 야경. 동서양이 뒤섞인 국제금융도시.",flag:"🇨🇳",lat:31.2304,lng:121.4737,img:"shanghai bund skyline night",address:"上海市万山路60号"},
+  {city:"방콕",country:"태국",region:"동남아시아",type:"대사관",tz:"UTC+7",lang:"태국어",desc:"왓프라깨우 황금 사원. 동남아 허브 외교 무대.",flag:"🇹🇭",lat:13.7563,lng:100.5018,img:"bangkok grand palace thailand",address:"23 Thiam-Ruammit Rd, Bangkok"},
+  {city:"싱가포르",country:"싱가포르",region:"동남아시아",type:"대사관",tz:"UTC+8",lang:"영어",desc:"마리나베이샌즈 야경. 깨끗하고 효율적인 도시국가.",flag:"🇸🇬",lat:1.3521,lng:103.8198,img:"singapore marina bay sands night",address:"47 Scotts Road, Singapore 228232"},
+  {city:"하노이",country:"베트남",region:"동남아시아",type:"대사관",tz:"UTC+7",lang:"베트남어",desc:"호안끼엠 호수와 프랑스 식민지 건축. 한-베트남 경제협력 최전선.",flag:"🇻🇳",lat:21.0285,lng:105.8542,img:"hanoi old quarter vietnam",address:"28 Dao Tan St, Ba Dinh, Hanoi"},
+  {city:"자카르타",country:"인도네시아",region:"동남아시아",type:"대사관",tz:"UTC+7",lang:"인도네시아어",desc:"2억7천만 인구 대국의 수도. 이슬람문화와 현대가 공존.",flag:"🇮🇩",lat:-6.2088,lng:106.8456,img:"jakarta city indonesia skyline",address:"Jl. Gatot Subroto Kav. 57-58, Jakarta"},
+  {city:"마닐라",country:"필리핀",region:"동남아시아",type:"대사관",tz:"UTC+8",lang:"필리핀어/영어",desc:"마닐라베이 노을 명소. 한국 교민 최다 거주지 중 하나.",flag:"🇵🇭",lat:14.5995,lng:120.9842,img:"manila bay sunset philippines",address:"122 Upper McKinley Rd, Taguig, Manila"},
+  {city:"뉴델리",country:"인도",region:"남아시아",type:"대사관",tz:"UTC+5:30",lang:"힌디어/영어",desc:"타지마할까지 기차로 2시간. 세계 최다인구 국가의 수도.",flag:"🇮🇳",lat:28.6139,lng:77.209,img:"india gate new delhi",address:"9 Chandragupta Marg, New Delhi"},
+  {city:"뭄바이",country:"인도",region:"남아시아",type:"총영사관",tz:"UTC+5:30",lang:"힌디어/영어",desc:"볼리우드와 금융의 도시. 게이트웨이 오브 인디아.",flag:"🇮🇳",lat:19.076,lng:72.8777,img:"mumbai gateway india city",address:"Maker Chambers VI, Mumbai"},
+  {city:"시드니",country:"호주",region:"오세아니아",type:"총영사관",tz:"UTC+11",lang:"영어",desc:"오페라하우스와 하버브리지. 삶의 질 최상위권.",flag:"🇦🇺",lat:-33.8688,lng:151.2093,img:"sydney opera house harbour",address:"Level 13, 111 Harrington St, Sydney"},
+  {city:"캔버라",country:"호주",region:"오세아니아",type:"대사관",tz:"UTC+11",lang:"영어",desc:"호주의 계획 수도. 정치적 주요 결정이 이뤄지는 곳.",flag:"🇦🇺",lat:-35.2809,lng:149.13,img:"canberra parliament house australia",address:"113 Empire Circuit, Yarralumla ACT 2600"},
+  {city:"파리",country:"프랑스",region:"서유럽",type:"대사관",tz:"UTC+1",lang:"프랑스어",desc:"에펠탑이 보이는 공관 창문. 문화외교의 정수.",flag:"🇫🇷",lat:48.8566,lng:2.3522,img:"paris eiffel tower night seine",address:"125 rue de Grenelle, 75007 Paris"},
+  {city:"런던",country:"영국",region:"서유럽",type:"대사관",tz:"UTC+0",lang:"영어",desc:"빅벤과 버킹엄궁. 브렉시트 이후 새로운 질서.",flag:"🇬🇧",lat:51.5074,lng:-0.1278,img:"london tower bridge thames night",address:"60 Buckingham Gate, London SW1E 6AJ"},
+  {city:"베를린",country:"독일",region:"서유럽",type:"대사관",tz:"UTC+1",lang:"독일어",desc:"베를린 장벽의 흔적과 현대 예술이 공존. 유럽 정치의 중심.",flag:"🇩🇪",lat:52.52,lng:13.405,img:"berlin brandenburg gate night",address:"Stuerlerstrasse 8-10, 10787 Berlin"},
+  {city:"비엔나",country:"오스트리아",region:"서유럽",type:"대사관",tz:"UTC+1",lang:"독일어",desc:"UN 사무소 위치. 국제기구외교의 핵심 무대.",flag:"🇦🇹",lat:48.2082,lng:16.3738,img:"vienna schoenbrunn palace austria",address:"Gregor-Mendel-Strasse 25, 1180 Wien"},
+  {city:"제네바",country:"스위스",region:"서유럽",type:"대표부",tz:"UTC+1",lang:"프랑스어",desc:"UN유럽본부·WTO·WHO 밀집. 다자외교의 메카.",flag:"🇨🇭",lat:46.2044,lng:6.1432,img:"geneva lake switzerland jet deau",address:"20 Route de Pre-Bois, 1215 Geneva"},
+  {city:"마드리드",country:"스페인",region:"서유럽",type:"대사관",tz:"UTC+1",lang:"스페인어",desc:"프라도 미술관과 시에스타 문화. 늦은 저녁 문화와 열정.",flag:"🇪🇸",lat:40.4168,lng:-3.7038,img:"madrid gran via night spain",address:"Calle Gonzalez Amigo 15, 28033 Madrid"},
+  {city:"로마",country:"이탈리아",region:"서유럽",type:"대사관",tz:"UTC+1",lang:"이탈리아어",desc:"콜로세움 근처에 공관. FAO(유엔식량농업기구) 위치.",flag:"🇮🇹",lat:41.9028,lng:12.4964,img:"rome colosseum italy night",address:"Via Barnaba Oriani 30, 00197 Roma"},
+  {city:"모스크바",country:"러시아",region:"동유럽",type:"대사관",tz:"UTC+3",lang:"러시아어",desc:"크렘린궁과 붉은광장. 지정학적으로 민감한 포스트.",flag:"🇷🇺",lat:55.7558,lng:37.6176,img:"moscow red square kremlin night",address:"Spiridonovka St 14, Moscow 123001"},
+  {city:"헬싱키",country:"핀란드",region:"북유럽",type:"대사관",tz:"UTC+2",lang:"핀란드어",desc:"오로라가 보이는 북유럽 수도. 세계 최고 교육시스템.",flag:"🇫🇮",lat:60.1699,lng:24.9384,img:"helsinki cathedral finland harbour",address:"Fabianinkatu 8 B, 00130 Helsinki"},
+  {city:"두바이",country:"UAE",region:"중동",type:"총영사관",tz:"UTC+4",lang:"아랍어/영어",desc:"부르즈 칼리파와 사막. 중동 허브 도시.",flag:"🇦🇪",lat:25.2048,lng:55.2708,img:"dubai burj khalifa night skyline",address:"Level 10, Precinct Building 3, DIFC, Dubai"},
+  {city:"이스탄불",country:"튀르키예",region:"중동",type:"총영사관",tz:"UTC+3",lang:"튀르키예어",desc:"보스포러스 해협을 사이로 유럽과 아시아를 잇는 도시.",flag:"🇹🇷",lat:41.0082,lng:28.9784,img:"istanbul bosphorus blue mosque",address:"Ihlamur Yildiz Cad. No.6, Istanbul"},
+  {city:"나이로비",country:"케냐",region:"아프리카",type:"대사관",tz:"UTC+3",lang:"스와힐리어/영어",desc:"UNEP 본부 소재지. 아프리카 동부의 관문.",flag:"🇰🇪",lat:-1.2921,lng:36.8219,img:"nairobi skyline kenya city",address:"Upper Hill Rd, Nairobi, Kenya"},
+  {city:"워싱턴 D.C.",country:"미국",region:"북아메리카",type:"대사관",tz:"UTC-5",lang:"영어",desc:"백악관 앞 매사추세츠 애비뉴의 대사관가. 한미동맹 최전선.",flag:"🇺🇸",lat:38.9072,lng:-77.0369,img:"washington dc capitol monument",address:"2450 Massachusetts Ave NW, Washington DC"},
+  {city:"뉴욕",country:"미국",region:"북아메리카",type:"유엔대표부",tz:"UTC-5",lang:"영어",desc:"UN 본부 위치. 다자외교의 정점.",flag:"🇺🇸",lat:40.7128,lng:-74.006,img:"new york manhattan skyline night",address:"335 East 45th Street, New York NY 10017"},
+  {city:"로스앤젤레스",country:"미국",region:"북아메리카",type:"총영사관",tz:"UTC-8",lang:"영어",desc:"한인타운 규모 1위. 한미 문화교류의 거점.",flag:"🇺🇸",lat:34.0522,lng:-118.2437,img:"los angeles downtown sunset california",address:"3243 Wilshire Blvd, Los Angeles CA 90010"},
+  {city:"브라질리아",country:"브라질",region:"남아메리카",type:"대사관",tz:"UTC-3",lang:"포르투갈어",desc:"계획 도시 브라질리아. 현대 건축의 집합체.",flag:"🇧🇷",lat:-15.7801,lng:-47.9292,img:"brasilia national congress brazil",address:"SEN Av. das Nacoes, Lote 45, Brasilia"},
+  {city:"부에노스아이레스",country:"아르헨티나",region:"남아메리카",type:"대사관",tz:"UTC-3",lang:"스페인어",desc:"탱고의 발원지. 유럽 분위기 물씬 나는 남미 수도.",flag:"🇦🇷",lat:-34.6037,lng:-58.3816,img:"buenos aires obelisco argentina",address:"Av. del Libertador 2395, Buenos Aires"}
+];
+var CATS={
+  lofi:{label:"lo-fi",tracks:[
+    {name:"Lofi Hip Hop - Chill Beats",url:"https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1"},
+    {name:"Tokyo Night Lofi",url:"https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1"},
+    {name:"Rainy Lofi Study",url:"https://www.youtube.com/embed/lTRiuFIWV54?autoplay=1"}
+  ]},
+  focus:{label:"Focus",tracks:[
+    {name:"Deep Focus Ambient",url:"https://www.youtube.com/embed/WPni755-Krg?autoplay=1"},
+    {name:"Alpha Waves Study",url:"https://www.youtube.com/embed/sPpSmpJLGKo?autoplay=1"}
+  ]},
+  plane:{label:"Cabin",tracks:[
+    {name:"Airplane Cabin Noise",url:"https://www.youtube.com/embed/6sJi3KfA0Xo?autoplay=1"},
+    {name:"Cabin White Noise",url:"https://www.youtube.com/embed/nMfPqeZjc2c?autoplay=1"}
+  ]},
+  fire:{label:"Fire",tracks:[
+    {name:"Fireplace Crackling",url:"https://www.youtube.com/embed/L_LUpnjgPso?autoplay=1"},
+    {name:"Cozy Fire Sound",url:"https://www.youtube.com/embed/UgHKb_7884o?autoplay=1"}
+  ]},
+  rain:{label:"Rain",tracks:[
+    {name:"Rain on Window",url:"https://www.youtube.com/embed/q76bMs-NwRk?autoplay=1"},
+    {name:"Heavy Rain Thunder",url:"https://www.youtube.com/embed/yIQd2Ya0Ziw?autoplay=1"}
+  ]},
+  cafe:{label:"Cafe",tracks:[
+    {name:"Paris Cafe Jazz",url:"https://www.youtube.com/embed/OeEBxHReHxQ?autoplay=1"},
+    {name:"Coffee Shop Ambience",url:"https://www.youtube.com/embed/DeumyOzKqgI?autoplay=1"}
+  ]}
+};
+
+var _svgNS='http://www.w3.org/2000/svg';
+var _col='#c0392b';
+function svgEl(tag,attrs,parent){
+  var el=document.createElementNS(_svgNS,tag);
+  for(var k in attrs)el.setAttribute(k,String(attrs[k]));
+  if(parent)parent.appendChild(el);
+  return el;
+}
+function svgTxt(x,y,fs,txt,col,italic,parent){
+  var el=document.createElementNS(_svgNS,'text');
+  el.setAttribute('x',x);el.setAttribute('y',y);
+  el.setAttribute('font-size',fs);el.setAttribute('fill',col||_col);
+  el.setAttribute('text-anchor','middle');
+  el.setAttribute('font-family',italic?'Abril Fatface,serif':'Space Mono,monospace');
+  if(italic)el.setAttribute('font-style','italic');
+  el.textContent=txt;
+  if(parent)parent.appendChild(el);
+  return el;
+}
+
+var _collZoom=0;
+var _collVBScale=1.0; // viewBox scale: 1.0=기본, >1=줌아웃
+var _collPanX=0,_collPanY=0,_collPanMoved=false; // viewBox pan offset (SVG 좌표계 기준)
+function collZoom(d){
+  _collVBScale=Math.max(0.5,Math.min(3.0,_collVBScale+(d<0?0.15:-0.15)));
+  renderColl();
+}
+function initCollPan(){
+  var cont=qs('collStamps');if(!cont)return;
+  if(cont._panInit)return;
+  cont._panInit=true;
+  var SWIPE_THRESHOLD=60;
+  function svgDelta(dxPx,dyPx){
+    var rect=cont.getBoundingClientRect();
+    var CW=500,CH=300;
+    var vbW=CW*_collVBScale,vbH=CH*_collVBScale;
+    return{dx:dxPx*(vbW/rect.width),dy:dyPx*(vbH/rect.height)};
+  }
+  var dragging=false,mx=0,my=0,startMx=0,surrendered=false;
+  cont.addEventListener('mousedown',function(e){
+    if(e.button!==0)return;
+    dragging=true;surrendered=false;
+    mx=startMx=e.clientX;my=e.clientY;
+    cont.style.cursor='grabbing';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    var totalDx=e.clientX-startMx;
+    if(!surrendered&&Math.abs(totalDx)>SWIPE_THRESHOLD){
+      surrendered=true;cont.style.cursor='grab';return;
+    }
+    if(surrendered)return;
+    var d=svgDelta(e.clientX-mx,e.clientY-my);
+    _collPanX-=d.dx;_collPanY-=d.dy;
+    mx=e.clientX;my=e.clientY;
+    _collPanMoved=true;
+    renderColl();
+  });
+  document.addEventListener('mouseup',function(){
+    if(dragging){dragging=false;surrendered=false;cont.style.cursor='grab';}
+  });
+  var tx=0,ty=0,startTx=0,tDragging=false,tSurrendered=false;
+  cont.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1)return;
+    tDragging=true;tSurrendered=false;
+    tx=startTx=e.touches[0].clientX;ty=e.touches[0].clientY;
+  },{passive:true});
+  cont.addEventListener('touchmove',function(e){
+    if(!tDragging||e.touches.length!==1)return;
+    var totalDx=e.touches[0].clientX-startTx;
+    if(!tSurrendered&&Math.abs(totalDx)>SWIPE_THRESHOLD){
+      tSurrendered=true;return;
+    }
+    if(tSurrendered)return;
+    var d=svgDelta(e.touches[0].clientX-tx,e.touches[0].clientY-ty);
+    _collPanX-=d.dx;_collPanY-=d.dy;
+    tx=e.touches[0].clientX;ty=e.touches[0].clientY;
+    renderColl();
+  },{passive:true});
+  cont.addEventListener('touchend',function(){tDragging=false;tSurrendered=false;},{passive:true});
+}
+var KEY='diplomat_state_v1';
+var MAPW=1400;
+function loadSt(){
+  try{var s=localStorage.getItem(KEY);if(s)return JSON.parse(s);}catch(e){}
+  return{visited:[],idx:null,elapsed:{}};
+}
+function saveSt(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}saveToFirebase();}
+
+var st=loadSt();
+var timerInt=null,timerOn=false,elapsed=0;
+var musicOn=false,curTrack=null,curCat=null;
+var TARGET=108000,SESSION=36000;
+var swipePage=0,swipeX=0;
+
+var EN_MAP={
+  '도쿄':'Tokyo','오사카':'Osaka','베이징':'Beijing','상하이':'Shanghai',
+  '방콕':'Bangkok','싱가포르':'Singapore','하노이':'Hanoi','자카르타':'Jakarta',
+  '마닐라':'Manila','뉴델리':'New Delhi','뭄바이':'Mumbai','시드니':'Sydney',
+  '캔버라':'Canberra','파리':'Paris','런던':'London','베를린':'Berlin',
+  '비엔나':'Vienna','제네바':'Geneva','마드리드':'Madrid','로마':'Rome',
+  '모스크바':'Moscow','헬싱키':'Helsinki','두바이':'Dubai','이스탄불':'Istanbul',
+  '나이로비':'Nairobi','워싱턴 D.C.':'Washington DC','뉴욕':'New York',
+  '로스앤젤레스':'Los Angeles','브라질리아':'Brasilia','부에노스아이레스':'Buenos Aires'
+};
+
+var WIKI_MAP={
+  '도쿄':'Tokyo','오사카':'Osaka','베이징':'Beijing',
+  '상하이':'Shanghai','방콕':'Bangkok','싱가포르':'Singapore',
+  '하노이':'Hanoi','자카르타':'Jakarta','마닐라':'Manila',
+  '뉴델리':'New Delhi','뛸바이':'Mumbai','시드니':'Sydney',
+  '캐단버라':'Canberra','파리':'Paris','런던':'London',
+  '베를린':'Berlin','비엔나':'Vienna','제네바':'Geneva',
+  '마드리드':'Madrid','로마':'Rome','모스크바':'Moscow',
+  '헬싱키':'Helsinki','두바이':'Dubai','이스탄불':'Istanbul',
+  '나이로비':'Nairobi','워싱턴 D.C.':'Washington, D.C.',
+  '뉴욕':'New York City','로스앤젠레스':'Los Angeles',
+  '브라질리아':'Brasilia','부에노스아이레스':'Buenos Aires'
+};
+
+function getWikiImages(city, cb){
+  var title=WIKI_MAP[city]||EN_MAP[city]||city;
+  var url='https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(title)+'&prop=images&imlimit=10&format=json&origin=*';
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var pages=data.query.pages;
+      var page=pages[Object.keys(pages)[0]];
+      var imgs=(page.images||[]).filter(function(im){
+        var n=im.title.toLowerCase();
+        return !n.match(/flag|logo|coat|icon|symbol|map|locator|seal|blank|wikivoyage/);
+      }).slice(0,8);
+      if(!imgs.length){cb([]);return;}
+      var titles=imgs.map(function(im){return im.title;}).join('|');
+      fetch('https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(titles)+'&prop=imageinfo&iiprop=url&format=json&origin=*')
+        .then(function(r){return r.json();})
+        .then(function(d){
+          var urls=[];
+          var ps=d.query.pages;
+          for(var k in ps){
+            var ii=ps[k].imageinfo;
+            if(ii&&ii[0]&&ii[0].url){
+              var u=ii[0].url;
+              if(u.match(/\.(jpg|jpeg|png|webp)/i)&&!u.match(/flag|logo|icon|symbol|map/i))
+                urls.push(u);
+            }
+          }
+          cb(urls.slice(0,5));
+        }).catch(function(){cb([]);});
+    }).catch(function(){cb([]);});
+}
+
+var IATA_MAP={
+  '도쿄':'TYO','오사카':'OSA','베이징':'PEK','상하이':'PVG','방콕':'BKK',
+  '싱가포르':'SIN','하노이':'HAN','자카르타':'CGK','마닐라':'MNL','뉴델리':'DEL',
+  '뭄바이':'BOM','시드니':'SYD','캔버라':'CBR','파리':'CDG','런던':'LHR',
+  '베를린':'BER','비엔나':'VIE','제네바':'GVA','마드리드':'MAD','로마':'FCO',
+  '모스크바':'SVO','헬싱키':'HEL','두바이':'DXB','이스탄불':'IST','나이로비':'NBO',
+  '워싱턴 D.C.':'DCA','뉴욕':'JFK','로스앤젤레스':'LAX','브라질리아':'BSB',
+  '부에노스아이레스':'EZE'
+};
+var KOREANS={
+  '도쿄':'약 10만 명','오사카':'약 6만 명','베이징':'약 2만 명','상하이':'약 4만 명',
+  '방콕':'약 2만 명','싱가포르':'약 2만 명','하노이':'약 1만 명','자카르타':'약 3만 명',
+  '마닐라':'약 8만 명','뉴델리':'약 5천 명','뭄바이':'약 3천 명','시드니':'약 4만 명',
+  '캔버라':'약 5천 명','파리':'약 1만 5천 명','런던':'약 4만 명','베를린':'약 1만 명',
+  '비엔나':'약 3천 명','제네바':'약 2천 명','마드리드':'약 4천 명','로마':'약 3천 명',
+  '모스크바':'약 1만 명','헬싱키':'약 1천 명','두바이':'약 3만 명','이스탄불':'약 5천 명',
+  '나이로비':'약 1천 명','워싱턴 D.C.':'약 5만 명','뉴욕':'약 10만 명',
+  '로스앤젤레스':'약 15만 명','브라질리아':'약 5천 명','부에노스아이레스':'약 4만 명'
+};
+var IMG_MAP={
+  '도쿄':'tokyo skyline japan','오사카':'osaka dotonbori japan','베이징':'beijing forbidden city',
+  '상하이':'shanghai bund skyline','방콕':'bangkok grand palace','싱가포르':'singapore marina bay',
+  '하노이':'hanoi old quarter','자카르타':'jakarta city indonesia','마닐라':'manila bay sunset',
+  '뉴델리':'india gate new delhi','뭄바이':'mumbai gateway india','시드니':'sydney opera house',
+  '캔버라':'canberra parliament australia','파리':'paris eiffel tower night','런던':'london tower bridge',
+  '베를린':'berlin brandenburg gate','비엔나':'vienna schoenbrunn palace','제네바':'geneva lake switzerland',
+  '마드리드':'madrid gran via spain','로마':'rome colosseum italy','모스크바':'moscow red square night',
+  '헬싱키':'helsinki cathedral finland','두바이':'dubai burj khalifa night','이스탄불':'istanbul bosphorus',
+  '나이로비':'nairobi skyline kenya','워싱턴 D.C.':'washington dc capitol','뉴욕':'new york manhattan',
+  '로스앤젤레스':'los angeles sunset','브라질리아':'brasilia congress brazil','부에노스아이레스':'buenos aires obelisco'
+};
+
+function qs(id){return document.getElementById(id);}
+function set(id,v){var e=qs(id);if(e)e.textContent=v;}
+function init(){
+  loadFromFirebase(function(){
+    if(st.idx===null||st.idx>=POSTS.length)pickCity();
+    else renderCity(POSTS[st.idx]);
+    renderVisited();renderMap();initSwipe();initCollPan();setTimeout(syncStampPagesHeight,100);
+    loadMyCity();
+    loadPlaylist();
+    setTimeout(fetchWeather, 500);
+  });
+}
+function pickCity(){
+  var done={};
+  for(var i=0;i<st.visited.length;i++)done[st.visited[i]]=true;
+  var avail=[];
+  for(var i=0;i<POSTS.length;i++){if(!done[i])avail.push(i);}
+  if(!avail.length){st.visited=[];saveSt();pickCity();return;}
+  st.idx=avail[Math.floor(Math.random()*avail.length)];
+  saveSt();renderCity(POSTS[st.idx]);
+}
+function renderCity(p){
+  set('cityName',p.city);set('cityCountry',p.country);
+  set('cityDesc',p.desc);set('missionTag',p.type);
+  set('mRegion',p.region);set('mType',p.type);
+  set('mTZ',p.tz);set('mLang',p.lang);
+  set('cityAddressTxt',p.address||'—');
+  set('cityKoreans','한인 거주: '+(KOREANS[p.city]||'정보 없음'));
+  elapsed=st.elapsed[st.idx]||0;
+  window._completed=(elapsed>=TARGET);
+  updBar(elapsed);updStars(elapsed);updTime(elapsed);
+  var ov=qs('stampOverlay');
+  var isDone=(elapsed>=TARGET);
+  if(ov)if(isDone)ov.classList.add('show');else ov.classList.remove('show');
+  // 항상 발권표 내용 업데이트 (완료 여부와 무관)
+  var en2=EN_MAP[p.city]||p.city;
+  var iata2=IATA_MAP[p.city]||p.city.slice(0,3).toUpperCase();
+  set('bpRoute','Seoul → '+en2);
+  set('bpSub',p.type+' of the Republic of Korea');
+  set('bpIATA',iata2);set('bpCity2',en2);set('bpCity3',en2);
+  set('bpCountry',p.country);set('bpRegion',p.region);
+  // 완료 시 도장
+  if(isDone){showStamp(p);}
+  else {
+    // 미완료면 도장 초기화
+    var sv=qs('stampSvg');
+    if(sv){sv.style.opacity='0';sv.style.transform='scale(2) rotate(-18deg)';sv.classList.remove('stamped');while(sv.firstChild)sv.removeChild(sv.firstChild);}
+    set('bpDate','In Progress');
+  }
+  // 바코드 항상 표시
+  var bcInit=qs('bpBarcode');
+  if(bcInit&&!bcInit.innerHTML.trim()){
+    var bars=[2,1,3,1,2,1,1,3,2,1,2,3,1,2,1,1,3,2,1,2,3,1,1,2,3,1];
+    var bh='',by=2;
+    for(var bi=0;bi<bars.length;bi++){if(bi%2===0)bh+='<rect x="2" y="'+by+'" width="28" height="'+(bars[bi]*3)+'" fill="#ccc"/>';by+=bars[bi]*3+0.5;}
+    bcInit.setAttribute('viewBox','0 0 32 130');bcInit.innerHTML=bh;
+  }
+  var wc1=qs('wCity1');
+  if(wc1)wc1.value=EN_MAP[p.city]||p.city;
+  setTimeout(fetchWeather,300);
+  // 이미지 - Wikipedia API + Unsplash fallback
+  var img=qs('cityImg'),ldr=qs('imgLoader');
+  if(img&&ldr){
+    img.classList.remove('loaded');ldr.style.display='flex';
+    img.style.cursor='pointer';
+    img.onclick=function(){if(p._wikiImgs&&p._wikiImgs.length)openGallery(p);};
+    var q=IMG_MAP[p.city]||'city travel';
+    var hourSlot=Math.floor(Date.now()/3600000);
+    // Wikipedia 이미지 시도
+    getWikiImages(p.city,function(urls){
+      if(urls.length){
+        p._wikiImgs=urls;
+        var idx=hourSlot%urls.length;
+        img.src=urls[idx];
+        img.onload=function(){img.classList.add('loaded');ldr.style.display='none';};
+        img.onerror=function(){loadUnsplash();};
+      } else {
+        loadUnsplash();
+      }
+    });
+    function loadUnsplash(){
+      var seeds=[hourSlot*7,hourSlot*13+100,hourSlot*3+200,hourSlot*17+300,hourSlot*11+400];
+      for(var si=0;si<5;si++)seeds[si]+=p.city.charCodeAt(0);
+      var fallUrls=seeds.map(function(s){return 'https://source.unsplash.com/featured/900x600/?'+encodeURIComponent(q)+'&sig='+s;});
+      p._wikiImgs=fallUrls;
+      img.src=fallUrls[hourSlot%5];
+      img.onload=function(){img.classList.add('loaded');ldr.style.display='none';};
+      img.onerror=function(){ldr.style.display='none';img.classList.add('loaded');};
+    }
+  }
+
+  var wc1=qs('wCity1');
+  if(wc1)wc1.value=EN_MAP[p.city]||p.city;
+}
+function startTimer(){if(!timerOn)toggleTimer();}
+function pauseTimer(){if(timerOn)toggleTimer();}
+function toggleTimer(){
+  var sb=qs('startBtn'),pb=qs('pauseBtn');
+  if(timerOn){
+    timerOn=false;clearInterval(timerInt);
+    if(sb)sb.style.display='';
+    if(pb)pb.style.display='none';
+  } else {
+    timerOn=true;
+    if(sb)sb.style.display='none';
+    if(pb)pb.style.display='';
+    timerInt=setInterval(function(){
+      elapsed++;
+      if(!st.elapsed)st.elapsed={};
+      st.elapsed[st.idx]=elapsed;saveSt();
+      updBar(elapsed);updStars(elapsed);updTime(elapsed);
+      if(elapsed>=TARGET&&!window._completed){window._completed=true;complete();}
+    },1000);
+  }
+}
+function resetTimer(){
+  if(timerOn)toggleTimer();
+  elapsed=0;
+  if(!st.elapsed)st.elapsed={};
+  st.elapsed[st.idx]=0;saveSt();
+  updBar(0);updStars(0);updTime(0);
+  var ov=qs('stampOverlay');if(ov)ov.classList.remove('show');
+}
+function addTime(s){
+  elapsed=Math.min(elapsed+s,TARGET);
+  if(!st.elapsed)st.elapsed={};
+  st.elapsed[st.idx]=elapsed;saveSt();
+  updBar(elapsed);updStars(elapsed);updTime(elapsed);
+  if(elapsed>=TARGET&&!window._completed){window._completed=true;complete();}
+}
+function updBar(s){
+  var pct=Math.min(s/TARGET*100,100);
+  var f=qs('barFill');if(f)f.style.width=pct+'%';
+  var p=qs('barPlane');if(p)p.style.left=Math.min(pct,96)+'%';
+}
+function updStars(s){
+  for(var i=0;i<3;i++){
+    var e=qs('ts'+i);
+    if(e)e.className='ts'+(s>=(i+1)*SESSION?' lit':'');
+  }
+}
+function updTime(s){
+  var h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+  set('timerProgTxt',h+'h '+m+'m / 30h');
+  set('timerTotalTxt',h+'h '+m+'m / 30 hrs');
+}
+function complete(){
+  if(timerOn)toggleTimer();
+  if(st.visited.indexOf(st.idx)<0){st.visited.push(st.idx);saveSt();}
+  showStamp(POSTS[st.idx]);
+  renderVisited();renderMap();
+}
+function nextCity(){
+  if(timerOn)toggleTimer();
+  elapsed=0;window._completed=false;
+  // 도장 즉시 초기화
+  var sv=qs('stampSvg');
+  if(sv){sv.style.opacity='0';sv.style.transform='scale(2) rotate(-18deg)';sv.classList.remove('stamped');while(sv.firstChild)sv.removeChild(sv.firstChild);}
+  set('bpDate','—');
+  var nl=qs('nextPostingLink');if(nl)nl.style.display='none';
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  pickCity();
+  stopMusic();
+}
+function showStamp(p){
+  var en=EN_MAP[p.city]||p.city;
+  var iata=IATA_MAP[p.city]||p.city.slice(0,3).toUpperCase();
+  var now=new Date();
+  var mo=now.getMonth()+1,da=now.getDate();
+  var ds=now.getFullYear()+'.'+(mo<10?'0':'')+mo+'.'+(da<10?'0':'')+da;
+  var hash=0;for(var i=0;i<p.city.length;i++)hash+=p.city.charCodeAt(i);
+  var cols=['#c0392b','#1a6fb5','#d35400','#1a7a5a','#8e44ad','#a0522d'];
+  var col=cols[hash%cols.length];
+  var shape=hash%4;
+  // 보딩패스 채우기
+  set('bpRoute','Seoul → '+en);set('bpSub',p.type+' of the Republic of Korea');
+  set('bpIATA',iata);set('bpCity2',en);
+  set('bpCity3',en);set('bpCountry',p.country);
+  set('bpRegion',p.region);set('bpDate',ds);
+  // 바코드
+  var bc=qs('bpBarcode');
+  if(bc){
+    var bars=[2,1,3,1,2,1,1,3,2,1,2,3,1,2,1,1,3,2,1,2,3,1,1,2,3,1];
+    var bh='',by=2;
+    for(var bi=0;bi<bars.length;bi++){
+      if(bi%2===0)bh+='<rect x="2" y="'+by+'" width="28" height="'+(bars[bi]*3)+'" fill="#222"/>';
+      by+=bars[bi]*3+0.5;
+    }
+    bc.setAttribute('viewBox','0 0 32 130');
+    bc.innerHTML=bh;
+  }
+  // 도장
+  var sv=qs('stampSvg');
+  if(sv){
+    while(sv.firstChild)sv.removeChild(sv.firstChild);
+    _col=col;
+    var W=220,CX=110,CY=110;
+    if(shape===0){
+      svgEl('circle',{cx:CX,cy:CY,r:102,fill:'none',stroke:col,'stroke-width':6,opacity:.88},sv);
+      svgEl('circle',{cx:CX,cy:CY,r:90,fill:'none',stroke:col,'stroke-width':2,'stroke-dasharray':'6 4',opacity:.48},sv);
+      svgTxt(CX,64,9,'REPUBLIC OF KOREA',col,false,sv);
+      svgTxt(CX,78,8,'DIPLOMATIC SERVICE',col,false,sv);
+      svgEl('line',{x1:26,y1:86,x2:194,y2:86,stroke:col,'stroke-width':1,opacity:.35},sv);
+      svgTxt(CX,130,30,en,col,true,sv);
+      svgTxt(CX,152,9,p.type.toUpperCase(),col,false,sv);
+      svgEl('line',{x1:26,y1:160,x2:194,y2:160,stroke:col,'stroke-width':1,opacity:.35},sv);
+      svgTxt(CX,174,11,ds,col,false,sv);
+      svgTxt(CX,192,7,'ARRIVED',col,false,sv);
+    } else if(shape===1){
+      svgEl('ellipse',{cx:CX,cy:CY,rx:105,ry:80,fill:'none',stroke:col,'stroke-width':6,opacity:.88},sv);
+      svgEl('ellipse',{cx:CX,cy:CY,rx:93,ry:68,fill:'none',stroke:col,'stroke-width':2,opacity:.45},sv);
+      svgTxt(CX,65,9,p.country.toUpperCase(),col,false,sv);
+      svgTxt(CX,79,8,'DIPLOMATIC POST',col,false,sv);
+      svgEl('line',{x1:20,y1:88,x2:200,y2:88,stroke:col,'stroke-width':1,opacity:.35},sv);
+      svgTxt(CX,130,30,en,col,true,sv);
+      svgEl('line',{x1:20,y1:146,x2:200,y2:146,stroke:col,'stroke-width':1,opacity:.35},sv);
+      svgTxt(CX,160,10,ds,col,false,sv);
+      svgTxt(CX,174,7.5,'DEPARTURE',col,false,sv);
+    } else if(shape===2){
+      svgEl('rect',{x:8,y:24,width:204,height:172,rx:12,fill:'none',stroke:col,'stroke-width':6,opacity:.88},sv);
+      svgEl('rect',{x:16,y:32,width:188,height:156,rx:8,fill:'none',stroke:col,'stroke-width':2,opacity:.42},sv);
+      svgTxt(CX,62,9,p.country.toUpperCase()+' / KOREA',col,false,sv);
+      svgTxt(CX,76,8,p.type.toUpperCase(),col,false,sv);
+      svgEl('line',{x1:24,y1:85,x2:196,y2:85,stroke:col,'stroke-width':1,opacity:.3},sv);
+      svgTxt(CX,130,30,en,col,true,sv);
+      svgEl('line',{x1:24,y1:146,x2:196,y2:146,stroke:col,'stroke-width':1,opacity:.3},sv);
+      svgTxt(CX,161,11,ds,col,false,sv);
+      svgTxt(CX,175,7.5,'MISSION COMPLETE',col,false,sv);
+    } else {
+      svgEl('polygon',{points:'58,10 162,10 210,58 210,162 162,210 58,210 10,162 10,58',fill:'none',stroke:col,'stroke-width':6,opacity:.88},sv);
+      svgEl('polygon',{points:'65,19 155,19 201,65 201,155 155,201 65,201 19,155 19,65',fill:'none',stroke:col,'stroke-width':2,opacity:.42},sv);
+      svgTxt(CX,60,9,p.country.toUpperCase(),col,false,sv);
+      svgTxt(CX,75,8,'PASSPORT CONTROL',col,false,sv);
+      svgEl('line',{x1:30,y1:85,x2:190,y2:85,stroke:col,'stroke-width':1,opacity:.35},sv);
+      svgTxt(CX,130,30,en,col,true,sv);
+      svgEl('line',{x1:30,y1:146,x2:190,y2:146,stroke:col,'stroke-width':1,opacity:.35},sv);
+      svgTxt(CX,161,11,ds,col,false,sv);
+      svgTxt(CX,175,7.5,'VISA GRANTED',col,false,sv);
+    }
+    sv.style.opacity='';
+    sv.style.transform='';
+    sv.classList.remove('stamped');
+    void sv.offsetWidth;
+    sv.classList.add('stamped');
+  }
+  swipePage=0;
+  var sp=qs('stampPages');if(sp)sp.style.transform='translateX(0)';
+  // 도장 컬렉션 업데이트
+  renderColl();
+  var existNl=qs('nextPostingLink');
+  if(!existNl){
+    var stampEl=qs('stampOverlay');
+    if(stampEl){
+      var nlDiv=document.createElement('div');
+      nlDiv.id='nextPostingLink';
+      nlDiv.style.cssText='padding:.6rem 1.2rem;text-align:right;background:#fff;border-top:1px solid rgba(175,186,255,.2);';
+      var nlSpan=document.createElement('span');
+      nlSpan.onclick=nextCity;
+      nlSpan.style.cssText='font-family:Space Mono,monospace;font-size:.52rem;color:rgba(130,180,255,.82);cursor:pointer;letter-spacing:.08em;text-transform:uppercase;';
+      nlSpan.textContent='Next Posting →';
+      nlDiv.appendChild(nlSpan);
+      stampEl.appendChild(nlDiv);
+    }
+  } else {
+    existNl.style.display='block';
+  }
+}
+function initSwipe(){
+  var el=qs('stampPages');if(!el)return;
+  var startX=0,startY=0,isHoriz=null,tapStart=0;
+  el.addEventListener('touchstart',function(e){
+    startX=e.touches[0].clientX;startY=e.touches[0].clientY;isHoriz=null;tapStart=Date.now();
+  },{passive:true});
+  el.addEventListener('touchmove',function(e){
+    if(isHoriz===null){var dx=Math.abs(e.touches[0].clientX-startX);var dy=Math.abs(e.touches[0].clientY-startY);isHoriz=dx>dy;}
+    if(isHoriz)e.preventDefault();
+  },{passive:false});
+  el.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX-startX;
+    var dt=Date.now()-tapStart;
+    var dist=Math.sqrt(dx*dx+(e.changedTouches[0].clientY-startY)*(e.changedTouches[0].clientY-startY));
+    if(dt<250&&dist<12){
+      if(swipePage===0){swipePage=1;el.style.transform='translateX(-100%)';renderColl();}
+      else{swipePage=0;el.style.transform='translateX(0)';}
+      return;
+    }
+    if(!isHoriz)return;
+    if(dx<-60&&swipePage===0){swipePage=1;el.style.transform='translateX(-100%)';renderColl();}
+    else if(dx>60&&swipePage===1){swipePage=0;el.style.transform='translateX(0)';}
+  },{passive:true});
+  var dragStart=null;
+  el.addEventListener('mousedown',function(e){dragStart=e.clientX;e.preventDefault();});
+  document.addEventListener('mouseup',function(e){
+    if(dragStart===null)return;
+    var dx=e.clientX-dragStart;dragStart=null;
+    if(dx<-60&&swipePage===0){swipePage=1;el.style.transform='translateX(-100%)';renderColl();}
+    else if(dx>60&&swipePage===1){swipePage=0;el.style.transform='translateX(0)';}
+  });
+}
+function renderColl(){
+  var cont=qs('collStamps');if(!cont)return;
+  while(cont.firstChild)cont.removeChild(cont.firstChild);
+  var stampCols=['#c0392b','#1a6fb5','#d35400','#1a7a5a','#8e44ad','#a0522d'];
+  var now=new Date();var mo=now.getMonth()+1;var da=now.getDate();
+  var ds=now.getFullYear()+'.'+(mo<10?'0':'')+mo+'.'+(da<10?'0':'')+da;
+  var n=st.visited.length;
+  if(!n)return;
+  // 도장 크기: n 많아질수록 자동 줄어듦 (줌버튼은 viewBox만 조절)
+  var baseR=Math.max(25,Math.round(80*Math.pow(0.87,Math.max(0,n-1))));
+  var r=baseR;
+  var CW=500,CH=300;
+  var seed=0;
+  for(var k=0;k<n;k++)seed+=st.visited[k]*31+k*7;
+  seed=Math.abs(seed)||54321;
+  function rand(){seed=(seed*1664525+1013904223)&0x7fffffff;return seed/0x7fffffff;}
+  var positions=[];
+  var margin=r+8;
+  for(var i=0;i<n;i++){
+    var attempts=0,px,py;
+    do{
+      if(i===0&&attempts===0){px=CW/2;py=CH/2;}
+      else{px=margin+rand()*(CW-margin*2);py=margin+rand()*(CH-margin*2);}
+      attempts++;
+    }while(attempts<80&&positions.some(function(p){
+      return Math.sqrt((p.x-px)*(p.x-px)+(p.y-py)*(p.y-py))<r*2.1;
+    }));
+    positions.push({x:px,y:py});
+  }
+  var svg=document.createElementNS(_svgNS,'svg');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','100%');
+  svg.style.position='absolute';
+  svg.style.top='0';
+  svg.style.left='0';
+  var vbW=CW*_collVBScale, vbH=CH*_collVBScale;
+  var maxPX=(vbW-CW)/2+CW*0.14, maxPY=(vbH-CH)/2+CH*0.55;
+  _collPanX=Math.max(-maxPX,Math.min(maxPX,_collPanX));
+  _collPanY=Math.max(-maxPY,Math.min(maxPY,_collPanY));
+  var vbX=(CW-vbW)/2+_collPanX, vbY=(CH-vbH)/2+_collPanY;
+  svg.setAttribute('viewBox',vbX+' '+vbY+' '+vbW+' '+vbH);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  svg.style.display='block';
+  for(var i=0;i<n;i++){
+    var vp=POSTS[st.visited[i]];
+    var en=EN_MAP[vp.city]||vp.city;
+    var hash=0;for(var j=0;j<vp.city.length;j++)hash+=vp.city.charCodeAt(j);
+    var col=stampCols[hash%stampCols.length];
+    var rot=(hash%22)-11;
+    var cx=positions[i].x,cy=positions[i].y;
+    var g=document.createElementNS(_svgNS,'g');
+    g.setAttribute('transform','translate('+cx+','+cy+') rotate('+rot+')');
+    var sh=hash%4;var sw=Math.max(2,r*0.07);
+    if(sh===0){
+      svgEl('circle',{cx:0,cy:0,r:r,fill:'none',stroke:col,'stroke-width':sw,opacity:.9},g);
+      svgEl('circle',{cx:0,cy:0,r:r-r*.14,fill:'none',stroke:col,'stroke-width':sw*.4,'stroke-dasharray':(r*.08)+' '+(r*.06),opacity:.45},g);
+    } else if(sh===1){
+      svgEl('ellipse',{cx:0,cy:0,rx:r,ry:r*.76,fill:'none',stroke:col,'stroke-width':sw,opacity:.9},g);
+      svgEl('ellipse',{cx:0,cy:0,rx:r-r*.13,ry:r*.76-r*.1,fill:'none',stroke:col,'stroke-width':sw*.4,opacity:.4},g);
+    } else if(sh===2){
+      svgEl('rect',{x:-r,y:-r*.7,width:r*2,height:r*1.4,rx:r*.1,fill:'none',stroke:col,'stroke-width':sw,opacity:.9},g);
+      svgEl('rect',{x:-r+r*.1,y:-r*.7+r*.09,width:r*2-r*.2,height:r*1.4-r*.18,rx:r*.06,fill:'none',stroke:col,'stroke-width':sw*.35,opacity:.4},g);
+    } else {
+      svgEl('polygon',{points:('0,-1 .59,-.81 .95,-.31 .95,.31 .59,.81 0,1 -.59,.81 -.95,.31 -.95,-.31 -.59,-.81').split(' ').map(function(pt){var p=pt.split(',');return(p[0]*r)+','+(p[1]*r);}).join(' '),fill:'none',stroke:col,'stroke-width':sw,opacity:.9},g);
+    }
+    var fs=Math.max(8,r*.26);
+    var label=en.length>9?en.slice(0,8)+'.':en;
+    svgTxt(0,fs*.3,fs,label,col,true,g);
+    svgTxt(0,fs*1.5,Math.max(5,r*.12),ds,col,false,g);
+    svg.appendChild(g);
+  }
+  cont.appendChild(svg);
+  syncStampPagesHeight();
+}
+function syncStampPagesHeight(){
+  var pages=qs('stampPages');if(!pages)return;
+  var kids=pages.children;if(kids.length<2)return;
+  var ticketH=kids[0].offsetHeight;
+  var collPage=kids[1];
+  var headerDiv=collPage.querySelector('div');
+  var headerH=headerDiv?headerDiv.offsetHeight:30;
+  var targetCollH=ticketH-headerH-16;
+  var collStamps=qs('collStamps');
+  if(collStamps&&targetCollH>60){/* height 고정 유지 */}
+}
+function toEmbed(url){
+  var s=url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+  if(s)return'https://www.youtube.com/embed/'+s[1]+'?autoplay=1';
+  var w=url.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+  if(w)return'https://www.youtube.com/embed/'+w[1]+'?autoplay=1';
+  if(url.indexOf('youtube.com/embed/')>=0)return url.indexOf('autoplay')>=0?url:url+'?autoplay=1';
+  return null;
+}
+function playTrack(url){
+  var yt=qs('ytPlayer');
+  if(!yt)return;
+  // autoplay를 위해 잠깐 visible하게 했다가 숨김
+  yt.style.cssText='position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:.01;border:none;z-index:-1;';
+  yt.src=url+'&autoplay=1&mute=0';
+  setTimeout(function(){
+    yt.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;border:none;';
+  },2000);
+  musicOn=true;
+  var pb=qs('playBtn');if(pb){pb.classList.add('on');pb.textContent='\u23f8';}
+  var wv=qs('wave');if(wv)wv.classList.add('on');
+}
+function stopMusic(){
+  var yt=qs('ytPlayer');if(yt)yt.src='about:blank';
+  musicOn=false;
+  var pb=qs('playBtn');if(pb){pb.classList.remove('on');pb.textContent='\u25b6';}
+  var wv=qs('wave');if(wv)wv.classList.remove('on');
+}
+function toggleMusic(){if(musicOn)stopMusic();else if(curTrack)playTrack(curTrack.url);}
+// My Playlist
+var _playlist=[];
+function loadPlaylist(){
+  try{_playlist=JSON.parse(localStorage.getItem('myPlaylist')||'[]');}catch(e){_playlist=[];}
+  renderPlaylist();
+}
+function savePlStore(){try{localStorage.setItem('myPlaylist',JSON.stringify(_playlist));}catch(e){}}
+var _selTag='lofi';
+function selectTag(btn,tag){
+  _selTag=tag;
+  var all=document.querySelectorAll('.tag-pick');
+  for(var i=0;i<all.length;i++)all[i].classList.remove('sel');
+  btn.classList.add('sel');
+}
+function openSaveModal(){
+  var ui=qs('urlInput'),si=qs('saveUrl');
+  if(si&&ui)si.value=ui.value||'';
+  _selTag='lofi';
+  var all=document.querySelectorAll('.tag-pick');
+  for(var i=0;i<all.length;i++)all[i].classList.remove('sel');
+  if(all[0])all[0].classList.add('sel');
+  var sm=qs('saveModal');if(sm)sm.style.display='flex';
+  setTimeout(function(){var s=qs('saveUrl');if(s)s.focus();},100);
+}
+function closeSaveModal(){var sm=qs('saveModal');if(sm)sm.style.display='none';}
+function saveToPlaylist(){
+  var url=((qs('saveUrl')||{}).value||'').trim();
+  var embed=toEmbed(url);
+  if(!embed){alert('Invalid YouTube URL');return;}
+  if(_playlist.length>=10){alert('Max 10 tracks. Delete one first.');return;}
+  // tag label 찾기
+  var tagLabels={lofi:'🎵 lo-fi',focus:'🧠 집중',plane:'✈️ 비행기',fire:'🪵 장작',rain:'🌧️ 빗소리',cafe:'☕ 카페'};
+  _playlist.push({url:embed,tag:_selTag,label:tagLabels[_selTag]||_selTag});
+  savePlStore();renderPlaylist();closeSaveModal();
+  var si=qs('saveUrl');if(si)si.value='';
+}
+function deleteFromPlaylist(idx){_playlist.splice(idx,1);savePlStore();renderPlaylist();}
+function renderPlaylist(){
+  var cont=qs('myPlaylist');if(!cont)return;
+  if(!_playlist.length){
+    cont.innerHTML='<div style="font-family:Space Mono,monospace;font-size:.42rem;color:#aaa;padding:.15rem 0;">No saved tracks yet</div>';return;
+  }
+  var h='';
+  for(var i=0;i<_playlist.length;i++){
+    var p=_playlist[i];
+    h+='<div style="display:flex;align-items:center;gap:.35rem;padding:.22rem .4rem;border-radius:8px;background:rgba(150,199,255,0.55);box-shadow:inset 0 2px 6px rgba(60,120,180,.2),inset 0 1px 2px rgba(0,0,0,.06);border:1px solid rgba(150,199,255,.3);">'
+      +'<button onclick="playPlaylistItem('+i+')" style="flex:1;text-align:left;background:none;border:none;cursor:pointer;font-family:Space Mono,monospace;font-size:.44rem;color:#fff;padding:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
+      +'<span style="display:inline-block;background:rgba(255,255,255,.85);border-radius:4px;padding:.02rem .28rem;font-size:.38rem;color:var(--sky);margin-right:.28rem;">'+(p.label||p.tag)+'</span>'
+      +'Track '+(i+1)
+      +'</button>'
+      +'<button onclick="deleteFromPlaylist('+i+')" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.7);font-size:.7rem;line-height:1;padding:0 .1rem;">×</button>'
+      +'</div>';
+  }
+  cont.innerHTML=h;
+}
+function playPlaylistItem(idx){
+  var p=_playlist[idx];if(!p)return;
+  curTrack={name:'Playlist · '+p.tag,url:p.url};
+  set('musicName','Playlist · '+p.tag);set('musicSub',p.tag);set('musicNow','Playlist · '+p.tag);
+  var btns=document.querySelectorAll('.cat-btn');for(var i=0;i<btns.length;i++)btns[i].classList.remove('active');
+  playTrack(p.url);
+}
+function topojsonToGeo(topo){
+  var land=topo.objects.countries;
+  var arcs=topo.arcs;
+  var scale=topo.transform?topo.transform.scale:[1,1];
+  var translate=topo.transform?topo.transform.translate:[0,0];
+  function decodeArc(arcIdx){
+    var reversed=arcIdx<0;
+    var arc=arcs[reversed?~arcIdx:arcIdx];
+    var pts=[];var x=0,y=0;
+    for(var i=0;i<arc.length;i++){x+=arc[i][0];y+=arc[i][1];pts.push([x*scale[0]+translate[0],y*scale[1]+translate[1]]);}
+    if(reversed)pts.reverse();
+    return pts;
+  }
+  function coordsFromRings(rings){
+    return rings.map(function(ring){
+      var pts=[];
+      for(var i=0;i<ring.length;i++){var a=ring[i];var decoded=decodeArc(a);pts=pts.concat(decoded);}
+      return pts;
+    });
+  }
+  var features=land.geometries.map(function(g,i){
+    var coords;
+    if(g.type==='Polygon'){coords=coordsFromRings(g.arcs);}
+    else if(g.type==='MultiPolygon'){coords=g.arcs.map(function(r){return coordsFromRings(r)[0];});}
+    else{coords=[];}
+    return{type:'Feature',properties:{name:g.properties&&g.properties.name||''},geometry:{type:g.type,coordinates:g.type==='Polygon'?coords:coords.map(function(c){return[c];})}};
+  });
+  return{type:'FeatureCollection',features:features};
+}
+function renderMap(){
+  var wrap=qs('svgMapWrap'),note=qs('mapNote');
+  var cur=st.idx!==null?POSTS[st.idx]:null;
+  if(!wrap)return;
+  var W=800,H=500;
+  // pj는 MAPW 기준, 세로는 MAPW/2 (equirectangular 2:1 비율)
+  function pj(lat,lng){
+    return{x:+((lng+180)/360*MAPW).toFixed(1),y:+((90-lat)/180*(MAPW/2)).toFixed(1)};
+  }
+  var koreaX=Math.round((127+180)/360*MAPW);
+  var vbX=282;
+  // 핀/현재 위치만 먼저 그리고, 지도는 외부 SVG 로드
+  if(!wrap._mapLoaded){
+    wrap._mapLoaded=true;
+    wrap._geo=null;
+    wrap.innerHTML='<div style="width:100%;height:280px;display:flex;align-items:center;justify-content:center;"><span style="font-family:Space Mono,monospace;font-size:.45rem;color:#aaa;">Loading map...</span></div>';
+    fetch('/world.geojson')
+      .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+      .then(function(geo){wrap._geo=geo;_drawMap(wrap,geo,cur,pj,W,H,vbX,note);})
+      .catch(function(e){
+        wrap.innerHTML='<div style="width:100%;height:280px;display:flex;align-items:center;justify-content:center;"><span style="font-family:Space Mono,monospace;font-size:.45rem;color:#aaa;">Map unavailable</span></div>';
+      });
+  } else if(wrap._geo){
+    _drawMap(wrap,wrap._geo,cur,pj,W,H,vbX,note);
+  }
+}
+var _mapScale=0.85,_mapTx=0,_mapTy=0;
+function mapZoom(f,cx,cy){
+  var wrap=qs('svgMapWrap');
+  if(!wrap||!wrap._svg)return;
+  _mapScale=Math.max(0.6,Math.min(6,_mapScale*f));
+  wrap._svg.style.transformOrigin='50% 50%';
+  wrap._svg.style.transform='translate('+_mapTx+'px,'+_mapTy+'px) scale('+_mapScale+')';
+}
+function _drawMap(wrap,geo,cur,pj,W,H,vbX,note){
+  var visitedCountries={};
+  var visitPastel=['#ff9eb5','#ffb347','#98e0b0','#87cefa','#c9a0f5','#ffb6c1','#7de8d6','#ffe066'];
+  for(var vi2=0;vi2<st.visited.length;vi2++){
+    var vp2=POSTS[st.visited[vi2]];
+    visitedCountries[vp2.country]=visitPastel[vi2%visitPastel.length];
+  }
+
+  // 모든 나라 path를 하나의 문자열로 합쳐서 전체 육지 → 외곽만 stroke
+  var allLandD='';
+  var visitedPaths={}; // country→d
+
+  for(var f=0;f<geo.features.length;f++){
+    var feat=geo.features[f];
+    var geom=feat.geometry;if(!geom)continue;
+    var cname=(feat.properties&&(feat.properties.name||feat.properties.NAME))||'';
+    var polys=geom.type==='Polygon'?[geom.coordinates]:geom.type==='MultiPolygon'?geom.coordinates:[];
+    for(var p=0;p<polys.length;p++){
+      var ring=polys[p][0];if(!ring||ring.length<3)continue;
+      var d='M';
+      for(var c=0;c<ring.length;c++){
+        var pt=pj(ring[c][1],ring[c][0]);
+        d+=(c?'L':'')+pt.x+','+pt.y;
+      }
+      d+='Z';
+      allLandD+=d;
+      if(visitedCountries[cname]){
+        if(!visitedPaths[cname])visitedPaths[cname]={d:'',col:visitedCountries[cname]};
+        visitedPaths[cname].d+=d;
+      }
+    }
+  }
+
+  // 전체 지도: viewBox를 MAPW×MAPW/2로 설정 → 전 세계 보임
+  var FULLW=MAPW,FULLH=MAPW/2;
+  var s='<svg viewBox="0 0 '+MAPW+' '+(MAPW/2)+'" style="width:100%;display:block;" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs>'
+   +'<filter id="sh" x="-5%" y="-5%" width="110%" height="115%">'
+   +'<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>'
+   +'</filter>'
+   +'</defs>';
+  s+='<rect width="'+MAPW+'" height="'+(MAPW/2)+'" fill="transparent"/>';
+  var shiftX=0;
+  var shiftY=0;
+
+  s+='<g transform="translate('+shiftX+','+shiftY+')" opacity="0.5" filter="url(#sh)">'
+   +'<path d="'+allLandD+'" fill="rgba(60,110,190,0.5)" stroke="none"/>'
+   +'</g>';
+  s+='<g transform="translate('+shiftX+','+shiftY+')">'
+   +'<path d="'+allLandD+'" fill="rgba(255,255,255,0.66)" stroke="rgba(255,255,255,0.9)" stroke-width="0.6" stroke-linejoin="round"/>'
+   +'</g>';
+
+  // 방문 나라 오버레이
+  for(var cn in visitedPaths){
+    var vd=visitedPaths[cn];
+    s+='<g transform="translate('+(shiftX)+',0)"><path d="'+vd.d+'" fill="'+vd.col+'" opacity="0.72" stroke="none"/></g>';
+  }
+
+  // 방문 핀 & 현재 파견지 (shiftX 적용)
+  function pjS(lat,lng){var pt=pj(lat,lng);return{x:pt.x+shiftX,y:pt.y+shiftY};}
+  for(var vi=0;vi<st.visited.length;vi++){
+    var vp=POSTS[st.visited[vi]];var pp=pjS(vp.lat,vp.lng);
+    var pc=visitPastel[vi%visitPastel.length];
+    s+='<circle cx="'+pp.x+'" cy="'+pp.y+'" r="4.5" fill="'+pc+'" opacity="0.85"/>';
+  }
+  if(cur){var cp=pjS(cur.lat,cur.lng);
+    s+='<circle cx="'+cp.x+'" cy="'+cp.y+'" r="4.5" fill="#96C7FF" opacity="0.95"/>';
+  }
+  s+='</svg>';
+
+  // 방문 나라: 파스텔 오버레이
+  for(var cn in visitedPaths){
+    var vd=visitedPaths[cn];
+    s+='<path d="'+vd.d+'" fill="'+vd.col+'" opacity="0.72" stroke="none"/>';
+  }
+
+  wrap.innerHTML=s;
+  var svg=wrap.querySelector('svg');
+  wrap._svg=svg;
+  // 초기 위치 리셋 (항상 중앙 기준)
+  _mapTx=0;_mapTy=0;_mapScale=0.85;
+  svg.style.transformOrigin='50% 50%';
+  svg.style.transform='scale('+_mapScale+')';
+
+  // pan
+  var dragging=false,mx=0,my=0;
+  wrap.onmousedown=function(e){if(e.button!==0)return;dragging=true;mx=e.clientX;my=e.clientY;wrap.style.cursor='grabbing';e.preventDefault();};
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    _mapTx+=e.clientX-mx;_mapTy+=e.clientY-my;mx=e.clientX;my=e.clientY;
+    svg.style.transformOrigin='50% 50%';
+    svg.style.transform='translate('+_mapTx+'px,'+_mapTy+'px) scale('+_mapScale+')';
+  });
+  document.addEventListener('mouseup',function(){if(dragging){dragging=false;wrap.style.cursor='grab';}});
+  // 휠 줌 — 커서 위치 기준
+  wrap.onwheel=function(e){e.preventDefault();mapZoom(e.deltaY<0?1.12:0.89,e.clientX,e.clientY);};
+  // 더블클릭 줌 — 커서 위치 기준
+  wrap.ondblclick=function(e){e.preventDefault();mapZoom(1.5,e.clientX,e.clientY);};
+
+  // Now label
+  var note2=qs('mapNote');
+  if(st.visited.length>0){
+    var cities=[];for(var ci=0;ci<st.visited.length;ci++)cities.push(POSTS[st.visited[ci]].city);
+    if(note2)note2.textContent=st.visited.length+' pins · '+cities.join(', ');
+  } else if(cur&&note2){note2.textContent='Now: '+(cur.city||'');}
+}
+function renderVisited(){
+  var g=qs('visitedGrid');
+  set('visitedCount',st.visited.length+' places');
+  set('mapCount',st.visited.length+' complete');
+  if(!g)return;
+  if(!st.visited.length){g.innerHTML='<div class="visited-empty">No completed postings yet</div>';return;}
+  var h='';
+  for(var i=0;i<st.visited.length;i++){
+    var p=POSTS[st.visited[i]];
+    h+='<div class="visited-chip" onclick="openTicket('+st.visited[i]+')">'+p.flag+' '+p.city+'</div>';
+  }
+  g.innerHTML=h;
+}
+function openTicket(idx){
+  var p=POSTS[idx];
+  var en=EN_MAP[p.city]||p.city;
+  var iata=IATA_MAP[p.city]||p.city.slice(0,3).toUpperCase();
+  var now=new Date();var mo=now.getMonth()+1;
+  var ds=(mo<10?'0':'')+mo+'/'+now.getDate()+'/'+now.getFullYear();
+  set('mTicketHeadline','Seoul \u2192 '+en);set('mTicketSub',p.type+' of the Republic of Korea');
+  set('mTicketIATA',iata);set('mTicketCity',en);set('mTicketMission',en+' Diplomatic Post');
+  set('mTicketCityFull',en);set('mTicketCountry',p.country);set('mTicketRegion',p.region);set('mTicketAddr',p.address||'\u2014');
+  var bc=qs('mTicketBarcode');
+  if(bc){var bars=[2,1,3,1,2,1,1,3,2,1,2,3,1,2,1,1,3,2,1,2,3,1,1,2,3,1];var bh='';var by=2;
+    for(var bi=0;bi<bars.length;bi++){if(bi%2===0)bh+='<rect x="2" y="'+by+'" width="28" height="'+(bars[bi]*3)+'" fill="#222"/>';by+=bars[bi]*3+1;}
+    bc.setAttribute('height',String(by+2));bc.setAttribute('viewBox','0 0 32 '+(by+2));bc.innerHTML=bh;}
+  var mb=qs('modalBg');if(mb)mb.style.display='flex';
+}
+function closeModal(e){
+  if(!e||e.target===qs('modalBg')){var mb=qs('modalBg');if(mb)mb.style.display='none';}
+}
+function resetAll(){
+  if(!confirm('Reset all records?'))return;
+  if(timerOn)toggleTimer();stopMusic();
+  st={visited:[],idx:null,elapsed:{}};saveSt();
+  pickCity();renderVisited();renderMap();
+}
+// Weather
+var _myCity='Incheon';
+function loadMyCity(){
+  try{_myCity=localStorage.getItem('myCity')||'Incheon';}catch(ex){_myCity='Incheon';}
+}
+function editMyCity(e){
+  e.preventDefault();
+  var val=prompt('Enter your location (English city name):',_myCity);
+  if(val&&val.trim()){
+    _myCity=val.trim();
+    try{localStorage.setItem('myCity',_myCity);}catch(ex){}
+    fetchWeather();
+  }
+}
+function saveMyCity(){fetchWeather();}
+function fetchWeather(){
+  var c1=(qs('wCity1')||{}).value||'';
+  var c2=_myCity||'Incheon';
+  var ws=qs('wStatus');if(ws)ws.textContent=(c1||'—')+' & '+c2;
+  function loadCity(city,ids){
+    var setT=function(id,v){var el=qs(id);if(el)el.textContent=v;};
+    var setH=function(id,v){var el=qs(id);if(el)el.innerHTML=v;};
+    setT(ids.city,city);setT(ids.icon,'⏳');setT(ids.temp,'—');setT(ids.desc,'Loading...');setT(ids.feel,'');
+    fetch('https://wttr.in/'+encodeURIComponent(city)+'?format=j1')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var cur=d.current_condition[0];
+        var desc=cur.weatherDesc[0].value;
+        var icon='⛅';
+        if(desc.indexOf('Sunny')>=0||desc.indexOf('Clear')>=0)icon='☀️';
+        else if(desc.indexOf('Rain')>=0||desc.indexOf('Drizzle')>=0)icon='🌧️';
+        else if(desc.indexOf('Snow')>=0)icon='❄️';
+        else if(desc.indexOf('Thunder')>=0)icon='⛈️';
+        else if(desc.indexOf('Fog')>=0||desc.indexOf('Mist')>=0)icon='🌫️';
+        else if(desc.indexOf('Cloudy')>=0||desc.indexOf('Overcast')>=0)icon='☁️';
+        setT(ids.city,city);
+        setT(ids.icon,icon);
+        setH(ids.temp,cur.temp_C+'<span style="font-size:.5em;vertical-align:top;line-height:2;">°C</span>');
+        setT(ids.desc,desc);
+        setT(ids.feel,'Feels '+cur.FeelsLikeC+'° · H'+cur.humidity+'%');
+        if(ws)ws.textContent=(qs('wCity1')||{}).value+' & '+_myCity;
+      }).catch(function(){
+        setT(ids.icon,'—');setT(ids.temp,'—');setT(ids.desc,'Unavailable');
+      });
+  }
+  if(c1)loadCity(c1,{city:'w1city',icon:'w1icon',temp:'w1temp',desc:'w1desc',feel:'w1feel'});
+  loadCity(c2,{city:'w2city',icon:'w2icon',temp:'w2temp',desc:'w2desc',feel:'w2feel'});
+}
+function renderWeather(){}
+function openGallery(p){
+  var urls=(p._wikiImgs&&p._wikiImgs.length)?p._wikiImgs:[];
+  if(!urls.length){
+    var q=IMG_MAP[p.city]||'city travel';
+    var h=Math.floor(Date.now()/3600000);
+    urls=[0,1,2,3,4].map(function(i){return 'https://source.unsplash.com/featured/900x600/?'+encodeURIComponent(q)+'&sig='+(h*7+p.city.charCodeAt(0)+i*100);});
+  }
+  var gb=qs('galleryBg');
+  var gc=qs('galleryGrid');
+  if(!gb||!gc)return;
+  gc.innerHTML='';
+  for(var i=0;i<urls.length;i++){
+    (function(url,idx){
+      var div=document.createElement('div');
+      div.style.cssText='aspect-ratio:3/2;background:#dde;border-radius:8px;overflow:hidden;cursor:pointer;';
+      var im=document.createElement('img');
+      im.src=url;
+      im.style.cssText='width:100%;height:100%;object-fit:cover;transition:transform .3s;';
+      im.onmouseover=function(){im.style.transform='scale(1.04)';};
+      im.onmouseout=function(){im.style.transform='scale(1)';};
+      im.onclick=function(){
+        var ci=qs('cityImg');
+        if(ci){ci.src=url;ci.classList.remove('loaded');im.onload=function(){ci.classList.add('loaded');};}
+        closeGallery();
+      };
+      div.appendChild(im);
+      gc.appendChild(div);
+    })(urls[i],i);
+  }
+  gb.style.display='flex';
+}
+function closeGallery(e){
+  if(!e||e.target===qs('galleryBg')){var gb=qs('galleryBg');if(gb)gb.style.display='none';}
+}
+
+document.addEventListener('DOMContentLoaded',function(){init();});
+
+
+</script>
+
+<script>
+// 메인 플래너(index.html)에서 보내는 '도장 찍기' 신호 수신
+window.addEventListener('message', function(event) {
+    if (event.data === 'triggerStamp') {
+        const stamp = document.getElementById('stampSvg');
+        if (stamp) {
+            // 애니메이션 재실행을 위해 클래스를 뗐다 다시 붙임 (리플로우 강제 발생)
+            stamp.classList.remove('stamped');
+            void stamp.offsetWidth; 
+            stamp.classList.add('stamped');
+            
+            // 미션 상태 텍스트를 완료로 업데이트 (선택 사항)
+            const bpDate = document.getElementById('bpDate');
+            if(bpDate) bpDate.innerHTML = '<span style="color:#2a558c; font-weight:bold;">00:00:00 Mission Complete!</span>';
+        }
+    }
+});
+</script>
+
+</body>
+</html>

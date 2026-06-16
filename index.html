@@ -1443,7 +1443,16 @@
 
         function initPlanner() { const rows = document.getElementById('planner-rows'); if(!rows) return; rows.innerHTML = ''; for(let i=0; i<24; i++) { const hRaw = (i+5)%24; const hDisplay = hRaw; const hStr = String(hRaw).padStart(2,'0'); rows.innerHTML += `<div class="hour-row"><div class="hour-label">${hDisplay}</div><div class="minute-track-wrapper" id="track-${hStr}"><div class="minute-grid">${'<div class="minute-cell"></div>'.repeat(6)}</div></div></div>`; } calcDday(); updateGoalTimeUI(); }
         function setDday() { let d = prompt("D-Day 날짜를 입력하세요 (예: 2026-08-30)"); if(d) { localStorage.setItem('myDday', d); calcDday(); } }
-        function calcDday() { let d = localStorage.getItem('myDday'); if(d) { let target = new Date(d); let today = new Date(); today.setHours(0,0,0,0); target.setHours(0,0,0,0); let diff = Math.ceil((target - today) / (1000*60*60*24)); document.getElementById('dday-display').innerText = diff > 0 ? `D-${diff}` : (diff === 0 ? `D-Day` : `D+${Math.abs(diff)}`); } }
+        function calcDday() { 
+    // 로컬스토리지가 비어있을 때의 기본 디폴트 타겟 날짜를 설정하여 고정 버그 해결
+    let d = localStorage.getItem('myDday') || '2026-07-18'; 
+    let target = new Date(d); 
+    let today = new Date(); 
+    today.setHours(0,0,0,0); 
+    target.setHours(0,0,0,0); 
+    let diff = Math.ceil((target - today) / (1000*60*60*24)); 
+    document.getElementById('dday-display').innerText = diff > 0 ? `D-${diff}` : (diff === 0 ? `D-Day` : `D+${Math.abs(diff)}`); 
+}
         function setGoalTime() { let t = prompt("이번 주 목표 학습 시간(숫자만, 예: 50)"); if(t && !isNaN(t)) { localStorage.setItem('myGoal', t); updateGoalTimeUI(); } }
         function updateGoalTimeUI() { 
             let g = localStorage.getItem('myGoal') || 50; let d = new Date(currentDayViewDate); let day = d.getDay(); let diff = d.getDate() - day + (day === 0 ? -6 : 1); 
@@ -3471,11 +3480,54 @@ function pl_unmergeItem() {
         document.getElementById('pl-hl-modal').style.display = 'none';
     }
 
+    function pl_clickHl(idx, e) {
+        if (isHlSelectMode) {
+            let h = pHighlighters[idx];
+            // 3개 제한 로직 삭제, 클릭 시 무조건 상태 토글
+            h.m = !h.m; 
+            pl_renderHlRows();
+        }
+    }
+
+    function pl_addHlRow() {
+        pHighlighters.push({ id: Date.now() + Math.random(), c: '#ffffff', m: false });
+        pl_renderHlRows();
+    }
+
+    function pl_removeHl(idx, e) {
+        e.preventDefault();
+        if (confirm('해당 색상을 프리셋에서 삭제하시겠습니까?')) {
+            pHighlighters.splice(idx, 1);
+            pl_renderHlRows();
+        }
+    }
+
+    function pl_updateHl(idx, val) {
+        pHighlighters[idx].c = val;
+    }
+
+    function pl_saveHlTags() {
+        let mainCount = pHighlighters.filter(x => x.m).length;
+        // 최소 1개 이상 선택하도록 조건 변경
+        if(mainCount === 0) {
+            alert("메인 퀵바에 노출될 대표 컬러를 최소 1개 이상 체크해주세요.");
+            return;
+        }
+        localStorage.setItem(PLANNER_HLS, JSON.stringify(pHighlighters));
+        
+        if(!pHighlighters.find(x => x.c === currentHl && x.m)) {
+            currentHl = pHighlighters.find(x => x.m)?.c || pHighlighters[0]?.c;
+        }
+        pl_renderHlQuick();
+        document.getElementById('pl-hl-modal').style.display = 'none';
+    }
+
     function pl_renderHlQuick() {
         const wrap = document.getElementById('hl-quick-select');
         if(!wrap) return;
-        let mains = pHighlighters.filter(x => x.m).slice(0,3);
-        if(mains.length === 0) mains = pHighlighters.slice(0,3);
+        // slice(0,3) 코드를 삭제하여 선택한 개수만큼 모두 렌더링
+        let mains = pHighlighters.filter(x => x.m);
+        if(mains.length === 0) mains = pHighlighters;
         wrap.innerHTML = mains.map(h => `
             <div class="hl-circle ${currentHl === h.c ? 'active' : ''}" 
                  style="background:${h.c};" 
@@ -3573,5 +3625,347 @@ function pl_unmergeItem() {
         }
     }, 400);
 </script>
+
+<!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->
+    <div id="ai-float-btn" onclick="openIndex2Popup()">
+        <!-- 기본 틀 (흰색->하늘색->남색 그라데이션, 닫혀있을 땐 투명도 0으로 숨김) -->
+        <div class="capsule-bg">
+            <div class="float-content">
+                <div id="floatCityName">LOCATION</div>
+                <div class="float-progress-bg">
+                    <div class="float-progress-fill" id="floatBarFill"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 비행기 원 (캡슐 위에 얹힌 하얀색 투명도 버튼) -->
+        <div class="plane-circle">
+            <svg viewBox="0 0 24 24">
+                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l7 2.5z"/>
+            </svg>
+        </div>
+        
+        <!-- 알림 배지 -->
+        <div id="float-badge">0</div>
+    </div>
+
+    <!-- 노션 스타일 팝업 모달 -->
+    <div id="index2-notion-modal" class="notion-clean-modal">
+        <div class="notion-modal-body-box">
+            <iframe id="index2-iframe" src="index-2.html" onload="cleanIframe()"></iframe>
+        </div>
+    </div>
+
+    <style>
+        #ai-float-btn {
+    position: fixed !important;
+    right: 30px !important;
+    bottom: 30px !important;
+    width: 60px !important; 
+    height: 60px !important;
+    cursor: pointer !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+}
+
+.capsule-bg {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 30px !important;
+    background:
+        radial-gradient(ellipse at 20% 100%, rgba(70,150,255,0.95) 0%, transparent 48%),
+        radial-gradient(ellipse at 0% 80%, rgba(170,140,255,0.35) 0%, transparent 40%),
+        radial-gradient(ellipse at 5% 50%, rgba(180,155,255,0.25) 0%, transparent 38%),
+        radial-gradient(ellipse at 30% 80%, rgba(140,180,255,0.7) 0%, transparent 40%),
+        radial-gradient(ellipse at 25% 30%, rgba(160,195,255,0.65) 0%, transparent 38%),
+        radial-gradient(ellipse at 55% 50%, rgba(180,200,255,0.55) 0%, transparent 42%),
+        radial-gradient(ellipse at 40% 15%, rgba(180,240,210,0.18) 0%, transparent 28%),
+        radial-gradient(ellipse at 70% 30%, rgba(200,210,255,0.5) 0%, transparent 38%),
+        radial-gradient(ellipse at 90% 10%, rgba(240,242,255,0.5) 0%, transparent 38%),
+        radial-gradient(ellipse at 100% 0%, rgba(255,255,255,0.45) 0%, transparent 35%),
+        radial-gradient(ellipse at 50% 50%, rgba(130,175,250,0.6) 0%, transparent 100%) !important;
+    backdrop-filter: blur(20px) saturate(2.0) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(2.0) !important;
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    box-shadow:
+        inset 0 1px 3px rgba(255,255,255,0.5),
+        0 8px 32px rgba(70,110,220,0.45),
+        0 3px 14px rgba(90,130,230,0.35) !important;
+    opacity: 0 !important;
+    transition: all 0.4s cubic-bezier(.4,0,.2,1) !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    clip-path: inset(0 round 30px) !important;
+}
+
+#ai-float-btn:hover .capsule-bg {
+    width: 220px !important;
+    opacity: 1 !important;
+}
+
+.plane-circle {
+    position: relative !important;
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    background:
+        radial-gradient(ellipse at 25% 80%, rgba(255,255,255,0.18) 0%, transparent 40%),
+        radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.18) 0%, transparent 38%),
+        radial-gradient(ellipse at 30% 30%, rgba(170,205,255,0.75) 0%, transparent 50%),
+        radial-gradient(ellipse at 78% 72%, rgba(100,140,255,0.75) 0%, transparent 48%),
+        radial-gradient(ellipse at 10% 65%, rgba(120,185,255,0.65) 0%, transparent 42%),
+        radial-gradient(ellipse at 88% 38%, rgba(155,165,255,0.65) 0%, transparent 42%),
+        radial-gradient(ellipse at 50% 50%, rgba(135,170,252,0.55) 0%, transparent 68%) !important;
+    backdrop-filter: blur(20px) saturate(2.0) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(2.0) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    z-index: 2 !important;
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    box-shadow:
+        inset 1px 1px 3px rgba(255,255,255,0.65),
+        0 6px 24px rgba(70,110,220,0.4),
+        0 2px 10px rgba(90,130,230,0.3) !important;
+    transition: transform 0.2s ease !important;
+}
+
+#ai-float-btn:hover .plane-circle {
+    transform: scale(0.82) !important;
+}
+
+#ai-float-btn:active .plane-circle {
+    transform: scale(0.75) !important;
+}
+
+.plane-circle svg {
+    width: 32px !important;
+    height: 32px !important;
+    fill: rgba(255,255,255,0.95) !important;
+    filter: drop-shadow(0 1px 3px rgba(40,80,200,0.4)) !important;
+    transform: rotate(45deg) translate(2px, -2px) !important;
+}
+
+.float-content {
+    position: absolute !important;
+    left: 16px !important;
+    right: 76px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    min-width: 0 !important;
+    max-width: calc(220px - 92px) !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s ease 0.1s !important;
+    z-index: 3 !important;
+}
+
+#ai-float-btn:hover .float-content {
+    opacity: 1 !important;
+}
+
+#floatCityName {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.97) !important;
+    text-shadow: 0 2px 6px rgba(45, 88, 182, 0.5) !important;
+    margin-bottom: 5px !important;
+    letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+    max-width: 100% !important;
+}
+
+.float-progress-bg {
+    width: 100% !important;
+    height: 5px !important;
+    background: rgba(255,255,255,0.2) !important;
+    border-radius: 3px !important;
+}
+
+.float-progress-fill {
+    width: 0% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.7),
+        rgba(200,220,255,0.85)
+    ) !important;
+    border-radius: 3px !important;
+    box-shadow: 0 0 6px rgba(255,255,255,0.4) !important;
+    transition: width 0.5s ease !important;
+}
+
+#float-badge {
+    position: absolute !important;
+    top: -2px !important;
+    right: 0px !important;
+    background: #ff4757 !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    display: none;
+    justify-content: center !important;
+    align-items: center !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    border: 2px solid #fff !important;
+    z-index: 3 !important;
+}
+
+.notion-clean-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.7) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.notion-modal-body-box {
+    background: transparent !important;
+    width: 95% !important;
+    max-width: 1150px !important;
+    height: 90vh !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.15) !important;
+    animation: slideUp 0.25s ease-out;
+    border: 3px solid #ffffff !important; 
+}
+
+#index2-iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    border-radius: 12px;
+}
+
+@keyframes slideUp { 
+    from { transform:translateY(15px); opacity:0; } 
+    to { transform:translateY(0); opacity:1; } 
+}
+</style>
+
+    <script>
+    window.aiCompleteCount = window.aiCompleteCount || 0;
+    window.aiIsStampPending = window.aiIsStampPending || false;
+
+    function cleanIframe() {
+        try {
+            const iframe = document.getElementById('index2-iframe');
+            const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const style = innerDoc.createElement('style');
+            style.innerHTML = `::-webkit-scrollbar { display: none !important; } * { scrollbar-width: none !important; } body { background: transparent !important; }`;
+            innerDoc.head.appendChild(style);
+        } catch(e) {}
+    }
+
+    function openIndex2Popup() {
+        const modal = document.getElementById('index2-notion-modal');
+        modal.style.display = 'flex';
+        
+        if(window.aiIsStampPending) {
+            document.getElementById('float-badge').style.display = 'none';
+            window.aiCompleteCount = 0;
+            window.aiIsStampPending = false;
+            
+            setTimeout(() => {
+                document.getElementById('index2-iframe').contentWindow.postMessage('triggerStamp', '*');
+            }, 300); 
+        }
+    }
+
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('index2-notion-modal');
+        if (e.target === modal) modal.style.display = 'none';
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('index2-notion-modal');
+            if (modal) modal.style.display = 'none';
+        }
+    });
+
+    function triggerMissionComplete() {
+        window.aiCompleteCount++;
+        const badge = document.getElementById('float-badge');
+        badge.innerText = window.aiCompleteCount;
+        badge.style.display = 'flex';
+        window.aiIsStampPending = true;
+    }
+
+    // 장소(영문) 및 게이지 연동
+    const EN_POSTS = [
+      "Tokyo", "Osaka", "Beijing", "Shanghai", "Bangkok",
+      "Singapore", "Hanoi", "Jakarta", "Manila", "New Delhi",
+      "Mumbai", "Sydney", "Canberra", "Paris", "London",
+      "Berlin", "Vienna", "Geneva", "Madrid", "Rome",
+      "Moscow", "Helsinki", "Dubai", "Istanbul", "Nairobi",
+      "Washington D.C.", "New York", "Los Angeles", "Brasilia", "Buenos Aires"
+    ];
+    
+    setInterval(() => {
+        try {
+            const floatCity = document.getElementById('floatCityName');
+            const floatBar = document.getElementById('floatBarFill');
+            const TARGET_SEC = 180000; 
+            
+            const rawData = localStorage.getItem('diplomat_state_v1');
+            if(rawData) {
+                const st = JSON.parse(rawData);
+                if(floatCity && st.idx !== null && EN_POSTS[st.idx]) {
+                    floatCity.innerText = EN_POSTS[st.idx];
+                }
+                if(floatBar && st.elapsed && st.idx !== null) {
+                    const elapsed = st.elapsed[st.idx] || 0;
+                    const pct = Math.min((elapsed / TARGET_SEC) * 100, 100);
+                    floatBar.style.width = pct + '%';
+                }
+            }
+        } catch(e) {}
+    }, 1000);
+    </script>
+
+
+
+    <div id="pl-hl-modal" class="pl-modal-overlay" onclick="this.style.display='none'">
+        <div class="pl-modal-content" onclick="event.stopPropagation()" style="width: 320px; text-align: center;">
+            <h3 style="margin-top:0; margin-bottom:15px; font-weight:800; color: var(--primary-blue);">형광펜 색상 설정</h3>
+            <p style="font-size:0.75rem; color:#666; margin-bottom:15px;">(동그라미를 우클릭하면 삭제할 수 있습니다)</p>
+            <div id="pl-hl-list" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:15px;"></div>
+            <button id="hl-select-mode-btn" class="action-btn" onclick="pl_toggleHlSelectMode()" style="width:100%; margin-bottom:15px; font-size:0.8rem; padding:8px;">대표 컬러 설정 (OFF)</button>
+            <div style="display:flex; gap:10px;">
+                <button class="chrono-btn" style="flex:1;" onclick="pl_addHlRow()">+ 색상 추가</button>
+                <button class="chrono-btn primary" style="flex:1;" onclick="pl_saveHlTags()">저장 및 적용</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .notion-modal-body-box {
+            border: 2px solid #ffffff !important; /* 두껍고 선명한 완전 흰색 테두리 */
+            box-shadow: 0 15px 45px rgba(57, 90, 125, 0.2).2), 0 0 0 1px rgba(255,255,255,0.8) !important; /* 테두리가 더 잘 보이도록 보조 그림자 추가 */
+        }
+    </style>
+    
+
 </body>
 </html>
