@@ -3864,8 +3864,7 @@ function pl_unmergeItem() {
 }
 </style>
 
-    <script>
-    <script>
+<script>
     window.aiCompleteCount = window.aiCompleteCount || 0;
     window.aiIsStampPending = window.aiIsStampPending || false;
 
@@ -3905,7 +3904,6 @@ function pl_unmergeItem() {
         }
     });
 
-    // 장소 영문 배열
     const EN_POSTS = [
       "Tokyo", "Osaka", "Beijing", "Shanghai", "Bangkok",
       "Singapore", "Hanoi", "Jakarta", "Manila", "New Delhi",
@@ -3915,37 +3913,49 @@ function pl_unmergeItem() {
       "Washington D.C.", "New York", "Los Angeles", "Brasilia", "Buenos Aires"
     ];
     
-    // ★ 실시간 타이머 연동 엔진 (iframe 직접 침투 방식)
+    // 🔥 깃허브 은닉 문제를 우회하는 하이브리드 동기화 엔진
+    let localSimulatedElapsed = 0;
+
     setInterval(() => {
         try {
             const floatCity = document.getElementById('floatCityName');
             const floatBar = document.getElementById('floatBarFill');
+            const TARGET_SEC = 180000; 
             
-            // index-2.html (팝업창) 내부의 실시간 변수를 1초마다 직접 읽어옴
-            const iframeWin = document.getElementById('index2-iframe').contentWindow;
-            
-            if (iframeWin && typeof iframeWin.elapsed !== 'undefined' && iframeWin.st) {
-                const currentIdx = iframeWin.st.idx;
-                const currentElapsed = iframeWin.elapsed || 0;
-                const targetSec = iframeWin.TARGET || 180000;
+            let currentIdx = null;
+            let realElapsed = 0;
+
+            // 1. 브라우저 저장소(localStorage)에서 팩트 데이터 추출
+            const rawData = localStorage.getItem('diplomat_state_v1') || localStorage.getItem('diplomat_state');
+            if(rawData) {
+                const st = JSON.parse(rawData);
+                currentIdx = st.idx !== undefined ? st.idx : null;
                 
-                // 1. 장소 텍스트 업데이트
-                if (floatCity && currentIdx !== null && EN_POSTS[currentIdx]) {
-                    floatCity.innerText = EN_POSTS[currentIdx];
-                }
-                
-                // 2. 게이지 실시간 % 업데이트
-                if (floatBar && targetSec > 0) {
-                    const pct = Math.min((currentElapsed / targetSec) * 100, 100);
-                    floatBar.style.width = pct + '%';
+                if (typeof st.elapsed === 'object' && st.elapsed !== null) {
+                    realElapsed = st.elapsed[currentIdx] || 0;
+                } else if (typeof st.elapsed === 'number') {
+                    realElapsed = st.elapsed;
                 }
             }
-        } catch(e) {
-            // 깃허브 서버 연결 지연 시 에러 방지
-        }
+
+            // 2. 저장소가 1초마다 갱신되지 않는 경우를 대비해 1초씩 강제 누적 (부드러운 게이지 효과)
+            if (realElapsed > localSimulatedElapsed || realElapsed === 0) {
+                localSimulatedElapsed = realElapsed; 
+            } else if (realElapsed > 0) {
+                localSimulatedElapsed++; 
+            }
+
+            // 3. UI 업데이트
+            if (floatCity && currentIdx !== null && EN_POSTS[currentIdx]) {
+                floatCity.innerText = EN_POSTS[currentIdx];
+            }
+            if (floatBar) {
+                const pct = Math.min((localSimulatedElapsed / TARGET_SEC) * 100, 100);
+                floatBar.style.width = pct + '%';
+            }
+        } catch(e) {}
     }, 1000);
     </script>
-
 
 
     <div id="pl-hl-modal" class="pl-modal-overlay" onclick="this.style.display='none'">
