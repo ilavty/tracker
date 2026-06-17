@@ -3160,7 +3160,8 @@
             const idx = (dst.idx !== null && dst.idx !== undefined) ? dst.idx : null;
             if (idx === null) return;
             if (!dst.elapsed || typeof dst.elapsed !== 'object') dst.elapsed = {};
-            dst.elapsed[idx] = Math.max(0, (dst.elapsed[idx] || 0) + diff);
+            const newVal = (dst.elapsed[idx] || 0) + diff;
+            dst.elapsed[idx] = Math.max(0, newVal);
             localStorage.setItem(KEY, JSON.stringify(dst));
             // iframe에 postMessage로 즉시 반영
             const iframe = document.getElementById('index2-iframe');
@@ -3927,8 +3928,9 @@ function pl_unmergeItem() {
             window.aiIsStampPending = false;
             
             setTimeout(() => {
-                document.getElementById('index2-iframe').contentWindow.postMessage('triggerStamp', '*');
-            }, 300); 
+                const ifr = document.getElementById('index2-iframe');
+                if (ifr && ifr.contentWindow) ifr.contentWindow.postMessage('triggerStamp', '*');
+            }, 800);
         }
     }
 
