@@ -3162,6 +3162,11 @@
             if (!dst.elapsed || typeof dst.elapsed !== 'object') dst.elapsed = {};
             dst.elapsed[idx] = Math.max(0, (dst.elapsed[idx] || 0) + diff);
             localStorage.setItem(KEY, JSON.stringify(dst));
+            // iframe에 postMessage로 즉시 반영
+            const iframe = document.getElementById('index2-iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'syncElapsed', elapsed: dst.elapsed[idx] }, '*');
+            }
         } catch(e) {}
     }
 
@@ -3835,12 +3840,8 @@ function pl_unmergeItem() {
 .float-progress-fill {
     width: 0%;
     height: 100% !important;
-    background: linear-gradient(90deg,
-        rgba(255,255,255,0.7),
-        rgba(200,220,255,0.85)
-    ) !important;
+    background: rgba(255,255,255,0.75) !important;
     border-radius: 3px !important;
-    box-shadow: 0 0 6px rgba(255,255,255,0.4) !important;
     transition: width 0.5s ease !important;
 }
 

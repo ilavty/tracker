@@ -1777,19 +1777,16 @@ window.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'syncElapsed') {
         try {
             var newElapsed = event.data.elapsed || 0;
-            // 현재 elapsed가 더 크면 무시 (타이머가 더 많이 쌓인 경우)
-            if (newElapsed > elapsed) {
-                elapsed = newElapsed;
-                if (!st.elapsed) st.elapsed = {};
-                st.elapsed[st.idx] = elapsed;
-                saveSt();
-                updBar(elapsed);
-                updStars(elapsed);
-                updTime(elapsed);
-                if (elapsed >= TARGET && !window._completed) {
-                    window._completed = true;
-                    complete();
-                }
+            elapsed = newElapsed;
+            if (!st.elapsed) st.elapsed = {};
+            st.elapsed[st.idx] = elapsed;
+            saveSt();
+            updBar(elapsed);
+            updStars(elapsed);
+            updTime(elapsed);
+            if (elapsed >= TARGET && !window._completed) {
+                window._completed = true;
+                complete();
             }
         } catch(e) {}
     }
