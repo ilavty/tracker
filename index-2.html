@@ -1760,20 +1760,38 @@ document.addEventListener('DOMContentLoaded',function(){init();});
 </script>
 
 <script>
-// 메인 플래너(index.html)에서 보내는 '도장 찍기' 신호 수신
+// 메인 플래너(index.html)에서 보내는 신호 수신
 window.addEventListener('message', function(event) {
+    // 도장 찍기 신호
     if (event.data === 'triggerStamp') {
         const stamp = document.getElementById('stampSvg');
         if (stamp) {
-            // 애니메이션 재실행을 위해 클래스를 뗐다 다시 붙임 (리플로우 강제 발생)
             stamp.classList.remove('stamped');
             void stamp.offsetWidth; 
             stamp.classList.add('stamped');
-            
-            // 미션 상태 텍스트를 완료로 업데이트 (선택 사항)
             const bpDate = document.getElementById('bpDate');
             if(bpDate) bpDate.innerHTML = '<span style="color:#2a558c; font-weight:bold;">00:00:00 Mission Complete!</span>';
         }
+    }
+    // 메인 플래너 시간 입력 → elapsed 동기화
+    if (event.data && event.data.type === 'syncElapsed') {
+        try {
+            var newElapsed = event.data.elapsed || 0;
+            // 현재 elapsed가 더 크면 무시 (타이머가 더 많이 쌓인 경우)
+            if (newElapsed > elapsed) {
+                elapsed = newElapsed;
+                if (!st.elapsed) st.elapsed = {};
+                st.elapsed[st.idx] = elapsed;
+                saveSt();
+                updBar(elapsed);
+                updStars(elapsed);
+                updTime(elapsed);
+                if (elapsed >= TARGET && !window._completed) {
+                    window._completed = true;
+                    complete();
+                }
+            }
+        } catch(e) {}
     }
 });
 </script>
