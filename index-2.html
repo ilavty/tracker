@@ -897,7 +897,7 @@ function saveSt(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}sa
 var st=loadSt();
 var timerInt=null,timerOn=false,elapsed=0;
 var musicOn=false,curTrack=null,curCat=null;
-var TARGET=108000,SESSION=36000;
+var TARGET=180000,SESSION=36000;
 var swipePage=0,swipeX=0;
 
 var EN_MAP={
@@ -1132,8 +1132,8 @@ function updStars(s){
 }
 function updTime(s){
   var h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
-  set('timerProgTxt',h+'h '+m+'m / 30h');
-  set('timerTotalTxt',h+'h '+m+'m / 30 hrs');
+  set('timerProgTxt',h+'h '+m+'m / 50h');
+  set('timerTotalTxt',h+'h '+m+'m / 50 hrs');
 }
 function complete(){
   if(timerOn)toggleTimer();

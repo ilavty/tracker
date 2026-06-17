@@ -1820,7 +1820,7 @@
         function deleteDayRecords(e, dateStr) { e.preventDefault(); pushUndoState(); detailedSessions = detailedSessions.filter(s => s.date !== dateStr); saveDataToFirebase(); updateDayViewDate(); updateStatsUI(); renderCalendar(); }
         function openManualTimeModal(dateStr) { document.getElementById('manual-time-date').innerText = dateStr; document.getElementById('manual-time-date-val').value = dateStr; document.getElementById('manual-time-input').value = "0:00:00"; document.getElementById('manual-time-modal').style.display = "flex"; }
         function submitManualTime() { try { pushUndoState(); let dateStr = document.getElementById('manual-time-date-val').value; let val = document.getElementById('manual-time-input').value; if (!val) return; let parts = val.split(':'); if (parts.length !== 3) { alert("반드시 시:분:초 (H:MM:SS) 형식으로 입력해주세요."); return; } let totalSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0); if (totalSecs <= 0) { closeAllModals(); return; } detailedSessions.push({ id: Date.now().toString(), date: dateStr, subId: "manual", start: "0:00", end: "0:00", duration: totalSecs, isManual: true }); saveDataToFirebase(); updateDayViewDate();
-            // diplomat_state_v1에 시간 누적 반영 → 캡슐 게이지 + index-2 동시 연동
+            // diplomat_state_v1에 시간 누적 반영 → 캡슐 게이지 자동반영 (setInterval이 1초마다 읽음)
             try {
                 const KEY = 'diplomat_state_v1';
                 const raw = localStorage.getItem(KEY);
@@ -1831,11 +1831,6 @@
                         if (!dst.elapsed || typeof dst.elapsed !== 'object') dst.elapsed = {};
                         dst.elapsed[idx] = (dst.elapsed[idx] || 0) + totalSecs;
                         localStorage.setItem(KEY, JSON.stringify(dst));
-                        // iframe에도 postMessage
-                        const iframe = document.getElementById('index2-iframe');
-                        if (iframe && iframe.contentWindow) {
-                            iframe.contentWindow.postMessage({ type: 'syncElapsed', elapsed: dst.elapsed[idx] }, '*');
-                        }
                     }
                 }
             } catch(syncErr) {}
@@ -3935,7 +3930,7 @@ function pl_unmergeItem() {
     ];
     
     // 🔥 캡슐 게이지: diplomat_state_v1의 elapsed[idx] 직접 읽기 (index-2와 동일 소스)
-    const DIPLOMAT_TARGET_SEC = 108000; // index-2와 동일한 30시간 기준
+    const DIPLOMAT_TARGET_SEC = 180000; // 50시간 기준
     let localSimulatedElapsed = 0;
 
     setInterval(() => {
