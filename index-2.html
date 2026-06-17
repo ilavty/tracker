@@ -1140,6 +1140,10 @@ function complete(){
   if(st.visited.indexOf(st.idx)<0){st.visited.push(st.idx);saveSt();}
   showStamp(POSTS[st.idx]);
   renderVisited();renderMap();
+  // 기본페이지에 완료 알림 신호
+  try {
+    window.parent.postMessage('missionComplete', '*');
+  } catch(e) {}
 }
 function nextCity(){
   if(timerOn)toggleTimer();

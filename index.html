@@ -3932,6 +3932,15 @@ function pl_unmergeItem() {
         }
     }
 
+    // 추가페이지에서 50시간 완료 신호 수신 → 배지 표시
+    window.addEventListener('message', (e) => {
+        if (e.data === 'missionComplete') {
+            window.aiIsStampPending = true;
+            const badge = document.getElementById('float-badge');
+            if (badge) { badge.style.display = 'flex'; badge.innerText = '1'; }
+        }
+    });
+
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('index2-notion-modal');
         if (e.target === modal) modal.style.display = 'none';
