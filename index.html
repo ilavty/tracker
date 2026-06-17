@@ -1820,15 +1820,22 @@
         function deleteDayRecords(e, dateStr) { e.preventDefault(); pushUndoState(); detailedSessions = detailedSessions.filter(s => s.date !== dateStr); saveDataToFirebase(); updateDayViewDate(); updateStatsUI(); renderCalendar(); }
         function openManualTimeModal(dateStr) { document.getElementById('manual-time-date').innerText = dateStr; document.getElementById('manual-time-date-val').value = dateStr; document.getElementById('manual-time-input').value = "0:00:00"; document.getElementById('manual-time-modal').style.display = "flex"; }
         function submitManualTime() { try { pushUndoState(); let dateStr = document.getElementById('manual-time-date-val').value; let val = document.getElementById('manual-time-input').value; if (!val) return; let parts = val.split(':'); if (parts.length !== 3) { alert("반드시 시:분:초 (H:MM:SS) 형식으로 입력해주세요."); return; } let totalSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0); if (totalSecs <= 0) { closeAllModals(); return; } detailedSessions.push({ id: Date.now().toString(), date: dateStr, subId: "manual", start: "0:00", end: "0:00", duration: totalSecs, isManual: true }); saveDataToFirebase(); updateDayViewDate();
-            // 오늘 날짜 입력이면 index-2 iframe에도 elapsed 동기화
+            // diplomat_state_v1에 시간 누적 반영 → 캡슐 게이지 + index-2 동시 연동
             try {
-                const now = new Date();
-                const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
-                if (dateStr === todayStr) {
-                    const todayTotal = detailedSessions.filter(s => s && s.date === todayStr).reduce((acc, s) => acc + (s.duration || 0), 0);
-                    const iframe = document.getElementById('index2-iframe');
-                    if (iframe && iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({ type: 'syncElapsed', elapsed: todayTotal }, '*');
+                const KEY = 'diplomat_state_v1';
+                const raw = localStorage.getItem(KEY);
+                if (raw) {
+                    const dst = JSON.parse(raw);
+                    const idx = (dst.idx !== null && dst.idx !== undefined) ? dst.idx : null;
+                    if (idx !== null) {
+                        if (!dst.elapsed || typeof dst.elapsed !== 'object') dst.elapsed = {};
+                        dst.elapsed[idx] = (dst.elapsed[idx] || 0) + totalSecs;
+                        localStorage.setItem(KEY, JSON.stringify(dst));
+                        // iframe에도 postMessage
+                        const iframe = document.getElementById('index2-iframe');
+                        if (iframe && iframe.contentWindow) {
+                            iframe.contentWindow.postMessage({ type: 'syncElapsed', elapsed: dst.elapsed[idx] }, '*');
+                        }
                     }
                 }
             } catch(syncErr) {}
@@ -3927,59 +3934,43 @@ function pl_unmergeItem() {
       "Washington D.C.", "New York", "Los Angeles", "Brasilia", "Buenos Aires"
     ];
     
-    // 🔥 하이브리드 동기화 엔진: detailedSessions(오늘 공부시간) → diplomat_state_v1 + capsule 게이지 연동
+    // 🔥 캡슐 게이지: diplomat_state_v1의 elapsed[idx] 직접 읽기 (index-2와 동일 소스)
     const DIPLOMAT_TARGET_SEC = 108000; // index-2와 동일한 30시간 기준
-
-    function getTodayTotalSecs() {
-        try {
-            // window._getDetailedSessions()를 통해 스코프 외부 변수 접근
-            const sessions = (typeof window._getDetailedSessions === 'function') ? window._getDetailedSessions() : null;
-            if (!Array.isArray(sessions)) return 0;
-            const now = new Date();
-            const todayStr = now.getFullYear() + '-' +
-                String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0');
-            return sessions
-                .filter(s => s && s.date === todayStr)
-                .reduce((acc, s) => acc + (s.duration || 0), 0);
-        } catch(e) { return 0; }
-    }
-
-    function syncDiplomatState(todaySecs) {
-        try {
-            const KEY = 'diplomat_state_v1';
-            let st = {};
-            const raw = localStorage.getItem(KEY);
-            if (raw) st = JSON.parse(raw);
-            if (!st.elapsed || typeof st.elapsed !== 'object') st.elapsed = {};
-            const idx = (st.idx !== null && st.idx !== undefined) ? st.idx : null;
-            if (idx !== null) {
-                st.elapsed[idx] = todaySecs;
-                localStorage.setItem(KEY, JSON.stringify(st));
-            }
-            return { st, idx };
-        } catch(e) { return { st: {}, idx: null }; }
-    }
+    let localSimulatedElapsed = 0;
 
     setInterval(() => {
         try {
             const floatCity = document.getElementById('floatCityName');
             const floatBar = document.getElementById('floatBarFill');
 
-            // 1. 오늘 공부시간(detailedSessions 기준) 계산
-            const todaySecs = getTodayTotalSecs();
+            // diplomat_state_v1에서 현재 포스팅 elapsed 직접 읽기
+            const KEY = 'diplomat_state_v1';
+            const raw = localStorage.getItem(KEY);
+            if (!raw) return;
+            const st = JSON.parse(raw);
+            const idx = (st.idx !== null && st.idx !== undefined) ? st.idx : null;
+            if (idx === null) return;
 
-            // 2. diplomat_state_v1에도 오늘 시간 반영 (index-2 연동)
-            const { st, idx } = syncDiplomatState(todaySecs);
+            let realElapsed = 0;
+            if (st.elapsed && typeof st.elapsed === 'object') {
+                realElapsed = st.elapsed[idx] || 0;
+            }
 
-            // 3. 캡슐 도시명 업데이트
-            if (floatCity && idx !== null && EN_POSTS[idx]) {
+            // 부드러운 게이지: 실제값보다 작으면 즉시 동기화, 아니면 1씩 증가
+            if (realElapsed > localSimulatedElapsed || realElapsed === 0) {
+                localSimulatedElapsed = realElapsed;
+            } else if (realElapsed > 0) {
+                localSimulatedElapsed++;
+            }
+
+            // 도시명 업데이트
+            if (floatCity && EN_POSTS[idx]) {
                 floatCity.innerText = EN_POSTS[idx];
             }
 
-            // 4. 게이지 업데이트 (index-2와 동일한 108000초 기준)
+            // 게이지 업데이트
             if (floatBar) {
-                const pct = Math.min((todaySecs / DIPLOMAT_TARGET_SEC) * 100, 100);
+                const pct = Math.min((localSimulatedElapsed / DIPLOMAT_TARGET_SEC) * 100, 100);
                 floatBar.style.width = pct + '%';
             }
         } catch(e) {}
