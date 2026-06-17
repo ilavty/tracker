@@ -3141,6 +3141,23 @@
     
     function pl_updateStudyTime(dateStr, val) {
         if (pData[dateStr]) { pData[dateStr].studyTime = val; pl_savePlanner(); }
+        // diplomat_state_v1에 시간 반영 (H:MM:SS 형식 파싱)
+        try {
+            if (!val) return;
+            const parts = val.trim().split(':');
+            if (parts.length !== 3) return;
+            const totalSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
+            if (totalSecs <= 0) return;
+            const KEY = 'diplomat_state_v1';
+            const raw = localStorage.getItem(KEY);
+            if (!raw) return;
+            const dst = JSON.parse(raw);
+            const idx = (dst.idx !== null && dst.idx !== undefined) ? dst.idx : null;
+            if (idx === null) return;
+            if (!dst.elapsed || typeof dst.elapsed !== 'object') dst.elapsed = {};
+            dst.elapsed[idx] = totalSecs;
+            localStorage.setItem(KEY, JSON.stringify(dst));
+        } catch(e) {}
     }
 
     // 선택 박스 값 변경 시 마지막 태그 업데이트
