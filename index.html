@@ -3141,13 +3141,18 @@
     
     function pl_updateStudyTime(dateStr, val) {
         if (pData[dateStr]) { pData[dateStr].studyTime = val; pl_savePlanner(); }
-        // diplomat_state_v1에 시간 반영 (H:MM:SS 형식 파싱)
+        // diplomat_state_v1에 시간 반영 - 이전 카드값과 비교해 차이만큼 누적
         try {
             if (!val) return;
             const parts = val.trim().split(':');
             if (parts.length !== 3) return;
-            const totalSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
-            if (totalSecs <= 0) return;
+            const newSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
+            if (newSecs <= 0) return;
+            // 이전에 저장된 카드 시간
+            const prevVal = (pData[dateStr] && pData[dateStr]._prevStudyTimeSecs) || 0;
+            const diff = newSecs - prevVal;
+            if (diff === 0) return;
+            if (pData[dateStr]) pData[dateStr]._prevStudyTimeSecs = newSecs;
             const KEY = 'diplomat_state_v1';
             const raw = localStorage.getItem(KEY);
             if (!raw) return;
@@ -3155,7 +3160,7 @@
             const idx = (dst.idx !== null && dst.idx !== undefined) ? dst.idx : null;
             if (idx === null) return;
             if (!dst.elapsed || typeof dst.elapsed !== 'object') dst.elapsed = {};
-            dst.elapsed[idx] = totalSecs;
+            dst.elapsed[idx] = Math.max(0, (dst.elapsed[idx] || 0) + diff);
             localStorage.setItem(KEY, JSON.stringify(dst));
         } catch(e) {}
     }
@@ -3946,16 +3951,14 @@ function pl_unmergeItem() {
       "Washington D.C.", "New York", "Los Angeles", "Brasilia", "Buenos Aires"
     ];
     
-    // 🔥 캡슐 게이지: diplomat_state_v1의 elapsed[idx] 직접 읽기 (index-2와 동일 소스)
+    // 🔥 캡슐 게이지: diplomat_state_v1의 elapsed[idx] 직접 읽기
     const DIPLOMAT_TARGET_SEC = 180000; // 50시간 기준
-    let localSimulatedElapsed = 0;
 
     setInterval(() => {
         try {
             const floatCity = document.getElementById('floatCityName');
             const floatBar = document.getElementById('floatBarFill');
 
-            // diplomat_state_v1에서 현재 포스팅 elapsed 직접 읽기
             const KEY = 'diplomat_state_v1';
             const raw = localStorage.getItem(KEY);
             if (!raw) return;
@@ -3963,26 +3966,13 @@ function pl_unmergeItem() {
             const idx = (st.idx !== null && st.idx !== undefined) ? st.idx : null;
             if (idx === null) return;
 
-            let realElapsed = 0;
-            if (st.elapsed && typeof st.elapsed === 'object') {
-                realElapsed = st.elapsed[idx] || 0;
-            }
+            const realElapsed = (st.elapsed && st.elapsed[idx]) ? st.elapsed[idx] : 0;
 
-            // 부드러운 게이지: 실제값보다 작으면 즉시 동기화, 아니면 1씩 증가
-            if (realElapsed > localSimulatedElapsed || realElapsed === 0) {
-                localSimulatedElapsed = realElapsed;
-            } else if (realElapsed > 0) {
-                localSimulatedElapsed++;
-            }
-
-            // 도시명 업데이트
             if (floatCity && EN_POSTS[idx]) {
                 floatCity.innerText = EN_POSTS[idx];
             }
-
-            // 게이지 업데이트
             if (floatBar) {
-                const pct = Math.min((localSimulatedElapsed / DIPLOMAT_TARGET_SEC) * 100, 100);
+                const pct = Math.min((realElapsed / DIPLOMAT_TARGET_SEC) * 100, 100);
                 floatBar.style.width = pct + '%';
             }
         } catch(e) {}
