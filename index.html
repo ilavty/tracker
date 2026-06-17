@@ -2447,6 +2447,39 @@
 @media (max-width: 650px) {
     .pl-top-dashboard { flex-direction: column-reverse; }
     .pl-memo-container { flex-direction: column; gap: 10px; }
+
+    /* 폰트 한 단계 축소 */
+    .planner-card { font-size: 0.88rem; }
+    .pl-item-text { font-size: 0.82rem !important; }
+    .pl-sub-item .pl-item-text { font-size: 0.78rem !important; }
+    .pl-card-header { font-size: 0.8rem; }
+    .pl-study-time { font-size: 0.78rem !important; }
+    .pl-tag-badge { font-size: 0.68rem !important; }
+
+    /* 메모장 모바일: 고정 팝업 중앙 */
+    .floating-memo {
+        position: fixed !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 88vw !important;
+        height: 60vh !important;
+        min-width: unset !important;
+        min-height: unset !important;
+        resize: none !important;
+        z-index: 9999 !important;
+    }
+    /* 드래그 헤더 비활성화 */
+    .fm-header { cursor: default !important; }
+}
+
+/* 모바일 메모 배경 오버레이 */
+#mobile-memo-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 9998;
 }
 
 /* 스크롤바 완전 숨김 (스크롤 기능은 유지) */
@@ -2795,8 +2828,7 @@
             </div>
     </div>
 
-    <div id="floating-memos-container"></div>
-
+    <div id="mobile-memo-overlay" onclick="pl_closeAllMemos()"></div>
     <div id="floating-memos-container"></div>
     
     <div id="planner-scroll-container" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; padding-bottom:40px; width:100%; box-sizing:border-box;"></div>
@@ -3048,7 +3080,29 @@
         }
     }
 
-    function pl_toggleMemo(id) { let m = pMemos.find(x => x.id === id); if(m) { m.open = !m.open; pl_saveMemos(); pl_renderMemos(); if(m.open) pl_bringToFront(id); } }
+    function pl_toggleMemo(id) {
+        let m = pMemos.find(x => x.id === id);
+        if(m) {
+            // 모바일에서 다른 메모 모두 닫고 이 메모만 열기
+            if(window.innerWidth <= 650) {
+                pMemos.forEach(x => { x.open = false; });
+            }
+            m.open = !m.open;
+            pl_saveMemos(); pl_renderMemos();
+            if(m.open) pl_bringToFront(id);
+            // 모바일 오버레이
+            if(window.innerWidth <= 650) {
+                const ov = document.getElementById('mobile-memo-overlay');
+                if(ov) ov.style.display = m.open ? 'block' : 'none';
+            }
+        }
+    }
+    function pl_closeAllMemos() {
+        pMemos.forEach(x => { x.open = false; });
+        pl_saveMemos(); pl_renderMemos();
+        const ov = document.getElementById('mobile-memo-overlay');
+        if(ov) ov.style.display = 'none';
+    }
     function pl_closeMemo(id) { let m = pMemos.find(x => x.id === id); if(m) { m.open = false; pl_saveMemos(); pl_renderMemos(); } }
     function pl_clearMemo(id) { if(confirm('메모 내용을 지우시겠습니까?')) { let m = pMemos.find(x => x.id === id); if(m) { m.text = ''; pl_saveMemos(); pl_renderMemos(); } } }
     function pl_saveMemoTitle(id, val) { let m = pMemos.find(x => x.id === id); if(m) { m.title = val; pl_saveMemos(); } }
