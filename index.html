@@ -1400,6 +1400,7 @@
         let isInitialLoadDone = false; 
         
         let detailedSessions = []; let subjectsData = [];
+        window._getDetailedSessions = function() { return detailedSessions; };
         function ensureSubjectsData() { if (!Array.isArray(subjectsData) || subjectsData.length === 0) { subjectsData = [ { id: "s1", name: "국제정치학", color: paletteColors[0] }, { id: "s2", name: "국제법", color: paletteColors[3] }, { id: "s3", name: "헌법", color: paletteColors[5] } ]; } }
 
         let defaultSettingsText = `## 국제정치학\n[THEORY]\nIP총론, 국제사상, 이론총론, 현실주의, 자유주의, 마르크스, 탈냉전, IPE, 안보론, 군비통제\n[ISSUE]\n미국, 중국, 일본, 러시아, 기구총론, UN, IGO, INGO, 국제안보, 국제경제, 동아시아, EU, 기타지역, 한반도\n[DIPLOMATIC HISTORY]\n빈체제, 비스마르크, 삼국동맹, WW1, WW2, 냉전, 중국사, 일본사, 조선사, 미국사\n\n## 국제법\n[INTL LAW I]\n서론, 연원, 조약법, 국내법 관계, 국제법 주체, 국가승인, 기본적 권리∙의무, 국가관할권∙면제, 국가책임, 대외기관, 국가승계\n[INTL LAW II]\nUN, EU, 개인, 국제인권법 (1), 국제인권법 (2), 해양법 (1), 해양법 (2), 국제법 객체, 환경법, 분쟁해결제도, 전쟁법\n[INTL ECON LAW]\n총설, WTO설립협정, GATT1994, 공정무역규범, 다자간상품, GATS, TRIPs, PTA, DSU\n\n## 헌법\n[VOL 1 CONSTITUTION]\n헌법 의의∙기능, 헌법 본질∙해석, 헌법 제정∙개정, 헌정사, 국가형태, 헌법 기본이념\n[VOL 2 BASIC RIGHTS]\n기본권 총론, 기본권 제한∙보장, 포괄적 기본권, 인신의 자유, 사생활의 자유, 경제적 기본권, 정치적 기본권, 청구권적 기본권, 사회적 기본권, 종합\n[VOL 3 GOVERNMENT]\n통치구조, 정부형태, 국회, 대통령, 행정부, 법원, 헌법재판소`;
@@ -3931,13 +3932,14 @@ function pl_unmergeItem() {
 
     function getTodayTotalSecs() {
         try {
-            // detailedSessions는 메인 앱의 전역 변수
-            if (typeof detailedSessions === 'undefined' || !Array.isArray(detailedSessions)) return 0;
+            // window._getDetailedSessions()를 통해 스코프 외부 변수 접근
+            const sessions = (typeof window._getDetailedSessions === 'function') ? window._getDetailedSessions() : null;
+            if (!Array.isArray(sessions)) return 0;
             const now = new Date();
             const todayStr = now.getFullYear() + '-' +
                 String(now.getMonth() + 1).padStart(2, '0') + '-' +
                 String(now.getDate()).padStart(2, '0');
-            return detailedSessions
+            return sessions
                 .filter(s => s && s.date === todayStr)
                 .reduce((acc, s) => acc + (s.duration || 0), 0);
         } catch(e) { return 0; }
