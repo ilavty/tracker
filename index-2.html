@@ -1794,6 +1794,26 @@ window.addEventListener('message', function(event) {
         } catch(e) {}
     }
 });
+
+// 기본페이지가 localStorage 업데이트하면 실시간 반영
+window.addEventListener('storage', function(event) {
+    if (event.key !== KEY) return;
+    try {
+        var newSt = JSON.parse(event.newValue);
+        if (!newSt || newSt.idx === null || newSt.idx === undefined) return;
+        var newElapsed = (newSt.elapsed && newSt.elapsed[newSt.idx]) ? newSt.elapsed[newSt.idx] : 0;
+        if (newElapsed === elapsed) return;
+        elapsed = newElapsed;
+        st.elapsed = newSt.elapsed;
+        updBar(elapsed);
+        updStars(elapsed);
+        updTime(elapsed);
+        if (elapsed >= TARGET && !window._completed) {
+            window._completed = true;
+            complete();
+        }
+    } catch(e) {}
+});
 </script>
 
 </body>
