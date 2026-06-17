@@ -1768,26 +1768,21 @@ document.addEventListener('DOMContentLoaded',function(){init();});
 window.addEventListener('message', function(event) {
     // 도장 찍기 신호
     if (event.data === 'triggerStamp') {
-        // 도장 모션 + 내용 전체 재실행
         try {
-            if (st && st.idx !== null && POSTS[st.idx]) {
-                showStamp(POSTS[st.idx]);
-            } else {
-                const stamp = document.getElementById('stampSvg');
-                if (stamp) {
-                    stamp.classList.remove('stamped');
-                    void stamp.offsetWidth;
-                    stamp.classList.add('stamped');
-                }
+            var sv = document.getElementById('stampSvg');
+            if (sv) {
+                // 먼저 숨기고
+                sv.style.opacity = '0';
+                sv.classList.remove('stamped');
+                void sv.offsetWidth;
+                // 잠깐 후 다시 showStamp로 모션 실행
+                setTimeout(function() {
+                    if (st && st.idx !== null && POSTS[st.idx]) {
+                        showStamp(POSTS[st.idx]);
+                    }
+                }, 400);
             }
-        } catch(e) {
-            const stamp = document.getElementById('stampSvg');
-            if (stamp) {
-                stamp.classList.remove('stamped');
-                void stamp.offsetWidth;
-                stamp.classList.add('stamped');
-            }
-        }
+        } catch(e) {}
     }
     // 메인 플래너 시간 입력 → elapsed 동기화
     if (event.data && event.data.type === 'syncElapsed') {
