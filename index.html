@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gongbuhera</title>
+    <title>Final Notepad V75 (Ultimate Dashboard)</title>
 
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2456,21 +2456,34 @@
     .pl-study-time { font-size: 0.78rem !important; }
     .pl-tag-badge { font-size: 0.68rem !important; }
 
-    /* 메모장 모바일: 고정 팝업 중앙 */
+    /* 메모장 모바일: 고정 팝업 중앙, 10줄 들어갈 크기 */
     .floating-memo {
         position: fixed !important;
         left: 50% !important;
         top: 50% !important;
         transform: translate(-50%, -50%) !important;
-        width: 88vw !important;
-        height: 60vh !important;
+        width: 80vw !important;
+        height: auto !important;
+        min-height: 260px !important;
+        max-height: 70vh !important;
         min-width: unset !important;
-        min-height: unset !important;
         resize: none !important;
         z-index: 9999 !important;
     }
+    .fm-textarea {
+        min-height: 200px !important;
+        height: auto !important;
+    }
     /* 드래그 헤더 비활성화 */
     .fm-header { cursor: default !important; }
+
+    /* 버튼들 한 줄 */
+    .pl-top-dashboard {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
 }
 
 /* 모바일 메모 배경 오버레이 */
@@ -2478,7 +2491,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.5);
     z-index: 9998;
 }
 
@@ -3929,11 +3942,13 @@ function pl_unmergeItem() {
     z-index: 10000;
     justify-content: center;
     align-items: center;
+    padding: 0 12px;
+    box-sizing: border-box;
 }
 
 .notion-modal-body-box {
     background: transparent !important;
-    width: 95% !important;
+    width: 100% !important;
     max-width: 1150px !important;
     height: 90vh !important;
     border-radius: 12px !important;
