@@ -1768,13 +1768,25 @@ document.addEventListener('DOMContentLoaded',function(){init();});
 window.addEventListener('message', function(event) {
     // 도장 찍기 신호
     if (event.data === 'triggerStamp') {
-        const stamp = document.getElementById('stampSvg');
-        if (stamp) {
-            stamp.classList.remove('stamped');
-            void stamp.offsetWidth; 
-            stamp.classList.add('stamped');
-            const bpDate = document.getElementById('bpDate');
-            if(bpDate) bpDate.innerHTML = '<span style="color:#2a558c; font-weight:bold;">00:00:00 Mission Complete!</span>';
+        // 도장 모션 + 내용 전체 재실행
+        try {
+            if (st && st.idx !== null && POSTS[st.idx]) {
+                showStamp(POSTS[st.idx]);
+            } else {
+                const stamp = document.getElementById('stampSvg');
+                if (stamp) {
+                    stamp.classList.remove('stamped');
+                    void stamp.offsetWidth;
+                    stamp.classList.add('stamped');
+                }
+            }
+        } catch(e) {
+            const stamp = document.getElementById('stampSvg');
+            if (stamp) {
+                stamp.classList.remove('stamped');
+                void stamp.offsetWidth;
+                stamp.classList.add('stamped');
+            }
         }
     }
     // 메인 플래너 시간 입력 → elapsed 동기화
