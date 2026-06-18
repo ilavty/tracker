@@ -4118,7 +4118,7 @@ function pl_unmergeItem() {
         }
     }
 
-    function scaleIframeForMobile() {
+    window.scaleIframeForMobile = function scaleIframeForMobile() {
         if (window.innerWidth > 650) return;
         const iframe = document.getElementById('index2-iframe');
         const box = document.querySelector('.notion-modal-body-box');
@@ -4137,7 +4137,7 @@ function pl_unmergeItem() {
     function openIndex2Popup() {
         const modal = document.getElementById('index2-notion-modal');
         modal.style.display = 'flex';
-        setTimeout(scaleIframeForMobile, 100);
+        if(window.innerWidth <= 650) setTimeout(window.scaleIframeForMobile, 100);
 
         if(window.aiIsStampPending) {
             document.getElementById('float-badge').style.display = 'none';
