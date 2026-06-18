@@ -2496,6 +2496,39 @@
 }
 
 /* 스크롤바 완전 숨김 (스크롤 기능은 유지) */
+.pl-comment-box {
+    margin: 6px 4px 2px 4px;
+    padding: 7px 10px;
+    border: 1.5px dashed rgba(0,0,0,0.18);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #555;
+    background: rgba(180,180,180,0.25);
+    mix-blend-mode: multiply;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    cursor: pointer;
+}
+.pl-comment-box:hover { background: rgba(160,160,160,0.3); mix-blend-mode: multiply; }
+.pl-comment-textarea-inline {
+    width: 100%;
+    min-height: 60px;
+    margin: 6px 0 2px 0;
+    padding: 7px 10px;
+    border: 1.5px dashed rgba(0,0,0,0.2);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #555;
+    background: rgba(180,180,180,0.25);
+    mix-blend-mode: multiply;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    display: block;
+}
+
 .pl-memo-textarea::-webkit-scrollbar { 
     display: none; 
 }
@@ -2849,9 +2882,11 @@
 <div id="pl-card-menu" class="pl-menu" onmouseleave="this.style.display='none'">
     <div id="pl-color-swatches" style="padding: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-blue);"></div>
     <div class="pl-menu-item" onclick="pl_toggleEditMode()">할 일 추가/수정</div>
+    <div class="pl-menu-item" onclick="pl_openCommentModal()">코멘트 추가</div>
     <div class="pl-menu-item" onclick="pl_editCardDate()">날짜 수정</div>
     <div class="pl-menu-item delete" onclick="pl_deleteCard()">카드 삭제</div>
 </div>
+
 
 <div id="pl-item-menu" class="pl-menu" onmouseleave="this.style.display='none'">
     <div class="pl-menu-item" onclick="pl_editItemText()">수정하기</div>
@@ -2923,7 +2958,8 @@
     // 데이터 마이그레이션 (이전 버전 V22 데이터 유지)
     let pTags = plSafeJSON(PLANNER_TAGS, plSafeJSON('isolated_planner_tags_v22', [ { id: 'CON', name: 'CON', color: '#5a97eb' }, { id: 'IR', name: 'IR', color: '#ff6b6b' }, { id: 'IL', name: 'IL', color: '#4ecdc4' }, { id: 'PSAT', name: 'PSAT', color: '#ffa62b' } ]));
     let pBgColors = plSafeJSON(PLANNER_BGS, plSafeJSON('isolated_planner_bgs_v22', ['#e8f1f9', '#f2e1e1', '#e1cfa1', '#ffffff']));
-    let pData = plSafeJSON(PLANNER_DB, plSafeJSON('isolated_planner_data_v22', {})); 
+    let pData = plSafeJSON(PLANNER_DB, plSafeJSON('isolated_planner_data_v22', {}));
+    window._getPData = function() { return pData; };
     
     let pTopMemo = plSafeJSON(PLANNER_TOP_MEMO, plSafeJSON('isolated_planner_topmemo_v22', ["", "", ""]));
     if (typeof pTopMemo === 'string') pTopMemo = [pTopMemo, "", ""]; 
@@ -3215,11 +3251,12 @@
             if (parts.length !== 3) return;
             const newSecs = (parseInt(parts[0]) || 0) * 3600 + (parseInt(parts[1]) || 0) * 60 + (parseInt(parts[2]) || 0);
             if (newSecs <= 0) return;
-            // 이전에 저장된 카드 시간
-            const prevVal = (pData[dateStr] && pData[dateStr]._prevStudyTimeSecs) || 0;
-            const diff = newSecs - prevVal;
+            // 이전에 저장된 카드 시간 (_savedStudyTimeSecs는 Firebase에 저장됨)
+            const prevVal = (pData[dateStr] && pData[dateStr]._savedStudyTimeSecs != null) ? pData[dateStr]._savedStudyTimeSecs : null;
+            // 처음 입력이면 (prevVal이 null) 전체를 누적
+            const diff = prevVal === null ? newSecs : (newSecs - prevVal);
             if (diff === 0) return;
-            if (pData[dateStr]) pData[dateStr]._prevStudyTimeSecs = newSecs;
+            if (pData[dateStr]) pData[dateStr]._savedStudyTimeSecs = newSecs;
             const KEY = 'diplomat_state_v1';
             const raw = localStorage.getItem(KEY);
             if (!raw) return;
@@ -3329,6 +3366,12 @@
                             </div>`;
                         }).join('')}
                     </div>
+                    ${(cardData.comment || false) !== false ? `
+                        ${cardData.comment
+                            ? `<div class="pl-comment-box" onclick="pl_showInlineComment('${dateStr}')">${cardData.comment.replace(/\n/g,'<br>')}</div>`
+                            : ''}
+                    ` : ''}
+                    <textarea id="pl-inline-comment-${dateStr}" class="pl-comment-textarea-inline" style="display:none;" placeholder="오늘의 한 줄 기록..." onblur="pl_saveInlineComment('${dateStr}')">${cardData.comment || ''}</textarea>
                     <div class="pl-input-box">
                         <select id="pl-tag-${dateStr}" class="pl-minimal-select" onchange="pl_updateLastTag('${dateStr}', this.value)">
                             ${pTags.map(t => `<option value="${t.id}" ${t.id === currentSelectedTag ? 'selected' : ''}>${t.name}</option>`).join('')}
@@ -3363,6 +3406,29 @@
     function pl_syncAfterDrag() { let newPData = JSON.parse(JSON.stringify(pData)); document.querySelectorAll('.planner-sortable-list').forEach(listEl => { let dateStr = listEl.id.replace('pl-list-', ''); newPData[dateStr].items = []; listEl.querySelectorAll('.pl-item-wrapper').forEach(itemEl => { let id = parseFloat(itemEl.getAttribute('data-id')); let origItem = null; for (let d in pData) { let found = pData[d].items.find(x => x.id === id); if (found) { origItem = found; break; } } if (origItem) newPData[dateStr].items.push(origItem); }); }); pData = newPData; pl_savePlanner(); }
 
     // ★ 모바일 터치 좌표 지원 메뉴 함수
+    function pl_openCommentModal() {
+        if (!currentContextDate) return;
+        document.getElementById('pl-card-menu').style.display = 'none';
+        pl_showInlineComment(currentContextDate);
+    }
+    function pl_showInlineComment(dateStr) {
+        const ta = document.getElementById('pl-inline-comment-' + dateStr);
+        const box = ta ? ta.previousElementSibling : null;
+        if (box && box.classList.contains('pl-comment-box')) box.style.display = 'none';
+        if (ta) { ta.style.display = 'block'; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+    }
+    function pl_saveInlineComment(dateStr) {
+        const ta = document.getElementById('pl-inline-comment-' + dateStr);
+        if (!ta || !pData[dateStr]) return;
+        const val = ta.value.trim();
+        pData[dateStr].comment = val;
+        pl_savePlanner();
+        pl_renderPlanner();
+    }
+    function pl_focusComment(dateStr) {
+        pl_showInlineComment(dateStr);
+    }
+
     function pl_openCardMenu(e, dateStr) { 
         if(e.cancelable) e.preventDefault(); e.stopPropagation(); 
         currentContextDate = dateStr; 
