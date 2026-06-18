@@ -4042,9 +4042,21 @@ function pl_unmergeItem() {
 
 @media (max-width: 650px) {
     #ai-float-btn.expanded .float-content { opacity: 1 !important; transform: translateX(0) !important; pointer-events: auto !important; }
-    .notion-clean-modal { padding: 0 6px; align-items: flex-end; padding-bottom: 10px; }
-    .notion-modal-body-box { height: 88vh !important; border-radius: 16px 16px 12px 12px !important; width: 100% !important; }
-    #index2-iframe { width: 100% !important; height: 100% !important; }
+    .notion-clean-modal { padding: 0 10px; align-items: flex-end; padding-bottom: 10px; }
+    .notion-modal-body-box {
+        height: 88vh !important;
+        border-radius: 16px 16px 12px 12px !important;
+        width: calc(100vw - 20px) !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+    #index2-iframe {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform-origin: top left !important;
+        border: none !important;
+    }
 }
 
 #index2-iframe {
@@ -4096,10 +4108,25 @@ function pl_unmergeItem() {
         }
     }
 
+    function scaleIframeForMobile() {
+        if (window.innerWidth > 650) return;
+        const iframe = document.getElementById('index2-iframe');
+        const box = document.querySelector('.notion-modal-body-box');
+        if (!iframe || !box) return;
+        const IFRAME_BASE_W = 760; // index-2 기본 너비 (데스크탑)
+        const boxW = box.offsetWidth || (window.innerWidth - 20);
+        const scale = boxW / IFRAME_BASE_W;
+        const boxH = box.offsetHeight || (window.innerHeight * 0.88);
+        iframe.style.width = IFRAME_BASE_W + 'px';
+        iframe.style.height = (boxH / scale) + 'px';
+        iframe.style.transform = 'scale(' + scale + ')';
+    }
+
     function openIndex2Popup() {
         const modal = document.getElementById('index2-notion-modal');
         modal.style.display = 'flex';
-        
+        setTimeout(scaleIframeForMobile, 50);
+
         if(window.aiIsStampPending) {
             document.getElementById('float-badge').style.display = 'none';
             window.aiCompleteCount = 0;
