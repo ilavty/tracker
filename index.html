@@ -3285,7 +3285,8 @@
     let pl_pressTimer;
     let pl_isDragging = false;
     function pl_touchStart(e, type, p1, p2, p3) { 
-        pl_isDragging = false; 
+        pl_isDragging = false;
+        pl_touchStartTime = Date.now();
         pl_pressTimer = setTimeout(() => { 
             if(!pl_isDragging) { 
                 if(type === 'item') pl_openItemMenu(e, p1, p2); 
@@ -3296,14 +3297,20 @@
         }, 400); 
     }
     function pl_touchMove() { pl_isDragging = true; clearTimeout(pl_pressTimer); }
+    let pl_touchStartTime = 0;
+    function pl_touchStartRecord() { pl_touchStartTime = Date.now(); }
     function pl_touchEnd(type, p1, p2, p3) {
         clearTimeout(pl_pressTimer);
-        // 짧은 탭이면 (드래그 아님) 하이라이트 적용
-        if (!pl_isDragging && type === 'item') {
-            const el = document.querySelector(`.pl-item-wrapper[data-id="${p2}"]`);
-            if (el) pl_itemClick({ shiftKey: false, ctrlKey: false, metaKey: false }, el, p1, p2);
-        } else if (!pl_isDragging && type === 'subitem') {
-            pl_subItemClick({ stopPropagation: ()=>{}, shiftKey: false, ctrlKey: false, metaKey: false }, p1, p2, p3);
+        if (pl_isDragging) return;
+        const elapsed = Date.now() - pl_touchStartTime;
+        // 짧은 탭(300ms 미만)이면 하이라이트, 길면 메뉴(롱탭은 pressTimer가 처리)
+        if (elapsed < 300) {
+            if (type === 'item') {
+                const el = document.querySelector('.pl-item-wrapper[data-id="' + p2 + '"]');
+                if (el) pl_itemClick({ shiftKey: false, ctrlKey: false, metaKey: false }, el, p1, p2);
+            } else if (type === 'subitem') {
+                pl_subItemClick({ stopPropagation: function(){}, shiftKey: false, ctrlKey: false, metaKey: false }, p1, p2, p3);
+            }
         }
     }
 
@@ -4035,9 +4042,9 @@ function pl_unmergeItem() {
 
 @media (max-width: 650px) {
     #ai-float-btn.expanded .float-content { opacity: 1 !important; transform: translateX(0) !important; pointer-events: auto !important; }
-    .notion-clean-modal { padding: 0 8px; align-items: flex-end; padding-bottom: 12px; }
-    .notion-modal-body-box { height: 85vh !important; border-radius: 16px 16px 12px 12px !important; }
-    #index2-iframe { transform-origin: top left; width: 390px !important; height: calc(85vh * (390/100) ) !important; transform: scale(calc((100vw - 16px) / 390)) !important; height: calc(85vh / ((100vw - 16px) / 390)) !important; }
+    .notion-clean-modal { padding: 0 6px; align-items: flex-end; padding-bottom: 10px; }
+    .notion-modal-body-box { height: 88vh !important; border-radius: 16px 16px 12px 12px !important; width: 100% !important; }
+    #index2-iframe { width: 100% !important; height: 100% !important; }
 }
 
 #index2-iframe {
