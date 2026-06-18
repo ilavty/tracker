@@ -3296,7 +3296,16 @@
         }, 400); 
     }
     function pl_touchMove() { pl_isDragging = true; clearTimeout(pl_pressTimer); }
-    function pl_touchEnd() { clearTimeout(pl_pressTimer); }
+    function pl_touchEnd(type, p1, p2, p3) {
+        clearTimeout(pl_pressTimer);
+        // 짧은 탭이면 (드래그 아님) 하이라이트 적용
+        if (!pl_isDragging && type === 'item') {
+            const el = document.querySelector(`.pl-item-wrapper[data-id="${p2}"]`);
+            if (el) pl_itemClick({ shiftKey: false, ctrlKey: false, metaKey: false }, el, p1, p2);
+        } else if (!pl_isDragging && type === 'subitem') {
+            pl_subItemClick({ stopPropagation: ()=>{}, shiftKey: false, ctrlKey: false, metaKey: false }, p1, p2, p3);
+        }
+    }
 
     function pl_renderPlanner() {
         pl_renderTopDashboard();
@@ -3347,7 +3356,7 @@
                             let tInfo = pTags.find(x => x.id === item.tag) || { color: '#ccc' };
                             let hlColor = item.hl || 'transparent';
                             return `
-                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})" ontouchstart="pl_touchStart(event, 'item', '${dateStr}', ${item.id})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd()">
+                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})" ontouchstart="pl_touchStart(event, 'item', '${dateStr}', ${item.id})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd('item', '${dateStr}', ${item.id})">
                                 <div class="pl-main-row" style="align-items: flex-start;">
                                     <div class="pl-row-strike-target" style="align-items: flex-start;">
                                         <span class="pl-tag" style="background:${tInfo.color}; margin-top:2px;">${item.tag}</span>
@@ -3356,7 +3365,7 @@
                                             ${item.subItems ? item.subItems.map((sub, sIdx) => {
                                                 let subHlColor = sub.hl || 'transparent';
                                                 return `
-                                                <div class="pl-sub-item" onclick="pl_subItemClick(event, '${dateStr}', ${item.id}, ${sIdx})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id}, ${sIdx})" ontouchstart="pl_touchStart(event, 'subitem', '${dateStr}', ${item.id}, ${sIdx})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd()">
+                                                <div class="pl-sub-item" onclick="pl_subItemClick(event, '${dateStr}', ${item.id}, ${sIdx})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id}, ${sIdx})" ontouchstart="pl_touchStart(event, 'subitem', '${dateStr}', ${item.id}, ${sIdx})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd('subitem', '${dateStr}', ${item.id}, ${sIdx})">
                                                     <span class="pl-item-text pl-hl-text" style="--hl-color:${subHlColor};">${sub.text}</span>
                                                 </div>`
                                             }).join('') : ''}
@@ -3804,7 +3813,7 @@ function pl_unmergeItem() {
 </script>
 
 <!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->
-    <div id="ai-float-btn" onclick="openIndex2Popup()">
+    <div id="ai-float-btn" onclick="handleFloatBtnClick()">
         <!-- 기본 틀 (흰색->하늘색->남색 그라데이션, 닫혀있을 땐 투명도 0으로 숨김) -->
         <div class="capsule-bg">
             <div class="float-content">
@@ -4024,6 +4033,13 @@ function pl_unmergeItem() {
     border: 3px solid #ffffff !important; 
 }
 
+@media (max-width: 650px) {
+    #ai-float-btn.expanded .float-content { opacity: 1 !important; transform: translateX(0) !important; pointer-events: auto !important; }
+    .notion-clean-modal { padding: 0 8px; align-items: flex-end; padding-bottom: 12px; }
+    .notion-modal-body-box { height: 85vh !important; border-radius: 16px 16px 12px 12px !important; }
+    #index2-iframe { transform-origin: top left; width: 390px !important; height: calc(85vh * (390/100) ) !important; transform: scale(calc((100vw - 16px) / 390)) !important; height: calc(85vh / ((100vw - 16px) / 390)) !important; }
+}
+
 #index2-iframe {
     width: 100% !important;
     height: 100% !important;
@@ -4051,6 +4067,26 @@ function pl_unmergeItem() {
             style.innerHTML = `::-webkit-scrollbar { display: none !important; } * { scrollbar-width: none !important; } body { background: transparent !important; }`;
             innerDoc.head.appendChild(style);
         } catch(e) {}
+    }
+
+    let floatBtnTapped = false;
+    let floatBtnTimer = null;
+    function handleFloatBtnClick() {
+        if (window.innerWidth > 650) { openIndex2Popup(); return; }
+        // 모바일: 첫 탭 = 캡슐 확장, 두 번째 탭 = 팝업 열기
+        if (!floatBtnTapped) {
+            floatBtnTapped = true;
+            document.getElementById('ai-float-btn').classList.add('expanded');
+            floatBtnTimer = setTimeout(() => {
+                floatBtnTapped = false;
+                document.getElementById('ai-float-btn').classList.remove('expanded');
+            }, 2500);
+        } else {
+            clearTimeout(floatBtnTimer);
+            floatBtnTapped = false;
+            document.getElementById('ai-float-btn').classList.remove('expanded');
+            openIndex2Popup();
+        }
     }
 
     function openIndex2Popup() {
