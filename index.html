@@ -2447,9 +2447,6 @@
 @media (max-width: 650px) {
     .pl-top-dashboard { flex-direction: column-reverse; }
     .pl-memo-container { flex-direction: column; gap: 10px; }
-    .pl-input-box { overflow: hidden; max-width: 100%; }
-    .pl-text-input { min-width: 0; max-width: 100%; }
-    .pl-minimal-select { max-width: 70px; overflow: hidden; }
 
     /* 폰트 한 단계 축소 */
     .planner-card { font-size: 0.88rem; }
@@ -3366,7 +3363,7 @@
                             let tInfo = pTags.find(x => x.id === item.tag) || { color: '#ccc' };
                             let hlColor = item.hl || 'transparent';
                             return `
-                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="if(!('ontouchstart' in window)) pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})" ontouchstart="pl_touchStart(event, 'item', '${dateStr}', ${item.id})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd('item', '${dateStr}', ${item.id})">
+                            <div class="pl-item-wrapper" data-id="${item.id}" onclick="pl_itemClick(event, this, '${dateStr}', ${item.id})" oncontextmenu="pl_openItemMenu(event, '${dateStr}', ${item.id})" ontouchstart="pl_touchStart(event, 'item', '${dateStr}', ${item.id})" ontouchmove="pl_touchMove()" ontouchend="pl_touchEnd('item', '${dateStr}', ${item.id})">
                                 <div class="pl-main-row" style="align-items: flex-start;">
                                     <div class="pl-row-strike-target" style="align-items: flex-start;">
                                         <span class="pl-tag" style="background:${tInfo.color}; margin-top:2px;">${item.tag}</span>
@@ -3967,9 +3964,6 @@ function pl_unmergeItem() {
 #ai-float-btn:hover .float-content {
     opacity: 1 !important;
 }
-@media (max-width: 650px) {
-    .float-content { opacity: 1 !important; transition: none !important; }
-}
 
 #floatCityName {
     font-family: 'Montserrat', sans-serif !important;
@@ -4020,10 +4014,6 @@ function pl_unmergeItem() {
     z-index: 3 !important;
 }
 
-@media (max-width: 650px) {
-    #float-badge { right: auto !important; left: -6px !important; top: -6px !important; }
-}
-
 .notion-clean-modal {
     display: none;
     position: fixed;
@@ -4052,21 +4042,9 @@ function pl_unmergeItem() {
 
 @media (max-width: 650px) {
     #ai-float-btn.expanded .float-content { opacity: 1 !important; transform: translateX(0) !important; pointer-events: auto !important; }
-    .notion-clean-modal { padding: 0 10px; align-items: flex-end; padding-bottom: 10px; }
-    .notion-modal-body-box {
-        height: 88vh !important;
-        border-radius: 16px 16px 12px 12px !important;
-        width: calc(100vw - 20px) !important;
-        overflow: hidden !important;
-        position: relative !important;
-    }
-    #index2-iframe {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        transform-origin: top left !important;
-        border: none !important;
-    }
+    .notion-clean-modal { padding: 0 6px; align-items: flex-end; padding-bottom: 10px; }
+    .notion-modal-body-box { height: 88vh !important; border-radius: 16px 16px 12px 12px !important; width: 100% !important; }
+    #index2-iframe { width: 100% !important; height: 100% !important; }
 }
 
 #index2-iframe {
@@ -4118,27 +4096,10 @@ function pl_unmergeItem() {
         }
     }
 
-    window.scaleIframeForMobile = function scaleIframeForMobile() {
-        if (window.innerWidth > 650) return;
-        const iframe = document.getElementById('index2-iframe');
-        const box = document.querySelector('.notion-modal-body-box');
-        if (!iframe || !box) return;
-        const IFRAME_BASE_W = 760;
-        const boxW = window.innerWidth - 20; // 패딩 10px*2
-        const scale = boxW / IFRAME_BASE_W;
-        const boxH = window.innerHeight * 0.88;
-        iframe.style.width = IFRAME_BASE_W + 'px';
-        iframe.style.height = Math.ceil(boxH / scale) + 'px';
-        iframe.style.transform = 'scale(' + scale + ')';
-        iframe.style.transformOrigin = 'top left';
-        box.style.overflow = 'hidden';
-    }
-
     function openIndex2Popup() {
         const modal = document.getElementById('index2-notion-modal');
         modal.style.display = 'flex';
-        if(window.innerWidth <= 650) setTimeout(window.scaleIframeForMobile, 100);
-
+        
         if(window.aiIsStampPending) {
             document.getElementById('float-badge').style.display = 'none';
             window.aiCompleteCount = 0;
