@@ -2496,7 +2496,7 @@
     position: fixed;
     inset: 0;
     background: rgba(255,255,255,0.5);
-    z-index: 9998;
+    z-index: 9990;
 }
 
 /* 스크롤바 완전 숨김 (스크롤 기능은 유지) */
@@ -2507,7 +2507,7 @@
     border-radius: 8px;
     font-size: 0.8rem;
     color: #555;
-    background: rgba(0,0,0,0.04);
+    background: rgba(0,0,0,0.08);
     white-space: pre-wrap;
     line-height: 1.5;
     cursor: pointer;
@@ -2522,7 +2522,7 @@
     border-radius: 8px;
     font-size: 0.8rem;
     color: #555;
-    background: rgba(0,0,0,0.04);
+    background: rgba(0,0,0,0.08);
     line-height: 1.5;
     resize: none;
     outline: none;
@@ -2844,8 +2844,10 @@
         #hl-quick-select { gap: 4px !important; }
         .hl-circle { margin: 0 !important; }
 
-/* 모달창 뒤로 메모장 숨기기 및 취소선 연하게 완벽 제어 */
+/* 모달창 뒤로 메모장 숨기기 및 취소선 연하게 완벽 제어 (데스크탑 전용) */
+@media (min-width: 651px) {
         .floating-memo { z-index: 2000 !important; }
+}
         .pl-item-wrapper.done .pl-main-row .pl-item-text,
         .pl-sub-item.done .pl-item-text { 
             color: rgba(0,0,0,0.3) !important; 
@@ -3193,9 +3195,12 @@
     }
     function pl_stopDragMemo(e) { document.removeEventListener('mousemove', pl_onDragMemo); document.removeEventListener('mouseup', pl_stopDragMemo); pl_saveMemos(); dragMemoId = null; }
     function pl_bringToFront(id) { 
-        document.querySelectorAll('.floating-memo').forEach(el => el.style.setProperty('z-index', '2000', 'important')); 
+        const isMobile = window.innerWidth <= 650;
+        const baseZ = isMobile ? 9999 : 2000;
+        const topZ = isMobile ? 10000 : 2001;
+        document.querySelectorAll('.floating-memo').forEach(el => el.style.setProperty('z-index', String(baseZ), 'important')); 
         let el = document.getElementById(`f-memo-${id}`); 
-        if(el) el.style.setProperty('z-index', '2001', 'important'); 
+        if(el) el.style.setProperty('z-index', String(topZ), 'important'); 
     }
 
     function pl_openMemoSettings(e, id) {
