@@ -2459,6 +2459,10 @@
     .pl-minimal-select { max-width: 55px; min-width: 55px; overflow: hidden; flex-shrink: 0; }
     .planner-card { overflow-x: hidden; box-sizing: border-box; }
 
+    /* 모바일에서만 메모 버튼 옆 항목 선택(연필) 버튼 노출 */
+    .pl-select-mode-btn-mobile-only { display: flex !important; color: var(--primary-blue); }
+    .pl-select-mode-btn-mobile-only.active { background: var(--primary-blue) !important; color: #fff; }
+
     /* 폰트 한 단계 축소 */
     .planner-card { font-size: 0.88rem; }
     .pl-item-text { font-size: 0.82rem !important; }
@@ -2895,6 +2899,9 @@
         
         <div id="memo-emoji-bar" style="display:flex; gap:10px; padding: 4px 15px; border: 1px solid var(--primary-blue); border-radius: 20px; background: rgba(255,255,255,0.8); align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 34px;">
             </div>
+        <button id="pl-select-mode-btn" onclick="pl_toggleSelectMode()" title="항목 선택(통합하기)" class="pl-select-mode-btn-mobile-only" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid var(--primary-blue); border-radius:50%; background:rgba(255,255,255,0.8); box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; box-sizing:border-box;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l3.5-1L20 6.5a1.5 1.5 0 0 0 0-2.1l-1.4-1.4a1.5 1.5 0 0 0-2.1 0L3 16.5 2 20l1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 5.5l4 4" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
     </div>
 
     <div id="mobile-memo-overlay" onclick="pl_closeAllMemos()"></div>
@@ -3310,14 +3317,10 @@
    // 모바일 꾹 누르기용 전역 함수
     let pl_pressTimer;
     let pl_isDragging = false;
-    let pl_swipeStartX = 0, pl_swipeStartY = 0, pl_swipeFired = false, pl_touchEl = null;
+    let pl_touchEl = null;
     function pl_touchStart(e, type, p1, p2, p3) { 
         pl_isDragging = false;
-        pl_swipeFired = false;
         pl_touchEl = e.currentTarget;
-        const t = e.touches && e.touches[0];
-        pl_swipeStartX = t ? t.clientX : 0;
-        pl_swipeStartY = t ? t.clientY : 0;
         pl_touchStartTime = Date.now();
         pl_pressTimer = setTimeout(() => { 
             if(!pl_isDragging) { 
@@ -3328,25 +3331,18 @@
             } 
         }, 400); 
     }
-    // ★ 왼쪽으로 스와이프하면 다중 선택(통합하기용) 토글 — 데스크톱의 Ctrl+클릭과 동일한 역할
-    function pl_touchMove(e) { 
-        if(pl_swipeFired) { if(e && e.cancelable) e.preventDefault(); return; }
-        if(e && e.touches && e.touches[0] && pl_touchEl && pl_touchEl.classList.contains('pl-item-wrapper')) {
-            const dx = e.touches[0].clientX - pl_swipeStartX;
-            const dy = e.touches[0].clientY - pl_swipeStartY;
-            if(dx < -36 && Math.abs(dy) < 30) {
-                pl_swipeFired = true;
-                pl_isDragging = true;
-                clearTimeout(pl_pressTimer);
-                pl_touchEl.classList.toggle('pl-selected');
-                if(navigator.vibrate) navigator.vibrate(12);
-                pl_updateMergeFab();
-                return;
-            }
-        }
-        pl_isDragging = true; clearTimeout(pl_pressTimer); 
+    function pl_touchMove(e) { pl_isDragging = true; clearTimeout(pl_pressTimer); }
+    // ★ 모바일 다중선택 모드: 드래그 정렬(Sortable)과 동시에 못 쓰므로, 버튼으로 모드를 켜고 끄는 방식
+    let pl_selectMode = false;
+    function pl_toggleSelectMode() {
+        pl_selectMode = !pl_selectMode;
+        plSortableInstances.forEach(s => { try { s.option('disabled', pl_selectMode); } catch(e){} });
+        let btn = document.getElementById('pl-select-mode-btn');
+        if(btn) { btn.classList.toggle('active', pl_selectMode); }
+        if(!pl_selectMode) { document.querySelectorAll('.pl-item-wrapper.pl-selected').forEach(sel => sel.classList.remove('pl-selected')); }
+        pl_updateMergeFab();
     }
-    // ★ 스와이프로 선택된 항목이 2개 이상이면 화면 하단에 "통합하기" 버튼 노출
+    // ★ 선택 항목이 2개 이상이면 화면 하단에 "통합하기" 버튼 노출
     function pl_updateMergeFab() {
         let fab = document.getElementById('pl-merge-fab');
         if(!fab) {
@@ -3357,7 +3353,7 @@
             document.body.appendChild(fab);
         }
         let count = document.querySelectorAll('.pl-item-wrapper.pl-selected').length;
-        if(count >= 2) { fab.innerText = `선택한 ${count}개 항목 통합하기`; fab.style.display = 'block'; }
+        if(pl_selectMode && count >= 2) { fab.innerText = `선택한 ${count}개 항목 통합하기`; fab.style.display = 'block'; }
         else { fab.style.display = 'none'; }
     }
     function pl_mergeFromSwipe() {
@@ -3367,10 +3363,19 @@
         if(!listEl) return;
         currentItemContext.dateStr = listEl.id.replace('pl-list-', '');
         pl_mergeSelectedItems();
+        pl_selectMode = false;
+        let btn = document.getElementById('pl-select-mode-btn');
+        if(btn) btn.classList.remove('active');
+        plSortableInstances.forEach(s => { try { s.option('disabled', false); } catch(e){} });
         pl_updateMergeFab();
     }
     let pl_touchStartTime = 0;
     function pl_touchStartRecord() { pl_touchStartTime = Date.now(); }
+    let plSortableInstances = [];
+    function pl_ensureSelectModeBtn() {
+        let btn = document.getElementById('pl-select-mode-btn');
+        if(btn) btn.classList.toggle('active', pl_selectMode);
+    }
     function pl_touchEnd(type, p1, p2, p3) {
         clearTimeout(pl_pressTimer);
         if (pl_isDragging) return;
@@ -3476,11 +3481,15 @@
                 </div>`;
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
-        document.querySelectorAll('.planner-sortable-list').forEach(el => { new Sortable(el, { group: 'planner', animation: 150, fallbackTolerance: 3, onEnd: function() { pl_syncAfterDrag(); } }); });
+        let plSortableInstances_local = [];
+        document.querySelectorAll('.planner-sortable-list').forEach(el => { plSortableInstances_local.push(new Sortable(el, { group: 'planner', animation: 150, fallbackTolerance: 3, disabled: pl_selectMode, onEnd: function() { pl_syncAfterDrag(); } })); });
+        plSortableInstances = plSortableInstances_local;
+        pl_ensureSelectModeBtn();
     }
 
     function pl_itemClick(e, el, dateStr, id) {
-        if(e.shiftKey || e.ctrlKey || e.metaKey) { el.classList.toggle('pl-selected'); } else {
+        if(pl_selectMode) { el.classList.toggle('pl-selected'); pl_updateMergeFab(); return; }
+        if(e.shiftKey || e.ctrlKey || e.metaKey) { el.classList.toggle('pl-selected'); pl_updateMergeFab(); } else {
             let item = pData[dateStr].items.find(x => x.id === id);
             if(item) { let currentColor = item.hl || null; if (currentColor === currentHl) { item.hl = null; item.done = false; } else { item.hl = currentHl; item.done = true; } pl_savePlanner(); pl_renderPlanner(); }
             document.querySelectorAll('.pl-item-wrapper.pl-selected').forEach(sel => sel.classList.remove('pl-selected'));
