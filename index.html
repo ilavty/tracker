@@ -1491,6 +1491,7 @@
                         if(data.plannerTags) { try { pTags = typeof data.plannerTags === 'string' ? JSON.parse(data.plannerTags) : toArray(data.plannerTags); } catch(e){} }
                         if(data.plannerBgs) { try { pBgColors = typeof data.plannerBgs === 'string' ? JSON.parse(data.plannerBgs) : toArray(data.plannerBgs); } catch(e){} }
                         if(data.plannerMemo) { try { pTopMemo = typeof data.plannerMemo === 'string' ? JSON.parse(data.plannerMemo) : toArray(data.plannerMemo); } catch(e){} }
+                        if(data.plannerMemoCfg) { try { let parsedCfg = typeof data.plannerMemoCfg === 'string' ? JSON.parse(data.plannerMemoCfg) : data.plannerMemoCfg; if(Array.isArray(parsedCfg) && parsedCfg.length > 0 && typeof pMemos !== 'undefined') { pMemos.length = 0; parsedCfg.forEach(m => pMemos.push(m)); } } catch(e){} }
                         if(data.plannerHls) { try { pHighlighters = typeof data.plannerHls === 'string' ? JSON.parse(data.plannerHls) : toArray(data.plannerHls); } catch(e){} }
                         if(data.plannerLastTags) { try { pLastTags = typeof data.plannerLastTags === 'string' ? JSON.parse(data.plannerLastTags) : data.plannerLastTags; } catch(e){} }
 
@@ -1500,6 +1501,7 @@
                             localStorage.setItem(PLANNER_TAGS, JSON.stringify(pTags));
                             localStorage.setItem(PLANNER_BGS, JSON.stringify(pBgColors));
                             localStorage.setItem(PLANNER_TOP_MEMO, JSON.stringify(pTopMemo));
+                            if(typeof PLANNER_MEMO_CFG !== 'undefined' && typeof pMemos !== 'undefined') localStorage.setItem(PLANNER_MEMO_CFG, JSON.stringify(pMemos));
                             localStorage.setItem(PLANNER_HLS, JSON.stringify(pHighlighters));
                             localStorage.setItem(PLANNER_LAST_TAGS, JSON.stringify(pLastTags));
                         }
@@ -1511,10 +1513,12 @@
                 if(localStorage.getItem('lastTrackerSub') && trackerData.subjectDef && trackerData.subjectDef[localStorage.getItem('lastTrackerSub')]) { trackerData.currentSubject = localStorage.getItem('lastTrackerSub'); } else if(trackerData.subjectDef) { trackerData.currentSubject = Object.keys(trackerData.subjectDef)[0]; }
                 initialRender();
                 if(typeof pl_renderPlanner === 'function') pl_renderPlanner();
+                if(typeof pl_renderMemos === 'function') pl_renderMemos();
             }).catch(e => { 
                 isInitialLoadDone = true; 
                 initialRender(); 
                 if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); 
+                if(typeof pl_renderMemos === 'function') pl_renderMemos();
             }); 
         }
         
@@ -1540,6 +1544,7 @@
                 plannerTags: typeof pTags !== 'undefined' ? JSON.stringify(pTags) : "[]",
                 plannerBgs: typeof pBgColors !== 'undefined' ? JSON.stringify(pBgColors) : "[]",
                 plannerMemo: typeof pTopMemo !== 'undefined' ? JSON.stringify(pTopMemo) : "[]",
+                plannerMemoCfg: typeof pMemos !== 'undefined' ? JSON.stringify(pMemos) : "[]",
                 plannerHls: typeof pHighlighters !== 'undefined' ? JSON.stringify(pHighlighters) : "[]",
                 plannerLastTags: typeof pLastTags !== 'undefined' ? JSON.stringify(pLastTags) : "{}"
             }); 
