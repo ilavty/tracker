@@ -2451,6 +2451,11 @@
     flex-shrink: 0;
 }
 
+/* 모바일/태블릿(터치 기기) 전용 — 너비가 아니라 터치 입력 여부로 판단 (아이패드 포함) */
+@media (pointer: coarse) {
+    .pl-select-mode-btn-mobile-only { display: flex !important; color: var(--primary-blue); }
+    .pl-select-mode-btn-mobile-only.active { background: var(--primary-blue) !important; color: #fff; }
+}
 @media (max-width: 650px) {
     .pl-top-dashboard { flex-direction: column-reverse; }
     .pl-memo-container { flex-direction: column; gap: 10px; }
@@ -2458,10 +2463,6 @@
     .pl-text-input { min-width: 0; max-width: 100%; width: 0; box-sizing: border-box; }
     .pl-minimal-select { max-width: 55px; min-width: 55px; overflow: hidden; flex-shrink: 0; }
     .planner-card { overflow-x: hidden; box-sizing: border-box; }
-
-    /* 모바일에서만 메모 버튼 옆 항목 선택(연필) 버튼 노출 */
-    .pl-select-mode-btn-mobile-only { display: flex !important; color: var(--primary-blue); }
-    .pl-select-mode-btn-mobile-only.active { background: var(--primary-blue) !important; color: #fff; }
 
     /* 폰트 한 단계 축소 */
     .planner-card { font-size: 0.88rem; }
