@@ -3038,6 +3038,33 @@
 
     let targetMemoIdForSettings = null;
 
+    // ★ 메모 창이 화면(뷰포트) 밖으로 나가지 않도록 위치 보정 — 다른 기기/가로세로 전환 시에도 항상 화면 안에 있도록
+    function pl_clampMemoPos(m) {
+        let w = m.w || 250, h = m.h || 250;
+        let maxX = Math.max(10, window.innerWidth - w - 10);
+        let maxY = Math.max(10, window.innerHeight - h - 10);
+        if (m.x === undefined || m.x < 0 || m.x > maxX) m.x = Math.min(Math.max(m.x || 0, 10), maxX);
+        if (m.y === undefined || m.y < 0 || m.y > maxY) m.y = Math.min(Math.max(m.y || 0, 10), maxY);
+    }
+    let pl_memoResizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(pl_memoResizeTimer);
+        pl_memoResizeTimer = setTimeout(() => {
+            if (typeof pMemos !== 'undefined' && Array.isArray(pMemos)) {
+                pMemos.forEach(pl_clampMemoPos);
+                if (typeof pl_renderMemos === 'function') pl_renderMemos();
+            }
+        }, 150);
+    });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            if (typeof pMemos !== 'undefined' && Array.isArray(pMemos)) {
+                pMemos.forEach(pl_clampMemoPos);
+                if (typeof pl_renderMemos === 'function') pl_renderMemos();
+            }
+        }, 250);
+    });
+
     // ★ 실시간 사이즈 추적기 (탭 이동 시 0으로 초기화되는 팩트 버그 차단)
     const memoResizeObserver = new ResizeObserver(entries => {
         let changed = false;
@@ -3081,6 +3108,7 @@
 
     function pl_renderMemos() {
         memoResizeObserver.disconnect();
+        pMemos.forEach(pl_clampMemoPos);
         const bar = document.getElementById('memo-emoji-bar');
         if(bar) {
             bar.innerHTML = pMemos.map(m => `
