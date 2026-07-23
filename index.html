@@ -1230,6 +1230,7 @@
     </div>
     <div id="tracker-context-menu" class="timeline-dropdown" style="display:none; position:absolute; z-index:9999; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
         <div class="dropdown-item" id="tracker-menu-edit" onclick="execTrackerEdit()">수정</div>
+        <div class="dropdown-item" id="tracker-menu-config" onclick="event.stopPropagation(); execTrackerEditConfig()">구성 수정</div>
         <div class="dropdown-item delete-btn" onclick="execTrackerDelete()">삭제</div>
     </div>
     <div id="rep-context-menu"class="timeline-dropdown" style="display:none; position:absolute; z-index:9999; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
@@ -1318,6 +1319,15 @@
             <p style="font-size:0.8rem; color:var(--grey-text); margin-bottom:10px; line-height:1.4;">아래 규칙에 맞게 텍스트를 적어주시면 탭이 자동으로 생성/수정됩니다.<br><strong>## 과목명</strong><br><strong>[카테고리명]</strong><br>파트1, 파트2 ... (쉼표 구분)</p>
             <textarea id="tracker-settings-text" style="width:100%; height:300px; padding:10px; font-family:monospace; font-size:0.85rem; border:1px solid var(--line-color); border-radius:4px; outline:none; resize:vertical;"></textarea>
             <div style="display:flex; gap:10px; margin-top: 15px;"><button class="modal-btn" onclick="closeAllModals()">취소</button><button class="modal-btn primary" onclick="saveTrackerSettings()">저장 및 적용</button></div>
+        </div>
+    </div>
+    <div id="cycle-settings-modal" class="modal-overlay" style="display:none;" onclick="closeAllModals()">
+        <div class="panel-box modal-content" style="width: 500px; max-height:80vh; overflow-y:auto;" onclick="event.stopPropagation()">
+            <h3 style="text-align: center; font-weight: 800; margin-bottom: 15px;">이 사이클 구성 수정</h3>
+            <p style="font-size:0.8rem; color:var(--grey-text); margin-bottom:10px; line-height:1.4;">이 사이클에만 적용됩니다. 다른 사이클/전체구성은 변경되지 않아요.<br><strong>[카테고리명]</strong><br>파트1, 파트2 ... (쉼표 구분)</p>
+            <input type="hidden" id="cycle-settings-cidx">
+            <textarea id="cycle-settings-text" style="width:100%; height:300px; padding:10px; font-family:monospace; font-size:0.85rem; border:1px solid var(--line-color); border-radius:4px; outline:none; resize:vertical;"></textarea>
+            <div style="display:flex; gap:10px; margin-top: 15px;"><button class="modal-btn" onclick="closeAllModals()">취소</button><button class="modal-btn primary" onclick="saveCycleSettings()">저장</button></div>
         </div>
     </div>
     <div id="quiz-filter-modal" class="modal-overlay" style="display:none;" onclick="closeAllModals()">
@@ -1591,8 +1601,9 @@
         function showTrackerMenu(e, type, cIdx, catIdx, tIdx, sIdx, bIdx) { 
             e.preventDefault(); e.stopPropagation(); closeAllModals(); 
             trackerContextTarget = { type, cIdx, catIdx, tIdx, sIdx, bIdx }; 
-            let menu = document.getElementById('tracker-context-menu'); let editBtn = document.getElementById('tracker-menu-edit');
+            let menu = document.getElementById('tracker-context-menu'); let editBtn = document.getElementById('tracker-menu-edit'); let configBtn = document.getElementById('tracker-menu-config');
             if (editBtn) editBtn.style.display = (type === 'bar' || type === 'cycle') ? 'block' : 'none';
+            if (configBtn) configBtn.style.display = (type === 'cycle') ? 'block' : 'none';
             menu.style.display = 'flex'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px'; 
         }
         
@@ -1606,6 +1617,47 @@
                 let cycle = trackerData.data[trackerData.currentSubject].cycles[cIdx];
                 let newNum = prompt("사이클 번호 수정:", cycle.num); if(newNum !== null && newNum.trim() !== "") { updateCycleNum(cIdx, newNum.trim()); }
             }
+        }
+
+        function execTrackerEditConfig() {
+            document.getElementById('tracker-context-menu').style.display = 'none';
+            if(!trackerContextTarget || trackerContextTarget.type !== 'cycle') return;
+            openCycleSettings(trackerContextTarget.cIdx);
+        }
+
+        function parseCatText(text) {
+            let cats = {}; let curCat = null;
+            text.split('\n').forEach(line => {
+                line = line.trim(); if (!line) return;
+                if (line.startsWith("[") && line.endsWith("]")) { curCat = line.slice(1, -1).trim().replace(/[.#$\[\]]/g, ''); cats[curCat] = []; }
+                else { if (curCat) { let topics = line.split(",").map(t => t.trim()).filter(t => t); cats[curCat] = cats[curCat].concat(topics); } }
+            }); return cats;
+        }
+
+        function openCycleSettings(cIdx) {
+            let subject = trackerData.currentSubject;
+            let cycle = trackerData.data[subject].cycles[cIdx];
+            let text = "";
+            toArray(cycle.cats).forEach(cat => { text += `[${cat.name}]\n${toArray(cat.topics).map(t => t.name).join(", ")}\n\n`; });
+            document.getElementById("cycle-settings-text").value = text.trim();
+            document.getElementById("cycle-settings-cidx").value = cIdx;
+            document.getElementById("cycle-settings-modal").style.display = "flex";
+        }
+
+        function saveCycleSettings() {
+            pushUndoState();
+            let cIdx = parseInt(document.getElementById("cycle-settings-cidx").value);
+            let text = document.getElementById("cycle-settings-text").value;
+            text = text.replace(/\[(.*?)\]/g, m => m.replace(/[.#$]/g, ''));
+            let newCats = parseCatText(text);
+            let subject = trackerData.currentSubject;
+            let cycle = trackerData.data[subject].cycles[cIdx];
+            let oldCats = toArray(cycle.cats);
+            cycle.cats = Object.keys(newCats).map(catName => {
+                let oldCat = oldCats.find(c => c.name === catName);
+                return { name: catName, topics: newCats[catName].map(t => ({ id: Math.random(), name: t })), sessions: oldCat ? oldCat.sessions : [{ id: Date.now(), bars: [] }] };
+            });
+            renderTrackerCycles(); saveDataToFirebase(); closeAllModals();
         }
         
         function execTrackerDelete() {
