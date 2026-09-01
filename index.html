@@ -3990,6 +3990,42 @@ function pl_unmergeItem() {
     }, 400);
 </script>
 
+<!-- ========== PSAT(피셋) 연동 — CHRONO와 D-day 사이에 탭 추가, 기존 앱은 iframe으로 그대로 삽입 ========== -->
+<div id="psat-view" style="display:none; width: 100%; height: 100%; min-height: calc(100vh - 140px);">
+    <iframe src="psat_tracker.html" style="width:100%; height:calc(100vh - 140px); min-height:600px; border:none; display:block; background:#fff;"></iframe>
+</div>
+<script>
+    setTimeout(() => {
+        const appWrapper = document.querySelector('.app-wrapper');
+        const psatView = document.getElementById('psat-view');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (appWrapper && psatView) appWrapper.appendChild(psatView);
+
+        if (navLinks && !document.getElementById('nav-psat')) {
+            const btn = document.createElement('span');
+            btn.id = 'nav-psat';
+            btn.className = 'inactive';
+            btn.innerText = 'PSAT';
+            btn.onclick = () => showPage('psat');
+            // CHRONO 바로 뒤(= D-day 박스 바로 앞)에 삽입
+            navLinks.appendChild(btn);
+        }
+
+        const __prevShowPage2 = window.showPage || function(){};
+        window.showPage = function(p) {
+            __prevShowPage2(p);
+            if(psatView) psatView.style.display = (p === 'psat') ? 'block' : 'none';
+            const navPsat = document.getElementById('nav-psat');
+            if(navPsat) navPsat.className = (p === 'psat') ? 'active' : 'inactive';
+        };
+
+        if(localStorage.getItem('lastPage') === 'psat') {
+            showPage('psat');
+        }
+    }, 450);
+</script>
+
 <!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->
     <div id="ai-float-btn" onclick="handleFloatBtnClick()">
         <!-- 기본 틀 (흰색->하늘색->남색 그라데이션, 닫혀있을 땐 투명도 0으로 숨김) -->
