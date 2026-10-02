@@ -40,7 +40,8 @@ main{max-width:1300px;margin:24px auto;padding:0 20px;}
 .btn-primary{background:var(--lavender-deep);color:#fff;}
 .btn-danger-text{background:none;border:none;color:#D18A8A;font-weight:700;font-size:12px;cursor:pointer;padding:4px 6px;}
 
-.mini-filter{display:flex;gap:8px;align-items:center;}
+.mini-filter{display:flex;flex-direction:column;gap:5px;align-items:flex-start;}
+.mini-filter select{width:110px;}
 .mini-filter select{font-family:inherit;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:6px 8px;font-size:12.5px;color:var(--ink);}
 
 .add-row-card{border:1.5px dashed #DCD5EE;border-radius:12px;margin-bottom:10px;overflow:hidden;background:#FDFCFF;}
@@ -65,7 +66,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 
 .test-card{display:flex;align-items:flex-start;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;}
 .test-side{width:auto;flex:0 0 auto;background:#FCFCFD;border-right:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:9px;white-space:nowrap;cursor:context-menu;}
-.test-main{flex:1;min-width:0;padding:14px;}
+.test-main{flex:1;min-width:0;padding:14px;overflow-x:auto;}
 .test-card.compact .test-side{padding:8px 14px;}
 .test-card.compact .test-main{padding:8px 14px;}
 .akey-cell{width:21px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink);background:transparent;cursor:pointer;border-radius:5px;}
@@ -151,6 +152,11 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
 .np-attempt-reason{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
 .np-attempt-kw{flex:none;display:flex;flex-wrap:wrap;gap:3px;max-width:120px;}
+.np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.np-choice-row:last-child{border-bottom:none;}
+.np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
+.np-choice-body{flex:1;}
+.np-choice-text{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;margin-top:6px;}
 .np-value textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;resize:vertical;}
 
 .review-mark{width:12px;height:12px;border-radius:50%;border:1.4px solid #C9C4D4;display:inline-block;margin-right:3px;background:#fff;}
@@ -367,8 +373,7 @@ tr.clickable:hover td{background:#FBF9FE;}
   <button data-action="markWrong">❌ 오답으로 표시</button>
   <button data-action="markCorrect">✅ 정답으로 표시</button>
   <div class="ctx-sep"></div>
-  <button data-action="addType">🏷️ 유형 키워드 추가</button>
-  <button data-action="clearType">🏷️ 유형 키워드 지우기</button>
+  <button data-action="editType">🏷️ 유형 키워드</button>
   <div class="ctx-sep"></div>
   <button data-action="addReview">📌 보충학습에 담기</button>
   <div class="ctx-sep"></div>
@@ -439,7 +444,8 @@ const SUBJECTS = ['언어논리','상황판단','자료해석'];
 
 let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let reviewBox = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
-let keywordStore = JSON.parse(localStorage.getItem(KEYWORD_KEY) || '{"reason":[],"type":[]}');
+let keywordStore = JSON.parse(localStorage.getItem(KEYWORD_KEY) || '{"reason":[],"type":[],"choice":[]}');
+if(!keywordStore.choice) keywordStore.choice = [];
 let cutoffs = JSON.parse(localStorage.getItem(CUTOFF_KEY) || '{}');
 let todos = JSON.parse(localStorage.getItem(TODO_KEY) || '[]');
 let notesStore = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
@@ -898,8 +904,6 @@ testsListEl.addEventListener('click', e=>{
   if(activeSelection.nums.has(num)) activeSelection.nums.delete(num);
   else activeSelection.nums.add(num);
   renderTests();
-  const rec = records.find(r=>r.id===recId);
-  showInfoPop(rec, num, e.clientX, e.clientY);
 });
 testsListEl.addEventListener('contextmenu', e=>{
   const cell = e.target.closest('.cell');
@@ -908,14 +912,21 @@ testsListEl.addEventListener('contextmenu', e=>{
   hideInfoPop();
   const recId = cell.dataset.rec;
   const num = parseInt(cell.dataset.num,10);
-  if(activeSelection.testId !== recId || activeSelection.nums.size===0){
+  const isBulkSelection = activeSelection.testId===recId && activeSelection.nums.size>=2;
+  if(isBulkSelection){
+    if(!activeSelection.nums.has(num)) activeSelection.nums.add(num);
+    renderTests();
+    openCtxMenu(e.clientX, e.clientY);
+  } else {
     activeSelection = { testId: recId, nums: new Set([num]) };
-  } else if(!activeSelection.nums.has(num)){
-    activeSelection.nums.add(num);
+    renderTests();
+    const rec = records.find(r=>r.id===recId);
+    if(rec) openProblemDetailPage(idKey(rec), num, rec.level, rec.subject, testLabel(rec));
   }
-  renderTests();
-  openCtxMenu(e.clientX, e.clientY);
 });
+let hoverHideTimer = null;
+function cancelHideInfoPop(){ clearTimeout(hoverHideTimer); }
+function scheduleHideInfoPop(){ clearTimeout(hoverHideTimer); hoverHideTimer = setTimeout(hideInfoPop, 150); }
 testsListEl.addEventListener('mouseover', e=>{
   const cell = e.target.closest('.cell');
   if(!cell) return;
@@ -923,6 +934,11 @@ testsListEl.addEventListener('mouseover', e=>{
   if(!card) return;
   const head = card.querySelector(`.head-cell[data-num="${cell.dataset.num}"]`);
   if(head) head.classList.add('col-hover');
+  if(!cell.classList.contains('readonly')){
+    cancelHideInfoPop();
+    const rec = records.find(r=>r.id===cell.dataset.rec);
+    showInfoPop(rec, parseInt(cell.dataset.num,10), e.clientX, e.clientY);
+  }
 });
 testsListEl.addEventListener('mouseout', e=>{
   const cell = e.target.closest('.cell');
@@ -931,7 +947,10 @@ testsListEl.addEventListener('mouseout', e=>{
   if(!card) return;
   const head = card.querySelector(`.head-cell[data-num="${cell.dataset.num}"]`);
   if(head) head.classList.remove('col-hover');
+  if(!cell.classList.contains('readonly')) scheduleHideInfoPop();
 });
+document.getElementById('infoPop').addEventListener('mouseenter', cancelHideInfoPop);
+document.getElementById('infoPop').addEventListener('mouseleave', scheduleHideInfoPop);
 
 let sideCtxTargetId = null;
 testsListEl.addEventListener('contextmenu', e=>{
@@ -1089,9 +1108,6 @@ document.getElementById('ctxMenu').addEventListener('click', e=>{
   if(action==='markCorrect'){
     nums.forEach(n=>{ delete rec.wrongs[n]; });
     save(); activeSelection={testId:null,nums:new Set()}; renderTests();
-  } else if(action==='clearType'){
-    nums.forEach(n=>{ delete rec.problemTypeKeywords[n]; });
-    save(); activeSelection={testId:null,nums:new Set()}; renderTests();
   } else if(action==='clearSelection'){
     activeSelection={testId:null,nums:new Set()}; renderTests();
   } else if(action==='addReview'){
@@ -1114,17 +1130,14 @@ document.getElementById('ctxMenu').addEventListener('click', e=>{
       nums.forEach(n=>{ rec.wrongs[n] = { reasonText: reason, reasonKeywords: kws, selectedChoice: choice }; });
       save(); activeSelection={testId:null,nums:new Set()}; renderTests();
     }, ()=>wireKeywordSelector('reasonKwSel','reason',selSet));
-  } else if(action==='addType'){
+  } else if(action==='editType'){
     const selSet = new Set();
-    openModal('유형 키워드 추가 ('+nums.length+'문제)', `
-      <div class="field"><label>유형 키워드</label>${keywordSelectorHtml('typeKwSel')}</div>
+    nums.forEach(n=>{ (rec.problemTypeKeywords[n]||[]).forEach(k=>selSet.add(k)); });
+    openModal('유형 키워드 ('+nums.length+'문제)', `
+      <div class="field"><label>유형 키워드 (선택된 키워드를 다시 누르면 해제돼요)</label>${keywordSelectorHtml('typeKwSel')}</div>
     `, ()=>{
       const kws = [...selSet];
-      if(!kws.length) return;
-      nums.forEach(n=>{
-        const cur = rec.problemTypeKeywords[n] || [];
-        rec.problemTypeKeywords[n] = [...new Set([...cur, ...kws])];
-      });
+      nums.forEach(n=>{ rec.problemTypeKeywords[n] = kws; });
       save(); activeSelection={testId:null,nums:new Set()}; renderTests();
     }, ()=>wireKeywordSelector('typeKwSel','type',selSet));
   }
@@ -1507,6 +1520,22 @@ function openProblemDetailPage(idk, num, level, subject, label){
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
+  const CHOICE_NUMS = [1,2,3,4,5];
+  const choiceData = note.choiceAnalysis || {};
+  const hasChoiceData = CHOICE_NUMS.some(n => choiceData[n] && (choiceData[n].text || (choiceData[n].kw && choiceData[n].kw.length)));
+  const choiceSelSets = {};
+  CHOICE_NUMS.forEach(n=>{ choiceSelSets[n] = new Set((choiceData[n] && choiceData[n].kw) || []); });
+  const choiceRowsForAnalysis = CHOICE_NUMS.map(n=>{
+    const cd = choiceData[n] || {text:''};
+    return `<div class="np-choice-row">
+      <div class="np-choice-head"><span class="choice-num">${toCircled(n)}</span></div>
+      <div class="np-choice-body">
+        ${keywordSelectorHtml('choiceKwSel'+n)}
+        <input type="text" class="np-choice-text" id="choiceText${n}" value="${cd.text||''}" placeholder="이 선지 분석">
+      </div>
+    </div>`;
+  }).join('');
+
   const box = document.getElementById('detailBox');
   box.innerHTML = `
     <div class="np-header">
@@ -1520,8 +1549,16 @@ function openProblemDetailPage(idk, num, level, subject, label){
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
       <div class="np-row"><div class="np-label">선택 답안 · 오답 키워드</div><div class="np-value">${choiceRowsHtml}</div></div>
       <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${tagsHtml(typeKw,'type')}</div></div>
+      <div class="np-row"><div class="np-label">풀이 시간</div><div class="np-value"><input type="text" id="npTimeSpent" value="${note.timeSpent||''}" placeholder="예: 3분 20초"></div></div>
       <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><textarea id="npAnalysis" rows="3">${note.analysis||''}</textarea></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
+      <div class="np-row">
+        <div class="np-label">선지분석</div>
+        <div class="np-value">
+          <button type="button" class="btn btn-plain btn-small" id="choiceToggleBtn">${hasChoiceData?'선지분석 보기/접기':'+ 선지분석 추가하기'}</button>
+          <div id="choiceBlock" style="display:${hasChoiceData?'block':'none'};margin-top:10px;">${choiceRowsForAnalysis}</div>
+        </div>
+      </div>
       <div class="np-row" style="border-bottom:none;justify-content:flex-end;">
         <button type="button" class="btn btn-primary" id="npSaveBtn">저장</button>
       </div>
@@ -1531,6 +1568,11 @@ function openProblemDetailPage(idk, num, level, subject, label){
   document.getElementById('detailCloseBtn').addEventListener('click', ()=>{
     document.getElementById('detailOverlay').classList.remove('open');
   });
+  document.getElementById('choiceToggleBtn').addEventListener('click', ()=>{
+    const blk = document.getElementById('choiceBlock');
+    blk.style.display = blk.style.display==='none' ? 'block' : 'none';
+  });
+  CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   ['npAnalysis','npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
@@ -1555,7 +1597,14 @@ function openProblemDetailPage(idk, num, level, subject, label){
     save();
     const analysis = document.getElementById('npAnalysis').value.trim();
     const theory = document.getElementById('npTheory').value.trim();
-    saveNote(idk, num, {analysis, theory});
+    const timeSpent = document.getElementById('npTimeSpent').value.trim();
+    const choiceAnalysis = {};
+    CHOICE_NUMS.forEach(n=>{
+      const text = document.getElementById('choiceText'+n).value.trim();
+      const kw = [...choiceSelSets[n]];
+      if(text || kw.length) choiceAnalysis[n] = { text, kw };
+    });
+    saveNote(idk, num, {analysis, theory, timeSpent, choiceAnalysis});
     document.getElementById('detailOverlay').classList.remove('open');
     if(document.getElementById('panel-answerkey').classList.contains('active')) renderAnswerKeyTab();
     if(document.getElementById('panel-all').classList.contains('active')) renderAll();
