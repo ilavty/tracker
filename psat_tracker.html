@@ -147,7 +147,11 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-attempt-history{display:inline-flex;gap:4px;vertical-align:middle;font-weight:500;font-size:13px;}
 .np-att-hist.att-correct{color:var(--ox-correct);}
 .np-att-hist.att-wrong{color:var(--red-text);}
-.np-attempt-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.np-attempt-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px;}
+.np-round-label{flex:none;width:44px;font-size:10.5px;color:var(--ink-soft);}
+.np-time-input{width:56px;flex:none;border:1.5px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-family:inherit;font-size:12.5px;}
+.att-choice-correct{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;color:var(--ox-correct);font-weight:700;font-size:13px;}
+.np-attempt-reason-empty{flex:1;color:var(--ink-soft);font-size:12px;padding:6px 0;}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
 .np-attempt-reason{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
@@ -316,6 +320,7 @@ tr.clickable:hover td{background:#FBF9FE;}
       <div class="field"><label>연도</label><select id="filterYear"><option value="all">연도 전체</option></select></div>
       <div class="field"><label>과목</label><select id="filterSubject"><option value="all">전체</option><option>언어논리</option><option>상황판단</option><option>자료해석</option></select></div>
       <div class="field"><label>정오</label><select id="filterCorrectness"><option value="all">전체</option><option value="wrong">틀린 문제만</option><option value="correct">맞은 문제만</option></select></div>
+      <div class="field"><label>풀이시간 이상 (mm:ss)</label><input type="text" id="filterMinTime" placeholder="00:00" style="width:80px;"></div>
       <div class="field">
         <label>정렬</label>
         <select id="filterSort">
@@ -580,6 +585,12 @@ function levelChipClass(level){
   if(level==='7급') return 'c-level7';
   return 'c-level-mk';
 }
+function parseTimeToSeconds(str){
+  if(!str) return null;
+  const m = String(str).trim().match(/^(\d+):(\d{1,2})$/);
+  if(!m) return null;
+  return parseInt(m[1],10)*60 + parseInt(m[2],10);
+}
 function yearSortValue(y){
   if(y===null || y===undefined) return Infinity;
   const s = String(y);
@@ -808,7 +819,7 @@ document.getElementById('createRecordBtn').addEventListener('click', ()=>{
   const draft = { category: currentCategory, level: currentLevel, subject, year: currentCategory==='기출'?year:null,
     setName: currentCategory==='유형모음'?setName:(setName||null) };
   const round = records.filter(r=>idKey(r)===idKey(draft)).length + 1;
-  const rec = { id: uid(), ...draft, dates:[...pendingDates], total, round, wrongs:{}, problemTypeKeywords:{}, createdAt: Date.now() };
+  const rec = { id: uid(), ...draft, dates:[...pendingDates], total, round, wrongs:{}, problemTypeKeywords:{}, problemTimeSpent:{}, createdAt: Date.now() };
   records.push(rec); save();
   document.getElementById('fYear').value='';
   document.getElementById('fSetName').value='';
@@ -992,7 +1003,7 @@ function openAddRoundModal(sourceRec){
     </div>
     <p class="hint" style="font-size:11px;color:var(--ink-soft);">만들고 나면 전부 O(정답)로 시작해요. 그 다음 문제 칸을 클릭·우클릭해서 오답을 표시하면 돼요.</p>
   `, ()=>{
-    const rec = { id: uid(), category, level, subject, year, setName, dates:[...roundDates], total, round: nextRound, wrongs:{}, problemTypeKeywords:{}, createdAt: Date.now() };
+    const rec = { id: uid(), category, level, subject, year, setName, dates:[...roundDates], total, round: nextRound, wrongs:{}, problemTypeKeywords:{}, problemTimeSpent:{}, createdAt: Date.now() };
     records.push(rec); save();
     renderTests();
     if(document.getElementById('panel-all').classList.contains('active')) renderAll();
@@ -1260,7 +1271,7 @@ function buildAggregate(){
     const idk = idKey(g.meta);
     const maxTotal = Math.max(...g.list.map(r=>r.total));
     for(let n=1; n<=maxTotal; n++){
-      let attempts=0, wrongCount=0;
+      let attempts=0, wrongCount=0, maxTimeSec=null;
       const reasonKw=new Set(), typeKw=new Set(), choices=new Set();
       let lastCreated=0;
       g.list.forEach(r=>{
@@ -1272,12 +1283,16 @@ function buildAggregate(){
             if(r.wrongs[n].selectedChoice) choices.add(r.wrongs[n].selectedChoice);
           }
           if(r.problemTypeKeywords[n]) r.problemTypeKeywords[n].forEach(k=>typeKw.add(k));
+          if(r.problemTimeSpent && r.problemTimeSpent[n]){
+            const secs = parseTimeToSeconds(r.problemTimeSpent[n]);
+            if(secs!=null) maxTimeSec = maxTimeSec==null ? secs : Math.max(maxTimeSec, secs);
+          }
         }
       });
       if(attempts===0) continue;
       rows.push({ idKeyStr:idk, level:g.meta.level, subject:g.meta.subject, label:testLabel(g.meta), num:n,
         attempts, wrongCount, accuracy:(attempts-wrongCount)/attempts,
-        typeKw:[...typeKw], reasonKw:[...reasonKw], choices:[...choices], lastCreated });
+        typeKw:[...typeKw], reasonKw:[...reasonKw], choices:[...choices], lastCreated, maxTimeSec });
     }
   });
   return rows;
@@ -1331,6 +1346,8 @@ function renderAll(){
   const yr = document.getElementById('filterYear').value;
   const subj = document.getElementById('filterSubject').value;
   const corr = document.getElementById('filterCorrectness').value;
+  const minTimeStr = document.getElementById('filterMinTime').value.trim();
+  const minTimeSec = parseTimeToSeconds(minTimeStr);
   const sortMode = document.getElementById('filterSort').value;
 
   const rows = buildAggregate();
@@ -1340,6 +1357,7 @@ function renderAll(){
     if(subj!=='all' && r.subject!==subj) return false;
     if(corr==='wrong' && r.wrongCount===0) return false;
     if(corr==='correct' && r.wrongCount>0) return false;
+    if(minTimeSec!=null && (r.maxTimeSec==null || r.maxTimeSec < minTimeSec)) return false;
     if(filterTypeKwSelected.size && !r.typeKw.some(k=>filterTypeKwSelected.has(k))) return false;
     if(filterReasonKwSelected.size && !r.reasonKw.some(k=>filterReasonKwSelected.has(k))) return false;
     return true;
@@ -1390,6 +1408,7 @@ function renderAll(){
   document.getElementById(id).addEventListener('change', renderAll);
 
 });
+document.getElementById('filterMinTime').addEventListener('input', renderAll);
 
 // ---------- Answer key ----------
 function saveAnswerKeyStore(){ localStorage.setItem(ANSWER_KEY, JSON.stringify(answerKeyStore)); }
@@ -1509,13 +1528,22 @@ function openProblemDetailPage(idk, num, level, subject, label){
     return `<span class="np-att-hist ${isWrong?'att-wrong':'att-correct'}">${toCircled(val)}</span>`;
   }).join('') || '';
 
-  const wrongRecs = attemptRecs.filter(r=>r.wrongs[num]);
-  const choiceRowsHtml = wrongRecs.length ? wrongRecs.map(r=>{
-    const w = r.wrongs[num];
-    const kwTags = (w.reasonKeywords||[]).map(k=>`<span class="kw-tag">${k}</span>`).join('');
+  const typeKwSelSet = new Set(typeKw);
+
+  const choiceRowsHtml = attemptRecs.length ? attemptRecs.map(r=>{
+    const isWrong = !!r.wrongs[num];
+    const w = isWrong ? r.wrongs[num] : null;
+    const kwTags = isWrong ? (w.reasonKeywords||[]).map(k=>`<span class="kw-tag">${k}</span>`).join('') : '';
+    const timeVal = (r.problemTimeSpent && r.problemTimeSpent[num]) || '';
     return `<div class="np-attempt-row">
-      <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w.selectedChoice || ''}" placeholder="?">
-      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w.reasonText||''}" placeholder="이 회차 오답 이유">
+      <span class="np-round-label">${r.round||1}회독</span>
+      ${isWrong
+        ? `<input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w.selectedChoice || ''}" placeholder="?">`
+        : `<span class="att-choice-input att-choice-correct">${toCircled(cur)}</span>`}
+      ${isWrong
+        ? `<input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w.reasonText||''}" placeholder="이 회차 오답 이유">`
+        : `<span class="np-attempt-reason np-attempt-reason-empty">정답</span>`}
+      <input type="text" class="np-time-input" data-timerecid="${r.id}" value="${timeVal}" placeholder="00:00">
       ${kwTags ? `<span class="np-attempt-kw">${kwTags}</span>` : ''}
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
@@ -1547,9 +1575,8 @@ function openProblemDetailPage(idk, num, level, subject, label){
     </div>
     <div class="np-body">
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
-      <div class="np-row"><div class="np-label">선택 답안 · 오답 키워드</div><div class="np-value">${choiceRowsHtml}</div></div>
-      <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${tagsHtml(typeKw,'type')}</div></div>
-      <div class="np-row"><div class="np-label">풀이 시간</div><div class="np-value"><input type="text" id="npTimeSpent" value="${note.timeSpent||''}" placeholder="예: 3분 20초"></div></div>
+      <div class="np-row"><div class="np-label">회차별 기록<br><span style="font-weight:400;color:var(--ink-soft);font-size:10.5px;">답안·이유·시간(mm:ss)</span></div><div class="np-value">${choiceRowsHtml}</div></div>
+      <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${keywordSelectorHtml('typeKwSelDetail')}</div></div>
       <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><textarea id="npAnalysis" rows="3">${note.analysis||''}</textarea></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
       <div class="np-row">
@@ -1573,6 +1600,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
     blk.style.display = blk.style.display==='none' ? 'block' : 'none';
   });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
+  wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
   ['npAnalysis','npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
@@ -1594,17 +1622,25 @@ function openProblemDetailPage(idk, num, level, subject, label){
       const rec = records.find(r=>r.id===inp.dataset.choicerecid);
       if(rec && rec.wrongs[num]) rec.wrongs[num].selectedChoice = inp.value.trim();
     });
+    document.querySelectorAll('.np-time-input').forEach(inp=>{
+      const rec = records.find(r=>r.id===inp.dataset.timerecid);
+      if(rec){
+        if(!rec.problemTimeSpent) rec.problemTimeSpent = {};
+        const tv = inp.value.trim();
+        if(tv) rec.problemTimeSpent[num] = tv; else delete rec.problemTimeSpent[num];
+      }
+    });
+    attemptRecs.forEach(r=>{ r.problemTypeKeywords[num] = [...typeKwSelSet]; });
     save();
     const analysis = document.getElementById('npAnalysis').value.trim();
     const theory = document.getElementById('npTheory').value.trim();
-    const timeSpent = document.getElementById('npTimeSpent').value.trim();
     const choiceAnalysis = {};
     CHOICE_NUMS.forEach(n=>{
       const text = document.getElementById('choiceText'+n).value.trim();
       const kw = [...choiceSelSets[n]];
       if(text || kw.length) choiceAnalysis[n] = { text, kw };
     });
-    saveNote(idk, num, {analysis, theory, timeSpent, choiceAnalysis});
+    saveNote(idk, num, {analysis, theory, choiceAnalysis});
     document.getElementById('detailOverlay').classList.remove('open');
     if(document.getElementById('panel-answerkey').classList.contains('active')) renderAnswerKeyTab();
     if(document.getElementById('panel-all').classList.contains('active')) renderAll();
