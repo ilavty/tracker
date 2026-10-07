@@ -116,7 +116,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-tag-sel:hover{background:#E2D5F8;}
 .kw-plus-btn{width:24px;height:24px;border-radius:50%;border:1.5px dashed #D9D3E8;background:#FAF9FD;color:#A99BC9;font-family:inherit;font-size:14px;font-weight:800;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;}
 .kw-plus-btn:hover{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;border-style:solid;}
-.kw-picker-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:260;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(60,40,90,0.18);padding:8px;min-width:170px;max-width:300px;max-height:260px;overflow-y:auto;display:none;}
+.kw-picker-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:260;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(60,40,90,0.18);padding:8px;min-width:340px;max-width:600px;max-height:260px;overflow-y:auto;display:none;}
 .kw-picker-pop.open{display:block;}
 .kw-picker-item{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink);padding:6px 8px;border-radius:7px;cursor:pointer;}
 .kw-picker-item:hover{background:#F5F3FA;}
@@ -125,7 +125,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-picker-input{flex:1;border:1.5px solid var(--line);border-radius:7px;padding:5px 7px;font-family:inherit;font-size:12px;outline:none;}
 .kw-picker-input:focus{border-color:var(--lavender-deep);}
 .kw-picker-addbtn{flex:none;border:none;background:var(--lavender-deep);color:#fff;font-family:inherit;font-size:12px;font-weight:700;border-radius:7px;padding:5px 9px;cursor:pointer;}
-.kw-picker-flow{display:flex;flex-wrap:wrap;gap:6px;max-width:320px;}
+.kw-picker-flow{display:flex;flex-wrap:wrap;gap:6px;max-width:640px;}
 .kw-picker-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;}
 .kw-picker-chip.selected{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 
@@ -137,6 +137,9 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-sec-label{font-size:10px;color:var(--ink-soft);margin:0 0 6px;}
 .swp-side-panel{display:none;position:absolute;top:0;left:100%;margin-left:12px;width:260px;max-height:min(70vh,520px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(40,20,70,0.18);padding:14px;}
 .swp-side-panel.open{display:block;}
+.swp-other-grid{display:flex;flex-wrap:wrap;gap:10px 14px;}
+.swp-other-chip{font-size:12.5px;font-weight:700;color:#C9C6D1;cursor:pointer;user-select:none;}
+.swp-other-chip.selected{color:var(--ink);}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
 .swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
 .swp-row:last-child{border-bottom:none;}
@@ -225,12 +228,16 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
 .np-attempt-reason{flex:1 !important;min-width:0;width:auto !important;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;resize:none;overflow:hidden;line-height:1.5;min-height:30px;}
-.np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+.np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
 .np-choice-row:last-child{border-bottom:none;}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
-.np-choice-body{flex:1;}
-.np-choice-text{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;margin-top:6px;}
+.np-choice-body{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+.np-choice-text{flex:1;min-width:120px;border:none;background:none;outline:none;padding:4px 0;font-family:inherit;font-size:12.5px;color:var(--ink);line-height:1.6;}
 .np-value textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;resize:vertical;line-height:1.7;}
+.np-richtext{width:100%;min-height:68px;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.7;overflow-wrap:break-word;}
+.np-richtext:focus{outline:none;border-color:var(--lavender-deep);}
+.np-richtext img{max-width:100%;border-radius:6px;display:block;margin:4px 0;}
+.np-richtext-hint{font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
 
 .review-mark{width:12px;height:12px;border-radius:50%;border:1.4px solid #C9C4D4;display:inline-block;margin-right:3px;background:#fff;}
 .review-mark.filled{background:#5FB8E0;border-color:#5FB8E0;}
@@ -280,7 +287,7 @@ td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
 tr.clickable{cursor:pointer;}
 tr.clickable:hover td{background:#FBF9FE;}
 .kw-tag{display:inline-block;background:#EAF1F8;color:#2A558C;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;margin:1px 3px 1px 0;}
-.kw-tag.type{background:var(--peach);color:var(--peach-deep);}
+.kw-tag.type{background:#EDEBF1;color:#6B6774;}
 .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-bottom:20px;}
 .table-scroll table{margin:0;}
 .table-scroll th:first-child,.table-scroll td:first-child{padding-left:14px;}
@@ -514,6 +521,8 @@ tr.clickable:hover td{background:#FBF9FE;}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
 const STORAGE_KEY = 'psatTrackerRecords_v1';
 const REVIEW_KEY = 'psatTrackerReviewBox_v1';
@@ -538,6 +547,67 @@ let todos = JSON.parse(localStorage.getItem(TODO_KEY) || '[]');
 let notesStore = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
 let savedViews = JSON.parse(localStorage.getItem(SAVED_VIEWS_KEY) || '[]');
 let answerKeyStore = JSON.parse(localStorage.getItem(ANSWER_KEY) || '{}');
+
+// ---------- Firebase sync (same project as the planner, separate data node) ----------
+const PSAT_FB_CONFIG = { apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" };
+const PSAT_FB_DOC_ID = "psat_tracker_data_v1";
+let psatDb = null;
+try{ firebase.initializeApp(PSAT_FB_CONFIG, 'psatApp'); psatDb = firebase.app('psatApp').database(); }catch(e){ psatDb = null; }
+let psatFbReady = false; // becomes true once the initial load (local or remote) finished, so early saves can't clobber the server
+let psatFbSyncTimer = null;
+function psatSaveAllToLocal(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox));
+  localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore));
+  localStorage.setItem(CUTOFF_KEY, JSON.stringify(cutoffs));
+  localStorage.setItem(TODO_KEY, JSON.stringify(todos));
+  localStorage.setItem(NOTES_KEY, JSON.stringify(notesStore));
+  localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
+  localStorage.setItem(ANSWER_KEY, JSON.stringify(answerKeyStore));
+}
+function psatPushToFirebase(){
+  if(!psatDb) return;
+  psatDb.ref('psat_tracker_data/' + PSAT_FB_DOC_ID).set({
+    records: records || [], reviewBox: reviewBox || [], keywordStore: keywordStore || {reason:[],type:[],choice:[]},
+    cutoffs: cutoffs || {}, todos: todos || [], notesStore: notesStore || {}, savedViews: savedViews || [], answerKeyStore: answerKeyStore || {}
+  }).catch(()=>{});
+}
+function scheduleFbSync(){
+  if(!psatFbReady) return; // don't push the still-initial local state over a server copy we haven't fetched yet
+  psatSaveAllToLocal();
+  clearTimeout(psatFbSyncTimer);
+  psatFbSyncTimer = setTimeout(psatPushToFirebase, 600);
+}
+function psatBootAfterLoad(){
+  psatFbReady = true;
+  renderDateChips();
+  const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
+  if(savedTab && document.querySelector(`.tab-btn[data-tab="${savedTab}"]`)){
+    activateTab(savedTab);
+  } else {
+    renderTests();
+  }
+}
+function psatLoadFromFirebase(){
+  if(!psatDb){ psatBootAfterLoad(); return; }
+  psatDb.ref('psat_tracker_data/' + PSAT_FB_DOC_ID).once('value').then(snap=>{
+    if(snap.exists()){
+      const d = snap.val() || {};
+      if(Array.isArray(d.records)) records = d.records;
+      if(Array.isArray(d.reviewBox)) reviewBox = d.reviewBox;
+      if(d.keywordStore) keywordStore = d.keywordStore;
+      if(!keywordStore.choice) keywordStore.choice = [];
+      if(d.cutoffs) cutoffs = d.cutoffs;
+      if(Array.isArray(d.todos)) todos = d.todos;
+      if(d.notesStore) notesStore = d.notesStore;
+      if(Array.isArray(d.savedViews)) savedViews = d.savedViews;
+      if(d.answerKeyStore) answerKeyStore = d.answerKeyStore;
+      psatSaveAllToLocal();
+    }
+    psatBootAfterLoad();
+  }).catch(()=>{ psatBootAfterLoad(); });
+}
+
 try{
   ['2022','2023','2024','2025','2025(1)','2025(2)','2026'].forEach(y=>{
     SUBJECTS.forEach(subj=>{
@@ -654,12 +724,13 @@ let activeSelection = { testId: null, nums: new Set() };
 let filterTypeKwSelected = new Set();
 let filterReasonKwSelected = new Set();
 
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
-function saveReview(){ localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox)); }
-function saveKeywordStore(){ localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore)); }
-function saveCutoffs(){ localStorage.setItem(CUTOFF_KEY, JSON.stringify(cutoffs)); }
-function saveTodos(){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); }
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); scheduleFbSync(); }
+function saveReview(){ localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox)); scheduleFbSync(); }
+function saveKeywordStore(){ localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore)); scheduleFbSync(); }
+function saveCutoffs(){ localStorage.setItem(CUTOFF_KEY, JSON.stringify(cutoffs)); scheduleFbSync(); }
+function saveTodos(){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); scheduleFbSync(); }
 function uid(p){ return (p||'r') + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function koSort(arr){ return [...arr].sort((a,b)=>a.localeCompare(b,'ko')); }
 function idKey(r){ return [r.category, r.level, r.subject, r.year||'', r.setName||''].join('|'); }
 function testLabel(r){ return r.category==='기출' ? `${r.year}` : (r.setName || '유형모음'); }
 function levelChipClass(level){
@@ -669,9 +740,13 @@ function levelChipClass(level){
 }
 function parseTimeToSeconds(str){
   if(!str) return null;
-  const m = String(str).trim().match(/^(\d+):(\d{1,2})$/);
-  if(!m) return null;
-  return parseInt(m[1],10)*60 + parseInt(m[2],10);
+  const s = String(str).trim();
+  const m = s.match(/^(\d+):(\d{1,2})$/);
+  if(m) return parseInt(m[1],10)*60 + parseInt(m[2],10);
+  // allow a bare number (no colon) to mean "seconds only" — e.g. 49 → 0:49,
+  // so a sub-1-minute time doesn't require typing a leading "0:"
+  if(/^\d+$/.test(s)) return parseInt(s,10);
+  return null;
 }
 function yearSortValue(y){
   if(y===null || y===undefined) return Infinity;
@@ -811,6 +886,7 @@ function renderViewTabs(){
       if(confirm('이 보기를 삭제할까요?')){
         savedViews = savedViews.filter(v=>v.id!==x.dataset.delview);
         localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
+        scheduleFbSync();
         if(activeViewId===x.dataset.delview){ activeViewId=null; resetFilterState(); }
         renderFilterChips(); renderViewTabs(); renderAll();
       }
@@ -822,6 +898,7 @@ function renderViewTabs(){
     const view = { id: uid('sv'), name, filters: currentFilterState(), createdAt: Date.now() };
     savedViews.push(view);
     localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
+    scheduleFbSync();
     activeViewId = view.id;
     renderViewTabs();
   });
@@ -1217,13 +1294,12 @@ function buildNoteRowsHtml(rec, allNums){
   const wrongNums = Object.keys(rec.wrongs).map(n=>parseInt(n,10)).sort((a,b)=>a-b);
   const flaggedSet = new Set(reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num));
   const flaggedOnlyNums = [...flaggedSet].filter(n=>!wrongNums.includes(n)).sort((a,b)=>a-b);
+  const shownSorted = [...new Set([...wrongNums, ...flaggedOnlyNums])].sort((a,b)=>a-b);
   let noteNums;
   if(allNums){
-    const shown = new Set([...wrongNums, ...flaggedOnlyNums]);
-    const rest = []; for(let n=1;n<=rec.total;n++){ if(!shown.has(n)) rest.push(n); }
-    noteNums = [...wrongNums, ...flaggedOnlyNums, ...rest];
+    noteNums = []; for(let n=1;n<=rec.total;n++) noteNums.push(n); // strict 1..total order
   } else {
-    noteNums = [...wrongNums, ...flaggedOnlyNums];
+    noteNums = shownSorted;
   }
   if(!noteNums.length){
     return { html: '<div class="swp-empty">오답·보충학습 표시가 없어요</div>', noteNums };
@@ -1255,8 +1331,10 @@ function wireNoteRowEvents(container, rec, onPinChange, backToFn){
     });
   });
 }
+let swpOtherSelected = new Set();
 function openSideWrongPop(rec){
   sideWrongModalRec = rec;
+  swpOtherSelected = new Set();
   const { noteNums, html: rowsHtml } = buildNoteRowsHtml(rec);
   const shownSet = new Set(noteNums);
   const otherNums = []; for(let n=1;n<=rec.total;n++){ if(!shownSet.has(n)) otherNums.push(n); }
@@ -1267,8 +1345,7 @@ function openSideWrongPop(rec){
   </div>`;
   html += rowsHtml;
   html += `<div class="swp-side-panel${sideWrongModalExtraOpen?' open':''}" id="swpSidePanel">
-    <div class="swp-sec-label">그 외 번호</div>
-    ${renderNoteRowsForNums(rec, otherNums)}
+    <div class="swp-other-grid">${otherNums.map(n=>`<span class="swp-other-chip" data-num="${n}">${n}</span>`).join('')}</div>
   </div>`;
   box.innerHTML = html;
   document.getElementById('sideWrongModalOverlay').classList.add('open');
@@ -1276,6 +1353,13 @@ function openSideWrongPop(rec){
     ev.stopPropagation();
     sideWrongModalExtraOpen = !sideWrongModalExtraOpen;
     document.getElementById('swpSidePanel').classList.toggle('open', sideWrongModalExtraOpen);
+  });
+  box.querySelectorAll('.swp-other-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const n = chip.dataset.num;
+      if(swpOtherSelected.has(n)){ swpOtherSelected.delete(n); chip.classList.remove('selected'); }
+      else { swpOtherSelected.add(n); chip.classList.add('selected'); }
+    });
   });
   wireNoteRowEvents(box, rec, ()=>openSideWrongPop(rec), ()=>openSideWrongPop(rec));
 }
@@ -1440,8 +1524,8 @@ function wireKeywordSelector(elId, storeKey, selSet){
     popEl.classList.add('open');
   }
   function draw(){
-    const selHtml = [...selSet].map(k=>
-      `<span class="kw-tag-sel" data-kw="${k}">${k} ×</span>`
+    const selHtml = koSort([...selSet]).map(k=>
+      `<span class="kw-tag-sel" data-kw="${k}">${k}</span>`
     ).join('');
     chipsEl.innerHTML = selHtml + `<button type="button" class="kw-plus-btn" id="${elId}_plusbtn">+</button>`;
     chipsEl.querySelectorAll('.kw-tag-sel').forEach(tag=>{
@@ -1453,7 +1537,7 @@ function wireKeywordSelector(elId, storeKey, selSet){
     });
   }
   function drawPop(){
-    const remaining = keywordStore[storeKey].filter(k=>!selSet.has(k));
+    const remaining = koSort(keywordStore[storeKey].filter(k=>!selSet.has(k)));
     popEl.innerHTML = (remaining.length ? `<div class="kw-picker-flow">${remaining.map(k=>`<button type="button" class="kw-picker-chip" data-kw="${k}">${k}</button>`).join('')}</div>` : '<div class="kw-picker-empty">선택할 키워드가 없어요</div>')
       + `<div class="kw-picker-addrow">
           <input type="text" class="kw-picker-input" id="${elId}_newkw" placeholder="새 키워드">
@@ -1688,7 +1772,7 @@ function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange){
   if(!chipsEl || !popEl) return;
   function drawChips(){
     const sel = getSel();
-    const selHtml = [...sel].map(k=>`<span class="kw-tag-sel" data-kw="${k}">${k} ×</span>`).join('');
+    const selHtml = koSort([...sel]).map(k=>`<span class="kw-tag-sel" data-kw="${k}">${k}</span>`).join('');
     chipsEl.innerHTML = selHtml + `<button type="button" class="kw-plus-btn">+</button>`;
     chipsEl.querySelectorAll('.kw-tag-sel').forEach(tag=>{
       tag.addEventListener('click', e=>{
@@ -1709,7 +1793,7 @@ function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange){
   }
   function drawPop(){
     const sel = getSel();
-    const all = keywordStore[storeKey];
+    const all = koSort(keywordStore[storeKey]);
     popEl.innerHTML = all.length
       ? `<div class="kw-picker-flow">${all.map(k=>`<button type="button" class="kw-picker-chip${sel.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')}</div>`
       : `<div class="kw-picker-empty">등록된 키워드가 없어요</div>`;
@@ -1740,6 +1824,7 @@ function getNote(idKeyStr, num){ return notesStore[noteKey(idKeyStr,num)] || {an
 function saveNote(idKeyStr, num, data){
   notesStore[noteKey(idKeyStr,num)] = data;
   localStorage.setItem(NOTES_KEY, JSON.stringify(notesStore));
+  scheduleFbSync();
 }
 
 function renderAll(){
@@ -1814,7 +1899,7 @@ function renderAll(){
 document.getElementById('filterMinTime').addEventListener('input', renderAll);
 
 // ---------- Answer key ----------
-function saveAnswerKeyStore(){ localStorage.setItem(ANSWER_KEY, JSON.stringify(answerKeyStore)); }
+function saveAnswerKeyStore(){ localStorage.setItem(ANSWER_KEY, JSON.stringify(answerKeyStore)); scheduleFbSync(); }
 function examIdKeyStr(level, subject, year){ return ['기출', level, subject, year, ''].join('|'); }
 const CIRCLED_DIGITS = {'1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨'};
 function toCircled(v){ return CIRCLED_DIGITS[String(v).trim()] || v; }
@@ -1989,7 +2074,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
       <div class="np-row"><div class="np-label">회차별 기록</div><div class="np-value">${choiceRowsHtml}</div></div>
       <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${keywordSelectorHtml('typeKwSelDetail')}</div></div>
-      <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><textarea id="npAnalysis" rows="3">${note.analysis||''}</textarea></div></div>
+      <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><div id="npAnalysis" class="np-richtext" contenteditable="true">${note.analysis||''}</div><div class="np-richtext-hint">이미지는 복사해서 바로 붙여넣으면 돼요</div></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
       <div class="np-row">
         <div class="np-label">선지분석</div>
@@ -2027,11 +2112,30 @@ function openProblemDetailPage(idk, num, level, subject, label){
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
   attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id]); });
-  ['npAnalysis','npTheory'].forEach(id=>{
+  ['npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
     ta.addEventListener('input', grow);
     grow();
+  });
+  // 분석 노트: contenteditable so a pasted image (e.g. a copied screenshot) can be
+  // dropped straight in as an inline <img>, not just plain text.
+  document.getElementById('npAnalysis').addEventListener('paste', e=>{
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for(const item of items){
+      if(item.type && item.type.indexOf('image/')===0){
+        e.preventDefault();
+        const file = item.getAsFile();
+        if(!file) continue;
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          document.execCommand('insertHTML', false, `<img src="${reader.result}">`);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+    }
+    // no image on the clipboard — let the normal text paste go through
   });
   function doSave(closeAfter){
     const v = document.getElementById('npAnswerVal').value.trim();
@@ -2069,7 +2173,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
     });
     attemptRecs.forEach(r=>{ r.problemTypeKeywords[num] = [...typeKwSelSet]; });
     save();
-    const analysis = document.getElementById('npAnalysis').value.trim();
+    const analysis = document.getElementById('npAnalysis').innerHTML.trim();
     const theory = document.getElementById('npTheory').value.trim();
     const choiceAnalysis = {};
     CHOICE_NUMS.forEach(n=>{
@@ -2101,6 +2205,17 @@ function openProblemDetailPage(idk, num, level, subject, label){
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
     ta.addEventListener('input', grow);
     grow();
+  });
+  // Auto-save: the writing areas (분석 노트/참고 이론/선지분석 텍스트/회차 메모) and any
+  // keyword-picker interaction save themselves shortly after a change, so "저장"
+  // is no longer required — it's kept only as an explicit "닫고 저장" shortcut below.
+  let detailAutosaveTimer = null;
+  function scheduleDetailAutosave(){ clearTimeout(detailAutosaveTimer); detailAutosaveTimer = setTimeout(()=>doSave(false), 500); }
+  box.addEventListener('input', e=>{
+    if(e.target.matches('#npAnalysis, #npTheory, .np-choice-text, .np-attempt-reason, .att-choice-input, .np-time-input')) scheduleDetailAutosave();
+  });
+  box.addEventListener('click', e=>{
+    if(e.target.closest('.kw-tag-sel, .kw-picker-chip, .kw-picker-addbtn')) scheduleDetailAutosave();
   });
   document.getElementById('npSaveBtn').addEventListener('click', ()=>doSave(true));
 }
@@ -2193,14 +2308,9 @@ function renderReview(){
   });
 }
 
-// init
-renderDateChips();
-const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
-if(savedTab && document.querySelector(`.tab-btn[data-tab="${savedTab}"]`)){
-  activateTab(savedTab);
-} else {
-  renderTests();
-}
+// init — fetch any server copy first, then render (psatBootAfterLoad does the
+// renderDateChips/tab-activation that used to run unconditionally here)
+psatLoadFromFirebase();
 
 // ---------- Report our own content height to the parent page (when embedded
 // as an iframe), so the iframe can grow to fit us instead of boxing us in
