@@ -213,7 +213,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
 .np-choice-body{flex:1;}
 .np-choice-text{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;margin-top:6px;}
-.np-value textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;resize:vertical;}
+.np-value textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;resize:vertical;line-height:1.7;}
 
 .review-mark{width:12px;height:12px;border-radius:50%;border:1.4px solid #C9C4D4;display:inline-block;margin-right:3px;background:#fff;}
 .review-mark.filled{background:#5FB8E0;border-color:#5FB8E0;}
@@ -1809,9 +1809,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
 
   box.innerHTML = `
     <div class="np-header">
-      <div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
         <div class="np-title">${num}번</div>
-        <div class="np-sub">${level} · ${subject} · ${label}</div>
+        <div class="np-sub" style="margin-top:0;">${level} · ${subject} · ${label}</div>
       </div>
       <div class="np-header-actions">
         <button type="button" class="np-pin-btn${alreadyFlagged?' pinned':''}" id="npAddReviewBtn" title="보충학습에 담기">${PIN_ICON}</button>
