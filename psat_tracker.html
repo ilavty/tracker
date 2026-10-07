@@ -133,12 +133,10 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-head b{color:#2A558C;font-size:12.5px;}
 .swp-more-btn{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;}
 .swp-more-btn:hover{background:#F5F3FA;}
-.swp-more-menu{position:absolute;right:0;top:26px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 20px rgba(60,40,90,0.16);padding:4px;display:none;z-index:10;}
-.swp-more-menu.open{display:block;}
-.swp-more-menu button{display:flex;align-items:center;gap:6px;white-space:nowrap;background:none;border:none;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--ink);padding:6px 9px;border-radius:6px;cursor:pointer;}
-.swp-more-menu button:hover{background:#F5F3FA;}
 .swp-empty{color:var(--ink-soft);font-size:11.5px;}
-.swp-sec-label{font-size:10px;color:var(--ink-soft);margin:8px 0 4px;}
+.swp-sec-label{font-size:10px;color:var(--ink-soft);margin:0 0 6px;}
+.swp-side-panel{display:none;position:absolute;top:0;left:100%;margin-left:12px;width:260px;max-height:min(70vh,520px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(40,20,70,0.18);padding:14px;}
+.swp-side-panel.open{display:block;}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
 .swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
 .swp-row:last-child{border-bottom:none;}
@@ -471,7 +469,7 @@ tr.clickable:hover td{background:#FBF9FE;}
 <div class="ctx-menu" id="quickPop"></div>
 
 <div class="modal-overlay" id="sideWrongModalOverlay">
-  <div class="popup-box" id="sideWrongModalBox" style="width:min(700px,94vw);max-height:none;overflow:visible;"></div>
+  <div class="popup-box" id="sideWrongModalBox" style="width:min(700px,94vw);max-height:none;overflow:visible;position:relative;"></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
@@ -1249,23 +1247,19 @@ function openSideWrongPop(rec){
 
   const box = document.getElementById('sideWrongModalBox');
   let html = `<div class="swp-head"><b>${rec.round||1}회독 오답/표시</b>
-    <button type="button" class="swp-more-btn" id="swpMoreBtn">⋯</button>
-    <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongModalExtraOpen?'숨기기':'보기'}</button></div>
+    <button type="button" class="swp-more-btn" id="swpMoreBtn" title="그 외 번호">⋯</button>
   </div>`;
   html += rowsHtml;
-  if(sideWrongModalExtraOpen){
-    html += `<div class="swp-sec-label">그 외 번호</div>` + renderNoteRowsForNums(rec, otherNums);
-  }
+  html += `<div class="swp-side-panel${sideWrongModalExtraOpen?' open':''}" id="swpSidePanel">
+    <div class="swp-sec-label">그 외 번호</div>
+    ${renderNoteRowsForNums(rec, otherNums)}
+  </div>`;
   box.innerHTML = html;
   document.getElementById('sideWrongModalOverlay').classList.add('open');
   document.getElementById('swpMoreBtn').addEventListener('click', ev=>{
     ev.stopPropagation();
-    document.getElementById('swpMoreMenu').classList.toggle('open');
-  });
-  document.getElementById('swpEyeBtn').addEventListener('click', ev=>{
-    ev.stopPropagation();
     sideWrongModalExtraOpen = !sideWrongModalExtraOpen;
-    openSideWrongPop(rec);
+    document.getElementById('swpSidePanel').classList.toggle('open', sideWrongModalExtraOpen);
   });
   wireNoteRowEvents(box, rec, ()=>openSideWrongPop(rec));
 }
