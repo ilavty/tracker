@@ -199,6 +199,8 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-header-actions{display:flex;align-items:center;gap:8px;}
 .np-pin-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:#C9C4D4;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;}
 .np-pin-btn:hover{border-color:var(--red-text);color:#D99B8E;}
+.np-back{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;font-size:15px;}
+.np-back:hover{border-color:var(--lavender-deep);color:#2A558C;}
 .np-pin-btn.pinned{background:#FBE6E2;border-color:var(--red-text);color:var(--red-text);}
 .np-pin-btn svg{width:15px;height:15px;}
 .pin-icon{display:inline-flex;vertical-align:-2px;width:13px;height:13px;margin-right:2px;}
@@ -1165,6 +1167,23 @@ testsListEl.addEventListener('click', e=>{
   const rec = records.find(r=>r.id===side.dataset.rec);
   if(rec) openSideWrongPop(rec);
 });
+// ---------- Modal back-navigation ----------
+// When one popup opens another (e.g. a note list -> the detail page), we push
+// a closure here that knows how to redraw the popup we came from, instead of
+// just closing it outright. The detail page then shows a "<" back button
+// (only when this stack isn't empty) that pops and re-runs it, so navigating
+// forward through popups never loses the one you were just on.
+let modalBackStack = [];
+function pushModalBack(fn){ if(fn) modalBackStack.push(fn); }
+function goBackModal(){
+  const fn = modalBackStack.pop();
+  document.getElementById('detailOverlay').classList.remove('open');
+  if(fn) fn();
+}
+function closeDetailOverlay(){
+  modalBackStack = [];
+  document.getElementById('detailOverlay').classList.remove('open');
+}
 function renderNoteRow(rec, n, flaggedSet){
   const w = rec.wrongs[n];
   const isWrong = !!w;
@@ -1211,21 +1230,18 @@ function buildNoteRowsHtml(rec, allNums){
   }
   return { html: renderNoteRowsForNums(rec, noteNums), noteNums };
 }
-function wireNoteRowEvents(container, rec, onPinChange){
+function wireNoteRowEvents(container, rec, onPinChange, backToFn){
   const idk = idKey(rec);
+  const goDetail = (n)=>{
+    pushModalBack(backToFn);
+    closeSideWrongPop();
+    openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
+  };
   container.querySelectorAll('[data-opennum]').forEach(c=>{
-    c.addEventListener('click', ()=>{
-      const n = parseInt(c.dataset.opennum,10);
-      closeSideWrongPop();
-      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
-    });
+    c.addEventListener('click', ()=> goDetail(parseInt(c.dataset.opennum,10)) );
   });
   container.querySelectorAll('[data-opennum2]').forEach(c=>{
-    c.addEventListener('click', ()=>{
-      const n = parseInt(c.dataset.opennum2,10);
-      closeSideWrongPop();
-      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
-    });
+    c.addEventListener('click', ()=> goDetail(parseInt(c.dataset.opennum2,10)) );
   });
   container.querySelectorAll('[data-pinnum]').forEach(c=>{
     c.addEventListener('click', ev=>{
@@ -1261,14 +1277,14 @@ function openSideWrongPop(rec){
     sideWrongModalExtraOpen = !sideWrongModalExtraOpen;
     document.getElementById('swpSidePanel').classList.toggle('open', sideWrongModalExtraOpen);
   });
-  wireNoteRowEvents(box, rec, ()=>openSideWrongPop(rec));
+  wireNoteRowEvents(box, rec, ()=>openSideWrongPop(rec), ()=>openSideWrongPop(rec));
 }
 function closeSideWrongPop(){ document.getElementById('sideWrongModalOverlay').classList.remove('open'); sideWrongModalExtraOpen = false; sideWrongModalRec = null; }
 document.getElementById('sideWrongModalOverlay').addEventListener('click', e=>{
   if(e.target.id==='sideWrongModalOverlay') closeSideWrongPop();
 });
 
-function openAnswerKeyNotePop(idk, level, subject, yearLabel){
+function openAnswerKeyNotePop(idk, level, subject, yearLabel, autoExpandId){
   sideWrongModalRec = null;
   const recs = records.filter(r=>idKey(r)===idk).sort((a,b)=>(a.round||1)-(b.round||1) || a.createdAt-b.createdAt);
   const box = document.getElementById('sideWrongModalBox');
@@ -1289,6 +1305,18 @@ function openAnswerKeyNotePop(idk, level, subject, yearLabel){
   }
   box.innerHTML = html;
   document.getElementById('sideWrongModalOverlay').classList.add('open');
+  function expandRound(btn){
+    const rid = btn.dataset.toggleround;
+    const body = document.getElementById('akeyRoundBody_'+rid);
+    const rec = records.find(r=>r.id===rid);
+    const refresh = ()=>{
+      body.innerHTML = buildNoteRowsHtml(rec, true).html;
+      wireNoteRowEvents(body, rec, refresh, ()=>openAnswerKeyNotePop(idk, level, subject, yearLabel, rid));
+    };
+    refresh();
+    body.style.display = 'block';
+    btn.classList.add('open');
+  }
   box.querySelectorAll('[data-toggleround]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const rid = btn.dataset.toggleround;
@@ -1299,16 +1327,13 @@ function openAnswerKeyNotePop(idk, level, subject, yearLabel){
         btn.classList.remove('open');
         return;
       }
-      const rec = records.find(r=>r.id===rid);
-      const refresh = ()=>{
-        body.innerHTML = buildNoteRowsHtml(rec, true).html;
-        wireNoteRowEvents(body, rec, refresh);
-      };
-      refresh();
-      body.style.display = 'block';
-      btn.classList.add('open');
+      expandRound(btn);
     });
   });
+  if(autoExpandId){
+    const abtn = box.querySelector(`[data-toggleround="${autoExpandId}"]`);
+    if(abtn) expandRound(abtn);
+  }
 }
 
 function openAddRoundModal(sourceRec){
@@ -1392,7 +1417,7 @@ document.addEventListener('keydown', e=>{
     document.getElementById('modalOverlay').classList.remove('open');
     document.getElementById('examPopupOverlay').classList.remove('open');
     document.getElementById('memoOverlay').classList.remove('open');
-    document.getElementById('detailOverlay').classList.remove('open');
+    closeDetailOverlay();
   }
 });
 function openCtxMenu(x,y){ const m=document.getElementById('ctxMenu'); m.style.left=x+'px'; m.style.top=y+'px'; m.style.display='block'; }
@@ -1955,6 +1980,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
         <div class="np-sub" style="margin-top:0;">${level} · ${subject} · ${label}</div>
       </div>
       <div class="np-header-actions">
+        ${modalBackStack.length ? `<button type="button" class="np-back" id="detailBackBtn" title="이전으로">←</button>` : ''}
         <button type="button" class="np-pin-btn${alreadyFlagged?' pinned':''}" id="npAddReviewBtn" title="보충학습에 담기">${PIN_ICON}</button>
         <button type="button" class="np-close" id="detailCloseBtn">×</button>
       </div>
@@ -1978,9 +2004,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
     </div>
   `;
   document.getElementById('detailOverlay').classList.add('open');
-  document.getElementById('detailCloseBtn').addEventListener('click', ()=>{
-    document.getElementById('detailOverlay').classList.remove('open');
-  });
+  document.getElementById('detailCloseBtn').addEventListener('click', closeDetailOverlay);
+  const backBtn = document.getElementById('detailBackBtn');
+  if(backBtn) backBtn.addEventListener('click', goBackModal);
   document.getElementById('npAddReviewBtn').addEventListener('click', ()=>{
     const btn = document.getElementById('npAddReviewBtn');
     const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===num);
@@ -2052,7 +2078,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
       if(text || kw.length) choiceAnalysis[n] = { text, kw };
     });
     saveNote(idk, num, {analysis, theory, choiceAnalysis});
-    if(closeAfter) document.getElementById('detailOverlay').classList.remove('open');
+    if(closeAfter) closeDetailOverlay();
     if(document.getElementById('panel-answerkey').classList.contains('active')) renderAnswerKeyTab();
     if(document.getElementById('panel-all').classList.contains('active')) renderAll();
     if(document.getElementById('panel-tests').classList.contains('active')) renderTests();
@@ -2079,7 +2105,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
   document.getElementById('npSaveBtn').addEventListener('click', ()=>doSave(true));
 }
 document.getElementById('detailOverlay').addEventListener('click', e=>{
-  if(e.target.id==='detailOverlay') e.currentTarget.classList.remove('open');
+  if(e.target.id==='detailOverlay') closeDetailOverlay();
 });
 
 
