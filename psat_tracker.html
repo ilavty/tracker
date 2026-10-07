@@ -147,17 +147,18 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
 .swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
 .swp-row:last-child{border-bottom:none;}
-.swp-row-main{display:flex;align-items:center;gap:7px;}
-.swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;font-weight:800;font-size:11px;cursor:pointer;}
+.swp-row-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;font-weight:800;font-size:11px;cursor:pointer;flex-shrink:0;}
 .swp-num.wrong{background:#FBE6E2;color:var(--red-text);}
 .swp-num.flagged{background:var(--lavender);color:#2A558C;}
-.swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;}
+.swp-choice{font-weight:800;font-size:12.5px;color:var(--ink);flex-shrink:0;}
+.swp-reason{font-size:12px;color:var(--ink);line-height:1.5;}
+.swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;margin-left:auto;flex-shrink:0;}
 .swp-pin svg{width:13px;height:13px;}
 .swp-pin.on{color:var(--red-text);}
-.swp-row-detail{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin-top:7px;padding-left:9px;border-left:2px solid var(--line);}
-.swp-detail-line{display:contents;font-size:11.5px;line-height:1.6;}
-.swp-detail-line b{color:var(--ink-soft);font-weight:700;}
-.swp-detail-open{margin-left:auto;border:none;background:none;color:var(--lavender-deep);font-size:11px;font-weight:700;cursor:pointer;padding:2px 0;}
+.swp-detail-open{border:none;background:none;color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;padding:2px 2px;flex-shrink:0;}
+.swp-row-kw{display:flex;flex-direction:column;gap:3px;margin-top:5px;}
+.swp-kw-line{display:flex;flex-wrap:wrap;gap:4px;}
 
 .ctx-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(60,40,90,0.16);padding:6px;min-width:190px;display:none;}
 #quickPop{z-index:260;}
@@ -469,7 +470,7 @@ tr.clickable:hover td{background:#FBF9FE;}
 <div class="ctx-menu" id="quickPop"></div>
 
 <div class="modal-overlay" id="sideWrongModalOverlay">
-  <div class="popup-box" id="sideWrongModalBox" style="width:min(560px,94vw);"></div>
+  <div class="popup-box" id="sideWrongModalBox" style="width:min(560px,94vw);max-height:none;overflow:visible;"></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
@@ -1181,18 +1182,19 @@ function openSideWrongPop(rec){
       const isFlagged = flaggedSet.has(n);
       const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
       const reasonKw = (w && w.reasonKeywords) || [];
-      let lines = '';
-      lines += `<div class="swp-detail-line"><b>선택답</b><span>${isWrong && w.selectedChoice ? w.selectedChoice : '-'}</span></div>`;
-      lines += `<div class="swp-detail-line"><b>오답이유</b><span>${isWrong && w.reasonText ? w.reasonText : '-'}</span></div>`;
-      lines += `<div class="swp-detail-line"><b>유형키워드</b><span>${typeKw.length ? typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('') : '-'}</span></div>`;
-      lines += `<div class="swp-detail-line"><b>오답키워드</b><span>${reasonKw.length ? reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('') : '-'}</span></div>`;
+      const kwHtml = (reasonKw.length || typeKw.length) ? `<div class="swp-row-kw">
+          ${reasonKw.length ? `<div class="swp-kw-line">${reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('')}</div>` : ''}
+          ${typeKw.length ? `<div class="swp-kw-line">${typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('')}</div>` : ''}
+        </div>` : '';
       return `<div class="swp-row" data-rownum="${n}">
         <div class="swp-row-main">
           <span class="swp-num ${isWrong?'wrong':'flagged'}" data-opennum="${n}">${n}번</span>
+          ${isWrong && w.selectedChoice ? `<span class="swp-choice">${w.selectedChoice}</span>` : ''}
+          ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
           <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
-          <button type="button" class="swp-detail-open" data-opennum2="${n}">상세페이지 →</button>
+          <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
         </div>
-        <div class="swp-row-detail">${lines}</div>
+        ${kwHtml}
       </div>`;
     }).join('') + `</div>`;
   }
