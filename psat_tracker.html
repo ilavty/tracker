@@ -125,6 +125,9 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-picker-input{flex:1;border:1.5px solid var(--line);border-radius:7px;padding:5px 7px;font-family:inherit;font-size:12px;outline:none;}
 .kw-picker-input:focus{border-color:var(--lavender-deep);}
 .kw-picker-addbtn{flex:none;border:none;background:var(--lavender-deep);color:#fff;font-family:inherit;font-size:12px;font-weight:700;border-radius:7px;padding:5px 9px;cursor:pointer;}
+.kw-picker-flow{display:flex;flex-wrap:wrap;gap:6px;max-width:320px;}
+.kw-picker-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;}
+.kw-picker-chip.selected{background:var(--lavender);border-color:var(--lavender-deep);color:#6A4EB3;}
 
 .side-wrong-pop{position:fixed;z-index:250;background:#fff;color:var(--ink);font-size:12px;padding:12px 14px;border-radius:10px;max-width:280px;line-height:1.6;display:none;box-shadow:0 10px 28px rgba(60,40,90,0.2);border:1px solid var(--line);}
 .side-wrong-pop.open{display:block;}
@@ -174,6 +177,9 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
 .np-close{border:none;background:none;font-size:22px;line-height:1;color:var(--ink-soft);cursor:pointer;padding:2px 4px;}
 .np-header-actions{display:flex;align-items:center;gap:8px;}
+.np-pin-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:#C9C4D4;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;}
+.np-pin-btn:hover{border-color:var(--lavender-deep);}
+.np-pin-btn.pinned{background:var(--lavender);border-color:var(--lavender-deep);color:#6A4EB3;}
 .np-body{padding:6px 26px 26px;}
 .np-row{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
 .np-row:last-child{border-bottom:none;}
@@ -369,11 +375,11 @@ tr.clickable:hover td{background:#FBF9FE;}
     </div>
     <div class="kw-filter-row">
       <label>유형 키워드</label>
-      <div class="kw-chip-list" id="filterTypeKwArea"></div>
+      <div class="kw-compact"><div class="kw-compact-list" id="filterTypeKwArea"></div><div class="kw-picker-pop" id="filterTypeKwPop"></div></div>
     </div>
     <div class="kw-filter-row">
       <label>오답 키워드</label>
-      <div class="kw-chip-list" id="filterReasonKwArea"></div>
+      <div class="kw-compact"><div class="kw-compact-list" id="filterReasonKwArea"></div><div class="kw-picker-pop" id="filterReasonKwPop"></div></div>
     </div>
 
     <div class="table-scroll">
@@ -405,8 +411,12 @@ tr.clickable:hover td{background:#FBF9FE;}
       <div class="field"><label>과목</label><select id="reviewFilterSubject"><option value="all">전체</option><option>언어논리</option><option>상황판단</option><option>자료해석</option></select></div>
     </div>
     <div class="kw-filter-row">
-      <label>키워드</label>
-      <div class="kw-chip-list" id="reviewFilterKwArea"></div>
+      <label>유형 키워드</label>
+      <div class="kw-compact"><div class="kw-compact-list" id="reviewFilterTypeKwArea"></div><div class="kw-picker-pop" id="reviewFilterTypeKwPop"></div></div>
+    </div>
+    <div class="kw-filter-row">
+      <label>오답 키워드</label>
+      <div class="kw-compact"><div class="kw-compact-list" id="reviewFilterReasonKwArea"></div><div class="kw-picker-pop" id="reviewFilterReasonKwPop"></div></div>
     </div>
     <div class="table-scroll">
       <table>
@@ -438,6 +448,7 @@ tr.clickable:hover td{background:#FBF9FE;}
 
 <div class="info-pop" id="infoPop"></div>
 <div class="side-wrong-pop" id="sideWrongPop"></div>
+<div class="ctx-menu" id="quickPop"></div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
@@ -965,6 +976,68 @@ testsListEl.addEventListener('click', e=>{
   if(activeSelection.nums.has(num)) activeSelection.nums.delete(num);
   else activeSelection.nums.add(num);
   renderTests();
+  if(activeSelection.testId===recId && activeSelection.nums.size===1 && activeSelection.nums.has(num)){
+    const rec = records.find(r=>r.id===recId);
+    if(rec) openQuickPop(rec, num, e.clientX, e.clientY);
+  } else {
+    closeQuickPop();
+  }
+});
+function openQuickPop(rec, num, x, y){
+  const idk = idKey(rec);
+  const flagged = reviewBox.some(e=>e.idKeyStr===idk && e.num===num);
+  const isWrong = !!rec.wrongs[num];
+  const pop = document.getElementById('quickPop');
+  pop.innerHTML = `
+    <button type="button" data-qaction="review">${flagged?'📌 보충학습에서 빼기':'📌 보충학습에 담기'}</button>
+    <button type="button" data-qaction="wrong">${isWrong?'✏️ 오답 정보 수정':'❌ 오답으로 변경'}</button>
+    ${isWrong?'<button type="button" data-qaction="correct">✅ 정답으로 되돌리기</button>':''}
+    <div class="ctx-sep"></div>
+    <button type="button" data-qaction="detail">🔎 상세 보기</button>
+  `;
+  pop.dataset.recid = rec.id;
+  pop.dataset.num = num;
+  pop.style.left = Math.min(x+8, window.innerWidth-210)+'px';
+  pop.style.top = (y+10)+'px';
+  pop.style.display = 'block';
+}
+function closeQuickPop(){ document.getElementById('quickPop').style.display = 'none'; }
+document.getElementById('quickPop').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  const pop = document.getElementById('quickPop');
+  const recId = pop.dataset.recid;
+  const num = parseInt(pop.dataset.num,10);
+  const rec = records.find(r=>r.id===recId);
+  closeQuickPop();
+  if(!rec) return;
+  const idk = idKey(rec);
+  const action = btn.dataset.qaction;
+  if(action==='review'){
+    const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===num);
+    if(existing){ reviewBox = reviewBox.filter(e=>e.id!==existing.id); }
+    else { reviewBox.push({ id:uid('v'), idKeyStr:idk, level:rec.level, subject:rec.subject, label:testLabel(rec), num, addedAt:Date.now() }); }
+    saveReview();
+    activeSelection={testId:null,nums:new Set()}; renderTests();
+  } else if(action==='correct'){
+    delete rec.wrongs[num];
+    save();
+    activeSelection={testId:null,nums:new Set()}; renderTests();
+  } else if(action==='wrong'){
+    const existing = rec.wrongs[num];
+    openModal('오답으로 표시 — '+num+'번', `
+      <div class="field"><label>내가 고른 답 (선지 번호)</label><input type="text" id="qwChoice" placeholder="예: 3" value="${existing?(existing.selectedChoice||''):''}"></div>
+      <div class="field"><label>오답 이유 (선택)</label><input type="text" id="qwReason" placeholder="예: 시간 부족" value="${existing?(existing.reasonText||''):''}"></div>
+    `, ()=>{
+      const choice = document.getElementById('qwChoice').value.trim();
+      const reason = document.getElementById('qwReason').value.trim();
+      rec.wrongs[num] = { selectedChoice: choice, reasonText: reason, reasonKeywords: (existing&&existing.reasonKeywords)||[] };
+      save(); activeSelection={testId:null,nums:new Set()}; renderTests();
+    });
+  } else if(action==='detail'){
+    activeSelection={testId:null,nums:new Set()}; renderTests();
+    openProblemDetailPage(idk, num, rec.level, rec.subject, testLabel(rec));
+  }
+  if(document.getElementById('panel-review').classList.contains('active')) renderReview();
 });
 testsListEl.addEventListener('contextmenu', e=>{
   const cell = e.target.closest('.cell');
@@ -1169,13 +1242,14 @@ document.addEventListener('click', e=>{
   if(!e.target.closest('#sideCtxMenu')) closeSideCtxMenu();
   if(!e.target.closest('.cell') && !e.target.closest('.akey-cell') && !e.target.closest('.info-pop')) hideInfoPop();
   if(!e.target.closest('#sideWrongPop') && !e.target.closest('.test-side')) closeSideWrongPop();
+  if(!e.target.closest('#quickPop') && !e.target.closest('.cell')) closeQuickPop();
   if(!e.target.closest('.cell') && !e.target.closest('.ctx-menu') && !e.target.closest('.modal-box')){
     if(activeSelection.nums.size){ activeSelection = {testId:null, nums:new Set()}; renderTests(); }
   }
 });
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
-    closeCtxMenu(); closeSideCtxMenu(); hideInfoPop(); closeSideWrongPop();
+    closeCtxMenu(); closeSideCtxMenu(); hideInfoPop(); closeSideWrongPop(); closeQuickPop();
     document.getElementById('modalOverlay').classList.remove('open');
     document.getElementById('examPopupOverlay').classList.remove('open');
     document.getElementById('memoOverlay').classList.remove('open');
@@ -1441,27 +1515,58 @@ function renderYearOptions(){
   if(years.includes(cur)) sel.value = cur;
 }
 
+// Notion-style "click to open a flow-wrapped dropdown below" keyword filter widget.
+// getSel must return the CURRENT Set each call (never capture it), since some callers
+// reassign their selected-set variable wholesale (e.g. applying a saved view).
+function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange){
+  const chipsEl = document.getElementById(chipsId);
+  const popEl = document.getElementById(popId);
+  if(!chipsEl || !popEl) return;
+  function drawChips(){
+    const sel = getSel();
+    const selHtml = [...sel].map(k=>`<span class="kw-tag-sel" data-kw="${k}">${k} ×</span>`).join('');
+    chipsEl.innerHTML = selHtml + `<button type="button" class="kw-plus-btn">+</button>`;
+    chipsEl.querySelectorAll('.kw-tag-sel').forEach(tag=>{
+      tag.addEventListener('click', e=>{
+        e.stopPropagation();
+        getSel().delete(tag.dataset.kw);
+        drawChips();
+        if(popEl.classList.contains('open')) drawPop();
+        onChange();
+      });
+    });
+    chipsEl.querySelector('.kw-plus-btn').addEventListener('click', e=>{
+      e.stopPropagation();
+      if(popEl.classList.contains('open')){ popEl.classList.remove('open'); return; }
+      document.querySelectorAll('.kw-picker-pop.open').forEach(p=>p.classList.remove('open'));
+      drawPop();
+      popEl.classList.add('open');
+    });
+  }
+  function drawPop(){
+    const sel = getSel();
+    const all = keywordStore[storeKey];
+    popEl.innerHTML = all.length
+      ? `<div class="kw-picker-flow">${all.map(k=>`<button type="button" class="kw-picker-chip${sel.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')}</div>`
+      : `<div class="kw-picker-empty">등록된 키워드가 없어요</div>`;
+    popEl.querySelectorAll('.kw-picker-chip').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        e.stopPropagation();
+        const k = btn.dataset.kw;
+        const s = getSel();
+        if(s.has(k)) s.delete(k); else s.add(k);
+        btn.classList.toggle('selected');
+        drawChips();
+        onChange();
+      });
+    });
+  }
+  drawChips();
+}
+
 function renderFilterChips(){
-  const typeArea = document.getElementById('filterTypeKwArea');
-  typeArea.innerHTML = keywordStore.type.map(k=>`<button type="button" class="kw-opt${filterTypeKwSelected.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')
-    || '<span style="font-size:11.5px;color:var(--ink-soft);">등록된 유형 키워드가 아직 없어요</span>';
-  typeArea.querySelectorAll('.kw-opt').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const k=btn.dataset.kw;
-      if(filterTypeKwSelected.has(k)) filterTypeKwSelected.delete(k); else filterTypeKwSelected.add(k);
-      renderFilterChips(); renderAll();
-    });
-  });
-  const reasonArea = document.getElementById('filterReasonKwArea');
-  reasonArea.innerHTML = keywordStore.reason.map(k=>`<button type="button" class="kw-opt${filterReasonKwSelected.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')
-    || '<span style="font-size:11.5px;color:var(--ink-soft);">등록된 오답 키워드가 아직 없어요</span>';
-  reasonArea.querySelectorAll('.kw-opt').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const k=btn.dataset.kw;
-      if(filterReasonKwSelected.has(k)) filterReasonKwSelected.delete(k); else filterReasonKwSelected.add(k);
-      renderFilterChips(); renderAll();
-    });
-  });
+  renderKwFilterBlock('filterTypeKwArea','filterTypeKwPop','type', ()=>filterTypeKwSelected, renderAll);
+  renderKwFilterBlock('filterReasonKwArea','filterReasonKwPop','reason', ()=>filterReasonKwSelected, renderAll);
 }
 
 let lastFilteredRows = [];
@@ -1702,7 +1807,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
         <div class="np-sub">${level} · ${subject} · ${label}</div>
       </div>
       <div class="np-header-actions">
-        <button type="button" class="btn btn-plain btn-small" id="npAddReviewBtn">${alreadyFlagged?'📌 보충학습에 담김':'📌 보충학습에 담기'}</button>
+        <button type="button" class="np-pin-btn${alreadyFlagged?' pinned':''}" id="npAddReviewBtn" title="보충학습에 담기">📌</button>
         <button type="button" class="np-close" id="detailCloseBtn">×</button>
       </div>
     </div>
@@ -1729,11 +1834,16 @@ function openProblemDetailPage(idk, num, level, subject, label){
     document.getElementById('detailOverlay').classList.remove('open');
   });
   document.getElementById('npAddReviewBtn').addEventListener('click', ()=>{
-    const exists = reviewBox.some(e=>e.idKeyStr===idk && e.num===num);
-    if(!exists){
+    const btn = document.getElementById('npAddReviewBtn');
+    const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===num);
+    if(existing){
+      reviewBox = reviewBox.filter(e=>e.id!==existing.id);
+      saveReview();
+      btn.classList.remove('pinned');
+    } else {
       reviewBox.push({ id:uid('v'), idKeyStr:idk, level, subject, label, num, addedAt:Date.now() });
       saveReview();
-      document.getElementById('npAddReviewBtn').textContent = '📌 보충학습에 담김';
+      btn.classList.add('pinned');
     }
   });
   document.getElementById('choiceToggleBtn').addEventListener('click', ()=>{
@@ -1799,25 +1909,14 @@ document.getElementById('detailOverlay').addEventListener('click', e=>{
 
 
 // ---------- Review box ----------
-const reviewFilterKwSelected = new Set();
-function renderReviewKwFilter(){
-  const area = document.getElementById('reviewFilterKwArea');
-  const allKw = [...new Set([...keywordStore.type, ...keywordStore.reason])];
-  area.innerHTML = allKw.map(k=>`<button type="button" class="kw-opt${reviewFilterKwSelected.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')
-    || '<span style="font-size:11.5px;color:var(--ink-soft);">등록된 키워드가 없어요.</span>';
-  area.querySelectorAll('.kw-opt').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const k = btn.dataset.kw;
-      if(reviewFilterKwSelected.has(k)) reviewFilterKwSelected.delete(k); else reviewFilterKwSelected.add(k);
-      renderReview();
-    });
-  });
-}
+let reviewFilterTypeKwSelected = new Set();
+let reviewFilterReasonKwSelected = new Set();
 ['reviewFilterLevel','reviewFilterSubject'].forEach(id=>{
   document.getElementById(id).addEventListener('change', renderReview);
 });
 function renderReview(){
-  renderReviewKwFilter();
+  renderKwFilterBlock('reviewFilterTypeKwArea','reviewFilterTypeKwPop','type', ()=>reviewFilterTypeKwSelected, renderReview);
+  renderKwFilterBlock('reviewFilterReasonKwArea','reviewFilterReasonKwPop','reason', ()=>reviewFilterReasonKwSelected, renderReview);
   const lvlF = document.getElementById('reviewFilterLevel').value;
   const subjF = document.getElementById('reviewFilterSubject').value;
   const enriched = reviewBox.map(entry=>{
@@ -1833,12 +1932,8 @@ function renderReview(){
   }).filter(x=>{
     if(lvlF!=='all' && x.entry.level!==lvlF) return false;
     if(subjF!=='all' && x.entry.subject!==subjF) return false;
-    if(reviewFilterKwSelected.size){
-      const allKwOfEntry = new Set([...x.reasonKeywords, ...x.typeKw]);
-      let hit = false;
-      reviewFilterKwSelected.forEach(k=>{ if(allKwOfEntry.has(k)) hit = true; });
-      if(!hit) return false;
-    }
+    if(reviewFilterTypeKwSelected.size && !x.typeKw.some(k=>reviewFilterTypeKwSelected.has(k))) return false;
+    if(reviewFilterReasonKwSelected.size && !x.reasonKeywords.some(k=>reviewFilterReasonKwSelected.has(k))) return false;
     return true;
   });
   document.getElementById('reviewEmpty').style.display = enriched.length ? 'none':'block';
