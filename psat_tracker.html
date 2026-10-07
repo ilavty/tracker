@@ -541,6 +541,23 @@ const SUBJECTS = ['언어논리','상황판단','자료해석'];
 const PIN_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2.5a1.5 1.5 0 011.5 1.5v6.4l3.4 3.9a1.5 1.5 0 01-1.1 2.5H13.5v5.2a1.5 1.5 0 01-3 0v-5.2H6.7a1.5 1.5 0 01-1.1-2.5l3.4-3.9V4a1.5 1.5 0 011.5-1.5h3.9z"/></svg>';
 
 let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+// Firebase's Realtime Database silently drops any field whose value is an empty
+// object/array ({}/[]) — so a record with zero wrong answers so far (wrongs:{})
+// comes back from the server with `wrongs` missing entirely, not `{}`. Every
+// place in this file that reads r.wrongs/r.problemTypeKeywords/etc. assumed the
+// key always exists, so a record like that made every tab that loops over
+// records throw (e.g. "Object.keys(r.wrongs)") and abort mid-render — which is
+// why 정답표/시험기록 looked empty even though records.length was correct. This
+// normalizer restores the expected shape on every load path.
+function psatNormalizeRecords(){
+  records.forEach(r=>{
+    if(!r.wrongs || typeof r.wrongs!=='object' || Array.isArray(r.wrongs)) r.wrongs = {};
+    if(!r.problemTypeKeywords) r.problemTypeKeywords = [];
+    if(!r.problemTimeSpent) r.problemTimeSpent = [];
+    if(!r.noteKeywords || typeof r.noteKeywords!=='object' || Array.isArray(r.noteKeywords)) r.noteKeywords = {};
+  });
+}
+psatNormalizeRecords();
 let reviewBox = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
 let keywordStore = JSON.parse(localStorage.getItem(KEYWORD_KEY) || '{"reason":[],"type":[],"choice":[]}');
 if(!keywordStore.choice) keywordStore.choice = [];
@@ -590,6 +607,7 @@ function scheduleFbSync(){
 }
 function psatBootAfterLoad(){
   psatFbReady = true;
+  psatNormalizeRecords();
   renderDateChips();
   const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
   if(savedTab && document.querySelector(`.tab-btn[data-tab="${savedTab}"]`)){
