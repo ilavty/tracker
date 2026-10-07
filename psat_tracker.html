@@ -173,7 +173,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .popup-round-label{font-size:10.5px;font-weight:400;color:#B0ABBC;margin:8px 0 3px;}
 
 .notion-page-box{background:#fff;border-radius:14px;padding:0;width:min(720px,94vw);box-shadow:0 24px 60px rgba(40,20,70,0.25);}
-#detailOverlay{align-items:flex-start;overflow-y:auto;padding:40px 16px;}
+#detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
 .np-header{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;}
 .np-title{font-size:20px;font-weight:800;}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
@@ -195,14 +195,15 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-attempt-history{display:inline-flex;gap:4px;vertical-align:middle;font-weight:500;font-size:13px;}
 .np-att-hist.att-correct{color:var(--ox-correct);}
 .np-att-hist.att-wrong{color:var(--red-text);}
-.np-attempt-row{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-bottom:6px;}
+.np-attempt-row{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:6px;margin-bottom:8px;}
+.np-attempt-row .np-round-label,.np-attempt-row .att-choice-input,.np-attempt-row .np-time-input{margin-top:1px;}
 .np-round-label{flex:none;width:36px;font-size:10.5px;color:var(--ink-soft);}
 .np-time-input{width:62px !important;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:5px 4px;text-align:center;font-family:inherit;font-size:12.5px;}
 .att-choice-correct{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;color:var(--ox-correct);font-weight:700;font-size:13px;}
 .np-attempt-reason-empty{flex:1;color:var(--ink-soft);font-size:12px;padding:6px 0;}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
-.np-attempt-reason{flex:1 !important;min-width:0;width:auto !important;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
+.np-attempt-reason{flex:1 !important;min-width:0;width:auto !important;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;resize:none;overflow:hidden;line-height:1.5;min-height:30px;}
 .np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
 .np-choice-row:last-child{border-bottom:none;}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
@@ -970,6 +971,8 @@ const testsListEl = document.getElementById('testsList');
 testsListEl.addEventListener('click', e=>{
   const cell = e.target.closest('.cell');
   if(!cell || cell.classList.contains('readonly')) return;
+  cancelHideInfoPop();
+  hideInfoPop();
   const recId = cell.dataset.rec;
   const num = parseInt(cell.dataset.num,10);
   if(activeSelection.testId !== recId) activeSelection = { testId: recId, nums: new Set() };
@@ -1777,7 +1780,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
       <span class="np-round-label">${r.round||1}회독</span>
       <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w ? (w.selectedChoice||'') : ''}" placeholder="?">
       <input type="text" class="np-time-input" data-timerecid="${r.id}" value="${timeVal}" placeholder="00:00">
-      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w ? (w.reasonText||'') : ''}" placeholder="이 회차 오답 이유">
+      <textarea class="np-attempt-reason" data-recid="${r.id}" rows="1" placeholder="이 회차 오답 이유">${w ? (w.reasonText||'') : ''}</textarea>
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
@@ -1902,7 +1905,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
     if(document.getElementById('panel-tests').classList.contains('active')) renderTests();
     if(document.getElementById('panel-review').classList.contains('active')) renderReview();
   }
-  document.querySelectorAll('.np-attempt-reason, .att-choice-input, .np-time-input').forEach(inp=>{
+  // Enter saves on the single-line fields (답안·시간). 오답이유 is a textarea now,
+  // so Enter there just inserts a line break like normal, not a save trigger.
+  document.querySelectorAll('.att-choice-input, .np-time-input').forEach(inp=>{
     // use keyup (not keydown) so a single Enter that also confirms Korean IME
     // composition still triggers save — on keydown, e.key reports 'Process'
     // (not 'Enter') while composing, so a keydown check silently misses it.
@@ -1912,6 +1917,11 @@ function openProblemDetailPage(idk, num, level, subject, label){
     inp.addEventListener('keydown', e=>{
       if(e.key==='Enter') e.preventDefault();
     });
+  });
+  document.querySelectorAll('.np-attempt-reason').forEach(ta=>{
+    const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
+    ta.addEventListener('input', grow);
+    grow();
   });
   document.getElementById('npSaveBtn').addEventListener('click', ()=>doSave(true));
 }
@@ -2007,6 +2017,28 @@ function renderReview(){
 // init
 renderDateChips();
 renderTests();
+
+// ---------- Report our own content height to the parent page (when embedded
+// as an iframe), so the iframe can grow to fit us instead of boxing us in
+// with its own internal scrollbar — long modals, grids, etc. should just
+// extend the outer page like any other section of it.
+(function(){
+  if(window.parent === window) return; // not embedded, nothing to do
+  let lastH = 0;
+  function reportHeight(){
+    const h = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    if(h !== lastH){
+      lastH = h;
+      window.parent.postMessage({ type:'psatHeight', height:h }, '*');
+    }
+  }
+  reportHeight();
+  setInterval(reportHeight, 300);
+  window.addEventListener('resize', reportHeight);
+  if(window.ResizeObserver){
+    new ResizeObserver(reportHeight).observe(document.body);
+  }
+})();
 </script>
 </body>
 </html>
