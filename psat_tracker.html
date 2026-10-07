@@ -148,10 +148,10 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
 .swp-row:last-child{border-bottom:none;}
 .swp-row-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;font-weight:800;font-size:11px;cursor:pointer;flex-shrink:0;}
-.swp-num.wrong{background:#FBE6E2;color:var(--red-text);}
-.swp-num.flagged{background:var(--lavender);color:#2A558C;}
-.swp-choice{font-weight:800;font-size:12.5px;color:var(--ink);flex-shrink:0;}
+.swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:16px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
+.swp-choice-input{width:26px;border:1.5px solid var(--line);border-radius:7px;padding:2px 3px;font-family:inherit;font-size:12px;font-weight:600;text-align:center;flex-shrink:0;}
+.swp-choice-input.wrong{color:var(--red-text);border-color:#F0C7BD;}
+.swp-choice-input.correct{color:var(--ox-correct);border-color:#BFDDF0;}
 .swp-reason{font-size:12px;color:var(--ink);line-height:1.5;}
 .swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;margin-left:auto;flex-shrink:0;}
 .swp-pin svg{width:13px;height:13px;}
@@ -193,7 +193,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 #detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 #examPopupOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
 #modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
-#sideWrongModalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
+#sideWrongModalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 .np-header{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;}
 .np-title{font-size:20px;font-weight:800;}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
@@ -1186,10 +1186,11 @@ function openSideWrongPop(rec){
           ${reasonKw.length ? `<div class="swp-kw-line">${reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('')}</div>` : ''}
           ${typeKw.length ? `<div class="swp-kw-line">${typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('')}</div>` : ''}
         </div>` : '';
+      const correctChoiceVal = (rec.correctChoices && rec.correctChoices[n]) || '';
       return `<div class="swp-row" data-rownum="${n}">
         <div class="swp-row-main">
-          <span class="swp-num ${isWrong?'wrong':'flagged'}" data-opennum="${n}">${n}번</span>
-          ${isWrong && w.selectedChoice ? `<span class="swp-choice">${w.selectedChoice}</span>` : ''}
+          <span class="swp-num" data-opennum="${n}">${n}</span>
+          <input type="text" class="swp-choice-input ${isWrong?'wrong':'correct'}" data-choicenum="${n}" value="${isWrong ? (w.selectedChoice||'') : correctChoiceVal}" placeholder="?">
           ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
           <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
           <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
@@ -1224,6 +1225,20 @@ function openSideWrongPop(rec){
       const n = parseInt(c.dataset.opennum2,10);
       closeSideWrongPop();
       openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
+    });
+  });
+  box.querySelectorAll('[data-choicenum]').forEach(inp=>{
+    inp.addEventListener('click', ev=>ev.stopPropagation());
+    inp.addEventListener('change', ()=>{
+      const n = parseInt(inp.dataset.choicenum,10);
+      const v = inp.value.trim();
+      if(rec.wrongs[n]){
+        rec.wrongs[n].selectedChoice = v;
+      } else {
+        if(!rec.correctChoices) rec.correctChoices = {};
+        if(v) rec.correctChoices[n] = v; else delete rec.correctChoices[n];
+      }
+      save();
     });
   });
   box.querySelectorAll('[data-pinnum]').forEach(c=>{
