@@ -145,10 +145,12 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-empty{color:var(--ink-soft);font-size:11.5px;}
 .swp-sec-label{font-size:10px;color:var(--ink-soft);margin:8px 0 4px;}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
-.swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
+.swp-row{display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--line);padding:6px 0;}
 .swp-row:last-child{border-bottom:none;}
+.swp-num{display:inline-flex;align-items:center;justify-content:center;width:16px;flex:none;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;padding-top:1px;}
+.swp-row-content{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
 .swp-row-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:16px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
+.swp-row-kw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .swp-choice{font-size:12px;font-weight:600;flex-shrink:0;}
 .swp-choice.wrong{color:var(--red-text);}
 .swp-choice.correct{color:var(--ox-correct);}
@@ -1190,13 +1192,15 @@ function openSideWrongPop(rec){
         ...typeKw.map(k=>`<span class="kw-tag type">${k}</span>`)
       ].join('');
       return `<div class="swp-row" data-rownum="${n}">
-        <div class="swp-row-main">
-          <span class="swp-num" data-opennum="${n}">${n}</span>
-          ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
-          ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
-          ${kwChips}
-          <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
-          <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
+        <span class="swp-num" data-opennum="${n}">${n}</span>
+        <div class="swp-row-content">
+          <div class="swp-row-main">
+            ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
+            ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
+            <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
+            <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
+          </div>
+          ${kwChips ? `<div class="swp-row-kw">${kwChips}</div>` : ''}
         </div>
       </div>`;
     }).join('') + `</div>`;
