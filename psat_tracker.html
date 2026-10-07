@@ -108,6 +108,41 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-add-row{display:flex;gap:6px;}
 .kw-add-row input{flex:1;}
 
+/* compact "+"-popover keyword picker (universal pattern) */
+.kw-compact{position:relative;display:inline-flex;}
+.kw-compact-list{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.kw-tag-sel{background:var(--lavender);border:1.5px solid var(--lavender-deep);color:#6A4EB3;font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;}
+.kw-tag-sel:hover{background:#E2D5F8;}
+.kw-plus-btn{width:24px;height:24px;border-radius:50%;border:1.5px dashed #D9D3E8;background:#FAF9FD;color:#A99BC9;font-family:inherit;font-size:14px;font-weight:800;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+.kw-plus-btn:hover{background:var(--lavender);border-color:var(--lavender-deep);color:#6A4EB3;border-style:solid;}
+.kw-picker-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:260;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(60,40,90,0.18);padding:8px;min-width:170px;max-width:240px;display:none;}
+.kw-picker-pop.open{display:block;}
+.kw-picker-item{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink);padding:6px 8px;border-radius:7px;cursor:pointer;}
+.kw-picker-item:hover{background:#F5F3FA;}
+.kw-picker-empty{font-size:11.5px;color:var(--ink-soft);padding:4px 8px;}
+.kw-picker-addrow{display:flex;gap:5px;margin-top:4px;padding-top:6px;border-top:1px solid var(--line);}
+.kw-picker-input{flex:1;border:1.5px solid var(--line);border-radius:7px;padding:5px 7px;font-family:inherit;font-size:12px;outline:none;}
+.kw-picker-input:focus{border-color:var(--lavender-deep);}
+.kw-picker-addbtn{flex:none;border:none;background:var(--lavender-deep);color:#fff;font-family:inherit;font-size:12px;font-weight:700;border-radius:7px;padding:5px 9px;cursor:pointer;}
+
+.side-wrong-pop{position:fixed;z-index:250;background:#fff;color:var(--ink);font-size:12px;padding:12px 14px;border-radius:10px;max-width:280px;line-height:1.6;display:none;box-shadow:0 10px 28px rgba(60,40,90,0.2);border:1px solid var(--line);}
+.side-wrong-pop.open{display:block;}
+.swp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.swp-head b{color:#6A4EB3;font-size:12.5px;}
+.swp-more-btn{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;}
+.swp-more-btn:hover{background:#F5F3FA;}
+.swp-more-menu{position:absolute;right:0;top:26px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 20px rgba(60,40,90,0.16);padding:4px;display:none;z-index:10;}
+.swp-more-menu.open{display:block;}
+.swp-more-menu button{display:flex;align-items:center;gap:6px;white-space:nowrap;background:none;border:none;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--ink);padding:6px 9px;border-radius:6px;cursor:pointer;}
+.swp-more-menu button:hover{background:#F5F3FA;}
+.swp-list{display:flex;flex-wrap:wrap;gap:5px;}
+.swp-chip{padding:3px 8px;border-radius:999px;font-weight:700;font-size:11px;}
+.swp-chip.wrong{background:#FBE6E2;color:var(--red-text);}
+.swp-chip.flagged{background:var(--lavender);color:#6A4EB3;}
+.swp-chip.other{background:#F0F0F5;color:var(--ink-soft);}
+.swp-empty{color:var(--ink-soft);font-size:11.5px;}
+.swp-sec-label{font-size:10px;color:var(--ink-soft);margin:8px 0 4px;}
+
 .ctx-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(60,40,90,0.16);padding:6px;min-width:190px;display:none;}
 .ctx-menu button{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);padding:8px 10px;border-radius:7px;cursor:pointer;}
 .ctx-menu button:hover{background:#F5F3FA;}
@@ -137,6 +172,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-title{font-size:20px;font-weight:800;}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
 .np-close{border:none;background:none;font-size:22px;line-height:1;color:var(--ink-soft);cursor:pointer;padding:2px 4px;}
+.np-header-actions{display:flex;align-items:center;gap:8px;}
 .np-body{padding:6px 26px 26px;}
 .np-row{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
 .np-row:last-child{border-bottom:none;}
@@ -147,15 +183,18 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-attempt-history{display:inline-flex;gap:4px;vertical-align:middle;font-weight:500;font-size:13px;}
 .np-att-hist.att-correct{color:var(--ox-correct);}
 .np-att-hist.att-wrong{color:var(--red-text);}
-.np-attempt-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px;}
-.np-round-label{flex:none;width:44px;font-size:10.5px;color:var(--ink-soft);}
-.np-time-input{width:56px;flex:none;border:1.5px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-family:inherit;font-size:12.5px;}
+.np-attempt-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:6px;}
+.np-round-label{flex:none;width:40px;font-size:10.5px;color:var(--ink-soft);}
+.np-wrong-check{flex:none;width:15px;height:15px;cursor:pointer;accent-color:var(--lavender-deep);}
+.np-time-input{width:38px;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:4px 3px;text-align:center;font-family:inherit;font-size:11px;}
 .att-choice-correct{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;color:var(--ox-correct);font-weight:700;font-size:13px;}
 .np-attempt-reason-empty{flex:1;color:var(--ink-soft);font-size:12px;padding:6px 0;}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
-.np-attempt-reason{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
-.np-attempt-kw{flex:none;display:flex;flex-wrap:wrap;gap:3px;max-width:120px;}
+.att-choice-input:disabled{border-color:var(--line);color:var(--ink-soft);background:#FAFAFA;}
+.np-attempt-reason{flex:1;min-width:90px;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
+.np-attempt-reason:disabled{background:#FAFAFA;color:var(--ink-soft);}
+.np-attempt-kw{flex:none;}
 .np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
 .np-choice-row:last-child{border-bottom:none;}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
@@ -387,11 +426,13 @@ tr.clickable:hover td{background:#FBF9FE;}
 
 <div class="ctx-menu" id="sideCtxMenu">
   <button data-action="addRound">➕ 새 회독 추가</button>
+  <button data-action="editRound">✏️ 회독 번호 수정</button>
   <div class="ctx-sep"></div>
   <button data-action="deleteTest">🗑️ 삭제</button>
 </div>
 
 <div class="info-pop" id="infoPop"></div>
+<div class="side-wrong-pop" id="sideWrongPop"></div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
@@ -983,10 +1024,70 @@ document.getElementById('sideCtxMenu').addEventListener('click', e=>{
   } else if(btn.dataset.action==='addRound' && sideCtxTargetId){
     const sourceRec = records.find(r=>r.id===sideCtxTargetId);
     if(sourceRec) openAddRoundModal(sourceRec);
+  } else if(btn.dataset.action==='editRound' && sideCtxTargetId){
+    const sourceRec = records.find(r=>r.id===sideCtxTargetId);
+    if(sourceRec){
+      const v = prompt('회독 번호를 입력하세요 (등록 안 한 이전 회독이 있다면 그 번호로 임의 설정 가능)', sourceRec.round||1);
+      if(v!==null){
+        const n = parseInt(v,10);
+        if(!isNaN(n) && n>0){ sourceRec.round = n; save(); renderTests(); }
+      }
+    }
   }
 });
 function openSideCtxMenu(x,y){ const m=document.getElementById('sideCtxMenu'); m.style.left=x+'px'; m.style.top=y+'px'; m.style.display='block'; }
 function closeSideCtxMenu(){ document.getElementById('sideCtxMenu').style.display='none'; }
+
+// ---------- Left-panel click: wrong-answer list popover ----------
+let sideWrongPopExtraOpen = false;
+testsListEl.addEventListener('click', e=>{
+  const side = e.target.closest('.test-side');
+  if(!side) return;
+  if(e.target.closest('.cell')) return;
+  sideWrongPopExtraOpen = false;
+  const rec = records.find(r=>r.id===side.dataset.rec);
+  if(rec) openSideWrongPop(rec, e.clientX, e.clientY);
+});
+function openSideWrongPop(rec, x, y){
+  const idk = idKey(rec);
+  const wrongNums = Object.keys(rec.wrongs).map(n=>parseInt(n,10)).sort((a,b)=>a-b);
+  const flaggedNums = reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num).filter(n=>!wrongNums.includes(n)).sort((a,b)=>a-b);
+  const shownSet = new Set([...wrongNums, ...flaggedNums]);
+  const otherNums = []; for(let n=1;n<=rec.total;n++){ if(!shownSet.has(n)) otherNums.push(n); }
+
+  const pop = document.getElementById('sideWrongPop');
+  const chip = (n,cls)=>`<span class="swp-chip ${cls}" data-opennum="${n}">${n}</span>`;
+  let html = `<div class="swp-head"><b>${rec.round||1}회독 오답/표시</b>
+    <button type="button" class="swp-more-btn" id="swpMoreBtn">⋯</button>
+    <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongPopExtraOpen?'숨기기':'보기'}</button></div>
+  </div>`;
+  html += `<div class="swp-list">${wrongNums.map(n=>chip(n,'wrong')).join('') || ''}${flaggedNums.map(n=>chip(n,'flagged')).join('')}</div>`;
+  if(!wrongNums.length && !flaggedNums.length) html += `<div class="swp-empty">오답·보충학습 표시가 없어요</div>`;
+  if(sideWrongPopExtraOpen){
+    html += `<div class="swp-sec-label">그 외 번호</div><div class="swp-list">${otherNums.map(n=>chip(n,'other')).join('') || '<span class="swp-empty">없음</span>'}</div>`;
+  }
+  pop.innerHTML = html;
+  pop.style.left = Math.min(x+8, window.innerWidth-300)+'px';
+  pop.style.top = (y+10)+'px';
+  pop.classList.add('open');
+  document.getElementById('swpMoreBtn').addEventListener('click', ev=>{
+    ev.stopPropagation();
+    document.getElementById('swpMoreMenu').classList.toggle('open');
+  });
+  document.getElementById('swpEyeBtn').addEventListener('click', ev=>{
+    ev.stopPropagation();
+    sideWrongPopExtraOpen = !sideWrongPopExtraOpen;
+    openSideWrongPop(rec, x, y);
+  });
+  pop.querySelectorAll('[data-opennum]').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      const n = parseInt(c.dataset.opennum,10);
+      closeSideWrongPop();
+      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
+    });
+  });
+}
+function closeSideWrongPop(){ document.getElementById('sideWrongPop').classList.remove('open'); sideWrongPopExtraOpen = false; }
 
 function openAddRoundModal(sourceRec){
   const category = sourceRec.category, level = sourceRec.level, subject = sourceRec.subject,
@@ -1058,13 +1159,14 @@ document.addEventListener('click', e=>{
   if(!e.target.closest('.ctx-menu') && !e.target.closest('.cell')) closeCtxMenu();
   if(!e.target.closest('#sideCtxMenu')) closeSideCtxMenu();
   if(!e.target.closest('.cell') && !e.target.closest('.akey-cell') && !e.target.closest('.info-pop')) hideInfoPop();
+  if(!e.target.closest('#sideWrongPop') && !e.target.closest('.test-side')) closeSideWrongPop();
   if(!e.target.closest('.cell') && !e.target.closest('.ctx-menu') && !e.target.closest('.modal-box')){
     if(activeSelection.nums.size){ activeSelection = {testId:null, nums:new Set()}; renderTests(); }
   }
 });
 document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
-    closeCtxMenu(); closeSideCtxMenu(); hideInfoPop();
+    closeCtxMenu(); closeSideCtxMenu(); hideInfoPop(); closeSideWrongPop();
     document.getElementById('modalOverlay').classList.remove('open');
     document.getElementById('examPopupOverlay').classList.remove('open');
     document.getElementById('memoOverlay').classList.remove('open');
@@ -1074,39 +1176,62 @@ document.addEventListener('keydown', e=>{
 function openCtxMenu(x,y){ const m=document.getElementById('ctxMenu'); m.style.left=x+'px'; m.style.top=y+'px'; m.style.display='block'; }
 function closeCtxMenu(){ document.getElementById('ctxMenu').style.display='none'; }
 
-// ---------- Keyword multi-select widget ----------
+// ---------- Keyword multi-select widget (compact "+"-popover pattern) ----------
 function keywordSelectorHtml(elId){
-  return `<div class="kw-chip-list" id="${elId}_chips"></div>
-    <div class="kw-add-row">
-      <input type="text" id="${elId}_new" placeholder="새 키워드 입력 후 추가">
-      <button type="button" class="btn btn-plain btn-small" id="${elId}_addbtn">추가</button>
-    </div>`;
+  return `<div class="kw-compact">
+    <div class="kw-compact-list" id="${elId}_chips"></div>
+    <div class="kw-picker-pop" id="${elId}_pop"></div>
+  </div>`;
 }
 function wireKeywordSelector(elId, storeKey, selSet){
   const chipsEl = document.getElementById(elId+'_chips');
+  const popEl = document.getElementById(elId+'_pop');
+  function closePop(){ popEl.classList.remove('open'); }
+  function openPop(){
+    document.querySelectorAll('.kw-picker-pop.open').forEach(p=>{ if(p!==popEl) p.classList.remove('open'); });
+    drawPop();
+    popEl.classList.add('open');
+  }
   function draw(){
-    chipsEl.innerHTML = keywordStore[storeKey].map(k=>
-      `<button type="button" class="kw-opt${selSet.has(k)?' selected':''}" data-kw="${k}">${k}</button>`
-    ).join('') || '<span style="font-size:11.5px;color:var(--ink-soft);">아직 등록된 키워드가 없어요.</span>';
-    chipsEl.querySelectorAll('.kw-opt').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const k = btn.dataset.kw;
-        if(selSet.has(k)) selSet.delete(k); else selSet.add(k);
-        draw();
-      });
+    const selHtml = [...selSet].map(k=>
+      `<span class="kw-tag-sel" data-kw="${k}">${k} ×</span>`
+    ).join('');
+    chipsEl.innerHTML = selHtml + `<button type="button" class="kw-plus-btn" id="${elId}_plusbtn">+</button>`;
+    chipsEl.querySelectorAll('.kw-tag-sel').forEach(tag=>{
+      tag.addEventListener('click', ()=>{ selSet.delete(tag.dataset.kw); draw(); });
+    });
+    document.getElementById(elId+'_plusbtn').addEventListener('click', e=>{
+      e.stopPropagation();
+      if(popEl.classList.contains('open')) closePop(); else openPop();
+    });
+  }
+  function drawPop(){
+    const remaining = keywordStore[storeKey].filter(k=>!selSet.has(k));
+    popEl.innerHTML = (remaining.length ? remaining.map(k=>`<button type="button" class="kw-picker-item" data-kw="${k}">${k}</button>`).join('') : '<div class="kw-picker-empty">선택할 키워드가 없어요</div>')
+      + `<div class="kw-picker-addrow">
+          <input type="text" class="kw-picker-input" id="${elId}_newkw" placeholder="새 키워드">
+          <button type="button" class="kw-picker-addbtn" id="${elId}_addkw">추가</button>
+        </div>`;
+    popEl.querySelectorAll('.kw-picker-item').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ selSet.add(btn.dataset.kw); closePop(); draw(); });
+    });
+    popEl.querySelector('.kw-picker-addbtn').addEventListener('click', ()=>{
+      const input = document.getElementById(elId+'_newkw');
+      const v = input.value.trim();
+      if(!v) return;
+      if(!keywordStore[storeKey].includes(v)){ keywordStore[storeKey].push(v); saveKeywordStore(); }
+      selSet.add(v);
+      closePop(); draw();
+    });
+    popEl.querySelector('.kw-picker-input').addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); popEl.querySelector('.kw-picker-addbtn').click(); }
     });
   }
   draw();
-  document.getElementById(elId+'_addbtn').addEventListener('click', ()=>{
-    const input = document.getElementById(elId+'_new');
-    const v = input.value.trim();
-    if(!v) return;
-    if(!keywordStore[storeKey].includes(v)){ keywordStore[storeKey].push(v); saveKeywordStore(); }
-    selSet.add(v);
-    input.value='';
-    draw();
-  });
 }
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.kw-compact')) document.querySelectorAll('.kw-picker-pop.open').forEach(p=>p.classList.remove('open'));
+});
 
 document.getElementById('ctxMenu').addEventListener('click', e=>{
   const btn = e.target.closest('button'); if(!btn) return;
@@ -1530,21 +1655,19 @@ function openProblemDetailPage(idk, num, level, subject, label){
 
   const typeKwSelSet = new Set(typeKw);
 
+  const rowKwSelSets = {};
   const choiceRowsHtml = attemptRecs.length ? attemptRecs.map(r=>{
     const isWrong = !!r.wrongs[num];
     const w = isWrong ? r.wrongs[num] : null;
-    const kwTags = isWrong ? (w.reasonKeywords||[]).map(k=>`<span class="kw-tag">${k}</span>`).join('') : '';
+    rowKwSelSets[r.id] = new Set((w && w.reasonKeywords) || []);
     const timeVal = (r.problemTimeSpent && r.problemTimeSpent[num]) || '';
-    return `<div class="np-attempt-row">
+    return `<div class="np-attempt-row" data-rowrecid="${r.id}">
       <span class="np-round-label">${r.round||1}회독</span>
-      ${isWrong
-        ? `<input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w.selectedChoice || ''}" placeholder="?">`
-        : `<span class="att-choice-input att-choice-correct">${toCircled(cur)}</span>`}
-      ${isWrong
-        ? `<input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w.reasonText||''}" placeholder="이 회차 오답 이유">`
-        : `<span class="np-attempt-reason np-attempt-reason-empty">정답</span>`}
+      <input type="checkbox" class="np-wrong-check" data-wrongrecid="${r.id}" ${isWrong?'checked':''} title="이 회차 오답으로 표시">
+      <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w ? (w.selectedChoice||'') : ''}" placeholder="?" ${isWrong?'':'disabled'}>
+      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w ? (w.reasonText||'') : ''}" placeholder="이 회차 오답 이유" ${isWrong?'':'disabled'}>
       <input type="text" class="np-time-input" data-timerecid="${r.id}" value="${timeVal}" placeholder="00:00">
-      ${kwTags ? `<span class="np-attempt-kw">${kwTags}</span>` : ''}
+      <span class="np-attempt-kw">${keywordSelectorHtml('rowKwSel_'+r.id)}</span>
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
@@ -1565,24 +1688,29 @@ function openProblemDetailPage(idk, num, level, subject, label){
   }).join('');
 
   const box = document.getElementById('detailBox');
+  const alreadyFlagged = reviewBox.some(e=>e.idKeyStr===idk && e.num===num);
+
   box.innerHTML = `
     <div class="np-header">
       <div>
         <div class="np-title">${num}번</div>
         <div class="np-sub">${level} · ${subject} · ${label}</div>
       </div>
-      <button type="button" class="np-close" id="detailCloseBtn">×</button>
+      <div class="np-header-actions">
+        <button type="button" class="btn btn-plain btn-small" id="npAddReviewBtn">${alreadyFlagged?'📌 보충학습에 담김':'📌 보충학습에 담기'}</button>
+        <button type="button" class="np-close" id="detailCloseBtn">×</button>
+      </div>
     </div>
     <div class="np-body">
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
-      <div class="np-row"><div class="np-label">회차별 기록<br><span style="font-weight:400;color:var(--ink-soft);font-size:10.5px;">답안·이유·시간(mm:ss)</span></div><div class="np-value">${choiceRowsHtml}</div></div>
+      <div class="np-row"><div class="np-label">회차별 기록<br><span style="font-weight:400;color:var(--ink-soft);font-size:10.5px;">☑오답 · 답안·이유·시간(mm:ss)·키워드</span></div><div class="np-value">${choiceRowsHtml}</div></div>
       <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${keywordSelectorHtml('typeKwSelDetail')}</div></div>
       <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><textarea id="npAnalysis" rows="3">${note.analysis||''}</textarea></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
       <div class="np-row">
         <div class="np-label">선지분석</div>
         <div class="np-value">
-          <button type="button" class="btn btn-plain btn-small" id="choiceToggleBtn">${hasChoiceData?'선지분석 보기/접기':'+ 선지분석 추가하기'}</button>
+          <button type="button" class="btn btn-plain btn-small" id="choiceToggleBtn" style="display:${hasChoiceData?'none':'inline-block'};">+ 선지분석 추가하기</button>
           <div id="choiceBlock" style="display:${hasChoiceData?'block':'none'};margin-top:10px;">${choiceRowsForAnalysis}</div>
         </div>
       </div>
@@ -1595,12 +1723,29 @@ function openProblemDetailPage(idk, num, level, subject, label){
   document.getElementById('detailCloseBtn').addEventListener('click', ()=>{
     document.getElementById('detailOverlay').classList.remove('open');
   });
+  document.getElementById('npAddReviewBtn').addEventListener('click', ()=>{
+    const exists = reviewBox.some(e=>e.idKeyStr===idk && e.num===num);
+    if(!exists){
+      reviewBox.push({ id:uid('v'), idKeyStr:idk, level, subject, label, num, addedAt:Date.now() });
+      saveReview();
+      document.getElementById('npAddReviewBtn').textContent = '📌 보충학습에 담김';
+    }
+  });
   document.getElementById('choiceToggleBtn').addEventListener('click', ()=>{
-    const blk = document.getElementById('choiceBlock');
-    blk.style.display = blk.style.display==='none' ? 'block' : 'none';
+    document.getElementById('choiceBlock').style.display = 'block';
+    document.getElementById('choiceToggleBtn').style.display = 'none';
+  });
+  document.querySelectorAll('.np-wrong-check').forEach(chk=>{
+    chk.addEventListener('change', ()=>{
+      const row = chk.closest('.np-attempt-row');
+      const on = chk.checked;
+      row.querySelector('.att-choice-input').disabled = !on;
+      row.querySelector('.np-attempt-reason').disabled = !on;
+    });
   });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
+  attemptRecs.forEach(r=>{ wireKeywordSelector('rowKwSel_'+r.id, 'reason', rowKwSelSets[r.id]); });
   ['npAnalysis','npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
@@ -1614,13 +1759,18 @@ function openProblemDetailPage(idk, num, level, subject, label){
       answerKeyStore[idk][num] = v;
       saveAnswerKeyStore();
     }
-    document.querySelectorAll('.np-attempt-reason').forEach(inp=>{
-      const rec = records.find(r=>r.id===inp.dataset.recid);
-      if(rec && rec.wrongs[num]) rec.wrongs[num].reasonText = inp.value.trim();
-    });
-    document.querySelectorAll('.att-choice-input').forEach(inp=>{
-      const rec = records.find(r=>r.id===inp.dataset.choicerecid);
-      if(rec && rec.wrongs[num]) rec.wrongs[num].selectedChoice = inp.value.trim();
+    document.querySelectorAll('.np-wrong-check').forEach(chk=>{
+      const rec = records.find(r=>r.id===chk.dataset.wrongrecid);
+      if(!rec) return;
+      const row = chk.closest('.np-attempt-row');
+      if(chk.checked){
+        const choiceVal = row.querySelector('.att-choice-input').value.trim();
+        const reasonVal = row.querySelector('.np-attempt-reason').value.trim();
+        const kwSet = rowKwSelSets[rec.id] || new Set();
+        rec.wrongs[num] = { selectedChoice: choiceVal, reasonText: reasonVal, reasonKeywords: [...kwSet] };
+      } else {
+        delete rec.wrongs[num];
+      }
     });
     document.querySelectorAll('.np-time-input').forEach(inp=>{
       const rec = records.find(r=>r.id===inp.dataset.timerecid);
