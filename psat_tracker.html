@@ -129,7 +129,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-picker-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;}
 .kw-picker-chip.selected{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 
-.swp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.swp-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
 .swp-head b{color:#2A558C;font-size:12.5px;}
 .swp-more-btn{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;}
 .swp-more-btn:hover{background:#F5F3FA;}
@@ -137,11 +137,6 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-more-menu.open{display:block;}
 .swp-more-menu button{display:flex;align-items:center;gap:6px;white-space:nowrap;background:none;border:none;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--ink);padding:6px 9px;border-radius:6px;cursor:pointer;}
 .swp-more-menu button:hover{background:#F5F3FA;}
-.swp-list{display:flex;flex-wrap:wrap;gap:5px;}
-.swp-chip{padding:3px 8px;border-radius:999px;font-weight:700;font-size:11px;}
-.swp-chip.wrong{background:#FBE6E2;color:var(--red-text);}
-.swp-chip.flagged{background:var(--lavender);color:#2A558C;}
-.swp-chip.other{background:#F0F0F5;color:var(--ink-soft);}
 .swp-empty{color:var(--ink-soft);font-size:11.5px;}
 .swp-sec-label{font-size:10px;color:var(--ink-soft);margin:8px 0 4px;}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
@@ -1172,38 +1167,51 @@ testsListEl.addEventListener('click', e=>{
   const rec = records.find(r=>r.id===side.dataset.rec);
   if(rec) openSideWrongPop(rec);
 });
-function buildNoteRowsHtml(rec){
+function renderNoteRow(rec, n, flaggedSet){
+  const w = rec.wrongs[n];
+  const isWrong = !!w;
+  const isFlagged = flaggedSet.has(n);
+  const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
+  const reasonKw = (w && w.reasonKeywords) || [];
+  const correctChoiceVal = (rec.correctChoices && rec.correctChoices[n]) || '';
+  const choiceVal = isWrong ? (w.selectedChoice||'') : correctChoiceVal;
+  const kwChips = [
+    ...reasonKw.map(k=>`<span class="kw-tag">${k}</span>`),
+    ...typeKw.map(k=>`<span class="kw-tag type">${k}</span>`)
+  ].join('');
+  return `<div class="swp-row" data-rownum="${n}">
+    <div class="swp-row-main">
+      <span class="swp-num" data-opennum="${n}">${n}</span>
+      ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
+      <span class="swp-reason-wrap">${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}${kwChips}</span>
+      <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
+      <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
+    </div>
+  </div>`;
+}
+function renderNoteRowsForNums(rec, nums){
+  if(!nums.length) return '<div class="swp-empty">없음</div>';
+  const idk = idKey(rec);
+  const flaggedSet = new Set(reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num));
+  return `<div class="swp-rows">` + nums.map(n=>renderNoteRow(rec, n, flaggedSet)).join('') + `</div>`;
+}
+function buildNoteRowsHtml(rec, allNums){
   const idk = idKey(rec);
   const wrongNums = Object.keys(rec.wrongs).map(n=>parseInt(n,10)).sort((a,b)=>a-b);
   const flaggedSet = new Set(reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num));
   const flaggedOnlyNums = [...flaggedSet].filter(n=>!wrongNums.includes(n)).sort((a,b)=>a-b);
-  const noteNums = [...wrongNums, ...flaggedOnlyNums];
+  let noteNums;
+  if(allNums){
+    const shown = new Set([...wrongNums, ...flaggedOnlyNums]);
+    const rest = []; for(let n=1;n<=rec.total;n++){ if(!shown.has(n)) rest.push(n); }
+    noteNums = [...wrongNums, ...flaggedOnlyNums, ...rest];
+  } else {
+    noteNums = [...wrongNums, ...flaggedOnlyNums];
+  }
   if(!noteNums.length){
     return { html: '<div class="swp-empty">오답·보충학습 표시가 없어요</div>', noteNums };
   }
-  const html = `<div class="swp-rows">` + noteNums.map(n=>{
-    const w = rec.wrongs[n];
-    const isWrong = !!w;
-    const isFlagged = flaggedSet.has(n);
-    const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
-    const reasonKw = (w && w.reasonKeywords) || [];
-    const correctChoiceVal = (rec.correctChoices && rec.correctChoices[n]) || '';
-    const choiceVal = isWrong ? (w.selectedChoice||'') : correctChoiceVal;
-    const kwChips = [
-      ...reasonKw.map(k=>`<span class="kw-tag">${k}</span>`),
-      ...typeKw.map(k=>`<span class="kw-tag type">${k}</span>`)
-    ].join('');
-    return `<div class="swp-row" data-rownum="${n}">
-      <div class="swp-row-main">
-        <span class="swp-num" data-opennum="${n}">${n}</span>
-        ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
-        <span class="swp-reason-wrap">${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}${kwChips}</span>
-        <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
-        <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
-      </div>
-    </div>`;
-  }).join('') + `</div>`;
-  return { html, noteNums };
+  return { html: renderNoteRowsForNums(rec, noteNums), noteNums };
 }
 function wireNoteRowEvents(container, rec, onPinChange){
   const idk = idKey(rec);
@@ -1235,20 +1243,18 @@ function wireNoteRowEvents(container, rec, onPinChange){
 }
 function openSideWrongPop(rec){
   sideWrongModalRec = rec;
-  const idk = idKey(rec);
   const { noteNums, html: rowsHtml } = buildNoteRowsHtml(rec);
   const shownSet = new Set(noteNums);
   const otherNums = []; for(let n=1;n<=rec.total;n++){ if(!shownSet.has(n)) otherNums.push(n); }
 
   const box = document.getElementById('sideWrongModalBox');
-  const chip = (n,cls)=>`<span class="swp-chip ${cls}" data-opennum="${n}">${n}</span>`;
   let html = `<div class="swp-head"><b>${rec.round||1}회독 오답/표시</b>
     <button type="button" class="swp-more-btn" id="swpMoreBtn">⋯</button>
     <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongModalExtraOpen?'숨기기':'보기'}</button></div>
   </div>`;
   html += rowsHtml;
   if(sideWrongModalExtraOpen){
-    html += `<div class="swp-sec-label">그 외 번호</div><div class="swp-list">${otherNums.map(n=>chip(n,'other')).join('') || '<span class="swp-empty">없음</span>'}</div>`;
+    html += `<div class="swp-sec-label">그 외 번호</div>` + renderNoteRowsForNums(rec, otherNums);
   }
   box.innerHTML = html;
   document.getElementById('sideWrongModalOverlay').classList.add('open');
@@ -1301,7 +1307,7 @@ function openAnswerKeyNotePop(idk, level, subject, yearLabel){
       }
       const rec = records.find(r=>r.id===rid);
       const refresh = ()=>{
-        body.innerHTML = buildNoteRowsHtml(rec).html;
+        body.innerHTML = buildNoteRowsHtml(rec, true).html;
         wireNoteRowEvents(body, rec, refresh);
       };
       refresh();
