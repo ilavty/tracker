@@ -129,8 +129,6 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-picker-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;}
 .kw-picker-chip.selected{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 
-.side-wrong-pop{position:fixed;z-index:250;background:#fff;color:var(--ink);font-size:12px;padding:12px 14px;border-radius:10px;width:300px;max-width:92vw;max-height:70vh;overflow-y:auto;line-height:1.6;display:none;box-shadow:0 10px 28px rgba(60,40,90,0.2);border:1px solid var(--line);}
-.side-wrong-pop.open{display:block;}
 .swp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
 .swp-head b{color:#2A558C;font-size:12.5px;}
 .swp-more-btn{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;}
@@ -153,17 +151,13 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;font-weight:800;font-size:11px;cursor:pointer;}
 .swp-num.wrong{background:#FBE6E2;color:var(--red-text);}
 .swp-num.flagged{background:var(--lavender);color:#2A558C;}
-.swp-choice{font-size:11.5px;font-weight:700;color:var(--red-text);}
 .swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;}
 .swp-pin svg{width:13px;height:13px;}
 .swp-pin.on{color:var(--red-text);}
-.swp-row-more{margin-left:auto;border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:5px;}
-.swp-row-more:hover{background:#F5F3FA;}
-.swp-row-detail{display:flex;flex-direction:column;gap:4px;margin-top:6px;padding-left:4px;border-left:2px solid var(--line);margin-left:9px;padding-left:9px;}
-.swp-detail-line{font-size:11.5px;line-height:1.5;}
-.swp-detail-line b{color:var(--ink-soft);font-weight:700;margin-right:4px;}
-.swp-empty-sub{font-size:11px;color:var(--ink-soft);}
-.swp-detail-open{align-self:flex-start;border:none;background:none;color:var(--lavender-deep);font-size:11px;font-weight:700;cursor:pointer;padding:2px 0;}
+.swp-row-detail{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin-top:7px;padding-left:9px;border-left:2px solid var(--line);}
+.swp-detail-line{display:contents;font-size:11.5px;line-height:1.6;}
+.swp-detail-line b{color:var(--ink-soft);font-weight:700;}
+.swp-detail-open{margin-left:auto;border:none;background:none;color:var(--lavender-deep);font-size:11px;font-weight:700;cursor:pointer;padding:2px 0;}
 
 .ctx-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(60,40,90,0.16);padding:6px;min-width:190px;display:none;}
 #quickPop{z-index:260;}
@@ -198,6 +192,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 #detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 #examPopupOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
 #modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
+#sideWrongModalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
 .np-header{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;}
 .np-title{font-size:20px;font-weight:800;}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
@@ -471,8 +466,11 @@ tr.clickable:hover td{background:#FBF9FE;}
 </div>
 
 <div class="info-pop" id="infoPop"></div>
-<div class="side-wrong-pop" id="sideWrongPop"></div>
 <div class="ctx-menu" id="quickPop"></div>
+
+<div class="modal-overlay" id="sideWrongModalOverlay">
+  <div class="popup-box" id="sideWrongModalBox" style="width:min(560px,94vw);"></div>
+</div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
@@ -1147,19 +1145,19 @@ document.getElementById('sideCtxMenu').addEventListener('click', e=>{
 function openSideCtxMenu(x,y){ const m=document.getElementById('sideCtxMenu'); m.style.left=x+'px'; m.style.top=y+'px'; m.style.display='block'; }
 function closeSideCtxMenu(){ document.getElementById('sideCtxMenu').style.display='none'; }
 
-// ---------- Left-panel click: wrong-answer list popover ----------
-let sideWrongPopExtraOpen = false;
-let sideWrongPopExpanded = new Set();
+// ---------- Left-panel click: wrong-answer note modal ----------
+let sideWrongModalExtraOpen = false;
+let sideWrongModalRec = null;
 testsListEl.addEventListener('click', e=>{
   const side = e.target.closest('.test-side');
   if(!side) return;
   if(e.target.closest('.cell')) return;
-  sideWrongPopExtraOpen = false;
-  sideWrongPopExpanded = new Set();
+  sideWrongModalExtraOpen = false;
   const rec = records.find(r=>r.id===side.dataset.rec);
-  if(rec) openSideWrongPop(rec, e.clientX, e.clientY);
+  if(rec) openSideWrongPop(rec);
 });
-function openSideWrongPop(rec, x, y){
+function openSideWrongPop(rec){
+  sideWrongModalRec = rec;
   const idk = idKey(rec);
   const wrongNums = Object.keys(rec.wrongs).map(n=>parseInt(n,10)).sort((a,b)=>a-b);
   const flaggedSet = new Set(reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num));
@@ -1168,11 +1166,11 @@ function openSideWrongPop(rec, x, y){
   const shownSet = new Set(noteNums);
   const otherNums = []; for(let n=1;n<=rec.total;n++){ if(!shownSet.has(n)) otherNums.push(n); }
 
-  const pop = document.getElementById('sideWrongPop');
+  const box = document.getElementById('sideWrongModalBox');
   const chip = (n,cls)=>`<span class="swp-chip ${cls}" data-opennum="${n}">${n}</span>`;
   let html = `<div class="swp-head"><b>${rec.round||1}회독 오답/표시</b>
     <button type="button" class="swp-more-btn" id="swpMoreBtn">⋯</button>
-    <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongPopExtraOpen?'숨기기':'보기'}</button></div>
+    <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongModalExtraOpen?'숨기기':'보기'}</button></div>
   </div>`;
   if(!noteNums.length){
     html += `<div class="swp-empty">오답·보충학습 표시가 없어요</div>`;
@@ -1183,66 +1181,50 @@ function openSideWrongPop(rec, x, y){
       const isFlagged = flaggedSet.has(n);
       const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
       const reasonKw = (w && w.reasonKeywords) || [];
-      const expanded = sideWrongPopExpanded.has(n);
-      let detail = '';
-      if(expanded){
-        let lines = '';
-        if(isWrong && w.reasonText) lines += `<div class="swp-detail-line"><b>오답이유</b>${w.reasonText}</div>`;
-        if(reasonKw.length) lines += `<div class="swp-detail-line"><b>오답키워드</b>${reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('')}</div>`;
-        if(typeKw.length) lines += `<div class="swp-detail-line"><b>유형키워드</b>${typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('')}</div>`;
-        if(!lines) lines = `<div class="swp-empty-sub">추가된 항목 없음</div>`;
-        detail = `<div class="swp-row-detail">${lines}<button type="button" class="swp-detail-open" data-opennum2="${n}">상세페이지에서 편집 →</button></div>`;
-      }
+      let lines = '';
+      lines += `<div class="swp-detail-line"><b>선택답</b><span>${isWrong && w.selectedChoice ? w.selectedChoice : '-'}</span></div>`;
+      lines += `<div class="swp-detail-line"><b>오답이유</b><span>${isWrong && w.reasonText ? w.reasonText : '-'}</span></div>`;
+      lines += `<div class="swp-detail-line"><b>유형키워드</b><span>${typeKw.length ? typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('') : '-'}</span></div>`;
+      lines += `<div class="swp-detail-line"><b>오답키워드</b><span>${reasonKw.length ? reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('') : '-'}</span></div>`;
       return `<div class="swp-row" data-rownum="${n}">
         <div class="swp-row-main">
-          <span class="swp-num ${isWrong?'wrong':'flagged'}" data-opennum="${n}">${n}</span>
-          ${isWrong && w.selectedChoice ? `<span class="swp-choice">(${w.selectedChoice})</span>` : ''}
+          <span class="swp-num ${isWrong?'wrong':'flagged'}" data-opennum="${n}">${n}번</span>
           <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
-          <button type="button" class="swp-row-more" data-expandnum="${n}">⋯</button>
+          <button type="button" class="swp-detail-open" data-opennum2="${n}">상세페이지 →</button>
         </div>
-        ${detail}
+        <div class="swp-row-detail">${lines}</div>
       </div>`;
     }).join('') + `</div>`;
   }
-  if(sideWrongPopExtraOpen){
+  if(sideWrongModalExtraOpen){
     html += `<div class="swp-sec-label">그 외 번호</div><div class="swp-list">${otherNums.map(n=>chip(n,'other')).join('') || '<span class="swp-empty">없음</span>'}</div>`;
   }
-  pop.innerHTML = html;
-  pop.style.left = Math.min(x+8, window.innerWidth-320)+'px';
-  pop.style.top = (y+10)+'px';
-  pop.classList.add('open');
+  box.innerHTML = html;
+  document.getElementById('sideWrongModalOverlay').classList.add('open');
   document.getElementById('swpMoreBtn').addEventListener('click', ev=>{
     ev.stopPropagation();
     document.getElementById('swpMoreMenu').classList.toggle('open');
   });
   document.getElementById('swpEyeBtn').addEventListener('click', ev=>{
     ev.stopPropagation();
-    sideWrongPopExtraOpen = !sideWrongPopExtraOpen;
-    openSideWrongPop(rec, x, y);
+    sideWrongModalExtraOpen = !sideWrongModalExtraOpen;
+    openSideWrongPop(rec);
   });
-  pop.querySelectorAll('[data-opennum]').forEach(c=>{
+  box.querySelectorAll('[data-opennum]').forEach(c=>{
     c.addEventListener('click', ()=>{
       const n = parseInt(c.dataset.opennum,10);
       closeSideWrongPop();
       openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
     });
   });
-  pop.querySelectorAll('[data-opennum2]').forEach(c=>{
+  box.querySelectorAll('[data-opennum2]').forEach(c=>{
     c.addEventListener('click', ()=>{
       const n = parseInt(c.dataset.opennum2,10);
       closeSideWrongPop();
       openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
     });
   });
-  pop.querySelectorAll('[data-expandnum]').forEach(c=>{
-    c.addEventListener('click', ev=>{
-      ev.stopPropagation();
-      const n = parseInt(c.dataset.expandnum,10);
-      if(sideWrongPopExpanded.has(n)) sideWrongPopExpanded.delete(n); else sideWrongPopExpanded.add(n);
-      openSideWrongPop(rec, x, y);
-    });
-  });
-  pop.querySelectorAll('[data-pinnum]').forEach(c=>{
+  box.querySelectorAll('[data-pinnum]').forEach(c=>{
     c.addEventListener('click', ev=>{
       ev.stopPropagation();
       const n = parseInt(c.dataset.pinnum,10);
@@ -1250,11 +1232,14 @@ function openSideWrongPop(rec, x, y){
       if(existing){ reviewBox = reviewBox.filter(e=>e.id!==existing.id); }
       else { reviewBox.push({ id:uid('v'), idKeyStr:idk, level:rec.level, subject:rec.subject, label:testLabel(rec), num:n, addedAt:Date.now() }); }
       saveReview();
-      openSideWrongPop(rec, x, y);
+      openSideWrongPop(rec);
     });
   });
 }
-function closeSideWrongPop(){ document.getElementById('sideWrongPop').classList.remove('open'); sideWrongPopExtraOpen = false; sideWrongPopExpanded = new Set(); }
+function closeSideWrongPop(){ document.getElementById('sideWrongModalOverlay').classList.remove('open'); sideWrongModalExtraOpen = false; sideWrongModalRec = null; }
+document.getElementById('sideWrongModalOverlay').addEventListener('click', e=>{
+  if(e.target.id==='sideWrongModalOverlay') closeSideWrongPop();
+});
 
 function openAddRoundModal(sourceRec){
   const category = sourceRec.category, level = sourceRec.level, subject = sourceRec.subject,
@@ -1326,7 +1311,6 @@ document.addEventListener('click', e=>{
   if(!e.target.closest('.ctx-menu') && !e.target.closest('.cell')) closeCtxMenu();
   if(!e.target.closest('#sideCtxMenu')) closeSideCtxMenu();
   if(!e.target.closest('.cell') && !e.target.closest('.akey-cell') && !e.target.closest('.info-pop')) hideInfoPop();
-  if(!e.target.closest('#sideWrongPop') && !e.target.closest('.test-side')) closeSideWrongPop();
   if(!e.target.closest('#quickPop') && !e.target.closest('.cell')) closeQuickPop();
   if(!e.target.closest('.cell') && !e.target.closest('.ctx-menu') && !e.target.closest('.modal-box')){
     if(activeSelection.nums.size){ activeSelection = {testId:null, nums:new Set()}; renderTests(); }
