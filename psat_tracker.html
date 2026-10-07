@@ -149,16 +149,14 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-row:last-child{border-bottom:none;}
 .swp-row-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:16px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
-.swp-choice-input{width:26px;border:1.5px solid var(--line);border-radius:7px;padding:2px 3px;font-family:inherit;font-size:12px;font-weight:600;text-align:center;flex-shrink:0;}
-.swp-choice-input.wrong{color:var(--red-text);border-color:#F0C7BD;}
-.swp-choice-input.correct{color:var(--ox-correct);border-color:#BFDDF0;}
+.swp-choice{font-size:12px;font-weight:600;flex-shrink:0;}
+.swp-choice.wrong{color:var(--red-text);}
+.swp-choice.correct{color:var(--ox-correct);}
 .swp-reason{font-size:12px;color:var(--ink);line-height:1.5;}
 .swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;margin-left:auto;flex-shrink:0;}
 .swp-pin svg{width:13px;height:13px;}
 .swp-pin.on{color:var(--red-text);}
 .swp-detail-open{border:none;background:none;color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;padding:2px 2px;flex-shrink:0;}
-.swp-row-kw{display:flex;flex-direction:column;gap:3px;margin-top:5px;}
-.swp-kw-line{display:flex;flex-wrap:wrap;gap:4px;}
 
 .ctx-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(60,40,90,0.16);padding:6px;min-width:190px;display:none;}
 #quickPop{z-index:260;}
@@ -192,7 +190,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .notion-page-box{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:0;width:min(720px,94vw);box-shadow:0 12px 32px rgba(40,20,70,0.1);}
 #detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 #examPopupOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
-#modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
+#modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 #sideWrongModalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 .np-header{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;}
 .np-title{font-size:20px;font-weight:800;}
@@ -215,7 +213,8 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-attempt-history{display:inline-flex;gap:4px;vertical-align:middle;font-weight:500;font-size:13px;}
 .np-att-hist.att-correct{color:var(--ox-correct);}
 .np-att-hist.att-wrong{color:var(--red-text);}
-.np-attempt-row{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:6px;margin-bottom:8px;}
+.np-attempt-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;margin-bottom:8px;}
+.np-attempt-kw{flex:1 1 100%;margin-left:104px;}
 .np-attempt-row .np-round-label,.np-attempt-row .att-choice-input,.np-attempt-row .np-time-input{margin-top:1px;}
 .np-round-label{flex:none;width:36px;font-size:10.5px;color:var(--ink-soft);}
 .np-time-input{width:62px !important;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:5px 4px;text-align:center;font-family:inherit;font-size:12.5px;}
@@ -1050,14 +1049,16 @@ document.getElementById('quickPop').addEventListener('click', e=>{
     activeSelection={testId:null,nums:new Set()}; renderTests();
   } else if(action==='wrong'){
     const existing = rec.wrongs[num];
+    const qwReasonKwSet = new Set((existing&&existing.reasonKeywords)||[]);
     openModal('오답으로 표시 — '+num+'번', `
       <div class="field"><label>내가 고른 답 (선지 번호)</label><input type="text" id="qwChoice" placeholder="예: 3" value="${existing?(existing.selectedChoice||''):''}"></div>
-      <div class="field"><label>오답 이유 (선택)</label><input type="text" id="qwReason" placeholder="예: 시간 부족" value="${existing?(existing.reasonText||''):''}"></div>
+      <div class="field"><label>오답 키워드 (선택)</label>${keywordSelectorHtml('qwReasonKw')}</div>
     `, ()=>{
       const choice = document.getElementById('qwChoice').value.trim();
-      const reason = document.getElementById('qwReason').value.trim();
-      rec.wrongs[num] = { selectedChoice: choice, reasonText: reason, reasonKeywords: (existing&&existing.reasonKeywords)||[] };
+      rec.wrongs[num] = { selectedChoice: choice, reasonText: (existing&&existing.reasonText)||'', reasonKeywords: [...qwReasonKwSet] };
       save(); activeSelection={testId:null,nums:new Set()}; renderTests();
+    }, ()=>{
+      wireKeywordSelector('qwReasonKw', 'reason', qwReasonKwSet);
     });
   } else if(action==='detail'){
     activeSelection={testId:null,nums:new Set()}; renderTests();
@@ -1182,20 +1183,21 @@ function openSideWrongPop(rec){
       const isFlagged = flaggedSet.has(n);
       const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
       const reasonKw = (w && w.reasonKeywords) || [];
-      const kwHtml = (reasonKw.length || typeKw.length) ? `<div class="swp-row-kw">
-          ${reasonKw.length ? `<div class="swp-kw-line">${reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('')}</div>` : ''}
-          ${typeKw.length ? `<div class="swp-kw-line">${typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('')}</div>` : ''}
-        </div>` : '';
       const correctChoiceVal = (rec.correctChoices && rec.correctChoices[n]) || '';
+      const choiceVal = isWrong ? (w.selectedChoice||'') : correctChoiceVal;
+      const kwChips = [
+        ...reasonKw.map(k=>`<span class="kw-tag">${k}</span>`),
+        ...typeKw.map(k=>`<span class="kw-tag type">${k}</span>`)
+      ].join('');
       return `<div class="swp-row" data-rownum="${n}">
         <div class="swp-row-main">
           <span class="swp-num" data-opennum="${n}">${n}</span>
-          <input type="text" class="swp-choice-input ${isWrong?'wrong':'correct'}" data-choicenum="${n}" value="${isWrong ? (w.selectedChoice||'') : correctChoiceVal}" placeholder="?">
+          ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
           ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
+          ${kwChips}
           <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
           <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
         </div>
-        ${kwHtml}
       </div>`;
     }).join('') + `</div>`;
   }
@@ -1225,20 +1227,6 @@ function openSideWrongPop(rec){
       const n = parseInt(c.dataset.opennum2,10);
       closeSideWrongPop();
       openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
-    });
-  });
-  box.querySelectorAll('[data-choicenum]').forEach(inp=>{
-    inp.addEventListener('click', ev=>ev.stopPropagation());
-    inp.addEventListener('change', ()=>{
-      const n = parseInt(inp.dataset.choicenum,10);
-      const v = inp.value.trim();
-      if(rec.wrongs[n]){
-        rec.wrongs[n].selectedChoice = v;
-      } else {
-        if(!rec.correctChoices) rec.correctChoices = {};
-        if(v) rec.correctChoices[n] = v; else delete rec.correctChoices[n];
-      }
-      save();
     });
   });
   box.querySelectorAll('[data-pinnum]').forEach(c=>{
@@ -1855,15 +1843,19 @@ function openProblemDetailPage(idk, num, level, subject, label){
 
   const typeKwSelSet = new Set(typeKw);
 
+  const attemptKwSelSets = {};
   const choiceRowsHtml = attemptRecs.length ? attemptRecs.map(r=>{
     const isWrong = !!r.wrongs[num];
     const w = isWrong ? r.wrongs[num] : null;
     const timeVal = (r.problemTimeSpent && r.problemTimeSpent[num]) || '';
+    const existingKw = isWrong ? (w.reasonKeywords||[]) : ((r.noteKeywords && r.noteKeywords[num]) || []);
+    attemptKwSelSets[r.id] = new Set(existingKw);
     return `<div class="np-attempt-row" data-rowrecid="${r.id}">
       <span class="np-round-label">${r.round||1}회독</span>
       <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w ? (w.selectedChoice||'') : ''}" placeholder="?">
       <input type="text" class="np-time-input" data-timerecid="${r.id}" value="${timeVal}" placeholder="00:00">
       <textarea class="np-attempt-reason" data-recid="${r.id}" rows="1" placeholder="메모">${w ? (w.reasonText||'') : ((r.notes && r.notes[num]) || '')}</textarea>
+      <div class="np-attempt-kw">${keywordSelectorHtml('attKw'+r.id)}</div>
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
@@ -1938,6 +1930,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
   });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
+  attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id]); });
   ['npAnalysis','npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
@@ -1956,14 +1949,18 @@ function openProblemDetailPage(idk, num, level, subject, label){
       if(!rec) return;
       const choiceVal = row.querySelector('.att-choice-input').value.trim();
       const reasonVal = row.querySelector('.np-attempt-reason').value.trim();
+      const kwSet = attemptKwSelSets[rec.id];
+      const kwArr = kwSet ? [...kwSet] : [];
       if(choiceVal){
-        const prevKw = (rec.wrongs[num] && rec.wrongs[num].reasonKeywords) || [];
-        rec.wrongs[num] = { selectedChoice: choiceVal, reasonText: reasonVal, reasonKeywords: prevKw };
+        rec.wrongs[num] = { selectedChoice: choiceVal, reasonText: reasonVal, reasonKeywords: kwArr };
         if(rec.notes) delete rec.notes[num];
+        if(rec.noteKeywords) delete rec.noteKeywords[num];
       } else {
         delete rec.wrongs[num];
         if(!rec.notes) rec.notes = {};
         if(reasonVal) rec.notes[num] = reasonVal; else delete rec.notes[num];
+        if(!rec.noteKeywords) rec.noteKeywords = {};
+        if(kwArr.length) rec.noteKeywords[num] = kwArr; else delete rec.noteKeywords[num];
       }
     });
     document.querySelectorAll('.np-time-input').forEach(inp=>{
