@@ -557,6 +557,7 @@ let psatDb = null;
 try{ firebase.initializeApp(PSAT_FB_CONFIG, 'psatApp'); psatDb = firebase.app('psatApp').database(); }catch(e){ psatDb = null; }
 let psatFbReady = false; // becomes true once the initial load (local or remote) finished, so early saves can't clobber the server
 let psatFbSyncTimer = null;
+const PSAT_LOCAL_TS_KEY = 'psatLocalUpdatedAt_v1';
 function psatSaveAllToLocal(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox));
@@ -566,12 +567,19 @@ function psatSaveAllToLocal(){
   localStorage.setItem(NOTES_KEY, JSON.stringify(notesStore));
   localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
   localStorage.setItem(ANSWER_KEY, JSON.stringify(answerKeyStore));
+  // Stamped on every local save (synchronous, instant — doesn't wait on the network),
+  // so a page that reloads before its 600ms Firebase push goes out still knows its own
+  // in-progress edit is newer than whatever is already on the server. Without this, the
+  // load-from-server step below would silently overwrite that just-typed edit with the
+  // older server copy — exactly the "내용이 갑자기 다 날라갔어" data-loss failure mode.
+  localStorage.setItem(PSAT_LOCAL_TS_KEY, String(Date.now()));
 }
 function psatPushToFirebase(){
   if(!psatDb) return;
   psatDb.ref('psat_tracker_data/' + PSAT_FB_DOC_ID).set({
     records: records || [], reviewBox: reviewBox || [], keywordStore: keywordStore || {reason:[],type:[],choice:[]},
-    cutoffs: cutoffs || {}, todos: todos || [], notesStore: notesStore || {}, savedViews: savedViews || [], answerKeyStore: answerKeyStore || {}
+    cutoffs: cutoffs || {}, todos: todos || [], notesStore: notesStore || {}, savedViews: savedViews || [], answerKeyStore: answerKeyStore || {},
+    updatedAt: parseInt(localStorage.getItem(PSAT_LOCAL_TS_KEY)||'0',10) || Date.now()
   }).catch(()=>{});
 }
 function scheduleFbSync(){
@@ -595,16 +603,27 @@ function psatLoadFromFirebase(){
   psatDb.ref('psat_tracker_data/' + PSAT_FB_DOC_ID).once('value').then(snap=>{
     if(snap.exists()){
       const d = snap.val() || {};
-      if(Array.isArray(d.records)) records = d.records;
-      if(Array.isArray(d.reviewBox)) reviewBox = d.reviewBox;
-      if(d.keywordStore) keywordStore = d.keywordStore;
-      if(!keywordStore.choice) keywordStore.choice = [];
-      if(d.cutoffs) cutoffs = d.cutoffs;
-      if(Array.isArray(d.todos)) todos = d.todos;
-      if(d.notesStore) notesStore = d.notesStore;
-      if(Array.isArray(d.savedViews)) savedViews = d.savedViews;
-      if(d.answerKeyStore) answerKeyStore = d.answerKeyStore;
-      psatSaveAllToLocal();
+      const localTs = parseInt(localStorage.getItem(PSAT_LOCAL_TS_KEY)||'0',10);
+      const remoteTs = d.updatedAt || 0;
+      if(remoteTs >= localTs){
+        // server copy is at least as new as ours — safe to pull it in
+        if(Array.isArray(d.records)) records = d.records;
+        if(Array.isArray(d.reviewBox)) reviewBox = d.reviewBox;
+        if(d.keywordStore) keywordStore = d.keywordStore;
+        if(!keywordStore.choice) keywordStore.choice = [];
+        if(d.cutoffs) cutoffs = d.cutoffs;
+        if(Array.isArray(d.todos)) todos = d.todos;
+        if(d.notesStore) notesStore = d.notesStore;
+        if(Array.isArray(d.savedViews)) savedViews = d.savedViews;
+        if(d.answerKeyStore) answerKeyStore = d.answerKeyStore;
+        psatSaveAllToLocal();
+      } else {
+        // our local copy has a newer timestamp than the server (e.g. this tab reloaded
+        // before its own edit finished pushing) — keep local as-is, and push it up so
+        // the server catches up instead of the other way around
+        psatSaveAllToLocal();
+        psatPushToFirebase();
+      }
     }
     psatBootAfterLoad();
   }).catch(()=>{ psatBootAfterLoad(); });
