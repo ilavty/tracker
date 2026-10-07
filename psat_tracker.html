@@ -196,7 +196,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-att-hist.att-wrong{color:var(--red-text);}
 .np-attempt-row{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-bottom:6px;}
 .np-round-label{flex:none;width:36px;font-size:10.5px;color:var(--ink-soft);}
-.np-time-input{width:50px !important;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:4px 3px;text-align:center;font-family:inherit;font-size:12px;}
+.np-time-input{width:62px !important;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:5px 4px;text-align:center;font-family:inherit;font-size:12.5px;}
 .att-choice-correct{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;color:var(--ox-correct);font-weight:700;font-size:13px;}
 .np-attempt-reason-empty{flex:1;color:var(--ink-soft);font-size:12px;padding:6px 0;}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
@@ -1851,18 +1851,13 @@ function openProblemDetailPage(idk, num, level, subject, label){
   });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
-  document.querySelectorAll('.np-attempt-reason, .att-choice-input, .np-time-input').forEach(inp=>{
-    inp.addEventListener('keydown', e=>{
-      if(e.key==='Enter'){ e.preventDefault(); document.getElementById('npSaveBtn').click(); }
-    });
-  });
   ['npAnalysis','npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
     ta.addEventListener('input', grow);
     grow();
   });
-  document.getElementById('npSaveBtn').addEventListener('click', ()=>{
+  function doSave(closeAfter){
     const v = document.getElementById('npAnswerVal').value.trim();
     if(v){
       if(!answerKeyStore[idk]) answerKeyStore[idk]={};
@@ -1900,12 +1895,18 @@ function openProblemDetailPage(idk, num, level, subject, label){
       if(text || kw.length) choiceAnalysis[n] = { text, kw };
     });
     saveNote(idk, num, {analysis, theory, choiceAnalysis});
-    document.getElementById('detailOverlay').classList.remove('open');
+    if(closeAfter) document.getElementById('detailOverlay').classList.remove('open');
     if(document.getElementById('panel-answerkey').classList.contains('active')) renderAnswerKeyTab();
     if(document.getElementById('panel-all').classList.contains('active')) renderAll();
     if(document.getElementById('panel-tests').classList.contains('active')) renderTests();
     if(document.getElementById('panel-review').classList.contains('active')) renderReview();
+  }
+  document.querySelectorAll('.np-attempt-reason, .att-choice-input, .np-time-input').forEach(inp=>{
+    inp.addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); doSave(false); }
+    });
   });
+  document.getElementById('npSaveBtn').addEventListener('click', ()=>doSave(true));
 }
 document.getElementById('detailOverlay').addEventListener('click', e=>{
   if(e.target.id==='detailOverlay') e.currentTarget.classList.remove('open');
