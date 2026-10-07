@@ -129,7 +129,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-picker-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-family:inherit;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;}
 .kw-picker-chip.selected{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 
-.side-wrong-pop{position:fixed;z-index:250;background:#fff;color:var(--ink);font-size:12px;padding:12px 14px;border-radius:10px;max-width:280px;line-height:1.6;display:none;box-shadow:0 10px 28px rgba(60,40,90,0.2);border:1px solid var(--line);}
+.side-wrong-pop{position:fixed;z-index:250;background:#fff;color:var(--ink);font-size:12px;padding:12px 14px;border-radius:10px;width:300px;max-width:92vw;max-height:70vh;overflow-y:auto;line-height:1.6;display:none;box-shadow:0 10px 28px rgba(60,40,90,0.2);border:1px solid var(--line);}
 .side-wrong-pop.open{display:block;}
 .swp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
 .swp-head b{color:#2A558C;font-size:12.5px;}
@@ -146,6 +146,24 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-chip.other{background:#F0F0F5;color:var(--ink-soft);}
 .swp-empty{color:var(--ink-soft);font-size:11.5px;}
 .swp-sec-label{font-size:10px;color:var(--ink-soft);margin:8px 0 4px;}
+.swp-rows{display:flex;flex-direction:column;gap:2px;}
+.swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
+.swp-row:last-child{border-bottom:none;}
+.swp-row-main{display:flex;align-items:center;gap:7px;}
+.swp-num{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;font-weight:800;font-size:11px;cursor:pointer;}
+.swp-num.wrong{background:#FBE6E2;color:var(--red-text);}
+.swp-num.flagged{background:var(--lavender);color:#2A558C;}
+.swp-choice{font-size:11.5px;font-weight:700;color:var(--red-text);}
+.swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;}
+.swp-pin svg{width:13px;height:13px;}
+.swp-pin.on{color:var(--red-text);}
+.swp-row-more{margin-left:auto;border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:5px;}
+.swp-row-more:hover{background:#F5F3FA;}
+.swp-row-detail{display:flex;flex-direction:column;gap:4px;margin-top:6px;padding-left:4px;border-left:2px solid var(--line);margin-left:9px;padding-left:9px;}
+.swp-detail-line{font-size:11.5px;line-height:1.5;}
+.swp-detail-line b{color:var(--ink-soft);font-weight:700;margin-right:4px;}
+.swp-empty-sub{font-size:11px;color:var(--ink-soft);}
+.swp-detail-open{align-self:flex-start;border:none;background:none;color:var(--lavender-deep);font-size:11px;font-weight:700;cursor:pointer;padding:2px 0;}
 
 .ctx-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(60,40,90,0.16);padding:6px;min-width:190px;display:none;}
 #quickPop{z-index:260;}
@@ -178,6 +196,8 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 
 .notion-page-box{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:0;width:min(720px,94vw);box-shadow:0 12px 32px rgba(40,20,70,0.1);}
 #detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
+#examPopupOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
+#modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
 .np-header{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;}
 .np-title{font-size:20px;font-weight:800;}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
@@ -1129,19 +1149,23 @@ function closeSideCtxMenu(){ document.getElementById('sideCtxMenu').style.displa
 
 // ---------- Left-panel click: wrong-answer list popover ----------
 let sideWrongPopExtraOpen = false;
+let sideWrongPopExpanded = new Set();
 testsListEl.addEventListener('click', e=>{
   const side = e.target.closest('.test-side');
   if(!side) return;
   if(e.target.closest('.cell')) return;
   sideWrongPopExtraOpen = false;
+  sideWrongPopExpanded = new Set();
   const rec = records.find(r=>r.id===side.dataset.rec);
   if(rec) openSideWrongPop(rec, e.clientX, e.clientY);
 });
 function openSideWrongPop(rec, x, y){
   const idk = idKey(rec);
   const wrongNums = Object.keys(rec.wrongs).map(n=>parseInt(n,10)).sort((a,b)=>a-b);
-  const flaggedNums = reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num).filter(n=>!wrongNums.includes(n)).sort((a,b)=>a-b);
-  const shownSet = new Set([...wrongNums, ...flaggedNums]);
+  const flaggedSet = new Set(reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num));
+  const flaggedOnlyNums = [...flaggedSet].filter(n=>!wrongNums.includes(n)).sort((a,b)=>a-b);
+  const noteNums = [...wrongNums, ...flaggedOnlyNums];
+  const shownSet = new Set(noteNums);
   const otherNums = []; for(let n=1;n<=rec.total;n++){ if(!shownSet.has(n)) otherNums.push(n); }
 
   const pop = document.getElementById('sideWrongPop');
@@ -1150,13 +1174,41 @@ function openSideWrongPop(rec, x, y){
     <button type="button" class="swp-more-btn" id="swpMoreBtn">⋯</button>
     <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongPopExtraOpen?'숨기기':'보기'}</button></div>
   </div>`;
-  html += `<div class="swp-list">${wrongNums.map(n=>chip(n,'wrong')).join('') || ''}${flaggedNums.map(n=>chip(n,'flagged')).join('')}</div>`;
-  if(!wrongNums.length && !flaggedNums.length) html += `<div class="swp-empty">오답·보충학습 표시가 없어요</div>`;
+  if(!noteNums.length){
+    html += `<div class="swp-empty">오답·보충학습 표시가 없어요</div>`;
+  } else {
+    html += `<div class="swp-rows">` + noteNums.map(n=>{
+      const w = rec.wrongs[n];
+      const isWrong = !!w;
+      const isFlagged = flaggedSet.has(n);
+      const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
+      const reasonKw = (w && w.reasonKeywords) || [];
+      const expanded = sideWrongPopExpanded.has(n);
+      let detail = '';
+      if(expanded){
+        let lines = '';
+        if(isWrong && w.reasonText) lines += `<div class="swp-detail-line"><b>오답이유</b>${w.reasonText}</div>`;
+        if(reasonKw.length) lines += `<div class="swp-detail-line"><b>오답키워드</b>${reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('')}</div>`;
+        if(typeKw.length) lines += `<div class="swp-detail-line"><b>유형키워드</b>${typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('')}</div>`;
+        if(!lines) lines = `<div class="swp-empty-sub">추가된 항목 없음</div>`;
+        detail = `<div class="swp-row-detail">${lines}<button type="button" class="swp-detail-open" data-opennum2="${n}">상세페이지에서 편집 →</button></div>`;
+      }
+      return `<div class="swp-row" data-rownum="${n}">
+        <div class="swp-row-main">
+          <span class="swp-num ${isWrong?'wrong':'flagged'}" data-opennum="${n}">${n}</span>
+          ${isWrong && w.selectedChoice ? `<span class="swp-choice">(${w.selectedChoice})</span>` : ''}
+          <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
+          <button type="button" class="swp-row-more" data-expandnum="${n}">⋯</button>
+        </div>
+        ${detail}
+      </div>`;
+    }).join('') + `</div>`;
+  }
   if(sideWrongPopExtraOpen){
     html += `<div class="swp-sec-label">그 외 번호</div><div class="swp-list">${otherNums.map(n=>chip(n,'other')).join('') || '<span class="swp-empty">없음</span>'}</div>`;
   }
   pop.innerHTML = html;
-  pop.style.left = Math.min(x+8, window.innerWidth-300)+'px';
+  pop.style.left = Math.min(x+8, window.innerWidth-320)+'px';
   pop.style.top = (y+10)+'px';
   pop.classList.add('open');
   document.getElementById('swpMoreBtn').addEventListener('click', ev=>{
@@ -1175,8 +1227,34 @@ function openSideWrongPop(rec, x, y){
       openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
     });
   });
+  pop.querySelectorAll('[data-opennum2]').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      const n = parseInt(c.dataset.opennum2,10);
+      closeSideWrongPop();
+      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
+    });
+  });
+  pop.querySelectorAll('[data-expandnum]').forEach(c=>{
+    c.addEventListener('click', ev=>{
+      ev.stopPropagation();
+      const n = parseInt(c.dataset.expandnum,10);
+      if(sideWrongPopExpanded.has(n)) sideWrongPopExpanded.delete(n); else sideWrongPopExpanded.add(n);
+      openSideWrongPop(rec, x, y);
+    });
+  });
+  pop.querySelectorAll('[data-pinnum]').forEach(c=>{
+    c.addEventListener('click', ev=>{
+      ev.stopPropagation();
+      const n = parseInt(c.dataset.pinnum,10);
+      const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===n);
+      if(existing){ reviewBox = reviewBox.filter(e=>e.id!==existing.id); }
+      else { reviewBox.push({ id:uid('v'), idKeyStr:idk, level:rec.level, subject:rec.subject, label:testLabel(rec), num:n, addedAt:Date.now() }); }
+      saveReview();
+      openSideWrongPop(rec, x, y);
+    });
+  });
 }
-function closeSideWrongPop(){ document.getElementById('sideWrongPop').classList.remove('open'); sideWrongPopExtraOpen = false; }
+function closeSideWrongPop(){ document.getElementById('sideWrongPop').classList.remove('open'); sideWrongPopExtraOpen = false; sideWrongPopExpanded = new Set(); }
 
 function openAddRoundModal(sourceRec){
   const category = sourceRec.category, level = sourceRec.level, subject = sourceRec.subject,
