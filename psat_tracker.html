@@ -65,7 +65,8 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .create-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px;}
 
 .test-card{display:flex;align-items:flex-start;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;}
-.test-side{width:auto;flex:0 0 auto;background:#FCFCFD;border-right:1px solid var(--line);padding:14px 16px;display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:9px;white-space:nowrap;cursor:context-menu;}
+.test-side{width:auto;flex:0 0 auto;background:#FCFCFD;border-right:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;white-space:nowrap;cursor:context-menu;}
+.ts-row{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;}
 .test-main{flex:1;min-width:0;padding:14px;overflow-x:auto;}
 .test-card.compact .test-side{padding:8px 14px;}
 .test-card.compact .test-main{padding:8px 14px;}
@@ -183,18 +184,14 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-attempt-history{display:inline-flex;gap:4px;vertical-align:middle;font-weight:500;font-size:13px;}
 .np-att-hist.att-correct{color:var(--ox-correct);}
 .np-att-hist.att-wrong{color:var(--red-text);}
-.np-attempt-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:6px;}
-.np-round-label{flex:none;width:40px;font-size:10.5px;color:var(--ink-soft);}
-.np-wrong-check{flex:none;width:15px;height:15px;cursor:pointer;accent-color:var(--lavender-deep);}
-.np-time-input{width:38px;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:4px 3px;text-align:center;font-family:inherit;font-size:11px;}
+.np-attempt-row{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-bottom:6px;}
+.np-round-label{flex:none;width:36px;font-size:10.5px;color:var(--ink-soft);}
+.np-time-input{width:34px;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:4px 2px;text-align:center;font-family:inherit;font-size:10.5px;}
 .att-choice-correct{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;color:var(--ox-correct);font-weight:700;font-size:13px;}
 .np-attempt-reason-empty{flex:1;color:var(--ink-soft);font-size:12px;padding:6px 0;}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
-.att-choice-input:disabled{border-color:var(--line);color:var(--ink-soft);background:#FAFAFA;}
-.np-attempt-reason{flex:1;min-width:90px;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
-.np-attempt-reason:disabled{background:#FAFAFA;color:var(--ink-soft);}
-.np-attempt-kw{flex:none;}
+.np-attempt-reason{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
 .np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
 .np-choice-row:last-child{border-bottom:none;}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
@@ -403,6 +400,14 @@ tr.clickable:hover td{background:#FBF9FE;}
   <!-- REVIEW BOX PANEL -->
   <div class="panel" id="panel-review">
     <div class="toolbar"><h2>보충학습</h2></div>
+    <div class="filter-bar">
+      <div class="field"><label>급수</label><select id="reviewFilterLevel"><option value="all">전체</option><option value="5급">5급</option><option value="7급">7급</option><option value="민경채">민경채</option></select></div>
+      <div class="field"><label>과목</label><select id="reviewFilterSubject"><option value="all">전체</option><option>언어논리</option><option>상황판단</option><option>자료해석</option></select></div>
+    </div>
+    <div class="kw-filter-row">
+      <label>키워드</label>
+      <div class="kw-chip-list" id="reviewFilterKwArea"></div>
+    </div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>급수</th><th>과목</th><th>연도/세트</th><th>번호</th><th>오답 이유</th><th>유형 키워드</th><th>복습</th><th></th></tr></thead>
@@ -933,10 +938,14 @@ function renderTests(){
     return `
       <div class="test-card">
         <div class="test-side" data-rec="${r.id}">
-          <span class="chip-static ${levelChipClass(r.level)}">${r.level}</span>
-          <span class="chip-static c-subj-${r.subject}">${r.subject}</span>
-          <span class="chip-static c-year">${testLabel(r)}</span>
-          <span class="chip-static c-round">${r.round||1}회독</span>
+          <div class="ts-row">
+            <span class="chip-static ${levelChipClass(r.level)}">${r.level}</span>
+            <span class="chip-static c-subj-${r.subject}">${r.subject}</span>
+          </div>
+          <div class="ts-row">
+            <span class="chip-static c-year">${testLabel(r)}</span>
+            <span class="chip-static c-round">${r.round||1}회독</span>
+          </div>
           ${dateStr ? `<span class="test-dates">${dateStr}</span>` : ''}
         </div>
         <div class="test-main">${buildGridBlock(r, {}, `<div class="score-end ${scoreClass(correct,r.total)}">${correct}/${r.total}</div>`)}</div>
@@ -1655,19 +1664,15 @@ function openProblemDetailPage(idk, num, level, subject, label){
 
   const typeKwSelSet = new Set(typeKw);
 
-  const rowKwSelSets = {};
   const choiceRowsHtml = attemptRecs.length ? attemptRecs.map(r=>{
     const isWrong = !!r.wrongs[num];
     const w = isWrong ? r.wrongs[num] : null;
-    rowKwSelSets[r.id] = new Set((w && w.reasonKeywords) || []);
     const timeVal = (r.problemTimeSpent && r.problemTimeSpent[num]) || '';
     return `<div class="np-attempt-row" data-rowrecid="${r.id}">
       <span class="np-round-label">${r.round||1}회독</span>
-      <input type="checkbox" class="np-wrong-check" data-wrongrecid="${r.id}" ${isWrong?'checked':''} title="이 회차 오답으로 표시">
-      <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w ? (w.selectedChoice||'') : ''}" placeholder="?" ${isWrong?'':'disabled'}>
-      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w ? (w.reasonText||'') : ''}" placeholder="이 회차 오답 이유" ${isWrong?'':'disabled'}>
+      <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w ? (w.selectedChoice||'') : ''}" placeholder="?">
+      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w ? (w.reasonText||'') : ''}" placeholder="이 회차 오답 이유">
       <input type="text" class="np-time-input" data-timerecid="${r.id}" value="${timeVal}" placeholder="00:00">
-      <span class="np-attempt-kw">${keywordSelectorHtml('rowKwSel_'+r.id)}</span>
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
@@ -1703,7 +1708,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
     </div>
     <div class="np-body">
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
-      <div class="np-row"><div class="np-label">회차별 기록<br><span style="font-weight:400;color:var(--ink-soft);font-size:10.5px;">☑오답 · 답안·이유·시간(mm:ss)·키워드</span></div><div class="np-value">${choiceRowsHtml}</div></div>
+      <div class="np-row"><div class="np-label">회차별 기록<br><span style="font-weight:400;color:var(--ink-soft);font-size:10.5px;">답안·이유 입력시 오답 처리 · 시간(mm:ss)</span></div><div class="np-value">${choiceRowsHtml}</div></div>
       <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${keywordSelectorHtml('typeKwSelDetail')}</div></div>
       <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><textarea id="npAnalysis" rows="3">${note.analysis||''}</textarea></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
@@ -1735,17 +1740,8 @@ function openProblemDetailPage(idk, num, level, subject, label){
     document.getElementById('choiceBlock').style.display = 'block';
     document.getElementById('choiceToggleBtn').style.display = 'none';
   });
-  document.querySelectorAll('.np-wrong-check').forEach(chk=>{
-    chk.addEventListener('change', ()=>{
-      const row = chk.closest('.np-attempt-row');
-      const on = chk.checked;
-      row.querySelector('.att-choice-input').disabled = !on;
-      row.querySelector('.np-attempt-reason').disabled = !on;
-    });
-  });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
-  attemptRecs.forEach(r=>{ wireKeywordSelector('rowKwSel_'+r.id, 'reason', rowKwSelSets[r.id]); });
   ['npAnalysis','npTheory'].forEach(id=>{
     const ta = document.getElementById(id);
     const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
@@ -1759,15 +1755,14 @@ function openProblemDetailPage(idk, num, level, subject, label){
       answerKeyStore[idk][num] = v;
       saveAnswerKeyStore();
     }
-    document.querySelectorAll('.np-wrong-check').forEach(chk=>{
-      const rec = records.find(r=>r.id===chk.dataset.wrongrecid);
+    document.querySelectorAll('.np-attempt-row[data-rowrecid]').forEach(row=>{
+      const rec = records.find(r=>r.id===row.dataset.rowrecid);
       if(!rec) return;
-      const row = chk.closest('.np-attempt-row');
-      if(chk.checked){
-        const choiceVal = row.querySelector('.att-choice-input').value.trim();
-        const reasonVal = row.querySelector('.np-attempt-reason').value.trim();
-        const kwSet = rowKwSelSets[rec.id] || new Set();
-        rec.wrongs[num] = { selectedChoice: choiceVal, reasonText: reasonVal, reasonKeywords: [...kwSet] };
+      const choiceVal = row.querySelector('.att-choice-input').value.trim();
+      const reasonVal = row.querySelector('.np-attempt-reason').value.trim();
+      if(choiceVal || reasonVal){
+        const prevKw = (rec.wrongs[num] && rec.wrongs[num].reasonKeywords) || [];
+        rec.wrongs[num] = { selectedChoice: choiceVal, reasonText: reasonVal, reasonKeywords: prevKw };
       } else {
         delete rec.wrongs[num];
       }
@@ -1804,10 +1799,28 @@ document.getElementById('detailOverlay').addEventListener('click', e=>{
 
 
 // ---------- Review box ----------
+const reviewFilterKwSelected = new Set();
+function renderReviewKwFilter(){
+  const area = document.getElementById('reviewFilterKwArea');
+  const allKw = [...new Set([...keywordStore.type, ...keywordStore.reason])];
+  area.innerHTML = allKw.map(k=>`<button type="button" class="kw-opt${reviewFilterKwSelected.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')
+    || '<span style="font-size:11.5px;color:var(--ink-soft);">등록된 키워드가 없어요.</span>';
+  area.querySelectorAll('.kw-opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const k = btn.dataset.kw;
+      if(reviewFilterKwSelected.has(k)) reviewFilterKwSelected.delete(k); else reviewFilterKwSelected.add(k);
+      renderReview();
+    });
+  });
+}
+['reviewFilterLevel','reviewFilterSubject'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderReview);
+});
 function renderReview(){
-  document.getElementById('reviewEmpty').style.display = reviewBox.length ? 'none':'block';
-  const sorted = [...reviewBox].sort((a,b)=>b.addedAt-a.addedAt);
-  document.getElementById('reviewTbody').innerHTML = sorted.map(entry=>{
+  renderReviewKwFilter();
+  const lvlF = document.getElementById('reviewFilterLevel').value;
+  const subjF = document.getElementById('reviewFilterSubject').value;
+  const enriched = reviewBox.map(entry=>{
     let reasonText='', reasonKeywords=[], typeKw=[];
     records.filter(r=>idKey(r)===entry.idKeyStr && entry.num<=r.total).forEach(r=>{
       if(r.wrongs[entry.num]){
@@ -1816,6 +1829,21 @@ function renderReview(){
       }
       if(r.problemTypeKeywords[entry.num]) typeKw = [...new Set([...typeKw, ...r.problemTypeKeywords[entry.num]])];
     });
+    return { entry, reasonText, reasonKeywords, typeKw };
+  }).filter(x=>{
+    if(lvlF!=='all' && x.entry.level!==lvlF) return false;
+    if(subjF!=='all' && x.entry.subject!==subjF) return false;
+    if(reviewFilterKwSelected.size){
+      const allKwOfEntry = new Set([...x.reasonKeywords, ...x.typeKw]);
+      let hit = false;
+      reviewFilterKwSelected.forEach(k=>{ if(allKwOfEntry.has(k)) hit = true; });
+      if(!hit) return false;
+    }
+    return true;
+  });
+  document.getElementById('reviewEmpty').style.display = enriched.length ? 'none':'block';
+  const sorted = enriched.sort((a,b)=>b.entry.addedAt-a.entry.addedAt);
+  document.getElementById('reviewTbody').innerHTML = sorted.map(({entry, reasonText, reasonKeywords, typeKw})=>{
     const marks = entry.marks || [false,false,false];
     const marksHtml = marks.map(m=>`<span class="review-mark ${m?'filled':''}"></span>`).join('');
     return `<tr>
