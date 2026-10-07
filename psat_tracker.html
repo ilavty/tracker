@@ -145,12 +145,10 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-empty{color:var(--ink-soft);font-size:11.5px;}
 .swp-sec-label{font-size:10px;color:var(--ink-soft);margin:8px 0 4px;}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
-.swp-row{display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--line);padding:6px 0;}
+.swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
 .swp-row:last-child{border-bottom:none;}
-.swp-num{display:inline-flex;align-items:center;justify-content:center;width:16px;flex:none;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;padding-top:1px;}
-.swp-row-content{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.swp-num{display:inline-flex;align-items:center;justify-content:flex-start;min-width:16px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
 .swp-row-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.swp-row-kw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .swp-choice{font-size:12px;font-weight:600;flex-shrink:0;}
 .swp-choice.wrong{color:var(--red-text);}
 .swp-choice.correct{color:var(--ox-correct);}
@@ -159,6 +157,11 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-pin svg{width:13px;height:13px;}
 .swp-pin.on{color:var(--red-text);}
 .swp-detail-open{border:none;background:none;color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;padding:2px 2px;flex-shrink:0;}
+.akey-note-rounds{display:flex;flex-direction:column;gap:6px;}
+.akey-note-round-head{width:100%;display:flex;align-items:center;justify-content:space-between;background:#F7F6FB;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;}
+.akey-note-round-caret{font-size:11px;color:var(--ink-soft);transition:transform .15s;}
+.akey-note-round-head.open .akey-note-round-caret{transform:rotate(180deg);}
+.akey-note-round-body{padding:4px 4px 2px;}
 
 .ctx-menu{position:fixed;z-index:200;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(60,40,90,0.16);padding:6px;min-width:190px;display:none;}
 #quickPop{z-index:260;}
@@ -190,10 +193,10 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .popup-round-label{font-size:10.5px;font-weight:400;color:#B0ABBC;margin:8px 0 3px;}
 
 .notion-page-box{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:0;width:min(720px,94vw);box-shadow:0 12px 32px rgba(40,20,70,0.1);}
-#detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
-#examPopupOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
-#modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
-#sideWrongModalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
+#detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;min-height:100vh;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
+#examPopupOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;min-height:100vh;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;}
+#modalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;min-height:100vh;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
+#sideWrongModalOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;min-height:100vh;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
 .np-header{padding:22px 26px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;}
 .np-title{font-size:20px;font-weight:800;}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
@@ -1160,13 +1163,72 @@ testsListEl.addEventListener('click', e=>{
   const rec = records.find(r=>r.id===side.dataset.rec);
   if(rec) openSideWrongPop(rec);
 });
-function openSideWrongPop(rec){
-  sideWrongModalRec = rec;
+function buildNoteRowsHtml(rec){
   const idk = idKey(rec);
   const wrongNums = Object.keys(rec.wrongs).map(n=>parseInt(n,10)).sort((a,b)=>a-b);
   const flaggedSet = new Set(reviewBox.filter(e=>e.idKeyStr===idk).map(e=>e.num));
   const flaggedOnlyNums = [...flaggedSet].filter(n=>!wrongNums.includes(n)).sort((a,b)=>a-b);
   const noteNums = [...wrongNums, ...flaggedOnlyNums];
+  if(!noteNums.length){
+    return { html: '<div class="swp-empty">오답·보충학습 표시가 없어요</div>', noteNums };
+  }
+  const html = `<div class="swp-rows">` + noteNums.map(n=>{
+    const w = rec.wrongs[n];
+    const isWrong = !!w;
+    const isFlagged = flaggedSet.has(n);
+    const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
+    const reasonKw = (w && w.reasonKeywords) || [];
+    const correctChoiceVal = (rec.correctChoices && rec.correctChoices[n]) || '';
+    const choiceVal = isWrong ? (w.selectedChoice||'') : correctChoiceVal;
+    const kwChips = [
+      ...reasonKw.map(k=>`<span class="kw-tag">${k}</span>`),
+      ...typeKw.map(k=>`<span class="kw-tag type">${k}</span>`)
+    ].join('');
+    return `<div class="swp-row" data-rownum="${n}">
+      <div class="swp-row-main">
+        <span class="swp-num" data-opennum="${n}">${n}</span>
+        ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
+        ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
+        ${kwChips}
+        <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
+        <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
+      </div>
+    </div>`;
+  }).join('') + `</div>`;
+  return { html, noteNums };
+}
+function wireNoteRowEvents(container, rec, onPinChange){
+  const idk = idKey(rec);
+  container.querySelectorAll('[data-opennum]').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      const n = parseInt(c.dataset.opennum,10);
+      closeSideWrongPop();
+      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
+    });
+  });
+  container.querySelectorAll('[data-opennum2]').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      const n = parseInt(c.dataset.opennum2,10);
+      closeSideWrongPop();
+      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
+    });
+  });
+  container.querySelectorAll('[data-pinnum]').forEach(c=>{
+    c.addEventListener('click', ev=>{
+      ev.stopPropagation();
+      const n = parseInt(c.dataset.pinnum,10);
+      const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===n);
+      if(existing){ reviewBox = reviewBox.filter(e=>e.id!==existing.id); }
+      else { reviewBox.push({ id:uid('v'), idKeyStr:idk, level:rec.level, subject:rec.subject, label:testLabel(rec), num:n, addedAt:Date.now() }); }
+      saveReview();
+      if(onPinChange) onPinChange(); else openSideWrongPop(rec);
+    });
+  });
+}
+function openSideWrongPop(rec){
+  sideWrongModalRec = rec;
+  const idk = idKey(rec);
+  const { noteNums, html: rowsHtml } = buildNoteRowsHtml(rec);
   const shownSet = new Set(noteNums);
   const otherNums = []; for(let n=1;n<=rec.total;n++){ if(!shownSet.has(n)) otherNums.push(n); }
 
@@ -1176,35 +1238,7 @@ function openSideWrongPop(rec){
     <button type="button" class="swp-more-btn" id="swpMoreBtn">⋯</button>
     <div class="swp-more-menu" id="swpMoreMenu"><button type="button" id="swpEyeBtn">👁️ 전체 번호 ${sideWrongModalExtraOpen?'숨기기':'보기'}</button></div>
   </div>`;
-  if(!noteNums.length){
-    html += `<div class="swp-empty">오답·보충학습 표시가 없어요</div>`;
-  } else {
-    html += `<div class="swp-rows">` + noteNums.map(n=>{
-      const w = rec.wrongs[n];
-      const isWrong = !!w;
-      const isFlagged = flaggedSet.has(n);
-      const typeKw = (rec.problemTypeKeywords && rec.problemTypeKeywords[n]) || [];
-      const reasonKw = (w && w.reasonKeywords) || [];
-      const correctChoiceVal = (rec.correctChoices && rec.correctChoices[n]) || '';
-      const choiceVal = isWrong ? (w.selectedChoice||'') : correctChoiceVal;
-      const kwChips = [
-        ...reasonKw.map(k=>`<span class="kw-tag">${k}</span>`),
-        ...typeKw.map(k=>`<span class="kw-tag type">${k}</span>`)
-      ].join('');
-      return `<div class="swp-row" data-rownum="${n}">
-        <span class="swp-num" data-opennum="${n}">${n}</span>
-        <div class="swp-row-content">
-          <div class="swp-row-main">
-            ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
-            ${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}
-            <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
-            <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
-          </div>
-          ${kwChips ? `<div class="swp-row-kw">${kwChips}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('') + `</div>`;
-  }
+  html += rowsHtml;
   if(sideWrongModalExtraOpen){
     html += `<div class="swp-sec-label">그 외 번호</div><div class="swp-list">${otherNums.map(n=>chip(n,'other')).join('') || '<span class="swp-empty">없음</span>'}</div>`;
   }
@@ -1219,36 +1253,55 @@ function openSideWrongPop(rec){
     sideWrongModalExtraOpen = !sideWrongModalExtraOpen;
     openSideWrongPop(rec);
   });
-  box.querySelectorAll('[data-opennum]').forEach(c=>{
-    c.addEventListener('click', ()=>{
-      const n = parseInt(c.dataset.opennum,10);
-      closeSideWrongPop();
-      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
-    });
-  });
-  box.querySelectorAll('[data-opennum2]').forEach(c=>{
-    c.addEventListener('click', ()=>{
-      const n = parseInt(c.dataset.opennum2,10);
-      closeSideWrongPop();
-      openProblemDetailPage(idk, n, rec.level, rec.subject, testLabel(rec));
-    });
-  });
-  box.querySelectorAll('[data-pinnum]').forEach(c=>{
-    c.addEventListener('click', ev=>{
-      ev.stopPropagation();
-      const n = parseInt(c.dataset.pinnum,10);
-      const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===n);
-      if(existing){ reviewBox = reviewBox.filter(e=>e.id!==existing.id); }
-      else { reviewBox.push({ id:uid('v'), idKeyStr:idk, level:rec.level, subject:rec.subject, label:testLabel(rec), num:n, addedAt:Date.now() }); }
-      saveReview();
-      openSideWrongPop(rec);
-    });
-  });
+  wireNoteRowEvents(box, rec, ()=>openSideWrongPop(rec));
 }
 function closeSideWrongPop(){ document.getElementById('sideWrongModalOverlay').classList.remove('open'); sideWrongModalExtraOpen = false; sideWrongModalRec = null; }
 document.getElementById('sideWrongModalOverlay').addEventListener('click', e=>{
   if(e.target.id==='sideWrongModalOverlay') closeSideWrongPop();
 });
+
+function openAnswerKeyNotePop(idk, level, subject, yearLabel){
+  sideWrongModalRec = null;
+  const recs = records.filter(r=>idKey(r)===idk).sort((a,b)=>(a.round||1)-(b.round||1) || a.createdAt-b.createdAt);
+  const box = document.getElementById('sideWrongModalBox');
+  let html = `<div class="swp-head"><b>${level} · ${subject} · ${yearLabel}</b></div>`;
+  if(!recs.length){
+    html += `<div class="swp-empty">기록이 없어요</div>`;
+  } else {
+    html += `<div class="akey-note-rounds">` + recs.map(r=>{
+      const dateStr = r.date || '';
+      return `<div class="akey-note-round">
+        <button type="button" class="akey-note-round-head" data-toggleround="${r.id}">
+          <span>${r.round||1}회독${dateStr?` · ${dateStr}`:''}</span>
+          <span class="akey-note-round-caret">⌄</span>
+        </button>
+        <div class="akey-note-round-body" id="akeyRoundBody_${r.id}" style="display:none;"></div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+  box.innerHTML = html;
+  document.getElementById('sideWrongModalOverlay').classList.add('open');
+  box.querySelectorAll('[data-toggleround]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const rid = btn.dataset.toggleround;
+      const body = document.getElementById('akeyRoundBody_'+rid);
+      const isOpen = btn.classList.contains('open');
+      if(isOpen){
+        body.style.display = 'none';
+        btn.classList.remove('open');
+        return;
+      }
+      const rec = records.find(r=>r.id===rid);
+      const refresh = ()=>{
+        body.innerHTML = buildNoteRowsHtml(rec).html;
+        wireNoteRowEvents(body, rec, refresh);
+      };
+      refresh();
+      body.style.display = 'block';
+      btn.classList.add('open');
+    });
+  });
+}
 
 function openAddRoundModal(sourceRec){
   const category = sourceRec.category, level = sourceRec.level, subject = sourceRec.subject,
@@ -1800,7 +1853,7 @@ function renderAnswerKeyTab(){
       cells += `<div class="akey-cell" ${style} data-idk="${row.idk}" data-num="${n}" data-level="${row.level}" data-subject="${row.subject}" data-year="${row.year}">${toCircled(val)}</div>`;
     }
     return `<div class="test-card compact">
-      <div class="test-side">
+      <div class="test-side" data-idk="${row.idk}" data-level="${row.level}" data-subject="${row.subject}" data-year="${row.year}">
         <span class="chip-static ${levelChipClass(row.level)}">${row.level}</span>
         <span class="akey-year-text">${row.year}</span>
         <span class="akey-subject-text">${row.subject}</span>
@@ -1814,6 +1867,11 @@ function renderAnswerKeyTab(){
 });
 
 document.getElementById('answerKeyList').addEventListener('click', e=>{
+  const side = e.target.closest('.test-side');
+  if(side && side.dataset.idk){
+    openAnswerKeyNotePop(side.dataset.idk, side.dataset.level, side.dataset.subject, side.dataset.year);
+    return;
+  }
   const cell = e.target.closest('.akey-cell');
   if(!cell || !cell.dataset.idk) return;
   openProblemDetailPage(cell.dataset.idk, parseInt(cell.dataset.num,10), cell.dataset.level, cell.dataset.subject, cell.dataset.year);
