@@ -157,6 +157,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .info-pop-search{color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;}
 .info-pop-search:hover{color:var(--lavender-deep);}
 .info-pop b{color:#6A4EB3;}
+.info-pop-choice{color:#C2857A;font-weight:700;}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(50,40,70,0.28);display:none;align-items:center;justify-content:center;z-index:300;}
 .modal-overlay.open{display:flex;}
@@ -177,9 +178,12 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-sub{font-size:12px;color:var(--ink-soft);margin-top:5px;}
 .np-close{border:none;background:none;font-size:22px;line-height:1;color:var(--ink-soft);cursor:pointer;padding:2px 4px;}
 .np-header-actions{display:flex;align-items:center;gap:8px;}
-.np-pin-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:#C9C4D4;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;}
-.np-pin-btn:hover{border-color:var(--lavender-deep);}
-.np-pin-btn.pinned{background:var(--lavender);border-color:var(--lavender-deep);color:#6A4EB3;}
+.np-pin-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:#C9C4D4;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;}
+.np-pin-btn:hover{border-color:var(--red-text);color:#D99B8E;}
+.np-pin-btn.pinned{background:#FBE6E2;border-color:var(--red-text);color:var(--red-text);}
+.np-pin-btn svg{width:15px;height:15px;}
+.pin-icon{display:inline-flex;vertical-align:-2px;width:13px;height:13px;margin-right:2px;}
+.pin-icon svg{width:100%;height:100%;}
 .np-body{padding:6px 26px 26px;}
 .np-row{display:flex;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start;}
 .np-row:last-child{border-bottom:none;}
@@ -192,12 +196,12 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-att-hist.att-wrong{color:var(--red-text);}
 .np-attempt-row{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;margin-bottom:6px;}
 .np-round-label{flex:none;width:36px;font-size:10.5px;color:var(--ink-soft);}
-.np-time-input{width:34px;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:4px 2px;text-align:center;font-family:inherit;font-size:10.5px;}
+.np-time-input{width:34px !important;flex:none;border:1.5px solid var(--line);border-radius:7px;padding:4px 2px;text-align:center;font-family:inherit;font-size:10.5px;}
 .att-choice-correct{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;color:var(--ox-correct);font-weight:700;font-size:13px;}
 .np-attempt-reason-empty{flex:1;color:var(--ink-soft);font-size:12px;padding:6px 0;}
 .att-choice-input{width:28px !important;height:28px;flex:none;border-radius:50%;border:1.6px solid var(--red-text);color:var(--red-text);text-align:center;font-weight:500;font-size:13px;padding:0 !important;background:#fff;}
 .att-choice-input:focus{border-color:var(--lavender-deep);color:var(--ink);}
-.np-attempt-reason{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
+.np-attempt-reason{flex:1 !important;min-width:0;width:auto !important;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;font-family:inherit;font-size:12.5px;}
 .np-choice-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
 .np-choice-row:last-child{border-bottom:none;}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
@@ -409,14 +413,8 @@ tr.clickable:hover td{background:#FBF9FE;}
     <div class="filter-bar">
       <div class="field"><label>급수</label><select id="reviewFilterLevel"><option value="all">전체</option><option value="5급">5급</option><option value="7급">7급</option><option value="민경채">민경채</option></select></div>
       <div class="field"><label>과목</label><select id="reviewFilterSubject"><option value="all">전체</option><option>언어논리</option><option>상황판단</option><option>자료해석</option></select></div>
-    </div>
-    <div class="kw-filter-row">
-      <label>유형 키워드</label>
-      <div class="kw-compact"><div class="kw-compact-list" id="reviewFilterTypeKwArea"></div><div class="kw-picker-pop" id="reviewFilterTypeKwPop"></div></div>
-    </div>
-    <div class="kw-filter-row">
-      <label>오답 키워드</label>
-      <div class="kw-compact"><div class="kw-compact-list" id="reviewFilterReasonKwArea"></div><div class="kw-picker-pop" id="reviewFilterReasonKwPop"></div></div>
+      <div class="field"><label>유형 키워드</label><div class="kw-compact"><div class="kw-compact-list" id="reviewFilterTypeKwArea"></div><div class="kw-picker-pop" id="reviewFilterTypeKwPop"></div></div></div>
+      <div class="field"><label>오답 키워드</label><div class="kw-compact"><div class="kw-compact-list" id="reviewFilterReasonKwArea"></div><div class="kw-picker-pop" id="reviewFilterReasonKwPop"></div></div></div>
     </div>
     <div class="table-scroll">
       <table>
@@ -434,7 +432,7 @@ tr.clickable:hover td{background:#FBF9FE;}
   <div class="ctx-sep"></div>
   <button data-action="editType">🏷️ 유형 키워드</button>
   <div class="ctx-sep"></div>
-  <button data-action="addReview">📌 보충학습에 담기</button>
+  <button data-action="addReview"><span class="pin-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2.5a1.5 1.5 0 011.5 1.5v6.4l3.4 3.9a1.5 1.5 0 01-1.1 2.5H13.5v5.2a1.5 1.5 0 01-3 0v-5.2H6.7a1.5 1.5 0 01-1.1-2.5l3.4-3.9V4a1.5 1.5 0 011.5-1.5h3.9z"/></svg></span> 보충학습에 담기</button>
   <div class="ctx-sep"></div>
   <button data-action="clearSelection">선택 해제</button>
 </div>
@@ -503,6 +501,7 @@ const ANSWER_KEY = 'psatAnswerKey_v2';
 const LEVEL_TOTAL = { '5급':40, '7급':25, '민경채':25 };
 const LEVEL_POINTS = { '5급':2.5, '7급':4, '민경채':4 };
 const SUBJECTS = ['언어논리','상황판단','자료해석'];
+const PIN_ICON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 2.5a1.5 1.5 0 011.5 1.5v6.4l3.4 3.9a1.5 1.5 0 01-1.1 2.5H13.5v5.2a1.5 1.5 0 01-3 0v-5.2H6.7a1.5 1.5 0 01-1.1-2.5l3.4-3.9V4a1.5 1.5 0 011.5-1.5h3.9z"/></svg>';
 
 let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let reviewBox = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
@@ -989,7 +988,7 @@ function openQuickPop(rec, num, x, y){
   const isWrong = !!rec.wrongs[num];
   const pop = document.getElementById('quickPop');
   pop.innerHTML = `
-    <button type="button" data-qaction="review">${flagged?'📌 보충학습에서 빼기':'📌 보충학습에 담기'}</button>
+    <button type="button" data-qaction="review"><span class="pin-icon">${PIN_ICON}</span> ${flagged?'보충학습에서 빼기':'보충학습에 담기'}</button>
     <button type="button" data-qaction="wrong">${isWrong?'✏️ 오답 정보 수정':'❌ 오답으로 변경'}</button>
     ${isWrong?'<button type="button" data-qaction="correct">✅ 정답으로 되돌리기</button>':''}
     <div class="ctx-sep"></div>
@@ -1217,10 +1216,10 @@ function showInfoPop(rec, num, x, y){
   if(!isWrong && !typeKw.length){ hideInfoPop(); return; }
   const pop = document.getElementById('infoPop');
   const searchIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
-  let html = `<div class="info-pop-head"><b>${num}번</b><span id="infoPopMore" class="info-pop-search">${searchIcon}</span></div>`;
+  const choiceBadge = (isWrong && rec.wrongs[num].selectedChoice) ? ` <span class="info-pop-choice">(${rec.wrongs[num].selectedChoice})</span>` : '';
+  let html = `<div class="info-pop-head"><b>${num}번${choiceBadge}</b><span id="infoPopMore" class="info-pop-search">${searchIcon}</span></div>`;
   if(isWrong){
     const w = rec.wrongs[num];
-    if(w.selectedChoice) html += `<br>내가 고른 답: ${w.selectedChoice}`;
     if(w.reasonText) html += `<br>이유: ${w.reasonText}`;
     if(w.reasonKeywords && w.reasonKeywords.length) html += `<br>${w.reasonKeywords.map(k=>`<span class="kw-tag">${k}</span>`).join('')}`;
   }
@@ -1776,8 +1775,8 @@ function openProblemDetailPage(idk, num, level, subject, label){
     return `<div class="np-attempt-row" data-rowrecid="${r.id}">
       <span class="np-round-label">${r.round||1}회독</span>
       <input type="text" class="att-choice-input" data-choicerecid="${r.id}" value="${w ? (w.selectedChoice||'') : ''}" placeholder="?">
-      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w ? (w.reasonText||'') : ''}" placeholder="이 회차 오답 이유">
       <input type="text" class="np-time-input" data-timerecid="${r.id}" value="${timeVal}" placeholder="00:00">
+      <input type="text" class="np-attempt-reason" data-recid="${r.id}" value="${w ? (w.reasonText||'') : ''}" placeholder="이 회차 오답 이유">
     </div>`;
   }).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
@@ -1807,13 +1806,13 @@ function openProblemDetailPage(idk, num, level, subject, label){
         <div class="np-sub">${level} · ${subject} · ${label}</div>
       </div>
       <div class="np-header-actions">
-        <button type="button" class="np-pin-btn${alreadyFlagged?' pinned':''}" id="npAddReviewBtn" title="보충학습에 담기">📌</button>
+        <button type="button" class="np-pin-btn${alreadyFlagged?' pinned':''}" id="npAddReviewBtn" title="보충학습에 담기">${PIN_ICON}</button>
         <button type="button" class="np-close" id="detailCloseBtn">×</button>
       </div>
     </div>
     <div class="np-body">
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
-      <div class="np-row"><div class="np-label">회차별 기록<br><span style="font-weight:400;color:var(--ink-soft);font-size:10.5px;">답안·이유 입력시 오답 처리 · 시간(mm:ss)</span></div><div class="np-value">${choiceRowsHtml}</div></div>
+      <div class="np-row"><div class="np-label">회차별 기록</div><div class="np-value">${choiceRowsHtml}</div></div>
       <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${keywordSelectorHtml('typeKwSelDetail')}</div></div>
       <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><textarea id="npAnalysis" rows="3">${note.analysis||''}</textarea></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
