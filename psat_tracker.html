@@ -137,6 +137,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-sec-label{font-size:10px;color:var(--ink-soft);margin:0 0 6px;}
 .swp-side-panel{display:none;position:absolute;top:0;left:100%;margin-left:12px;width:260px;max-height:min(70vh,520px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(40,20,70,0.18);padding:14px;}
 .swp-side-panel.open{display:block;}
+.swp-side-panel.flip{left:auto;right:100%;margin-left:0;margin-right:12px;}
 .swp-other-grid{display:flex;flex-wrap:wrap;gap:10px 14px;}
 .swp-other-chip{font-size:12.5px;font-weight:700;color:#C9C6D1;cursor:pointer;user-select:none;}
 .swp-other-chip.selected{color:var(--ink);}
@@ -232,12 +233,13 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-choice-row:last-child{border-bottom:none;}
 .np-choice-head{flex:none;width:24px;padding-top:6px;font-size:15px;}
 .np-choice-body{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
-.np-choice-text{flex:1;min-width:120px;border:none;background:none;outline:none;padding:4px 0;font-family:inherit;font-size:12.5px;color:var(--ink);line-height:1.6;}
+.np-choice-text{flex:1;min-width:120px;border:none;background:none;outline:none;padding:4px 0;font-family:inherit;font-size:12.5px;color:var(--ink);line-height:1.6;overflow-wrap:break-word;}
+.np-choice-text:empty:before{content:attr(data-placeholder);color:var(--ink-soft);}
+.np-choice-text img{max-width:140px;max-height:140px;border-radius:5px;vertical-align:middle;margin:2px 4px;}
 .np-value textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;resize:vertical;line-height:1.7;}
 .np-richtext{width:100%;min-height:68px;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.7;overflow-wrap:break-word;}
 .np-richtext:focus{outline:none;border-color:var(--lavender-deep);}
 .np-richtext img{max-width:100%;border-radius:6px;display:block;margin:4px 0;}
-.np-richtext-hint{font-size:10.5px;color:var(--ink-soft);margin-top:4px;}
 
 .review-mark{width:12px;height:12px;border-radius:50%;border:1.4px solid #C9C4D4;display:inline-block;margin-right:3px;background:#fff;}
 .review-mark.filled{background:#5FB8E0;border-color:#5FB8E0;}
@@ -1331,6 +1333,23 @@ function wireNoteRowEvents(container, rec, onPinChange, backToFn){
     });
   });
 }
+// Keeps the "⋯" side panel from running off the edge of the viewport/iframe:
+// measures the actual room to the right and left of the modal box and either
+// shrinks the panel to fit, or flips it to whichever side has more space.
+function positionSwpSidePanel(){
+  const panel = document.getElementById('swpSidePanel');
+  const box = document.getElementById('sideWrongModalBox');
+  if(!panel || !box || !panel.classList.contains('open')) return;
+  panel.classList.remove('flip');
+  panel.style.width = '';
+  const boxRect = box.getBoundingClientRect();
+  const spaceRight = window.innerWidth - boxRect.right - 12;
+  const spaceLeft = boxRect.left - 12;
+  const useLeft = spaceRight < 180 && spaceLeft > spaceRight;
+  if(useLeft) panel.classList.add('flip');
+  const space = useLeft ? spaceLeft : spaceRight;
+  panel.style.width = Math.max(140, Math.min(260, space)) + 'px';
+}
 let swpOtherSelected = new Set();
 function openSideWrongPop(rec){
   sideWrongModalRec = rec;
@@ -1353,7 +1372,9 @@ function openSideWrongPop(rec){
     ev.stopPropagation();
     sideWrongModalExtraOpen = !sideWrongModalExtraOpen;
     document.getElementById('swpSidePanel').classList.toggle('open', sideWrongModalExtraOpen);
+    positionSwpSidePanel();
   });
+  if(sideWrongModalExtraOpen) positionSwpSidePanel();
   box.querySelectorAll('.swp-other-chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
       const n = chip.dataset.num;
@@ -1544,15 +1565,23 @@ function wireKeywordSelector(elId, storeKey, selSet){
           <button type="button" class="kw-picker-addbtn" id="${elId}_addkw">추가</button>
         </div>`;
     popEl.querySelectorAll('.kw-picker-chip').forEach(btn=>{
-      btn.addEventListener('click', ()=>{ selSet.add(btn.dataset.kw); closePop(); draw(); });
+      // keep the popover open on select so several keywords can be picked in a row.
+      // stopPropagation matters here: drawPop() below replaces this button's parent's
+      // innerHTML (detaching this very button), and if the click is still bubbling up
+      // to document's "click outside closes the popover" listener at that point, that
+      // listener's closest('.kw-compact') check fails on the now-detached button and
+      // wrongly treats this as an outside click, closing the popover we just redrew open.
+      btn.addEventListener('click', e=>{ e.stopPropagation(); selSet.add(btn.dataset.kw); draw(); drawPop(); popEl.classList.add('open'); });
     });
-    popEl.querySelector('.kw-picker-addbtn').addEventListener('click', ()=>{
+    popEl.querySelector('.kw-picker-addbtn').addEventListener('click', e=>{
+      e.stopPropagation();
       const input = document.getElementById(elId+'_newkw');
       const v = input.value.trim();
       if(!v) return;
       if(!keywordStore[storeKey].includes(v)){ keywordStore[storeKey].push(v); saveKeywordStore(); }
       selSet.add(v);
-      closePop(); draw();
+      draw(); drawPop(); popEl.classList.add('open');
+      document.getElementById(elId+'_newkw').focus();
     });
     popEl.querySelector('.kw-picker-input').addEventListener('keydown', e=>{
       if(e.key==='Enter'){ e.preventDefault(); popEl.querySelector('.kw-picker-addbtn').click(); }
@@ -2050,7 +2079,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
       <div class="np-choice-head"><span class="choice-num">${toCircled(n)}</span></div>
       <div class="np-choice-body">
         ${keywordSelectorHtml('choiceKwSel'+n)}
-        <input type="text" class="np-choice-text" id="choiceText${n}" value="${cd.text||''}" placeholder="이 선지 분석">
+        <div class="np-choice-text" id="choiceText${n}" contenteditable="true" data-placeholder="이 선지 분석">${cd.text||''}</div>
       </div>
     </div>`;
   }).join('');
@@ -2074,8 +2103,8 @@ function openProblemDetailPage(idk, num, level, subject, label){
       <div class="np-row"><div class="np-label">정답</div><div class="np-value"><input type="text" id="npAnswerVal" class="np-answer-mini" value="${cur}"><span class="np-attempt-history">${historyHtml}</span></div></div>
       <div class="np-row"><div class="np-label">회차별 기록</div><div class="np-value">${choiceRowsHtml}</div></div>
       <div class="np-row"><div class="np-label">유형 키워드</div><div class="np-value">${keywordSelectorHtml('typeKwSelDetail')}</div></div>
-      <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><div id="npAnalysis" class="np-richtext" contenteditable="true">${note.analysis||''}</div><div class="np-richtext-hint">이미지는 복사해서 바로 붙여넣으면 돼요</div></div></div>
-      <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><textarea id="npTheory" rows="3">${note.theory||''}</textarea></div></div>
+      <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><div id="npAnalysis" class="np-richtext" contenteditable="true">${note.analysis||''}</div></div></div>
+      <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><div id="npTheory" class="np-richtext" contenteditable="true">${note.theory||''}</div></div></div>
       <div class="np-row">
         <div class="np-label">선지분석</div>
         <div class="np-value">
@@ -2112,31 +2141,31 @@ function openProblemDetailPage(idk, num, level, subject, label){
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
   attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id]); });
-  ['npTheory'].forEach(id=>{
-    const ta = document.getElementById(id);
-    const grow = ()=>{ ta.style.height='auto'; ta.style.height=(ta.scrollHeight+2)+'px'; };
-    ta.addEventListener('input', grow);
-    grow();
-  });
-  // 분석 노트: contenteditable so a pasted image (e.g. a copied screenshot) can be
-  // dropped straight in as an inline <img>, not just plain text.
-  document.getElementById('npAnalysis').addEventListener('paste', e=>{
-    const items = (e.clipboardData && e.clipboardData.items) || [];
-    for(const item of items){
-      if(item.type && item.type.indexOf('image/')===0){
-        e.preventDefault();
-        const file = item.getAsFile();
-        if(!file) continue;
-        const reader = new FileReader();
-        reader.onload = ()=>{
-          document.execCommand('insertHTML', false, `<img src="${reader.result}">`);
-        };
-        reader.readAsDataURL(file);
-        return;
+  // 분석 노트/참고 이론/선지분석: all contenteditable, so a pasted image (e.g. a
+  // copied screenshot) can be dropped straight in as an inline <img> anywhere.
+  function wireImagePaste(el){
+    if(!el) return;
+    el.addEventListener('paste', e=>{
+      const items = (e.clipboardData && e.clipboardData.items) || [];
+      for(const item of items){
+        if(item.type && item.type.indexOf('image/')===0){
+          e.preventDefault();
+          const file = item.getAsFile();
+          if(!file) continue;
+          const reader = new FileReader();
+          reader.onload = ()=>{
+            document.execCommand('insertHTML', false, `<img src="${reader.result}">`);
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
       }
-    }
-    // no image on the clipboard — let the normal text paste go through
-  });
+      // no image on the clipboard — let the normal text paste go through
+    });
+  }
+  wireImagePaste(document.getElementById('npAnalysis'));
+  wireImagePaste(document.getElementById('npTheory'));
+  CHOICE_NUMS.forEach(n=>wireImagePaste(document.getElementById('choiceText'+n)));
   function doSave(closeAfter){
     const v = document.getElementById('npAnswerVal').value.trim();
     if(v){
@@ -2174,10 +2203,10 @@ function openProblemDetailPage(idk, num, level, subject, label){
     attemptRecs.forEach(r=>{ r.problemTypeKeywords[num] = [...typeKwSelSet]; });
     save();
     const analysis = document.getElementById('npAnalysis').innerHTML.trim();
-    const theory = document.getElementById('npTheory').value.trim();
+    const theory = document.getElementById('npTheory').innerHTML.trim();
     const choiceAnalysis = {};
     CHOICE_NUMS.forEach(n=>{
-      const text = document.getElementById('choiceText'+n).value.trim();
+      const text = document.getElementById('choiceText'+n).innerHTML.trim();
       const kw = [...choiceSelSets[n]];
       if(text || kw.length) choiceAnalysis[n] = { text, kw };
     });
