@@ -276,6 +276,10 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 .tile.t{font-weight:700;color:var(--navy)}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .timer{font-family:'Montserrat','GmkC',sans-serif;font-weight:700;color:var(--navy);font-size:1.1rem}
+#toTop{position:fixed;right:20px;bottom:24px;z-index:90;width:42px;height:42px;border-radius:50%;background:#fff;border:1.5px solid var(--navy);color:var(--navy);font-size:1.1rem;font-weight:600;box-shadow:0 4px 14px rgba(30,50,80,.15);opacity:0;pointer-events:none;transition:opacity .2s}
+#toTop.on{opacity:1;pointer-events:auto}
+#toTop:hover{background:var(--navy);color:#fff}
+.inframe-top #toTop{position:absolute;bottom:auto}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.85rem;z-index:500;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{opacity:1}
 
@@ -341,6 +345,7 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 
 <div id="study" class="hidden"></div>
 <div class="toast" id="toast"></div>
+<button id="toTop" onclick="try{(IN_FRAME?window.parent:window).scrollTo({top:0,behavior:'smooth'})}catch(e){scrollTo(0,0)}" title="맨 위로">↑</button>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -509,7 +514,8 @@ function pbarHtml(d) {
   return `<div class="pbar">${[3, 2, 1].map(l => `<i class="lv${l}" style="width:${d[l] / tot * 100}%"></i>`).join('')}</div>
   <div class="legend">${[3, 2, 1, 0].map(l => `<span><b class="lv${l}"></b>${LV_NAME[l]} ${d[l]}</span>`).join('')}</div>`;
 }
-function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 1700); }
+function toast(t) { const el = $('#toast'); el.textContent = t;
+  if (IN_FRAME) { try { const r = window.frameElement.getBoundingClientRect(); el.style.position = 'absolute'; el.style.bottom = 'auto'; el.style.top = Math.max(0, -r.top + window.parent.innerHeight - 70) + 'px'; } catch (e) { } } el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 1700); }
 function autoGrow(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
 /* ---------------- iframe height ---------------- */
@@ -519,10 +525,21 @@ function visibleTop() {
   if (!IN_FRAME) return window.scrollY;
   try { const r = window.frameElement.getBoundingClientRect(); return Math.max(0, -r.top); } catch (e) { return 0; }
 }
-function scrollToTopOfApp() {
-  if (IN_FRAME) { try { const r = window.frameElement.getBoundingClientRect(); if (r.top < 0) window.parent.scrollBy(0, r.top - 10); } catch (e) { } }
-  else window.scrollTo(0, 0);
+function scrollToTopOfApp(smooth) {
+  const behavior = smooth ? 'smooth' : 'auto';
+  if (IN_FRAME) { try { const r = window.frameElement.getBoundingClientRect(); if (r.top < 0) window.parent.scrollBy({ top: r.top - 10, behavior }); } catch (e) { } }
+  else window.scrollTo({ top: 0, behavior });
 }
+/* 맨 위로 버튼 (iframe 안에서도 화면 우측 하단에 붙어있게) */
+function placeTopBtn() {
+  const b = document.getElementById('toTop'); if (!b) return;
+  let vt = window.scrollY, vb = window.scrollY + window.innerHeight;
+  if (IN_FRAME) { try { const r = window.frameElement.getBoundingClientRect(); vt = -r.top; vb = -r.top + window.parent.innerHeight; } catch (e) { } }
+  b.classList.toggle('on', vt > 250);
+  if (IN_FRAME) b.style.top = Math.max(0, Math.min(document.documentElement.scrollHeight - 60, vb - 66)) + 'px';
+}
+window.addEventListener('scroll', placeTopBtn, { passive: true });
+try { if (IN_FRAME) { window.parent.addEventListener('scroll', placeTopBtn, { passive: true }); window.parent.addEventListener('resize', placeTopBtn); } } catch (e) { }
 
 /* ---------------- modal system ---------------- */
 let modalStack = [];
@@ -972,7 +989,7 @@ function secHtml(key, name, cs, forceOpen) {
   return `<div class="sechead" onclick="toggleSec('${key || '_none'}')"><span class="car ${open ? 'open' : ''}">▶</span>${key && F(key) ? icHtml(F(key)) : ''}${esc(name)} <span style="font-weight:500">${cs.length}</span></div>` + (open ? cs.map(c => cardHtml(c)).join('') : '');
 }
 function toggleSec(k) { UI.openSec[k] = !UI.openSec[k]; saveUI(); renderMain(); reportHeight(); }
-function renderAll() { renderSide(); renderMain(); renderResume(); reportHeight(); }
+function renderAll() { renderSide(); renderMain(); renderResume(); reportHeight(); setTimeout(placeTopBtn, 0); }
 
 /* =====================================================================
    CARD EDITOR
@@ -1047,7 +1064,7 @@ function edSave(again) {
   const now = Date.now(); ED.u = now; const isNew = ED._new; delete ED._new;
   if (isNew) S.cards.push(ED); else { const i = S.cards.findIndex(c => c.id === ED.id); if (i >= 0) S.cards[i] = ED; else S.cards.push(ED); }
   const keepFolder = ED.folderId, keepDate = ED.dateId, keepTags = ED.tags.slice();
-  save(); closeModal(); renderAll();
+  save(); closeModal(); renderAll(); if (!again) scrollToTopOfApp();
   if (again) { openCardEditor(); ED.folderId = keepFolder; ED.dateId = keepDate; ED.tags.push(...keepTags); $('#edFolder').value = keepFolder || ''; $('#edDate').value = keepDate || ''; tagPicker($('#edCardTags'), ED.tags, null, 'card-t'); }
 }
 function edDelete() {
@@ -1172,7 +1189,7 @@ function openBulk() {
     if (!cs.length) return toast('추가할 카드가 없어요');
     const fid = m.querySelector('#bkFolder').value || null, did = m.querySelector('#bkDate').value || null; const now = Date.now();
     cs.forEach((c, i) => S.cards.push({ id: uid(), subjectId: UI.subject, folderId: fid, dateId: did, title: c.title, tags: [...new Set([...c.tags, ...common])], items: c.items.map(it => ({ id: uid(), label: it.label, text: it.text, tags: it.tags })), c: now + i, o: now + i, u: now }));
-    save(); closeModal(); renderAll(); toast(`${cs.length}장 추가했어요`);
+    save(); closeModal(); renderAll(); scrollToTopOfApp(); toast(`${cs.length}장 추가했어요`);
   };
   upd(); setTimeout(() => ta.focus(), 30);
 }
@@ -1740,6 +1757,7 @@ function initData() {
   localStorage.setItem('cards_clean1', '1'); S.ts = now; fixOrphans(); writeLocal();
 }
 /* ---------------- boot ---------------- */
+if (IN_FRAME) document.documentElement.classList.add('inframe-top');
 loadLocal();
 initData();
 if (!UI.view || (UI.view.type === 'folder' && !F(UI.view.id))) UI.view = { type: 'all' };
