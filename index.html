@@ -3724,13 +3724,51 @@ function pl_unmergeItem() {
             showPage(__lp);
         }
         // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · MAP (다른 블록이 나중에 끼워넣어도 마지막에 정렬)
-        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-map'];
+        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-map','nav-cards'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
         setInterval(calcDday, 60*60*1000);
         document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) calcDday(); });
     }, 450);
+</script>
+
+<!-- ========== CARDS(나만의 퀴즐렛) 연동 — MAP 뒤에 탭 추가, cards.html을 iframe으로 그대로 삽입 ========== -->
+<div id="cards-view" style="display:none; width:100%;">
+    <iframe id="cards-iframe" data-src="cards.html" style="width:100%; height:700px; min-height:700px; border:none; display:block; background:#fcfbfa;" scrolling="no"></iframe>
+</div>
+<script>
+    // cards.html이 자기 높이를 보내오면 iframe 높이를 맞춰서 바깥 페이지가 쭉 스크롤되게 함 (PSAT과 같은 방식)
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'cardsHeight') {
+            const f = document.getElementById('cards-iframe');
+            if (f) f.style.height = Math.max(700, e.data.height) + 'px';
+        }
+    });
+    setTimeout(() => {
+        const appWrapper = document.querySelector('.app-wrapper');
+        const navLinks = document.querySelector('.nav-links');
+        const cardsView = document.getElementById('cards-view');
+        if (appWrapper && cardsView) appWrapper.appendChild(cardsView);
+        if (navLinks && !document.getElementById('nav-cards')) {
+            const b = document.createElement('span');
+            b.id = 'nav-cards'; b.className = 'inactive'; b.innerText = 'CARDS';
+            b.onclick = () => showPage('cards');
+            navLinks.appendChild(b);
+        }
+        const __prevShowPage3 = window.showPage || function(){};
+        window.showPage = function(p) {
+            __prevShowPage3(p);
+            if (cardsView) {
+                cardsView.style.display = (p === 'cards') ? 'block' : 'none';
+                const f = document.getElementById('cards-iframe');
+                if (p === 'cards' && f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // 처음 열 때만 로드
+            }
+            const nb = document.getElementById('nav-cards');
+            if (nb) nb.className = (p === 'cards') ? 'active' : 'inactive';
+        };
+        if (localStorage.getItem('lastPage') === 'cards') showPage('cards');
+    }, 470);
 </script>
 
 <!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->
