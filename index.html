@@ -788,7 +788,7 @@
                     <span class="active" id="nav-tracker" onclick="showPage('tracker')">TRACKER</span>
                     <span class="inactive" id="nav-chrono" onclick="showPage('chrono')">CHRONO</span>
                 </div>
-                <div class="d-day-box" onclick="setDday()" id="dday-display">D-80</div>
+                <div class="d-day-box" onclick="setDday()" id="dday-display">D-Day</div>
             </div>
         </header>
 
@@ -1153,7 +1153,7 @@
         function setDday() { let d = prompt("D-Day 날짜를 입력하세요 (예: 2026-08-30)"); if(d) { localStorage.setItem('myDday', d); calcDday(); } }
         function calcDday() { 
     // 로컬스토리지가 비어있을 때의 기본 디폴트 타겟 날짜를 설정하여 고정 버그 해결
-    let d = localStorage.getItem('myDday') || '2026-07-18'; 
+    let d = localStorage.getItem('myDday'); if(!d){ document.getElementById('dday-display').innerText = 'D-Day 설정'; return; } 
     let target = new Date(d); 
     let today = new Date(); 
     today.setHours(0,0,0,0); 
@@ -3659,6 +3659,9 @@ function pl_unmergeItem() {
 </script>
 
 <!-- ========== PSAT(피셋) 연동 — CHRONO와 D-day 사이에 탭 추가, 기존 앱은 iframe으로 그대로 삽입 ========== -->
+<div id="map-view" style="display:none; width:100%;">
+    <iframe id="map-iframe" data-src="world_map.html" style="width:100%; height:calc(100vh - 64px); min-height:560px; border:none; display:block; background:#fcfbfa;"></iframe>
+</div>
 <div id="psat-view" style="display:none; width: 100%; height: auto; min-height: 600px;">
     <iframe id="psat-iframe" src="psat_tracker.html" style="width:100%; height:600px; min-height:600px; border:none; display:block; background:#fcfbfa;" scrolling="no"></iframe>
 </div>
@@ -3678,7 +3681,9 @@ function pl_unmergeItem() {
         const psatView = document.getElementById('psat-view');
         const navLinks = document.querySelector('.nav-links');
 
+        const mapView = document.getElementById('map-view');
         if (appWrapper && psatView) appWrapper.appendChild(psatView);
+        if (appWrapper && mapView) appWrapper.appendChild(mapView);
 
         if (navLinks && !document.getElementById('nav-psat')) {
             const btn = document.createElement('span');
@@ -3686,8 +3691,17 @@ function pl_unmergeItem() {
             btn.className = 'inactive';
             btn.innerText = 'PSAT';
             btn.onclick = () => showPage('psat');
-            // CHRONO 바로 뒤(= D-day 박스 바로 앞)에 삽입
-            navLinks.appendChild(btn);
+            // 순서: TRACKER · PSAT · CHRONO · MAP
+            const chronoBtn = document.getElementById('nav-chrono');
+            navLinks.insertBefore(btn, chronoBtn);
+        }
+        if (navLinks && !document.getElementById('nav-map')) {
+            const mbtn = document.createElement('span');
+            mbtn.id = 'nav-map';
+            mbtn.className = 'inactive';
+            mbtn.innerText = 'MAP';
+            mbtn.onclick = () => showPage('map');
+            navLinks.appendChild(mbtn);
         }
 
         const __prevShowPage2 = window.showPage || function(){};
@@ -3696,11 +3710,26 @@ function pl_unmergeItem() {
             if(psatView) psatView.style.display = (p === 'psat') ? 'block' : 'none';
             const navPsat = document.getElementById('nav-psat');
             if(navPsat) navPsat.className = (p === 'psat') ? 'active' : 'inactive';
+            if(mapView){
+                mapView.style.display = (p === 'map') ? 'block' : 'none';
+                const f = document.getElementById('map-iframe');
+                if(p === 'map' && f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // 처음 열 때만 로드
+            }
+            const navMap = document.getElementById('nav-map');
+            if(navMap) navMap.className = (p === 'map') ? 'active' : 'inactive';
         };
 
-        if(localStorage.getItem('lastPage') === 'psat') {
-            showPage('psat');
+        const __lp = localStorage.getItem('lastPage');
+        if(__lp === 'psat' || __lp === 'map') {
+            showPage(__lp);
         }
+        // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · MAP (다른 블록이 나중에 끼워넣어도 마지막에 정렬)
+        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-map'];
+        const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
+        __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
+        calcDday();
+        setInterval(calcDday, 60*60*1000);
+        document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) calcDday(); });
     }, 450);
 </script>
 
