@@ -46,11 +46,13 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 }
 .wm-map-stage{position:relative;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;}
 .wm-svg{display:block;width:100%;height:auto;max-height:calc(100dvh - 280px);min-height:200px;}
-.wm-bpanel{flex:1;min-height:140px;margin-top:12px;overflow-y:auto;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.85);padding:12px 14px;scrollbar-width:thin;}
+.wm-bpanel{flex:1;min-height:0;margin-top:12px;overflow-y:auto;overflow-x:hidden;padding:0;scrollbar-width:none;-ms-overflow-style:none;}
+.wm-bpanel::-webkit-scrollbar{display:none;width:0;height:0;}
+.wm-bpanel:empty{display:none;}
 .wm-bpanel .bp-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .wm-bpanel .bp-head h3{margin:0;font-size:14.5px;color:var(--lavender-deep);flex:1;}
 .wm-bpanel .bp-close{border:none;background:none;color:var(--ink-soft);font-size:16px;cursor:pointer;}
-.wm-bpanel .bp-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start;}
+.wm-bpanel .bp-list{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start;}
 .wm-bpanel .bp-hint{color:var(--ink-soft);font-size:12.5px;padding:18px 4px;text-align:center;}
 @media (max-width:760px){ .wm-bpanel .bp-list{grid-template-columns:1fr;} }
 .country{fill:var(--country-fill);stroke:var(--country-stroke);stroke-width:0.6;cursor:pointer;transition:fill .12s;}
@@ -1767,7 +1769,7 @@ function ensurePanel(){
 function hidePanel(){
   panelState = null; anchorPopTarget = null;
   const p = ensurePanel();
-  p.innerHTML = '<div class="bp-hint">나라나 도시를 누르면 여기에 목록이 떠요</div>';
+  p.innerHTML = '';
 }
 function showPanel(titleHtml, ids, extraHtml){
   const p = ensurePanel();
