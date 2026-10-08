@@ -181,6 +181,15 @@ textarea.inp{resize:none;overflow:hidden;line-height:1.5}
 .count{font-size:.85rem;color:var(--navy);font-weight:700}
 pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'GmkC',monospace;font-size:.78rem;white-space:pre-wrap;color:var(--sub);margin-bottom:10px}
 .prev{border:1px solid var(--bd);border-radius:10px;padding:8px 12px;max-height:260px;overflow:auto;font-size:.82rem}
+.bkcard{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.bkhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bkhead .bkt{flex:1;min-width:160px;font-weight:600}
+.bkrow{display:grid;grid-template-columns:120px 1fr 26px;gap:8px;padding:8px 0;border-top:1px dashed var(--soft);align-items:start}
+.bkrow:first-child{border-top:none}
+.bkrow .bkl{font-weight:600;color:var(--navy)}
+.bktg{margin-top:4px}
+.bkadd{margin-top:2px}
+@media (max-width:760px){.bkrow{grid-template-columns:1fr 26px}.bkrow .bkl{grid-column:1/2}.bkrow>div{grid-column:1/2}.bkrow .ibtn{grid-row:1/3;grid-column:2}}
 .prev .pc{padding:6px 0;border-top:1px dashed var(--soft)}
 .prev .pc:first-child{border-top:none}
 
@@ -1100,30 +1109,67 @@ function openBulk() {
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap"><span class="hint">주제</span><select class="sel" id="bkFolder">${folderOptions(defFolder)}</select>
       <span class="hint">날짜</span><select class="sel" id="bkDate">${folderOptions(defDate, 'date')}</select>
       <span class="hint">태그</span><div id="bkTags"></div></div>
-    <textarea class="inp" id="bkText" style="min-height:200px;overflow:auto;resize:vertical;font-size:.86rem" ></textarea>
-    <div style="margin:10px 0 6px" class="count" id="bkCount"></div>
-    <div class="prev" id="bkPrev"></div>
-    <div class="mfoot"><button class="btn ghost" onclick="closeModal()">취소</button><button class="btn pri" id="bkGo">추가</button></div>`);
+    <div id="bkStep1">
+      <textarea class="inp" id="bkText" style="min-height:240px;overflow:auto;resize:vertical;font-size:.86rem" ></textarea>
+      <div class="mfoot"><span class="count" id="bkCount"></span><span class="sp"></span><button class="btn ghost" onclick="closeModal()">취소</button><button class="btn pri" id="bkNext">다음</button></div>
+    </div>
+    <div id="bkStep2" class="hidden">
+      <div id="bkEdit"></div>
+      <div class="mfoot"><button class="btn ghost" id="bkBack">← 텍스트로</button><span class="sp"></span><span class="count" id="bkCount2"></span><button class="btn pri" id="bkGo">추가</button></div>
+    </div>`);
   let mode = 'cards'; const common = [];
   const FMT = {
     cards: `월츠 #신현실주의\n- 극성: 양극체제가 더 안정적 #극성\n- 무정부: 자조체제 #무정부\n\n미어샤이머\n- …`,
     quizlet: `용어\t뜻\n용어 | 뜻`
   };
   const ta = m.querySelector('#bkText');
+  let draft = [], dirty = false;
+  const cnt = cs => `카드 ${cs.length}장 · 답 ${cs.reduce((n, c) => n + c.items.length, 0)}줄`;
   const upd = () => {
     ta.placeholder = FMT[mode];
     const cs = parseBulk(ta.value, mode);
-    m.querySelector('#bkCount').textContent = ta.value.trim() ? `카드 ${cs.length}장 · 답 ${cs.reduce((n, c) => n + c.items.length, 0)}줄` : '';
-    m.querySelector('#bkPrev').innerHTML = cs.slice(0, 40).map(c => `<div class="pc"><b>${esc(c.title)}</b> ${c.tags.map(t => `<span class="tag card-t">#${esc(t)}</span>`).join(' ')}
-      ${c.items.map(it => `<div style="padding-left:10px">${it.label ? `<b style="color:var(--navy)">${esc(it.label)}</b> · ` : ''}${esc(it.text)} ${it.tags.map(t => `<span class="tag">#${esc(t)}</span>`).join(' ')}</div>`).join('')}</div>`).join('') + (cs.length > 40 ? `<div class="hint">…외 ${cs.length - 40}장</div>` : '');
-    m.querySelector('#bkPrev').style.display = cs.length ? '' : 'none';
+    m.querySelector('#bkCount').textContent = ta.value.trim() ? cnt(cs) : '';
+  };
+  const drawEdit = () => {
+    const box = m.querySelector('#bkEdit'); box.innerHTML = '';
+    m.querySelector('#bkCount2').textContent = cnt(draft);
+    draft.forEach((c, ci) => {
+      const cb = document.createElement('div'); cb.className = 'bkcard';
+      cb.innerHTML = `<div class="bkhead"><input class="inp bkt" value="${esc(c.title)}"><div class="bkct"></div><button class="ibtn" title="카드 빼기" style="color:var(--red)">✕</button></div><div class="bkitems"></div><button class="btn sm ghost bkadd">＋ 줄</button>`;
+      const ti = cb.querySelector('.bkt'); ti.oninput = () => { c.title = ti.value; dirty = true; };
+      tagPicker(cb.querySelector('.bkct'), c.tags, () => dirty = true, 'card-t');
+      cb.querySelector('.bkhead .ibtn').onclick = () => { draft.splice(ci, 1); dirty = true; drawEdit(); };
+      cb.querySelector('.bkadd').onclick = () => { c.items.push({ label: '', text: '', tags: [] }); dirty = true; drawEdit(); };
+      const ib = cb.querySelector('.bkitems');
+      c.items.forEach((it, ii) => {
+        const r = document.createElement('div'); r.className = 'bkrow';
+        r.innerHTML = `<input class="inp bkl" placeholder="라벨" value="${esc(it.label)}"><div><textarea class="inp bkx" rows="1">${esc(it.text)}</textarea><div class="bktg"></div></div><button class="ibtn" title="줄 빼기">✕</button>`;
+        const l = r.querySelector('.bkl'), x = r.querySelector('.bkx');
+        l.oninput = () => { it.label = l.value; dirty = true; };
+        x.oninput = () => { it.text = x.value; autoGrow(x); dirty = true; };
+        tagPicker(r.querySelector('.bktg'), it.tags, () => dirty = true);
+        r.querySelector('.ibtn').onclick = () => { c.items.splice(ii, 1); if (!c.items.length) draft.splice(ci, 1); dirty = true; drawEdit(); };
+        ib.appendChild(r); setTimeout(() => autoGrow(x), 0);
+      });
+      box.appendChild(cb);
+    });
+    reportHeight();
+  };
+  m.querySelector('#bkNext').onclick = () => {
+    draft = parseBulk(ta.value, mode); if (!draft.length) return toast('인식된 카드가 없어요');
+    dirty = false; m.querySelector('#bkStep1').classList.add('hidden'); m.querySelector('#bkStep2').classList.remove('hidden'); drawEdit();
+  };
+  m.querySelector('#bkBack').onclick = () => {
+    if (dirty && !confirm('수정한 내용은 사라져요. 텍스트로 돌아갈까?')) return;
+    m.querySelector('#bkStep2').classList.add('hidden'); m.querySelector('#bkStep1').classList.remove('hidden'); reportHeight();
   };
   m.querySelectorAll('#bkMode button').forEach(b => b.onclick = () => { mode = b.dataset.m; m.querySelectorAll('#bkMode button').forEach(x => x.classList.toggle('on', x === b)); upd(); });
   ta.oninput = upd;
   ta.onkeydown = e => { if (e.key === 'Tab' && mode === 'quizlet') { e.preventDefault(); const s = ta.selectionStart; ta.setRangeText('\t', s, ta.selectionEnd, 'end'); upd(); } };
   tagPicker(m.querySelector('#bkTags'), common, null, 'card-t');
   m.querySelector('#bkGo').onclick = () => {
-    const cs = parseBulk(ta.value, mode); if (!cs.length) return toast('인식된 카드가 없어요');
+    const cs = draft.map(c => ({ ...c, title: c.title.trim(), items: c.items.map(it => ({ ...it, label: it.label.trim(), text: it.text.trim() })).filter(it => it.label || it.text) })).filter(c => c.title || c.items.length);
+    if (!cs.length) return toast('추가할 카드가 없어요');
     const fid = m.querySelector('#bkFolder').value || null, did = m.querySelector('#bkDate').value || null; const now = Date.now();
     cs.forEach((c, i) => S.cards.push({ id: uid(), subjectId: UI.subject, folderId: fid, dateId: did, title: c.title, tags: [...new Set([...c.tags, ...common])], items: c.items.map(it => ({ id: uid(), label: it.label, text: it.text, tags: it.tags })), c: now + i, o: now + i, u: now }));
     save(); closeModal(); renderAll(); toast(`${cs.length}장 추가했어요`);
