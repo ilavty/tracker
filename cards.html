@@ -44,7 +44,7 @@ button{cursor:pointer;border:none;background:none}
 .sechead .car.open{transform:rotate(90deg)}
 .rs{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:.85rem}
 .rs:hover{background:var(--soft)}
-.rs .md{font-size:.72rem;font-weight:600;color:var(--navy);border:1px solid var(--navy);border-radius:10px;padding:0 6px;white-space:nowrap;animation:glow 1.8s ease-in-out infinite}
+.rs .md{font-size:.72rem;font-weight:600;color:var(--navy);border:1px solid var(--navy);border-radius:10px;padding:0 6px;white-space:nowrap;margin-right:3px}
 .rs .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rs .pg{font-size:.72rem;color:var(--grey);white-space:nowrap}
 .rs .x{color:var(--grey);font-size:.72rem;padding:0 3px;visibility:hidden}
@@ -75,7 +75,8 @@ button{cursor:pointer;border:none;background:none}
 
 /* ---------- layout ---------- */
 .layout{display:grid;grid-template-columns:250px 1fr;gap:18px;max-width:1150px;margin:0 auto;align-items:start}
-.side{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px 8px;position:sticky;top:12px}
+.side-col{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+.side{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px 8px}
 .side-h{display:flex;align-items:center;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--grey);letter-spacing:.06em;padding:4px 8px 6px}
 .side-sec+.side-sec{margin-top:14px;border-top:1px solid var(--soft);padding-top:10px}
 .fnode{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:.88rem;user-select:none;position:relative}
@@ -294,7 +295,7 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 @media (max-width:760px){
   body{padding:12px 10px 40px}
   .layout{grid-template-columns:1fr}
-  .side{position:static}
+  .side-col{position:static}
   .side-toggle{display:inline-flex}
   .side.fold .side-body{display:none}
   .setup-grid{grid-template-columns:1fr}
@@ -328,6 +329,7 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
     <button class="ibtn" onclick="openMoreMenu(event)" title="더보기">⋯</button>
   </div>
   <div class="layout">
+    <div class="side-col">
     <aside class="side fold" id="side">
       <div class="side-sec">
         <div class="side-h"><span>폴더</span><span>
@@ -345,11 +347,12 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
         <div class="side-h"><span>태그</span></div>
         <div class="taglist" id="tagList"></div>
       </div>
-      <div class="side-sec side-body" id="resumeBox">
-        <div class="side-h"><span>이어하기</span></div>
-        <div id="resumeList"></div>
-      </div>
     </aside>
+    <div class="side resume-side hidden" id="resumeBox">
+      <div class="side-h"><span>이어하기</span></div>
+      <div id="resumeList"></div>
+    </div>
+    </div>
     <main id="main"></main>
   </div>
 </div>
