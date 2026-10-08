@@ -2155,10 +2155,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
       <div class="np-row"><div class="np-label">분석 노트</div><div class="np-value"><div id="npAnalysis" class="np-richtext" contenteditable="true">${note.analysis||''}</div></div></div>
       <div class="np-row"><div class="np-label">참고 이론</div><div class="np-value"><div id="npTheory" class="np-richtext" contenteditable="true">${note.theory||''}</div></div></div>
       <div class="np-row">
-        <div class="np-label">선지분석</div>
+        <div class="np-label" id="choiceLabel" style="cursor:pointer;user-select:none;">선지분석 <span id="choiceArrow" style="font-size:10px;color:var(--ink-soft);"></span></div>
         <div class="np-value">
           <button type="button" class="btn btn-plain btn-small" id="choiceToggleBtn" style="display:${hasChoiceData?'none':'inline-block'};">+ 선지분석 추가하기</button>
-          <button type="button" class="btn btn-plain btn-small" id="choiceFoldBtn" style="display:${hasChoiceData?'inline-block':'none'};"></button>
           <div id="choiceBlock" style="display:${hasChoiceData?'block':'none'};margin-top:10px;">${choiceRowsForAnalysis}</div>
         </div>
       </div>
@@ -2186,27 +2185,23 @@ function openProblemDetailPage(idk, num, level, subject, label){
     }
   });
   const choiceFoldKey = 'psatChoiceFolded_v1';
-  const choiceFoldBtn = document.getElementById('choiceFoldBtn');
   const choiceBlockEl = document.getElementById('choiceBlock');
+  const choiceAddBtn = document.getElementById('choiceToggleBtn');
   function applyChoiceFold(folded){
     choiceBlockEl.style.display = folded ? 'none' : 'block';
-    const filled = CHOICE_NUMS.filter(n => choiceSelSets[n].size || (document.getElementById('choiceText'+n).textContent||'').trim() || document.getElementById('choiceText'+n).querySelector('img')).length;
-    choiceFoldBtn.textContent = folded ? `▼ 선지분석 펼치기${filled?` (${filled}개 작성됨)`:''}` : '▲ 선지분석 접기';
+    if(!folded) choiceAddBtn.style.display = 'none';
+    document.getElementById('choiceArrow').textContent = folded ? '▸' : '▾';
   }
   let choiceFolded = false;
   try{ choiceFolded = localStorage.getItem(choiceFoldKey)==='1'; }catch(e){}
   if(hasChoiceData) applyChoiceFold(choiceFolded);
-  choiceFoldBtn.addEventListener('click', ()=>{
-    choiceFolded = choiceBlockEl.style.display !== 'none';
-    try{ localStorage.setItem(choiceFoldKey, choiceFolded?'1':'0'); }catch(e){}
-    applyChoiceFold(choiceFolded);
+  document.getElementById('choiceLabel').addEventListener('click', ()=>{
+    const open = choiceBlockEl.style.display !== 'none';
+    try{ localStorage.setItem(choiceFoldKey, open?'1':'0'); }catch(e){}
+    applyChoiceFold(open);
+    if(open && !hasChoiceData) choiceAddBtn.style.display = 'inline-block';
   });
-  document.getElementById('choiceToggleBtn').addEventListener('click', ()=>{
-    document.getElementById('choiceBlock').style.display = 'block';
-    document.getElementById('choiceToggleBtn').style.display = 'none';
-    choiceFoldBtn.style.display = 'inline-block';
-    applyChoiceFold(false);
-  });
+  choiceAddBtn.addEventListener('click', ()=>{ applyChoiceFold(false); });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
   attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id]); });
