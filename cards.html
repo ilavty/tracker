@@ -20,7 +20,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{display:none!important} *{scrollbar-width:none!important}
-html,body{background:var(--bg)}
+html,body{background:transparent}
 body{font-family:'GmkC',sans-serif;font-weight:400;color:var(--txt);font-size:14px;line-height:1.5;padding:18px 16px 40px;position:relative;-webkit-tap-highlight-color:transparent}
 button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
@@ -298,7 +298,6 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 
 <div id="app">
   <div class="top">
-    <div class="brand">CARDS</div>
     <div class="subjs" id="subjTabs"></div>
     <span class="sync" id="syncState"></span>
     <div class="sp"></div>
@@ -539,7 +538,7 @@ function inputModal(title, value, onOk, placeholder = '') {
   i.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) ok(); };
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if (document.querySelector('.pop,.cmenu')) { closePop(); return; } if (modalStack.length) { closeModal(); return; } }
+  if (e.key === 'Escape') { if (document.querySelector('.pop,.cmenu')) { closePop(); return; } if (modalStack.length) { closeModal(); return; } if (studyActive) { e.preventDefault(); endStudy(); } }
 });
 
 /* ---------------- popover / context menu ---------------- */
