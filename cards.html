@@ -42,7 +42,15 @@ button{cursor:pointer;border:none;background:none}
 .subj.add{font-weight:500;padding:5px 9px}
 .sechead .car{display:inline-block;width:12px;font-size:.6rem;transition:.15s}
 .sechead .car.open{transform:rotate(90deg)}
-.resume-top{display:inline-flex;gap:6px;align-items:center}
+.rs{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:.85rem}
+.rs:hover{background:var(--soft)}
+.rs .md{font-size:.72rem;font-weight:600;color:var(--navy);border:1px solid var(--navy);border-radius:10px;padding:0 6px;white-space:nowrap;animation:glow 1.8s ease-in-out infinite}
+.rs .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs .pg{font-size:.72rem;color:var(--grey);white-space:nowrap}
+.rs .x{color:var(--grey);font-size:.72rem;padding:0 3px;visibility:hidden}
+.rs:hover .x{visibility:visible}
+.rs .x:hover{color:var(--red)}
+@media (pointer:coarse){.rs .x{visibility:visible}}
 .rbtn{border:1.5px solid var(--navy);background:#fff;color:var(--navy);border-radius:18px;padding:5px 10px 5px 14px;font-weight:500;font-size:.85rem;white-space:nowrap;animation:glow 1.8s ease-in-out infinite;display:inline-flex;align-items:center;gap:6px}
 .rbtn .x{color:var(--grey);font-size:.72rem;padding:0 2px}
 .rbtn .x:hover{color:var(--red)}
@@ -279,7 +287,7 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 #toTop{position:fixed;right:20px;bottom:24px;z-index:90;width:42px;height:42px;border-radius:50%;background:#fff;border:1.5px solid var(--navy);color:var(--navy);font-size:1.1rem;font-weight:600;box-shadow:0 4px 14px rgba(30,50,80,.15);opacity:0;pointer-events:none;transition:opacity .2s}
 #toTop.on{opacity:1;pointer-events:auto}
 #toTop:hover{background:var(--navy);color:#fff}
-.inframe-top #toTop{position:absolute;bottom:auto}
+.inframe-top #toTop{display:none}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.85rem;z-index:500;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{opacity:1}
 
@@ -314,7 +322,6 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
     <div class="subjs" id="subjTabs"></div>
     <span class="sync" id="syncState"></span>
     <div class="sp"></div>
-    <span class="resume-top" id="resumeTop"></span>
     <button class="btn" onclick="openStudySetup()">공부하기</button>
     <button class="btn" onclick="openBulk()">일괄 추가</button>
     <button class="btn pri" onclick="openCardEditor()">+ 카드</button>
@@ -337,6 +344,10 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
       <div class="side-sec side-body">
         <div class="side-h"><span>태그</span></div>
         <div class="taglist" id="tagList"></div>
+      </div>
+      <div class="side-sec side-body" id="resumeBox">
+        <div class="side-h"><span>이어하기</span></div>
+        <div id="resumeList"></div>
       </div>
     </aside>
     <main id="main"></main>
@@ -1325,7 +1336,7 @@ function startStudy(mode, pool) {
   $('#app').classList.add('hidden'); $('#study').classList.remove('hidden');
   scrollToTopOfApp();
   const unit = (mode === 'test' || mode === 'match') ? 'item' : CFG.unit;
-  SD = { mode, pool, units: makeUnits(pool, unit), dir: CFG.dir, subject: UI.subject };
+  SD = { mode, pool, units: makeUnits(pool, unit), dir: CFG.dir, subject: UI.subject, scope: scopeOf(CFG) };
   ({ flash: flashStart, learn: learnStart, test: testStart, match: matchStart })[mode]();
 }
 function endStudy() {
@@ -1376,27 +1387,47 @@ function unitFromKey(k) {
   const ids = (b || '').split(','); const items = c.items.filter(i => ids.includes(i.id));
   return items.length ? { kind: 'card', card: c, items, key: 'c:' + c.id } : null;
 }
+function scopeOf(cfg) {
+  const fs = cfg.folders.filter(F).slice().sort(), ts = cfg.tags.slice().sort(ko);
+  const key = [fs.join(','), ts.join(','), cfg.starOnly ? 's' : '', cfg.tags.length ? cfg.tagMode + cfg.tagScope : ''].join('|');
+  const parts = [...fs.map(id => F(id).name), ...ts.map(t => '#' + t)];
+  const label = (cfg.starOnly ? ['☆ 별표'] : []).concat(parts).join(' · ') || '전체';
+  return { key, label };
+}
+const sessKey = (subj, mode, scopeKey) => subj + ':' + mode + ':' + scopeKey;
 function persistSess() {
-  if (!SD || !SD.subject) return;
+  if (!SD || !SD.subject || !SD.scope) return;
   let d = null;
   if (SD.mode === 'flash' && SD.deck) d = { dir: SD.dir, deck: SD.deck.map(ukey), i: SD.i, know: SD.know.map(ukey), dont: SD.dont.map(ukey) };
   if (SD.mode === 'learn' && SD.L) d = { dir: SD.dir, skipW: !!SD.skipW, L: SD.L.map(x => ({ k: ukey(x.u), stage: x.stage, miss: x.miss })), round: SD.round, correct: SD.correct, wrong: SD.wrong };
   if (!d) return;
-  S.sessions[SD.subject + ':' + SD.mode] = { ...d, u: Date.now() }; writeLocal(); schedulePush();
+  S.sessions[sessKey(SD.subject, SD.mode, SD.scope.key)] = { ...d, mode: SD.mode, subject: SD.subject, label: SD.scope.label, scopeKey: SD.scope.key, u: Date.now() }; writeLocal(); schedulePush();
 }
-function clearSess(mode, subj) { S.sessions[(subj || (SD && SD.subject) || UI.subject) + ':' + mode] = { u: Date.now(), empty: true }; writeLocal(); schedulePush(); }
-function getSess(mode) { const x = S.sessions[UI.subject + ':' + mode]; return x && !x.empty ? x : null; }
+function clearSess(mode) { if (!SD || !SD.scope) return; S.sessions[sessKey(SD.subject, mode, SD.scope.key)] = { u: Date.now(), empty: true }; writeLocal(); schedulePush(); }
+function dropSess(k) { S.sessions[k] = { u: Date.now(), empty: true }; writeLocal(); schedulePush(); renderResume(); }
+function sessList() {
+  return Object.entries(S.sessions).filter(([k, x]) => x && !x.empty && x.subject === UI.subject && x.label != null)
+    .filter(([k, x]) => x.mode === 'flash' ? (x.deck && x.i < x.deck.length) : (x.L && x.L.length))
+    .sort((a, b) => b[1].u - a[1].u);
+}
 function renderResume() {
-  const out = [];
-  const f = getSess('flash'); if (f && f.deck && f.i < f.deck.length) out.push(`<button class="rbtn" onclick="resumeSess('flash')">플래시카드 ${f.i}/${f.deck.length}<span class="x" onclick="event.stopPropagation();clearSess('flash');renderResume()" title="기록 지우기">✕</span></button>`);
-  const l = getSess('learn'); if (l && l.L) out.push(`<button class="rbtn" onclick="resumeSess('learn')">학습 ${l.L.filter(x => x.stage >= 2).length}/${l.L.length}<span class="x" onclick="event.stopPropagation();clearSess('learn');renderResume()" title="기록 지우기">✕</span></button>`);
-  const el = $('#resumeTop'); if (el) el.innerHTML = out.join('');
+  const list = sessList(), box = $('#resumeBox'); if (!box) return;
+  box.classList.toggle('hidden', !list.length);
+  $('#resumeList').innerHTML = list.map(([k, x]) => {
+    const pg = x.mode === 'flash' ? `${x.i}/${x.deck.length}` : `${x.L.filter(y => y.stage >= 2).length}/${x.L.length}`;
+    return `<div class="rs" data-k="${esc(k)}"><span class="md">${x.mode === 'flash' ? '플래시' : '학습'}</span><span class="nm">${esc(x.label)}</span><span class="pg">${pg}</span><span class="x" title="기록 지우기">✕</span></div>`;
+  }).join('');
+  document.querySelectorAll('#resumeList .rs').forEach(el => {
+    el.onclick = () => resumeSess(el.dataset.k);
+    el.querySelector('.x').onclick = e => { e.stopPropagation(); dropSess(el.dataset.k); };
+  });
 }
-function resumeSess(mode) {
-  const x = getSess(mode); if (!x) return;
+function resumeSess(k) {
+  const x = S.sessions[k]; if (!x || x.empty) return;
+  const mode = x.mode;
   studyActive = true;
   $('#app').classList.add('hidden'); $('#study').classList.remove('hidden'); scrollToTopOfApp();
-  SD = { mode, dir: x.dir, subject: UI.subject, units: [] };
+  SD = { mode, dir: x.dir, subject: x.subject, units: [], scope: { key: x.scopeKey, label: x.label } };
   if (mode === 'flash') {
     const R = a => (a || []).map(unitFromKey).filter(Boolean);
     SD.deck = R(x.deck); SD.know = R(x.know); SD.dont = R(x.dont); SD.units = SD.deck.slice();
