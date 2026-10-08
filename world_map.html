@@ -63,6 +63,7 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 .wm-marker circle{fill:var(--lavender-deep);stroke:#fff;stroke-width:1.4;}
 .wm-marker:hover circle{fill:#1d3f69;}
 .wm-marker text{font-size:9px;font-weight:800;fill:#fff;text-anchor:middle;pointer-events:none;}
+.wm-marker.sel circle{fill:#E8505B;stroke:#fff;stroke-width:2;}
 .wm-marker.flash circle{animation:wmflash 1s ease-out 2;}
 @keyframes wmflash{0%{r:6;opacity:1;}100%{r:16;opacity:0;}}
 .wm-pick-hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--lavender-deep);color:#fff;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:999px;box-shadow:0 8px 20px rgba(40,20,70,0.18);display:none;z-index:20;}
@@ -271,7 +272,7 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
           </div>
           <div class="wm-anchor-pop-arrow"></div>
         </div>
-        <svg class="wm-svg" id="worldSvg" viewBox="0 28 1000 392" xmlns="http://www.w3.org/2000/svg">
+        <svg class="wm-svg" id="worldSvg" viewBox="0 12 1000 440" xmlns="http://www.w3.org/2000/svg">
           <g id="countriesLayer">
 <path id="c242" data-name="Fiji" d="M578.123,308.627L578.813,308.166L579.773,308.97L579.313,310.418L577.593,310.799L576.063,310.455L575.793,309.233L576.863,308.279ZM583.333,304.63L583.903,304.503L583.563,305.839L583.333,305.989L581.563,306.671L579.793,307.254L579.433,306.219L580.823,305.65L581.703,305.495L583.333,304.63Z" class="country"/>
 <path id="c834" data-name="Tanzania" d="M177.509,262.641L177.979,262.946L188.049,268.602L188.239,270.215L192.229,272.989L190.949,276.412L191.109,277.987L192.889,279.002L192.969,279.721L192.209,281.4L192.369,282.246L192.189,283.572L193.159,285.312L194.309,288.053L195.319,288.659L193.109,290.267L190.079,291.348L188.409,291.301L187.419,292.134L185.489,292.209L184.759,292.557L181.419,291.776L179.329,292.002L178.559,288.222L177.609,286.929L177.059,286.158L174.329,285.641L172.759,284.808L170.989,284.338L169.879,283.873L168.719,283.168L167.219,279.665L165.609,278.113L165.059,276.501L165.329,275.057L164.829,272.5L165.979,272.368L166.989,271.362L168.069,269.914L168.759,269.331L168.729,268.428L168.129,267.798L167.969,266.703L168.769,266.355L168.929,264.719L167.829,263.153L168.809,262.819L171.849,262.852Z" class="country"/>
@@ -486,7 +487,7 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 <script>
 // ========== World Map DB ==========
 const MAP_W = 1000, MAP_H = 520;
-const VIEW_Y0 = 28, VIEW_H = 392; // 북극·남극 잘라냄 (위도 약 83°N ~ 57°S만 표시)
+const VIEW_Y0 = 12, VIEW_H = 440; // 북극·남극 잘라냄 (위도 약 83°N ~ 57°S만 표시)
 const SCALE = MAP_W / (2 * Math.PI);
 const CENTER_LNG = 150; // map is recentered so Asia sits middle-left and the Americas fall on the right
 function normLng(l){ return ((l + 540) % 360) - 180; } // wrap to [-180,180]
@@ -1134,6 +1135,40 @@ document.getElementById('countriesLayer').addEventListener('click', e=>{
 // ---------- Markers ----------
 function pointEntries(){ return entries.filter(e=>POINT_TYPES.includes(e.type) && typeof e.lat==='number' && typeof e.lng==='number'); }
 function clusterKey(e){ return Math.round(e.lat*20)+','+Math.round(e.lng*20); } // ~0.05 deg buckets
+let selClusterKey = null;
+function setSelCluster(key){
+  selClusterKey = key;
+  document.querySelectorAll('#markersLayer .wm-marker').forEach(m=>m.classList.toggle('sel', !!key && m.dataset.bucket===key));
+}
+let flyRaf = null;
+function flyTo(lat, lng, targetW){
+  const [x,y] = projectLngLat(lng, lat);
+  const w1 = Math.min(vb.w, targetW || 240);
+  const s0 = { cx: vb.x+vb.w/2, cy: vb.y+vb.h/2, w: vb.w };
+  const t0 = performance.now(), D = 700;
+  cancelAnimationFrame(flyRaf);
+  const step = now=>{
+    let k = Math.min(1, (now-t0)/D); k = 1-Math.pow(1-k,3);
+    const w = Math.exp(Math.log(s0.w) + (Math.log(w1)-Math.log(s0.w))*k);
+    const cx = s0.cx + (x-s0.cx)*k, cy = s0.cy + (y-s0.cy)*k;
+    vb.w = w; vb.h = w*(VIEW_H/MAP_W); vb.x = cx-vb.w/2; vb.y = cy-vb.h/2;
+    clampViewBox(); applyViewBox();
+    if(k<1) flyRaf = requestAnimationFrame(step);
+  };
+  flyRaf = requestAnimationFrame(step);
+}
+function showEntryCard(e){
+  const card = document.getElementById('rtaCard');
+  const tags = tagsChipsHtml(e);
+  card.innerHTML = `<button type="button" class="wm-anchor-pop-close" id="rtaCardClose">✕</button>
+    <div class="rta-card-title">${tagHtml(e.type)}${tags} ${esc(e.name)}</div>
+    <div class="rta-card-sub">${esc(e.date||'')}${e.date&&e.placeName?' · ':''}${esc(e.placeName||'')}</div>
+    ${e.description ? `<div class="rta-card-desc">${esc(e.description)}</div>` : ''}
+    <div class="pop-entry-item-actions"><button type="button" id="rtaCardEdit">수정</button></div>`;
+  card.classList.add('open');
+  document.getElementById('rtaCardClose').addEventListener('click', ()=>{ card.classList.remove('open'); setSelCluster(null); });
+  document.getElementById('rtaCardEdit').addEventListener('click', ()=>{ returnView = ()=>{ const e2 = entries.find(x=>x.id===e.id); if(e2) showEntryCard(e2); }; openEntryEditModal(e); });
+}
 function renderMarkers(){
   const layer = document.getElementById('markersLayer');
   layer.innerHTML = '';
@@ -1147,12 +1182,13 @@ function renderMarkers(){
   Object.values(clusters).forEach(cl=>{
     const [x,y] = projectLngLat(cl.lng, cl.lat);
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','wm-marker');
+    g.setAttribute('class','wm-marker' + (clusterKey(cl.items[0])===selClusterKey ? ' sel' : ''));
+    g.setAttribute('data-bucket', clusterKey(cl.items[0]));
     g.setAttribute('data-clusterkey', cl.lat+','+cl.lng);
     g.setAttribute('data-x', x); g.setAttribute('data-y', y);
     const r = cl.items.length>1 ? 8 : 6;
     g.innerHTML = `<circle cx="${x}" cy="${y}" r="${r}"></circle>` + (cl.items.length>1 ? `<text x="${x}" y="${y+3}">${cl.items.length}</text>` : '');
-    g.addEventListener('click', ev=>{ ev.stopPropagation(); openMarkerInfo(cl.items, cl.lat, cl.lng); });
+    g.addEventListener('click', ev=>{ ev.stopPropagation(); document.getElementById('rtaCard').classList.remove('open'); setSelCluster(clusterKey(cl.items[0])); openMarkerInfo(cl.items, cl.lat, cl.lng); });
     layer.appendChild(g);
   });
   updateMarkerTransforms();
@@ -1229,11 +1265,11 @@ function renderSidebarList(){
       if(!e) return;
       if(e.type==='rta'){ if(highlightedRtaId===e.id) clearRtaSelection(); else selectRta(e); return; }
       if(typeof e.lat==='number'){
-        const sameSpot = pointEntries().filter(o=>clusterKey(o)===clusterKey(e));
-        document.getElementById('rtaCard').classList.remove('open');
-        ensurePointVisible(e.lat, e.lng);
-        openMarkerInfo(sameSpot, e.lat, e.lng);
-        flashMarker(e.lat, e.lng);
+        if(highlightedRtaId){ highlightedRtaId = null; applyRtaHighlight(); showCountryLabels([]); renderSidebarList(); }
+        hidePanel();
+        setSelCluster(clusterKey(e));
+        flyTo(e.lat, e.lng, 240);
+        showEntryCard(e);
       } else {
         openSinglePanel(e);
       }
@@ -1726,7 +1762,7 @@ function showRtaCard(e){
   document.getElementById('rtaCardEdit').addEventListener('click', ()=> openEntryEditModal(e));
 }
 function selectRta(e){
-  closeAnchorPop();
+  closeAnchorPop(); setSelCluster(null);
   highlightedRtaId = e.id;
   applyRtaHighlight();
   showCountryLabels(e.memberCountryIds||[]);
