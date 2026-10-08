@@ -1304,6 +1304,7 @@ function goBackModal(){
   if(fn) fn();
 }
 function closeDetailOverlay(){
+  if(typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} detailFlush = null; }
   modalBackStack = [];
   document.getElementById('detailOverlay').classList.remove('open');
 }
@@ -2157,11 +2158,13 @@ function openProblemDetailPage(idk, num, level, subject, label){
         <div class="np-label">선지분석</div>
         <div class="np-value">
           <button type="button" class="btn btn-plain btn-small" id="choiceToggleBtn" style="display:${hasChoiceData?'none':'inline-block'};">+ 선지분석 추가하기</button>
+          <button type="button" class="btn btn-plain btn-small" id="choiceFoldBtn" style="display:${hasChoiceData?'inline-block':'none'};"></button>
           <div id="choiceBlock" style="display:${hasChoiceData?'block':'none'};margin-top:10px;">${choiceRowsForAnalysis}</div>
         </div>
       </div>
       <div class="np-row" style="border-bottom:none;justify-content:flex-end;">
-        <button type="button" class="btn btn-primary" id="npSaveBtn">저장</button>
+        <span id="npSavedMsg" style="align-self:center;margin-right:10px;font-size:12px;color:var(--ink-soft);opacity:0;transition:opacity .3s;">✓ 자동 저장됨</span>
+        <button type="button" class="btn btn-primary" id="npSaveBtn">닫기</button>
       </div>
     </div>
   `;
@@ -2182,9 +2185,27 @@ function openProblemDetailPage(idk, num, level, subject, label){
       btn.classList.add('pinned');
     }
   });
+  const choiceFoldKey = 'psatChoiceFolded_v1';
+  const choiceFoldBtn = document.getElementById('choiceFoldBtn');
+  const choiceBlockEl = document.getElementById('choiceBlock');
+  function applyChoiceFold(folded){
+    choiceBlockEl.style.display = folded ? 'none' : 'block';
+    const filled = CHOICE_NUMS.filter(n => choiceSelSets[n].size || (document.getElementById('choiceText'+n).textContent||'').trim() || document.getElementById('choiceText'+n).querySelector('img')).length;
+    choiceFoldBtn.textContent = folded ? `▼ 선지분석 펼치기${filled?` (${filled}개 작성됨)`:''}` : '▲ 선지분석 접기';
+  }
+  let choiceFolded = false;
+  try{ choiceFolded = localStorage.getItem(choiceFoldKey)==='1'; }catch(e){}
+  if(hasChoiceData) applyChoiceFold(choiceFolded);
+  choiceFoldBtn.addEventListener('click', ()=>{
+    choiceFolded = choiceBlockEl.style.display !== 'none';
+    try{ localStorage.setItem(choiceFoldKey, choiceFolded?'1':'0'); }catch(e){}
+    applyChoiceFold(choiceFolded);
+  });
   document.getElementById('choiceToggleBtn').addEventListener('click', ()=>{
     document.getElementById('choiceBlock').style.display = 'block';
     document.getElementById('choiceToggleBtn').style.display = 'none';
+    choiceFoldBtn.style.display = 'inline-block';
+    applyChoiceFold(false);
   });
   CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
   wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
@@ -2290,7 +2311,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
   function scheduleDetailAutosave(){
     clearTimeout(detailAutosaveTimer);
     detailFlush = ()=>{ clearTimeout(detailAutosaveTimer); detailFlush = null; doSave(false); };
-    detailAutosaveTimer = setTimeout(()=>{ detailFlush = null; doSave(false); }, 500);
+    detailAutosaveTimer = setTimeout(()=>{ detailFlush = null; doSave(false); const m=document.getElementById('npSavedMsg'); if(m){ m.style.opacity='1'; clearTimeout(m._t); m._t=setTimeout(()=>{ m.style.opacity='0'; },1400); } }, 500);
   }
   // 예전엔 문제를 열 때마다 같은 박스에 핸들러가 계속 쌓여서, 열어봤던 모든 문제가 지금 화면 내용으로 같이 저장됐음 → 항상 하나만 유지
   if(detailBoxHandlers){
@@ -2299,7 +2320,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
   }
   detailBoxHandlers = {
     input: e=>{
-      if(e.target.matches('#npAnalysis, #npTheory, .np-choice-text, .np-attempt-reason, .att-choice-input, .np-time-input')) scheduleDetailAutosave();
+      if(e.target.matches('#npAnalysis, #npTheory, #npAnswerVal, .np-choice-text, .np-attempt-reason, .att-choice-input, .np-time-input')) scheduleDetailAutosave();
     },
     click: e=>{
       if(e.target.closest('.kw-tag-sel, .kw-picker-chip, .kw-picker-addbtn')) scheduleDetailAutosave();
@@ -2423,6 +2444,8 @@ psatLoadFromFirebase();
     new ResizeObserver(reportHeight).observe(document.body);
   }
 })();
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden && typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} detailFlush=null; } });
+window.addEventListener('pagehide', ()=>{ if(typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} } });
 </script>
 </body>
 </html>
