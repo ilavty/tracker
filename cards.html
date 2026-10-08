@@ -214,10 +214,18 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 .fc.flip{transform:rotateX(90deg)}
 .fc.back .qt{font-weight:400}
 .fc.back .qlist .ql{font-weight:500}
+.fc.from-l{transform:translateX(-60%) rotate(-6deg);opacity:0;transition:none}
+.fc.from-r{transform:translateX(60%) rotate(6deg);opacity:0;transition:none}
+.fc.slide{transition:transform .2s ease-out,opacity .2s ease-out}
+.big.no.sel{background:var(--red);color:#fff}
+.big.yes.sel{background:var(--green);color:#fff}
+.backbtn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bd);background:#fff;color:var(--sub);display:inline-flex;align-items:center;justify-content:center}
+.backbtn:hover{border-color:var(--navy);color:var(--navy)}
+.backbtn:disabled{opacity:.35;pointer-events:none}
 .fc.fly-l,.fc.fly-r{transition:transform .23s ease-in,opacity .23s ease-in,border-color .1s;opacity:0;pointer-events:none}
 .fc.fly-l{transform:translateX(-120%) rotate(-10deg);border-color:var(--red)}
 .fc.fly-r{transform:translateX(120%) rotate(10deg);border-color:var(--green)}
-html,body{overflow-x:hidden}
+html,body{overflow-x:clip}
 .fc .side-lbl{position:absolute;top:12px;left:16px;font-size:.7rem;color:var(--grey);letter-spacing:.05em}
 .fc .fstar{position:absolute;top:10px;right:14px;font-size:1.1rem}
 .qt{font-size:1.45rem;font-weight:500;color:var(--txt);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
@@ -571,6 +579,7 @@ function openModal(html, cls = '') {
   ov.addEventListener('mousedown', e => { if (e.target === ov) ov._down = true; });
   ov.addEventListener('click', e => { if (e.target === ov && ov._down) closeModal(); ov._down = false; });
   document.body.appendChild(ov); modalStack.push(ov);
+  setTimeout(reportHeight, 0); new ResizeObserver(reportHeight).observe(ov);
   return ov.querySelector('.modal');
 }
 function closeModal() { closePop(); const ov = modalStack.pop(); if (ov) ov.remove(); reportHeight(); }
@@ -1490,9 +1499,9 @@ function flashDraw() {
       ${SD.flip ? aHtml(u, SD.dir) : qHtml(u, SD.dir)}
     </div>
     <div class="fcbtns">
-      <button class="ibtn" onclick="flashBack()" title="이전" ${SD.hist.length ? '' : 'disabled style="opacity:.3"'}>↶</button>
-      <button class="big no" onclick="flashMark(false)">몰라요</button>
-      <button class="big yes" onclick="flashMark(true)">알아요</button>
+      <button class="backbtn" onclick="flashBack()" title="이전 카드 (Backspace)" ${SD.hist.length ? '' : 'disabled'}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button class="big no ${SD.prevPick === false ? 'sel' : ''}" onclick="flashMark(false)">몰라요</button>
+      <button class="big yes ${SD.prevPick === true ? 'sel' : ''}" onclick="flashMark(true)">알아요</button>
     </div>
 `;
   bindFcLongPress();
@@ -1514,12 +1523,13 @@ function flashMarkNow(ok) {
   if (!SD || SD.mode !== 'flash') return;
   const u = SD.deck[SD.i]; (ok ? SD.know : SD.dont).push(u);
   SD.hist.push({ u, ok, prev: u.items.map(it => ({ id: it.id, s: { ...st(it.id) } })) });
-  grade(u.items, ok, 2); SD.i++; SD.flip = false; persistSess(); flashDraw();
+  grade(u.items, ok, 2); SD.i++; SD.flip = false; SD.prevPick = null; persistSess(); flashDraw();
 }
 function flashBack() {
   const h = SD.hist.pop(); if (!h) return;
   h.prev.forEach(p => S.stats[p.id] = { ...p.s, t: Date.now() }); writeLocal(); schedulePush();
-  (h.ok ? SD.know : SD.dont).pop(); SD.i--; SD.flip = false; persistSess(); flashDraw();
+  (h.ok ? SD.know : SD.dont).pop(); SD.i--; SD.flip = false; SD.prevPick = h.ok; persistSess(); flashDraw();
+  const el = $('#fcard'); if (el) { el.classList.add(h.ok ? 'from-r' : 'from-l'); requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.add('slide'); el.classList.remove('from-l', 'from-r'); setTimeout(() => el.classList.remove('slide'), 250); })); }
 }
 function flashStar() { const u = SD.deck[SD.i]; const on = !u.items.every(it => st(it.id).star); u.items.forEach(it => setSt(it.id, { star: on })); save(); flashDraw(); }
 function flashShuffle() { const rest = shuffle(SD.deck.slice(SD.i)); SD.deck = SD.deck.slice(0, SD.i).concat(rest); SD.flip = false; persistSess(); flashDraw(); toast('남은 카드를 섞었어요'); }
