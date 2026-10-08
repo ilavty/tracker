@@ -45,7 +45,14 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
   .wm-sidebar{width:100%;min-width:0;max-width:none;flex:1 1 auto;box-sizing:border-box;border-left:none;border-top:1px solid var(--line);}
 }
 .wm-map-stage{position:relative;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;}
-.wm-svg{display:block;width:100%;height:auto;max-height:calc(100dvh - 96px);}
+.wm-svg{display:block;width:100%;height:auto;max-height:calc(100dvh - 280px);min-height:200px;}
+.wm-bpanel{flex:1;min-height:140px;margin-top:12px;overflow-y:auto;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.85);padding:12px 14px;scrollbar-width:thin;}
+.wm-bpanel .bp-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.wm-bpanel .bp-head h3{margin:0;font-size:14.5px;color:var(--lavender-deep);flex:1;}
+.wm-bpanel .bp-close{border:none;background:none;color:var(--ink-soft);font-size:16px;cursor:pointer;}
+.wm-bpanel .bp-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start;}
+.wm-bpanel .bp-hint{color:var(--ink-soft);font-size:12.5px;padding:18px 4px;text-align:center;}
+@media (max-width:760px){ .wm-bpanel .bp-list{grid-template-columns:1fr;} }
 .country{fill:var(--country-fill);stroke:var(--country-stroke);stroke-width:0.6;cursor:pointer;transition:fill .12s;}
 .country:hover{fill:var(--country-hover);}
 .country.rta-on{fill:#AFCBE6;}
@@ -252,7 +259,7 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
         <div class="wm-zoom-controls">
           <button type="button" id="zoomInBtn" title="확대">+</button>
           <button type="button" id="zoomOutBtn" title="축소">−</button>
-          <button type="button" id="zoomResetBtn" title="전체 지도로 되돌리기" title="원래대로">⟲</button>
+          <button type="button" id="zoomResetBtn" title="전체 지도로 되돌리기">⟲</button>
         </div>
         <div class="wm-country-labels" id="countryLabels"></div>
         <div class="wm-rta-card" id="rtaCard"></div>
@@ -1084,13 +1091,14 @@ document.getElementById('countriesLayer').addEventListener('click', e=>{
   document.getElementById('zoomOutBtn').addEventListener('click', ()=> zoomAt(1/0.7, vb.x+vb.w/2, vb.y+vb.h/2));
   document.getElementById('zoomResetBtn').addEventListener('click', resetZoom);
 
-  svg.addEventListener('wheel', e=>{
+  stage.addEventListener('wheel', e=>{
     if(pickMode) return;
+    if(e.target.closest('#rtaCard')) return;
     e.preventDefault();
     const pt = svg.createSVGPoint();
     pt.x = e.clientX; pt.y = e.clientY;
     const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
-    zoomAt(e.deltaY > 0 ? 1.15 : 1/1.15, loc.x, loc.y);
+    zoomAt(Math.exp(Math.max(-120,Math.min(120,e.deltaY))*0.0022), loc.x, loc.y);
   }, { passive:false });
 
   let panState = null;
@@ -1225,11 +1233,7 @@ function renderSidebarList(){
         openMarkerInfo(sameSpot, e.lat, e.lng);
         flashMarker(e.lat, e.lng);
       } else {
-        currentCountryView = null;
-        const box = document.getElementById('infoModalBox');
-        box.innerHTML = `<h3>${esc(e.name)} <span class="wm-cat-count">위치 미지정</span></h3><div class="pop-entry-list" id="popEntryList"></div>`;
-        renderPopEntryList([e.id]);
-        document.getElementById('infoModalOverlay').classList.add('open');
+        openSinglePanel(e);
       }
     });
   });
@@ -1750,14 +1754,48 @@ function flashMarker(lat, lng){
 }
 
 // ---------- Marker info popup (small, anchored to the point — not a full modal) ----------
+let panelState = null;
+function ensurePanel(){
+  let p = document.getElementById('bPanel');
+  if(!p){
+    p = document.createElement('div'); p.id='bPanel'; p.className='wm-bpanel';
+    const stage = document.getElementById('mapStage');
+    stage.parentNode.insertBefore(p, stage.nextSibling);
+  }
+  return p;
+}
+function hidePanel(){
+  panelState = null; anchorPopTarget = null;
+  const p = ensurePanel();
+  p.innerHTML = '<div class="bp-hint">나라나 도시를 누르면 여기에 목록이 떠요</div>';
+}
+function showPanel(titleHtml, ids, extraHtml){
+  const p = ensurePanel();
+  p.innerHTML = `<div class="bp-head"><h3>${titleHtml}</h3><button type="button" class="bp-close" id="bpClose" title="닫기">✕</button></div>` +
+    (ids.length ? `<div class="bp-list" id="popEntryList"></div>` : `<div class="bp-hint">이 나라와 관련된 항목이 없어요</div>`) + (extraHtml||'');
+  document.getElementById('bpClose').addEventListener('click', hidePanel);
+  if(ids.length) renderPopEntryList(ids);
+  p.scrollTop = 0;
+}
+function reopenPanel(ps){
+  if(!ps) return;
+  if(ps.kind==='country') openCountryInfo(ps.id, ps.name);
+  else {
+    const items = ps.ids.map(id=>entries.find(x=>x.id===id)).filter(Boolean);
+    if(!items.length) return;
+    if(ps.kind==='marker') openMarkerInfo(items, ps.lat, ps.lng);
+    else openSinglePanel(items[0]);
+  }
+}
+function openSinglePanel(e){
+  panelState = { kind:'single', ids:[e.id] };
+  showPanel(`${esc(e.name)} <span class="wm-cat-count">위치 미지정</span>`, [e.id]);
+}
 function openMarkerInfo(items, lat, lng){
-  const inner = document.getElementById('anchorPopInner');
   const placeName = items[0].placeName || '';
-  inner.innerHTML = `<button type="button" class="wm-anchor-pop-close" id="anchorPopClose">✕</button>
-    <h3>${placeName || (lat.toFixed(2)+', '+lng.toFixed(2))}</h3>
-    <div class="pop-entry-list" id="popEntryList"></div>
-    <button type="button" class="btn btn-small" id="popCountryAll" style="display:none;margin-top:8px;width:100%"></button>`;
-  renderPopEntryList(items.map(e=>e.id));
+  panelState = { kind:'marker', ids:items.map(e=>e.id), lat, lng };
+  showPanel(esc(placeName || (lat.toFixed(2)+', '+lng.toFixed(2))), items.map(e=>e.id),
+    `<button type="button" class="btn btn-small" id="popCountryAll" style="display:none;margin-top:10px"></button>`);
   const cidRaw = items.map(e=>e.countryId).find(Boolean);
   const cEl = cidRaw && document.getElementById('c'+cidRaw);
   if(cEl){
@@ -1765,18 +1803,10 @@ function openMarkerInfo(items, lat, lng){
     const n = entriesForCountry(cidRaw).length;
     cb.textContent = (CID_KO[String(cidRaw)] || cEl.dataset.name) + ' 전체 보기 (' + n + ')';
     cb.style.display = '';
-    cb.addEventListener('click', ev=>{ ev.stopPropagation(); closeAnchorPop(); openCountryInfo(cidRaw, cEl.dataset.name); });
+    cb.addEventListener('click', ev=>{ ev.stopPropagation(); openCountryInfo(cidRaw, cEl.dataset.name); });
   }
-  document.getElementById('anchorPopClose').addEventListener('click', closeAnchorPop);
-  anchorPopTarget = { lat, lng };
-  document.getElementById('anchorPop').classList.add('open');
-  positionAnchorPop();
 }
-function closeAnchorPop(){
-  anchorPopTarget = null;
-  document.getElementById('anchorPop').classList.remove('open');
-  document.getElementById('anchorPopInner').innerHTML = ''; // popEntryList id 중복 방지
-}
+function closeAnchorPop(){ hidePanel(); }
 function positionAnchorPop(){
   if(!anchorPopTarget) return;
   const pop = document.getElementById('anchorPop');
@@ -1804,21 +1834,14 @@ function positionAnchorPop(){
   arrow.style.transform = 'translateX(-50%)';
 }
 document.getElementById('anchorPopClose').addEventListener('click', closeAnchorPop);
-document.addEventListener('click', e=>{
-  if(!anchorPopTarget) return;
-  if(e.target.closest('#anchorPop') || e.target.closest('.wm-marker')) return;
-  closeAnchorPop();
-});
+
 window.addEventListener('resize', ()=>{ if(anchorPopTarget) positionAnchorPop(); });
 function openCountryInfo(countryId, countryName){
   currentCountryView = { id: countryId, name: countryName };
+  panelState = { kind:'country', id:countryId, name:countryName };
   const list = entriesForCountry(countryId);
-  const box = document.getElementById('infoModalBox');
   const koName = CID_KO[String(countryId)];
-  box.innerHTML = `<h3>${koName ? koName+' <span class="wm-cat-count">'+countryName+'</span>' : countryName}</h3>` +
-    (list.length ? `<div class="pop-entry-list" id="popEntryList"></div>` : `<div class="wm-empty">이 나라와 관련된 항목이 없어요</div>`);
-  if(list.length) renderPopEntryList(list.map(e=>e.id));
-  document.getElementById('infoModalOverlay').classList.add('open');
+  showPanel((koName ? koName+' <span class="wm-cat-count">'+esc(countryName)+'</span>' : esc(countryName)) + ` <span class="wm-cat-count">${list.length}</span>`, list.map(e=>e.id));
 }
 function renderPopEntryList(ids){
   const wrap = document.getElementById('popEntryList');
@@ -1849,12 +1872,7 @@ function renderPopEntryList(ids){
   }));
   wrap.querySelectorAll('[data-editpop]').forEach(b=>b.addEventListener('click', ()=>{
     const e = entries.find(x=>x.id===b.dataset.editpop);
-    const wasAnchor = !!anchorPopTarget, tgt = anchorPopTarget, curIds = ids.slice();
-    const cv = currentCountryView, infoOpen = document.getElementById('infoModalOverlay').classList.contains('open');
-    returnView = ()=>{
-      if(wasAnchor && tgt){ const items = curIds.map(id=>entries.find(x=>x.id===id)).filter(Boolean); if(items.length) openMarkerInfo(items, tgt.lat, tgt.lng); }
-      else if(infoOpen && cv) openCountryInfo(cv.id, cv.name);
-    };
+    const ps = panelState; returnView = ()=>reopenPanel(ps);
     closeInfoModal();
     if(e) openEntryEditModal(e);
   }));
@@ -1882,7 +1900,7 @@ document.addEventListener('contextmenu', ev=>{
   m.addEventListener('click', e2=>{ e2.stopPropagation(); const a=e2.target.dataset.a; hideCtx(); if(a==='e') eb.click(); else if(a==='d') db.click(); });
   document.body.appendChild(m);
 });
-function closeInfoModal(){ document.getElementById('infoModalOverlay').classList.remove('open'); closeAnchorPop(); }
+function closeInfoModal(){ document.getElementById('infoModalOverlay').classList.remove('open'); hidePanel(); }
 document.getElementById('infoModalOverlay').addEventListener('click', e=>{
   if(e.target.id==='infoModalOverlay') closeInfoModal();
 });
@@ -2084,6 +2102,7 @@ function renderAll(){
   applyRtaHighlight();
   renderSidebarList();
 }
+hidePanel();
 renderAll();
 
 </script>
