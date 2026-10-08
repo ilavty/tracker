@@ -113,14 +113,13 @@ button{cursor:pointer;border:none;background:none}
 .sechead:hover{color:var(--navy)}
 .empty{color:var(--grey);font-size:.88rem;padding:36px 0;text-align:center}
 
-.card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px 40px 12px 16px;margin-bottom:10px;transition:.15s;display:grid;grid-template-columns:minmax(0,30%) minmax(0,1fr);column-gap:18px;position:relative}
+.card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px 16px;margin-bottom:10px;transition:.15s;display:grid;grid-template-columns:minmax(0,30%) minmax(0,1fr);column-gap:18px;position:relative}
 .card:hover{border-color:#c9d3df}
 .card.sel{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
 .chead{display:flex;align-items:flex-start;align-content:flex-start;gap:6px 8px;flex-wrap:wrap;padding-top:5px}
 .chead>.ibtn{position:absolute;top:8px;right:8px}
 .chead>.sp{display:none}
-.itags:empty{display:none}
-.ctitle{font-weight:400;font-size:1rem;color:var(--txt);cursor:pointer;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;flex:1 1 auto;min-width:0}
+.ctitle{font-weight:400;font-size:1rem;color:var(--txt);cursor:pointer;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;flex:0 1 auto;min-width:0}
 .ctitle:hover{color:var(--navy)}
 .cpath{font-size:.72rem;color:var(--grey)}
 .chead .sp{flex:1}
@@ -133,6 +132,10 @@ button{cursor:pointer;border:none;background:none}
 .ilab{font-size:.88rem;color:var(--navy);font-weight:600;white-space:nowrap}
 .itext{font-size:1rem;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
 .itags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.irow .star{grid-column:-2/-1;grid-row:1}
+.irow .itags{grid-column:-3/-2;grid-row:1}
+.chead.tl2 .ctitle{flex:1 1 100%}
+.chead .tag{margin-top:3px}
 .tag{font-size:.7rem;padding:1px 7px;border-radius:10px;background:var(--tag-bg);color:var(--tag-tx);white-space:nowrap;cursor:pointer}
 .tag.card-t{background:var(--lb);color:var(--navy)}
 .star{cursor:pointer;color:#d0d4da;font-size:.9rem;text-align:center;user-select:none}
@@ -313,7 +316,7 @@ html,body{overflow-x:clip}
 .toast.on{opacity:1}
 
 @media (max-width:760px){
-  .card{grid-template-columns:1fr;padding-right:40px}
+  .card{grid-template-columns:1fr}
   .cbody{border-left:none;padding-left:0;border-top:1px solid var(--bd);margin-top:8px;padding-top:4px}
   body{padding:12px 10px 40px}
   .layout{grid-template-columns:1fr}
@@ -328,9 +331,10 @@ html,body{overflow-x:clip}
   .edrow .lab-in,.edrow .txt-in,.edrow .tp{grid-column:1/2}
   .edrow .ops{grid-row:1/4;grid-column:2}
   .irow{grid-template-columns:10px auto minmax(0,1fr) 20px}
-  .irow .itags{grid-column:2/4;justify-content:flex-start}
+  .irow .itags{grid-column:2/-2;grid-row:2;justify-content:flex-start}
+  .irow .itags:empty{display:none}
   .irow.nolab{grid-template-columns:10px 1fr 20px}
-  .irow.nolab .itags{grid-column:2/3}
+  .irow.nolab .itags{grid-column:2/-2}
   .fc{padding:30px 18px;min-height:260px}
   .qt{font-size:1.2rem}
   .modal{padding:16px}
@@ -905,7 +909,6 @@ function cardHtml(c, opts = {}) {
       ${c.tags.slice().sort(ko).map(t => `<span class="tag card-t" data-tagv="${esc(t)}">#${esc(t)}</span>`).join('')}
       ${otherChip(c, opts)}
       <span class="sp"></span>
-      <button class="ibtn" onclick="cardMenu(event,'${c.id}')">⋯</button>
     </div>
     <div class="cbody">${items.map(it => {
     const s = st(it.id);
@@ -1019,13 +1022,27 @@ ${selBarHtml()}
   main.querySelectorAll('.card').forEach(el => {
     el.ondragstart = e => { if (e.target !== el) return; e.dataTransfer.setData('text/card', el.dataset.id); };
     el.oncontextmenu = e => { if (e.target.closest('input,textarea')) return; cardMenu(e, el.dataset.id); };
+    longPress(el, e => cardMenu(e, el.dataset.id));
   });
+  layoutCardHeads();
 }
 function secHtml(key, name, cs, forceOpen) {
   const open = forceOpen || !!UI.openSec[key || '_none'];
   return `<div class="sechead" onclick="toggleSec('${key || '_none'}')"><span class="car ${open ? 'open' : ''}">▶</span>${key && F(key) ? icHtml(F(key)) : ''}${esc(name)} <span style="font-weight:500">${cs.length}</span></div>` + (open ? cs.map(c => cardHtml(c)).join('') : '');
 }
 function toggleSec(k) { UI.openSec[k] = !UI.openSec[k]; saveUI(); renderMain(); reportHeight(); }
+// 제목칸이나 내용이 두 줄 이상이면 태그를 제목 밑 줄로
+function layoutCardHeads() {
+  document.querySelectorAll('#main .card').forEach(card => {
+    const h = card.querySelector('.chead'), t = card.querySelector('.ctitle'), b = card.querySelector('.cbody');
+    if (!h || !t || !h.querySelector('.tag,.ochip')) return;
+    h.classList.remove('tl2');
+    const lh = parseFloat(getComputedStyle(t).lineHeight) || 22;
+    const multi = t.getBoundingClientRect().height > lh * 1.5 || (b && b.getBoundingClientRect().height > lh * 2.2) || h.getBoundingClientRect().height > lh * 1.9;
+    if (multi) h.classList.add('tl2');
+  });
+}
+window.addEventListener('resize', () => layoutCardHeads());
 function renderAll() { renderSide(); renderMain(); renderResume(); reportHeight(); setTimeout(placeTopBtn, 0); }
 
 /* =====================================================================
