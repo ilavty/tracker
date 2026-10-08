@@ -210,8 +210,14 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 .sprog{height:6px;border-radius:4px;background:var(--lv0);overflow:hidden;margin-bottom:18px}
 .sprog i{display:block;height:100%;background:var(--navy);transition:width .3s}
 .scount{font-size:.8rem;color:var(--grey)}
-.fc{background:#fff;border:1px solid var(--bd);border-radius:16px;min-height:300px;padding:34px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 4px 20px rgba(30,50,80,.06);transition:transform .16s ease;user-select:none;position:relative}
+.fc{background:#fff;border:1px solid var(--bd);border-radius:16px;min-height:300px;padding:34px 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 4px 20px rgba(30,50,80,.06);transition:transform .12s ease;user-select:none;position:relative}
 .fc.flip{transform:rotateX(90deg)}
+.fc.back .qt{font-weight:400}
+.fc.back .qlist .ql{font-weight:500}
+.fc.fly-l,.fc.fly-r{transition:transform .23s ease-in,opacity .23s ease-in,border-color .1s;opacity:0;pointer-events:none}
+.fc.fly-l{transform:translateX(-120%) rotate(-10deg);border-color:var(--red)}
+.fc.fly-r{transform:translateX(120%) rotate(10deg);border-color:var(--green)}
+html,body{overflow-x:hidden}
 .fc .side-lbl{position:absolute;top:12px;left:16px;font-size:.7rem;color:var(--grey);letter-spacing:.05em}
 .fc .fstar{position:absolute;top:10px;right:14px;font-size:1.1rem}
 .qt{font-size:1.45rem;font-weight:500;color:var(--txt);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
@@ -384,7 +390,7 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ko = (a, b) => String(a).localeCompare(String(b), 'ko');
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const norm = s => String(s || '').toLowerCase().replace(/[\s.,·\-_'"“”‘’()\[\]{}!?~:;/\\]/g, '');
+const norm = s => String(s || '').normalize('NFC').toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
 const normLab = s => norm(s);
 
 let S = { subjects: [], folders: [], cards: [], stats: {}, sessions: {}, deleted: {}, ts: 0 };
@@ -577,9 +583,10 @@ function inputModal(title, value, onOk, placeholder = '') {
   m.querySelector('#imOk').onclick = ok;
   i.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) ok(); };
 }
-document.addEventListener('keydown', e => {
+const keyEsc = e => {
   if (e.key === 'Escape') { if (document.querySelector('.pop,.cmenu')) { closePop(); return; } if (modalStack.length) { closeModal(); return; } if (studyActive) { e.preventDefault(); endStudy(); } }
-});
+};
+document.addEventListener('keydown', keyEsc);
 
 /* ---------------- popover / context menu ---------------- */
 function closePop() { document.querySelectorAll('.pop,.cmenu').forEach(p => p.remove()); }
@@ -1078,13 +1085,38 @@ function edSave(again) {
   const now = Date.now(); ED.u = now; const isNew = ED._new; delete ED._new;
   if (isNew) S.cards.push(ED); else { const i = S.cards.findIndex(c => c.id === ED.id); if (i >= 0) S.cards[i] = ED; else S.cards.push(ED); }
   const keepFolder = ED.folderId, keepDate = ED.dateId, keepTags = ED.tags.slice();
-  save(); closeModal(); renderAll(); if (!again) scrollToTopOfApp();
+  save(); closeModal(); renderAll(); if (studyActive) { studyRefresh(); return; } if (!again) scrollToTopOfApp();
   if (again) { openCardEditor(); ED.folderId = keepFolder; ED.dateId = keepDate; ED.tags.push(...keepTags); $('#edFolder').value = keepFolder || ''; $('#edDate').value = keepDate || ''; tagPicker($('#edCardTags'), ED.tags, null, 'card-t'); }
 }
 function edDelete() {
   if (!confirm('이 카드를 지울까?')) return;
   S.deleted[ED.id] = Date.now(); ED.items.forEach(it => delete S.stats[it.id]);
-  S.cards = S.cards.filter(c => c.id !== ED.id); save(); closeModal(); renderAll();
+  S.cards = S.cards.filter(c => c.id !== ED.id); save(); closeModal(); renderAll(); if (studyActive) studyRefresh();
+}
+// 공부 중 카드 편집 후: 바뀐 카드 내용으로 다시 연결하고 화면 갱신
+function rebindUnit(u) {
+  const c = C(u.card.id); if (!c) return null;
+  if (u.kind === 'item') { const it = c.items.find(i => i.id === u.item.id); if (!it) return null; return { ...u, card: c, item: it, items: [it] }; }
+  const ids = u.items.map(i => i.id); const items = c.items.filter(i => ids.includes(i.id));
+  return items.length ? { ...u, card: c, items } : null;
+}
+function studyRefresh() {
+  if (!SD) return;
+  if (SD.mode === 'flash' && SD.deck) {
+    const done = SD.deck.slice(0, SD.i).map(u => rebindUnit(u) || u);
+    const rest = SD.deck.slice(SD.i).map(rebindUnit).filter(Boolean);
+    SD.deck = done.concat(rest);
+    SD.know = SD.know.map(u => rebindUnit(u) || u); SD.dont = SD.dont.map(u => rebindUnit(u) || u);
+    persistSess(); flashDraw();
+  } else if (SD.mode === 'learn' && SD.L) {
+    SD.L = SD.L.map(x => { const u = rebindUnit(x.u); if (!u) return null; x.u = u; return x; }).filter(Boolean);
+    persistSess(); toast('수정했어요 · 다음 문제부터 반영');
+  }
+}
+function studyCardMenu(e) {
+  if (!SD) return; e.preventDefault();
+  const u = SD.mode === 'flash' ? SD.deck && SD.deck[SD.i] : SD.cur && SD.cur.x && SD.cur.x.u;
+  if (u && C(u.card.id)) openCardEditor(u.card.id);
 }
 
 /* =====================================================================
@@ -1337,7 +1369,7 @@ function makeUnits(pool, unit) {
 function startStudy(mode, pool) {
   studyActive = true;
   $('#app').classList.add('hidden'); $('#study').classList.remove('hidden');
-  scrollToTopOfApp();
+  scrollToTopOfApp(); try { window.focus(); } catch (e) { }
   const unit = (mode === 'test' || mode === 'match') ? 'item' : CFG.unit;
   SD = { mode, pool, units: makeUnits(pool, unit), dir: CFG.dir, subject: UI.subject, scope: scopeOf(CFG) };
   ({ flash: flashStart, learn: learnStart, test: testStart, match: matchStart })[mode]();
@@ -1452,7 +1484,7 @@ function flashDraw() {
   const u = SD.deck[SD.i]; const starred = u.items.every(it => st(it.id).star);
   st_.innerHTML = shead('플래시카드', `<span class="scount">${SD.i + 1} / ${n}</span><button class="btn sm ghost" onclick="flashShuffle()">섞기</button>`) +
     `<div class="sprog"><i style="width:${SD.i / n * 100}%"></i></div>
-    <div class="fc" id="fcard" onclick="flashFlip()">
+    <div class="fc ${SD.flip ? 'back' : ''}" id="fcard" onclick="if(!window._lp)flashFlip();window._lp=0">
       <span class="side-lbl">${SD.flip ? '뒷면' : '앞면'}</span>
       <span class="fstar star ${starred ? 'on' : ''}" onclick="event.stopPropagation();flashStar()">${starred ? '★' : '☆'}</span>
       ${SD.flip ? aHtml(u, SD.dir) : qHtml(u, SD.dir)}
@@ -1463,9 +1495,23 @@ function flashDraw() {
       <button class="big yes" onclick="flashMark(true)">알아요</button>
     </div>
 `;
+  bindFcLongPress();
 }
-function flashFlip() { const el = $('#fcard'); el.classList.add('flip'); setTimeout(() => { SD.flip = !SD.flip; flashDraw(); const n = $('#fcard'); n.classList.add('flip'); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('flip'))); }, 150); }
+function bindFcLongPress() { const el = $('#fcard'); if (el && !el._lpb) { el._lpb = 1; longPress(el, e => { window._lp = 1; studyCardMenu(e); }); } }
+function flashFlip() { if (modalStack.length) return; const el = $('#fcard'); el.classList.add('flip'); setTimeout(() => { SD.flip = !SD.flip; flashDraw(); const n = $('#fcard'); n.classList.add('flip'); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('flip'))); }, 120); }
 function flashMark(ok) {
+  if (SD.flying) return;
+  const el = $('#fcard');
+  if (el) {
+    SD.flying = true;
+    el.classList.add(ok ? 'fly-r' : 'fly-l');
+    setTimeout(() => { SD.flying = false; flashMarkNow(ok); }, 230);
+    return;
+  }
+  flashMarkNow(ok);
+}
+function flashMarkNow(ok) {
+  if (!SD || SD.mode !== 'flash') return;
   const u = SD.deck[SD.i]; (ok ? SD.know : SD.dont).push(u);
   SD.hist.push({ u, ok, prev: u.items.map(it => ({ id: it.id, s: { ...st(it.id) } })) });
   grade(u.items, ok, 2); SD.i++; SD.flip = false; persistSess(); flashDraw();
@@ -1574,24 +1620,30 @@ function learnWritten(x) {
     <div class="wr">${typing ? `<textarea rows="1" id="wrIn" placeholder=""></textarea>` : `<textarea rows="2" id="wrIn" placeholder=""></textarea>`}</div>
     <div id="fbBox"><div class="fcbtns"><button class="btn ghost" onclick="learnWrSubmit(true)">모르겠어요</button><button class="big nv" onclick="learnWrSubmit()">${typing ? '확인' : '정답 보기'}</button></div></div></div>`;
   const ta = $('#wrIn'); ta.oninput = () => autoGrow(ta);
-  ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); learnWrSubmit(); } };
+  ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); e.stopPropagation(); learnWrSubmit(); } };
   setTimeout(() => ta.focus(), 30);
 }
 function learnWrSubmit(giveUp) {
   const c = SD.cur; if (c.answered) return; c.answered = true;
   const mine = giveUp ? '' : $('#wrIn').value.trim();
-  $('#wrIn').disabled = true;
-  if (c.typing && !giveUp && norm(mine) === norm(c.ans) && mine) return learnWrResult(true);
-  $('#fbBox').innerHTML = `<div class="cmp">${mine ? `<span class="k">내 답</span><span class="mine">${esc(mine)}</span>` : ''}<span class="k">정답</span><span class="ans">${esc(c.ans)}</span></div>
-    <div class="fcbtns">${giveUp ? `<button class="big nv" onclick="learnWrResult(false)">계속</button>` : `<button class="big no" onclick="learnWrResult(false)">틀렸어요 (←)</button><button class="big yes" onclick="learnWrResult(true)">${c.typing ? '맞은 걸로 (→)' : '맞았어요 (→)'}</button>`}</div>`;
-  c.judge = true; c.giveUp = giveUp;
+  $('#wrIn').disabled = true; c.mine = mine; c.giveUp = giveUp;
+  if (giveUp) return learnWrShow(false);
+  if (c.typing) return learnWrShow(!!mine && norm(mine) === norm(c.ans));
+  // 긴 답: 직접 채점
+  $('#fbBox').innerHTML = `${cmpHtml(c)}<div class="fcbtns"><button class="big no" onclick="learnWrShow(false)">틀렸어요 (←)</button><button class="big yes" onclick="learnWrShow(true)">맞았어요 (→)</button></div>`;
+  c.judge = true;
 }
-function learnWrResult(ok) {
-  const c = SD.cur; if (c.done) return; c.done = true; const x = c.x;
+function cmpHtml(c) { return `<div class="cmp">${c.mine ? `<span class="k">내 답</span><span class="mine">${esc(c.mine)}</span>` : ''}<span class="k">정답</span><span class="ans">${esc(c.ans)}</span></div>`; }
+function learnWrShow(ok) {
+  const c = SD.cur; if (c.done) return; c.judge = false; c.ok = ok; c.result = true;
+  $('#fbBox').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}">${ok ? '정답' : '오답'}</div>${cmpHtml(c)}
+    <div class="fcbtns"><button class="btn" onclick="learnWrShow(!SD.cur.ok)">${ok ? '틀린 걸로 바꾸기' : '맞은 걸로 바꾸기'}</button><button class="big nv" onclick="learnWrResult()">계속 (Enter)</button></div>`;
+}
+function learnWrResult() {
+  const c = SD.cur; if (c.done || !c.result) return; c.done = true; const x = c.x, ok = c.ok;
   grade(x.u.items, ok, 3);
-  if (ok) x.stage = 2; else if (x.miss + 1 >= 2) x.stage = 0; persistSess();
-  if (ok) { x.stage = 2; SD.correct++; $('#fbBox').innerHTML = `<div class="fb ok">정답! 마스터 ✓</div>`; setTimeout(() => { if (SD && SD.cur === c) { SD.qi++; learnAsk(); } }, 650); }
-  else { x.miss++; SD.wrong++; if (x.miss >= 2) x.stage = 0; SD.queue.push(x); SD.qi++; learnAsk(); }
+  if (ok) { x.stage = 2; SD.correct++; } else { x.miss++; SD.wrong++; if (x.miss >= 2) x.stage = 0; SD.queue.push(x); }
+  persistSess(); SD.qi++; learnAsk();
 }
 // 카드째 학습: 라벨마다 떠올리고, 정답 보고 줄마다 O/X
 function learnRecall(x) {
@@ -1682,15 +1734,16 @@ function testDraw(graded) {
       <div class="oxb"><button class="op ${q.ans === true ? (graded ? (q.truth ? 'ok' : 'bad') : 'picked') : ''}" data-q="${i}" data-ox="1">O</button><button class="op ${q.ans === false ? (graded ? (!q.truth ? 'ok' : 'bad') : 'picked') : ''}" data-q="${i}" data-ox="0">X</button></div>
       ${graded && q.ok === false ? `<div class="cmp"><span class="k">정답</span><span class="ans">${esc(q.correct)}</span></div>` : ''}`;
     else body = `<div class="wr"><textarea rows="1" data-q="${i}" ${graded ? 'disabled' : ''}>${esc(q.ans || '')}</textarea></div>
-      ${graded ? `<div class="cmp"><span class="k">정답</span><span class="ans">${esc(q.correct)}</span></div>
-        <div class="fcbtns" style="justify-content:flex-start;margin-top:8px"><button class="mark ${q.ok === true ? 'ok' : q.ok === false ? 'bad' : ''}" data-fix="${i}">${q.ok === true ? 'O' : q.ok === false ? 'X' : '?'}</button></div>` : ''}`;
+      ${graded ? `<div class="cmp"><span class="k">정답</span><span class="ans">${esc(q.correct)}</span></div>` : ''}`;
+    if (graded) body += `<div class="fcbtns" style="justify-content:flex-start;margin-top:10px;gap:8px"><span class="mark ${q.ok === true ? 'ok' : q.ok === false ? 'bad' : ''}" style="display:inline-flex;align-items:center;justify-content:center">${q.ok === true ? 'O' : q.ok === false ? 'X' : '?'}</span>
+      ${q.ok == null ? `<button class="btn sm" data-fix="${i}" data-v="1">맞음</button><button class="btn sm" data-fix="${i}" data-v="0">틀림</button>` : `<button class="btn sm" data-fix="${i}" data-v="${q.ok ? 0 : 1}">${q.ok ? '틀린 걸로 바꾸기' : '맞은 걸로 바꾸기'}</button>`}</div>`;
     if (q.ok === true) score++;
     return `<div class="tq ${cls}"><div class="tn">${i + 1}. ${{ mc: '객관식', wr: '주관식', ox: 'O/X — 짝이 맞나요?' }[q.t]}</div><div>${qHtml(u, dir)}</div>${body}</div>`;
   }).join('');
   const pending = T.filter(q => q.ok == null).length;
   $('#study').innerHTML = shead('테스트', graded ? `<span class="count">${score} / ${T.length}</span>` : `<span class="scount">${T.filter(q => q.ans != null && q.ans !== '').length} / ${T.length} 답함</span>`) +
     (graded ? `<div class="qcard rsum" style="margin-bottom:14px;padding:20px"><div class="big-n">${Math.round(score / T.length * 100)}점</div><div class="lbl">${score} / ${T.length} 맞음${pending ? ` · 확인 필요 ${pending}` : ''}</div>
-      <div class="fcbtns"><button class="big nv" onclick="testFinalize()">${SD.T._saved ? '저장됨 ✓' : '결과 저장'}</button>${T.some(q => q.ok === false) ? `<button class="big no" onclick="testRetryWrong()">틀린 것만 학습</button>` : ''}<button class="btn" onclick="testStart()">새 테스트</button></div></div>` : '') +
+      <div class="fcbtns">${T.some(q => q.ok === false) ? `<button class="big no" onclick="testRetryWrong()">틀린 것만 학습</button>` : ''}<button class="btn" onclick="testStart()">새 테스트</button></div></div>` : '') +
     html + (graded ? '' : `<div class="fcbtns"><button class="big nv" onclick="testGrade()">제출</button></div>`);
   const sd = $('#study');
   if (!graded) {
@@ -1698,7 +1751,7 @@ function testDraw(graded) {
     sd.querySelectorAll('.op[data-ox]').forEach(b => b.onclick = () => { T[+b.dataset.q].ans = b.dataset.ox === '1'; keepScroll(() => testDraw(false)); });
     sd.querySelectorAll('textarea[data-q]').forEach(t => { autoGrow(t); t.oninput = () => { T[+t.dataset.q].ans = t.value; autoGrow(t); }; });
   } else {
-    sd.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => { const q = T[+b.dataset.fix]; q.ok = q.ok === true ? false : true; SD.T._saved = false; keepScroll(() => testDraw(true)); });
+    sd.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => { const q = T[+b.dataset.fix]; q.ok = b.dataset.v === '1'; recordQ(q); save(); keepScroll(() => testDraw(true)); });
     sd.querySelectorAll('textarea').forEach(t => autoGrow(t));
   }
 }
@@ -1711,14 +1764,17 @@ function testGrade() {
     else if (q.t === 'ox') q.ok = q.ans != null && q.ans === q.truth;
     else { const a = String(q.ans || '').trim(); q.ok = !a ? false : norm(a) === norm(q.correct) ? true : null; }
   });
+  SD.T.forEach(recordQ); save();
   scrollToTopOfApp(); testDraw(true);
 }
-function testFinalize() {
-  if (SD.T._saved) return;
-  SD.T.forEach(q => { if (q.ok == null) return; grade([q.u.item], q.ok, q.t === 'wr' ? 3 : 2); });
-  SD.T._saved = true; save(); toast('학습 기록에 반영했어요'); keepScroll(() => testDraw(true));
+// 채점 결과를 기록에 반영 (결과를 바꾸면 원래 기록으로 되돌린 뒤 다시 반영)
+function recordQ(q) {
+  const id = q.u.item.id;
+  if (q.prev === undefined) q.prev = S.stats[id] ? { ...S.stats[id] } : null;
+  else { if (q.prev) S.stats[id] = { ...q.prev }; else delete S.stats[id]; }
+  if (q.ok != null) grade([q.u.item], q.ok, q.t === 'wr' ? 3 : 2);
 }
-function testRetryWrong() { if (!SD.T._saved) testFinalize(); const us = SD.T.filter(q => q.ok === false).map(q => q.u); learnFrom(us); }
+function testRetryWrong() { const us = SD.T.filter(q => q.ok === false).map(q => q.u); learnFrom(us); }
 
 /* ---------------- MATCH ---------------- */
 function matchStart() {
@@ -1751,7 +1807,8 @@ function matchEnd() {
 }
 
 /* ---------------- keyboard ---------------- */
-document.addEventListener('keydown', e => {
+document.getElementById('study').addEventListener('contextmenu', e => { if (e.target.closest('.fc,.qcard')) studyCardMenu(e); });
+const keyStudy = e => {
   if (!studyActive || !SD || modalStack.length) return;
   const typing = e.target.closest('input,textarea');
   if (SD.mode === 'flash' && SD.deck && SD.i < SD.deck.length && !typing) {
@@ -1767,15 +1824,16 @@ document.addEventListener('keydown', e => {
     if (c.opts && !c.answered && /^[1-4]$/.test(e.key) && !typing) { const i = +e.key - 1; if (i < c.opts.length) learnPick(i); return; }
     if (c.opts && c.wait && e.key === 'Enter') { e.preventDefault(); c.wait = false; SD.qi++; learnAsk(); return; }
     if (c.judge && !c.done) {
-      if (c.giveUp && e.key === 'Enter') { e.preventDefault(); return learnWrResult(false); }
-      if (!c.giveUp && e.key === 'ArrowLeft') return learnWrResult(false);
-      if (!c.giveUp && e.key === 'ArrowRight') return learnWrResult(true);
+      if (e.key === 'ArrowLeft') return learnWrShow(false);
+      if (e.key === 'ArrowRight') return learnWrShow(true);
     }
+    if (c.result && !c.done && e.key === 'Enter') { e.preventDefault(); return learnWrResult(); }
     if (c.marks && !typing && e.key === 'Enter') { e.preventDefault(); if (!c.revealed) learnRecallReveal(); else learnRecallDone(); }
     return;
   }
   if (SD.mode === 'match' && SD.M && SD.M.done && e.key === 'Enter') matchStart();
-});
+};
+document.addEventListener('keydown', keyStudy);
 
 
 /* ---------------- 기본 과목 + 예시 정리 ---------------- */
@@ -1790,6 +1848,15 @@ function initData() {
   ['국제정치학', '국제법', '헌법'].forEach((name, i) => { const id = 'sv2_s' + i; if (!S.subjects.find(x => x.id === id)) S.subjects.push({ id, name, o: i + 1, u: now }); });
   localStorage.setItem('cards_clean1', '1'); S.ts = now; fixOrphans(); writeLocal();
 }
+/* 플래너(iframe) 안일 때: 포커스가 바깥 페이지에 있어도 키 입력 받기 */
+try {
+  if (IN_FRAME) window.parent.document.addEventListener('keydown', e => {
+    const fe = window.frameElement; if (!fe || !fe.offsetParent) return; // CARDS 탭이 안 보이면 무시
+    if (!studyActive && !modalStack.length) return;
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key) && studyActive) e.preventDefault();
+    keyEsc(e); keyStudy(e);
+  });
+} catch (e) { }
 /* ---------------- boot ---------------- */
 if (IN_FRAME) document.documentElement.classList.add('inframe-top');
 loadLocal();
