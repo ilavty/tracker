@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WORLD MAP DB</title>
 <style>
+@import url("https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/subsets/Paperlogy-dynamic-subset.css");
+button,input,select,textarea{font-family:inherit;}
 :root{
   --bg:#FCFBFA;
   --ink:#2B2A33;
@@ -20,16 +22,16 @@
 }
 *{box-sizing:border-box;}
 html,body{background:transparent;}
-body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;}
+body{margin:0;color:var(--ink);font-family:"Paperlogy","Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;}
 .wm-root{display:flex;flex-direction:column;height:100vh;height:100dvh;}
 .wm-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;}
 .wm-title{font-weight:800;font-size:16px;letter-spacing:0.5px;color:var(--lavender-deep);}
 .wm-filters{display:flex;gap:6px;flex-wrap:wrap;}
-.wm-filter-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.wm-filter-chip{border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:600;font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:5px;}
 .wm-filter-chip .dot{width:7px;height:7px;border-radius:50%;}
 .wm-filter-chip.active{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 .wm-actions{display:flex;gap:8px;}
-.btn{font-family:inherit;border:1.5px solid var(--line);background:#fff;color:var(--ink);font-weight:700;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;}
+.btn{font-family:inherit;border:1.5px solid var(--line);background:#fff;color:var(--ink);font-weight:600;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;}
 .btn:hover{border-color:var(--lavender-deep);}
 .btn-primary{background:var(--lavender-deep);border-color:var(--lavender-deep);color:#fff;}
 .btn-primary:hover{opacity:0.92;}
@@ -103,13 +105,13 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 .wm-entry-card{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;cursor:pointer;}
 .wm-entry-card:hover{border-color:var(--lavender-deep);background:#F8FAFD;}
 .wm-entry-top{display:flex;align-items:center;gap:6px;}
-.wm-type-tag{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;flex:none;}
+.wm-type-tag{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:999px;flex:none;}
 .wm-type-tag.org{background:#EAF1F8;color:#2A558C;}
 .wm-type-tag.meeting{background:#EAF6EF;color:#2F8558;}
 .wm-type-tag.event{background:#FDEFE7;color:#B5633A;}
 .wm-type-tag.treaty{background:#F3ECFB;color:#6B4FA0;}
 .wm-type-tag.rta{background:#FBEAF0;color:#B23E6B;}
-.wm-entry-name{font-size:12.5px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wm-entry-name{font-size:12.5px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .wm-entry-sub{font-size:11px;color:var(--ink-soft);margin-top:3px;}
 .wm-entry-rta-toggle{margin-left:auto;flex:none;}
 .wm-empty{color:var(--ink-soft);font-size:12px;padding:20px 4px;text-align:center;}
@@ -133,13 +135,13 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 .rta-country-row{display:flex;align-items:center;gap:7px;padding:3px 2px;font-size:12.5px;}
 .rta-country-row input{flex:none;}
 .rta-selected-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
-.rta-chip{background:var(--lavender);color:#2A558C;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:5px;}
+.rta-chip{background:var(--lavender);color:#2A558C;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;display:flex;align-items:center;gap:5px;}
 .rta-chip button{border:none;background:none;color:#2A558C;cursor:pointer;font-size:12px;padding:0;line-height:1;}
 
 .pop-entry-list{display:flex;flex-direction:column;gap:8px;}
 .pop-entry-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
 .pop-entry-item-top{display:flex;align-items:center;gap:7px;}
-.pop-entry-item-name{font-weight:700;font-size:13px;flex:1;}
+.pop-entry-item-name{font-weight:600;font-size:13px;flex:1;}
 .pop-entry-item-date{font-size:11px;color:var(--ink-soft);}
 .pop-entry-item-desc{font-size:12px;color:var(--ink);margin-top:5px;line-height:1.5;white-space:pre-wrap;}
 .pop-entry-item-actions{display:none;}
@@ -158,7 +160,7 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 .wm-table-toolbar .wm-search{margin-bottom:0;flex:1;}
 .wm-check{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .wm-table-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
-.wm-table-chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit;}
+.wm-table-chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;font-family:inherit;}
 .wm-table-chip.on{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 .wm-table-bulkbar{display:flex;gap:8px;align-items:center;font-size:12px;margin-bottom:8px;}
 .wm-table-bulkbar:empty{display:none;}
@@ -218,13 +220,13 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 #bulkText{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13px;resize:vertical;}
 #bulkType{border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;font-family:inherit;font-size:13px;}
 .bulk-result{font-size:13px;line-height:1.7;padding:10px 2px;}
-.wm-etag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;background:#EEF1F6;color:#4A5568;margin:3px 4px 0 0;}
+.wm-etag{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:999px;background:#EEF1F6;color:#4A5568;margin:3px 4px 0 0;}
 .pop-entry-item-top .wm-type-tag,.pop-entry-item-top .wm-etag{font-size:12px;padding:2px 9px;margin:0;flex:none;white-space:nowrap;}
 .wm-etag.hq{background:var(--lavender-deep);color:#fff;}
 .wm-type-tag.custom{background:#EEE;color:#555;}
 .pop-entry-item-top{cursor:pointer;}
 .pop-entry-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pop-entry-place{font-size:12.5px;font-weight:800;color:var(--lavender-deep);white-space:nowrap;flex:none;}
+.pop-entry-place{font-size:12.5px;font-weight:600;color:var(--lavender-deep);white-space:nowrap;flex:none;}
 .pop-entry-item-desc{display:none;}
 .pop-entry-item.open .pop-entry-item-desc{display:block;}
 .pop-entry-caret{font-size:9px;color:var(--ink-soft);flex:none;transition:transform .15s;}
@@ -236,11 +238,11 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
 .wm-country-label{position:absolute;transform:translate(-50%,-50%);background:#fff;color:var(--lavender-deep);font-weight:800;font-size:11.5px;padding:4px 11px;border-radius:999px;box-shadow:0 3px 10px rgba(40,20,70,0.2);white-space:nowrap;}
 .wm-rta-card{position:absolute;left:12px;top:12px;z-index:30;width:min(300px,72%);background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(40,20,70,0.2);display:none;max-height:70%;overflow-y:auto;}
 .wm-rta-card.open{display:block;}
-.rta-card-title{font-weight:800;font-size:13.5px;color:var(--lavender-deep);padding-right:18px;}
+.rta-card-title{font-weight:700;font-size:13.5px;color:var(--lavender-deep);padding-right:18px;}
 .rta-card-sub{font-size:11.5px;color:var(--ink-soft);margin:3px 0 6px;}
 .rta-card-desc{font-size:12px;line-height:1.5;margin-bottom:6px;white-space:pre-wrap;}
 .rta-card-members{display:flex;flex-wrap:wrap;gap:4px;}
-.rta-card-members span{font-size:11px;font-weight:700;background:var(--lavender);color:#2A558C;border-radius:999px;padding:2px 8px;}
+.rta-card-members span{font-size:11px;font-weight:600;background:var(--lavender);color:#2A558C;border-radius:999px;padding:2px 8px;}
 .wm-sidebar::-webkit-scrollbar{display:none;width:0;}
 </style>
 </head>
@@ -252,7 +254,7 @@ body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-sy
       <button type="button" class="btn" id="toggleSidebarBtn">목록</button>
       <button type="button" class="btn" id="openTableBtn">표로 보기</button>
       <button type="button" class="btn" id="openBulkBtn">텍스트 추가</button>
-      <button type="button" class="btn btn-primary" id="addEntryBtn">+ 추가</button>
+      <button type="button" class="btn btn-primary" id="addEntryBtn" title="추가" aria-label="추가">+</button>
     </div>
   </div>
   <div class="wm-main">
@@ -1157,7 +1159,10 @@ function flyTo(lat, lng, targetW){
   };
   flyRaf = requestAnimationFrame(step);
 }
+let currentCardId = null;
+function closeEntryCard(){ currentCardId = null; document.getElementById('rtaCard').classList.remove('open'); setSelCluster(null); }
 function showEntryCard(e){
+  currentCardId = e.id;
   const card = document.getElementById('rtaCard');
   const tags = tagsChipsHtml(e);
   card.innerHTML = `<button type="button" class="wm-anchor-pop-close" id="rtaCardClose">✕</button>
@@ -1166,7 +1171,7 @@ function showEntryCard(e){
     ${e.description ? `<div class="rta-card-desc">${esc(e.description)}</div>` : ''}
     <div class="pop-entry-item-actions"><button type="button" id="rtaCardEdit">수정</button></div>`;
   card.classList.add('open');
-  document.getElementById('rtaCardClose').addEventListener('click', ()=>{ card.classList.remove('open'); setSelCluster(null); });
+  document.getElementById('rtaCardClose').addEventListener('click', closeEntryCard);
   document.getElementById('rtaCardEdit').addEventListener('click', ()=>{ returnView = ()=>{ const e2 = entries.find(x=>x.id===e.id); if(e2) showEntryCard(e2); }; openEntryEditModal(e); });
 }
 function renderMarkers(){
@@ -1265,6 +1270,7 @@ function renderSidebarList(){
       if(!e) return;
       if(e.type==='rta'){ if(highlightedRtaId===e.id) clearRtaSelection(); else selectRta(e); return; }
       if(typeof e.lat==='number'){
+        if(currentCardId===e.id && document.getElementById('rtaCard').classList.contains('open')){ closeEntryCard(); return; }
         if(highlightedRtaId){ highlightedRtaId = null; applyRtaHighlight(); showCountryLabels([]); renderSidebarList(); }
         hidePanel();
         setSelCluster(clusterKey(e));
