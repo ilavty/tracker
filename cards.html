@@ -533,7 +533,6 @@ function setSt(id, patch) { S.stats[id] = { ...st(id), ...patch, t: Date.now() }
 function allTags() { const m = new Map(); SC().forEach(c => c.items.forEach(it => effTags(c, it).forEach(t => m.set(t, (m.get(t) || 0) + 1)))); return m; }
 function itemTitle(card, it) {
   if (it.label) return card.title + ' · ' + it.label;
-  if (card.items.length > 1) return card.title + ' (' + (card.items.indexOf(it) + 1) + '/' + card.items.length + ')';
   return card.title;
 }
 function lvDist(items) { const d = [0, 0, 0, 0]; items.forEach(it => d[st(it.id).lv || 0]++); return d; }
