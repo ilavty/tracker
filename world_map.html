@@ -19,7 +19,8 @@
   --country-hover:#D8DEEA;
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;}
+html,body{background:transparent;}
+body{margin:0;color:var(--ink);font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;}
 .wm-root{display:flex;flex-direction:column;height:100vh;height:100dvh;}
 .wm-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px;}
 .wm-title{font-weight:800;font-size:16px;letter-spacing:0.5px;color:var(--lavender-deep);}
@@ -74,7 +75,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","No
 .wm-anchor-pop.flip-down .wm-anchor-pop-arrow{top:-7px;bottom:auto;border-top:none;border-bottom:7px solid #fff;}
 .wm-anchor-pop-close{position:absolute;top:8px;right:9px;border:none;background:none;color:var(--ink-soft);font-size:15px;cursor:pointer;line-height:1;padding:2px;}
 
-.wm-sidebar{width:320px;flex:none;border-left:1px solid var(--line);padding:14px;overflow-y:auto;min-height:0;}
+.wm-sidebar{scrollbar-width:none;-ms-overflow-style:none;width:320px;flex:none;border-left:1px solid var(--line);padding:14px;overflow-y:auto;min-height:0;}
 @media (max-width:760px){ .wm-sidebar{width:100%;flex:1 1 auto;box-sizing:border-box;border-left:none;border-top:1px solid var(--line);} }
 .wm-sidebar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .wm-sidebar-head b{font-size:13px;color:var(--lavender-deep);}
@@ -86,7 +87,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","No
 .wm-cat-count{font-size:11.5px;color:var(--ink-soft);font-weight:700;}
 .wm-cat-arrow{margin-left:auto;font-size:10px;color:var(--ink-soft);transition:transform .2s;flex:none;}
 .wm-cat-section.open .wm-cat-arrow{transform:rotate(180deg);}
-.wm-cat-body{max-height:0;overflow:hidden;transition:max-height .28s ease;background:#FCFBFA;}
+.wm-cat-body{max-height:0;overflow:hidden;transition:max-height .28s ease;background:transparent;}
 .wm-cat-section.open .wm-cat-body{max-height:4000px;}
 .wm-cat-body-inner{display:flex;flex-direction:column;gap:6px;padding:6px 8px 9px;}
 .wm-entry-card{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;cursor:pointer;}
@@ -230,12 +231,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","No
 .rta-card-desc{font-size:12px;line-height:1.5;margin-bottom:6px;white-space:pre-wrap;}
 .rta-card-members{display:flex;flex-wrap:wrap;gap:4px;}
 .rta-card-members span{font-size:11px;font-weight:700;background:var(--lavender);color:#2A558C;border-radius:999px;padding:2px 8px;}
+.wm-sidebar::-webkit-scrollbar{display:none;width:0;}
 </style>
 </head>
 <body>
 <div class="wm-root">
   <div class="wm-topbar">
-    <div class="wm-title">WORLD MAP DB</div>
     <div class="wm-filters" id="typeFilters"></div>
     <div class="wm-actions">
       <button type="button" class="btn" id="toggleSidebarBtn">목록</button>
@@ -251,7 +252,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","No
         <div class="wm-zoom-controls">
           <button type="button" id="zoomInBtn" title="확대">+</button>
           <button type="button" id="zoomOutBtn" title="축소">−</button>
-          <button type="button" id="zoomResetBtn" title="원래대로">⟲</button>
+          <button type="button" id="zoomResetBtn" title="전체 지도로 되돌리기" title="원래대로">⟲</button>
         </div>
         <div class="wm-country-labels" id="countryLabels"></div>
         <div class="wm-rta-card" id="rtaCard"></div>
