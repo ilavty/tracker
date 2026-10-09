@@ -243,7 +243,7 @@ body{margin:0;color:var(--ink);font-family:"Paperlogy","Pretendard","Noto Sans K
 .wm-rta-card{position:absolute;left:12px;top:12px;z-index:30;width:min(300px,72%);background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(40,20,70,0.2);display:none;max-height:70%;overflow-y:auto;}
 .wm-rta-card.open{display:block;}
 .rta-card-title{font-weight:700;font-size:13.5px;color:var(--lavender-deep);padding-right:18px;}
-.rta-card-sub{font-size:11.5px;color:var(--ink-soft);margin:3px 0 6px;}
+.rta-card-sub{font-size:14px;font-weight:600;color:var(--ink);margin:5px 0 8px;line-height:1.4;}
 .rta-card-desc{font-size:12px;line-height:1.5;margin-bottom:6px;white-space:pre-wrap;}
 .rta-card-members{display:flex;flex-wrap:wrap;gap:4px;}
 .rta-card-members span{font-size:11px;font-weight:600;background:var(--lavender);color:#2A558C;border-radius:999px;padding:2px 8px;}
@@ -1934,6 +1934,19 @@ function hideCtx(){ const m=document.getElementById('wmCtx'); if(m) m.remove(); 
 document.addEventListener('click', hideCtx);
 document.addEventListener('scroll', hideCtx, true);
 document.addEventListener('contextmenu', ev=>{
+  const card = ev.target.closest('#rtaCard');
+  if(card && currentCardId){
+    hideCtx(); ev.preventDefault();
+    const m = document.createElement('div'); m.className='wm-ctx'; m.id='wmCtx';
+    m.innerHTML = '<button type="button" data-a="e">수정</button><button type="button" data-a="d" class="danger">삭제</button>';
+    m.style.left = Math.min(ev.clientX, innerWidth-120)+'px'; m.style.top = Math.min(ev.clientY, innerHeight-100)+'px';
+    m.addEventListener('click', e2=>{ e2.stopPropagation(); const a=e2.target.dataset.a; hideCtx();
+      if(a==='e'){ const b=document.getElementById('rtaCardEdit'); if(b) b.click(); }
+      else if(a==='d'){ const e=entries.find(x=>x.id===currentCardId); if(e && confirm(`"${e.name}"을(를) 삭제할까요?`)){ entries = entries.filter(x=>x.id!==e.id); save(); closeEntryCard(); renderAll(); } }
+    });
+    document.body.appendChild(m);
+    return;
+  }
   const item = ev.target.closest('.pop-entry-item');
   hideCtx();
   if(!item) return;
