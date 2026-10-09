@@ -246,7 +246,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-richtext img.rs-hover,.np-choice-text img.rs-hover{cursor:se-resize;}
 #imgLightbox{position:fixed;inset:0;background:rgba(30,25,45,.78);display:none;align-items:center;justify-content:center;z-index:2000;cursor:zoom-out;padding:24px;}
 #imgLightbox.open{display:flex;}
-#imgLightbox img{max-width:94vw;max-height:92vh;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.4);background:#fff;}
+#imgLightbox img{max-width:min(720px,80%);max-height:var(--lb-h,70vh);object-fit:contain;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.4);background:#fff;}
 .np-richtext img{max-width:100%;border-radius:6px;display:block;margin:4px 0;}
 
 .review-mark{width:12px;height:12px;border-radius:50%;border:1.4px solid #C9C4D4;display:inline-block;margin-right:3px;background:#fff;}
@@ -597,6 +597,12 @@ function kwList(kind, subject){
   kwEnsure();
   if(subject && keywordStore.bySubject[subject]) return keywordStore.bySubject[subject][kind];
   return [...new Set(SUBJECTS.flatMap(sj=>keywordStore.bySubject[sj][kind]))];
+}
+function kwRemove(kind, subject, v){
+  kwEnsure();
+  const targets = (subject && keywordStore.bySubject[subject]) ? [subject] : SUBJECTS;
+  targets.forEach(sj=>{ keywordStore.bySubject[sj][kind] = keywordStore.bySubject[sj][kind].filter(x=>x!==v); });
+  saveKeywordStore();
 }
 function kwAdd(kind, subject, v){
   kwEnsure();
@@ -1663,6 +1669,8 @@ function wireKeywordSelector(elId, storeKey, selSet, subject){
       // listener's closest('.kw-compact') check fails on the now-detached button and
       // wrongly treats this as an outside click, closing the popover we just redrew open.
       btn.addEventListener('click', e=>{ e.stopPropagation(); selSet.add(btn.dataset.kw); draw(); drawPop(); popEl.classList.add('open'); });
+      // 우클릭 → 키워드 목록에서 삭제 (이미 기록에 붙은 태그는 그대로)
+      btn.addEventListener('contextmenu', e=>{ e.preventDefault(); e.stopPropagation(); kwRemove(storeKey, subject, btn.dataset.kw); drawPop(); popEl.classList.add('open'); });
     });
     popEl.querySelector('.kw-picker-addbtn').addEventListener('click', e=>{
       e.stopPropagation();
@@ -2529,6 +2537,18 @@ window.addEventListener('pagehide', ()=>{ if(typeof detailFlush==='function'){ t
     if(!(t && t.matches && t.matches(sel))) return;
     if(t.dataset.justResized || inCorner(t,e)) return;
     lb.querySelector('img').src = t.src;
+    // index.html 안의 iframe으로 열려 있으면 iframe이 아주 길어서 화면 가운데가 한참 아래가 됨 → 부모 창의 보이는 영역 기준으로 배치
+    let top = 0, vis = window.innerHeight;
+    try{
+      const fr = window.frameElement;
+      if(fr && window.parent && window.parent!==window){
+        const r = fr.getBoundingClientRect(), ph = window.parent.innerHeight;
+        top = Math.max(0, -r.top);
+        vis = Math.max(200, Math.min(ph, r.bottom) - Math.max(0, r.top));
+      }
+    }catch(err){}
+    lb.style.top = top+'px'; lb.style.bottom = 'auto'; lb.style.height = vis+'px';
+    lb.style.setProperty('--lb-h', Math.round(vis*0.7)+'px');
     lb.classList.add('open');
   });
   document.addEventListener('dragstart', e=>{ if(drag) e.preventDefault(); });
