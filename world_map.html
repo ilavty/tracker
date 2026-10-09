@@ -1101,7 +1101,6 @@ document.getElementById('countriesLayer').addEventListener('click', e=>{
   document.getElementById('zoomResetBtn').addEventListener('click', resetZoom);
 
   stage.addEventListener('wheel', e=>{
-    if(pickMode) return;
     if(e.target.closest('#rtaCard')) return;
     e.preventDefault();
     const pt = svg.createSVGPoint();
@@ -1112,7 +1111,7 @@ document.getElementById('countriesLayer').addEventListener('click', e=>{
 
   let panState = null;
   svg.addEventListener('mousedown', e=>{
-    if(pickMode || e.button!==0) return;
+    if(e.button!==0) return;
     panState = { startX:e.clientX, startY:e.clientY, startVb:{...vb}, moved:false, scale:1/svg.getScreenCTM().a };
   });
   window.addEventListener('mousemove', e=>{
@@ -1127,7 +1126,7 @@ document.getElementById('countriesLayer').addEventListener('click', e=>{
     applyViewBox();
   });
   window.addEventListener('mouseup', ()=>{
-    if(panState && panState.moved) justPanned = true;
+    if(panState && panState.moved){ justPanned = true; window.__dragEndAt = Date.now(); }
     panState = null;
     stage.classList.remove('panning');
   });
@@ -1986,7 +1985,7 @@ function renderEntryModalBody(box, draft, isEdit){
       <div class="field"><label>위치</label>
         <div class="loc-pick-row">
           <span class="loc-val" id="locVal">${locLabel}</span>
-          <button type="button" class="btn btn-small" id="pickLocBtn">지도에서 선택</button>
+          <span style="display:flex;gap:6px;flex-shrink:0;"><button type="button" class="btn btn-small" id="autoLocBtn" title="장소명으로 위치를 다시 찾아요">자동</button><button type="button" class="btn btn-small" id="pickLocBtn">직접 지정</button></span>
         </div>
       </div>
       <div class="field"><label>설명</label><textarea id="fDesc" rows="3" placeholder="내용 메모">${draft.description||''}</textarea></div>
@@ -2052,6 +2051,13 @@ function renderEntryModalBody(box, draft, isEdit){
     renderAll();
   });
 
+  const autoBtn = document.getElementById('autoLocBtn');
+  if(autoBtn) autoBtn.addEventListener('click', ()=>{
+    collectFieldsIntoDraft(draft);
+    const r = resolvePlace(draft.placeName||'');
+    if(r){ draft.lat = r.lat; draft.lng = r.lng; if(r.cid) draft.countryId = r.cid; else delete draft.countryId; }
+    renderEntryModalBody(box, draft, isEdit);
+  });
   const pickBtn = document.getElementById('pickLocBtn');
   if(pickBtn) pickBtn.addEventListener('click', ()=>{
     collectFieldsIntoDraft(draft);
@@ -2114,6 +2120,7 @@ function exitPickMode(){
 }
 document.getElementById('worldSvg').addEventListener('click', e=>{
   if(!pickMode) return;
+  if(Date.now() - (window.__dragEndAt||0) < 80) return; // 드래그(이동) 끝에 생긴 클릭은 선택 아님
   const svg = document.getElementById('worldSvg');
   const pt = svg.createSVGPoint();
   pt.x = e.clientX; pt.y = e.clientY;
