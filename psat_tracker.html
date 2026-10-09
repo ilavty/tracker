@@ -147,6 +147,8 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-num{display:inline-flex;align-items:center;justify-content:flex-start;min-width:16px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
 .swp-row-main{display:flex;align-items:flex-start;gap:8px;flex-wrap:nowrap;}
 .swp-choice{font-size:12px;font-weight:600;flex-shrink:0;padding-top:1px;}
+.swp-clock{display:inline-flex;flex-shrink:0;padding-top:2px;}
+.swp-clock.l1{color:#e6b800;}.swp-clock.l2{color:#f08a1c;}.swp-clock.l3{color:#e03a3a;}
 .swp-choice.wrong{color:var(--red-text);}
 .swp-choice.correct{color:var(--ox-correct);}
 .swp-reason-wrap{flex:1 1 auto;min-width:0;}
@@ -1344,6 +1346,13 @@ function closeDetailOverlay(){
   modalBackStack = [];
   document.getElementById('detailOverlay').classList.remove('open');
 }
+const CLOCK_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.4V8l2.4 1.6"/></svg>';
+function slowClockHtml(rec, n){
+  const sec = parseTimeToSeconds(rec.problemTimeSpent && rec.problemTimeSpent[n]);
+  if(sec===null || sec<120) return '';
+  const lv = sec>=180 ? 'l3' : (sec>=150 ? 'l2' : 'l1');
+  return `<span class="swp-clock ${lv}" title="${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}">${CLOCK_SVG}</span>`;
+}
 function renderNoteRow(rec, n, flaggedSet){
   const w = rec.wrongs[n];
   const isWrong = !!w;
@@ -1360,6 +1369,7 @@ function renderNoteRow(rec, n, flaggedSet){
     <div class="swp-row-main">
       <span class="swp-num" data-opennum="${n}">${n}</span>
       ${choiceVal ? `<span class="swp-choice ${isWrong?'wrong':'correct'}">(${choiceVal})</span>` : ''}
+      ${slowClockHtml(rec, n)}
       <span class="swp-reason-wrap">${isWrong && w.reasonText ? `<span class="swp-reason">${w.reasonText}</span>` : ''}${kwChips}</span>
       <button type="button" class="swp-pin ${isFlagged?'on':''}" data-pinnum="${n}" title="보충학습">${PIN_ICON}</button>
       <button type="button" class="swp-detail-open" data-opennum2="${n}" title="상세페이지">→</button>
