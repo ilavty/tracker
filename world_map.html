@@ -65,7 +65,10 @@ body{margin:0;color:var(--ink);font-family:"Paperlogy","Pretendard","Noto Sans K
 .wm-marker circle{fill:var(--lavender-deep);stroke:#fff;stroke-width:1.4;}
 .wm-marker:hover circle{fill:#1d3f69;}
 .wm-marker text{font-size:9px;font-weight:800;fill:#fff;text-anchor:middle;pointer-events:none;}
-.wm-marker.sel circle{fill:#E8505B;stroke:#fff;stroke-width:2;}
+.wm-marker .selpin,.wm-marker .selnum{display:none;}
+.wm-marker.sel>circle:not(.selpin),.wm-marker.sel>text:not(.selnum){display:none;}
+.wm-marker.sel .selpin{display:block;fill:#E8505B;stroke:none;}
+.wm-marker.sel .selnum{display:block;}
 .wm-marker.flash circle{animation:wmflash 1s ease-out 2;}
 @keyframes wmflash{0%{r:6;opacity:1;}100%{r:16;opacity:0;}}
 .wm-pick-hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--lavender-deep);color:#fff;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:999px;box-shadow:0 8px 20px rgba(40,20,70,0.18);display:none;z-index:20;}
@@ -242,9 +245,9 @@ body{margin:0;color:var(--ink);font-family:"Paperlogy","Pretendard","Noto Sans K
 .wm-country-label{position:absolute;transform:translate(-50%,-50%);background:#fff;color:var(--lavender-deep);font-weight:800;font-size:11.5px;padding:4px 11px;border-radius:999px;box-shadow:0 3px 10px rgba(40,20,70,0.2);white-space:nowrap;}
 .wm-rta-card{position:absolute;left:12px;top:12px;z-index:30;width:min(300px,72%);background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(40,20,70,0.2);display:none;max-height:70%;overflow-y:auto;}
 .wm-rta-card.open{display:block;}
-.rta-card-title{font-weight:700;font-size:13.5px;color:var(--lavender-deep);padding-right:18px;}
-.rta-card-sub{font-size:14px;font-weight:600;color:var(--ink);margin:5px 0 8px;line-height:1.4;}
-.rta-card-desc{font-size:12px;line-height:1.5;margin-bottom:6px;white-space:pre-wrap;}
+.rta-card-title{line-height:1.55;font-weight:700;font-size:13.5px;color:var(--lavender-deep);padding-right:18px;}
+.rta-card-sub{font-size:14px;font-weight:500;color:var(--ink-soft);margin:5px 0 8px;line-height:1.4;}
+.rta-card-desc{font-size:13px;line-height:1.75;margin-bottom:6px;white-space:pre-wrap;}
 .rta-card-members{display:flex;flex-wrap:wrap;gap:4px;}
 .rta-card-members span{font-size:11px;font-weight:600;background:var(--lavender);color:#2A558C;border-radius:999px;padding:2px 8px;}
 .wm-sidebar::-webkit-scrollbar{display:none;width:0;}
@@ -1164,13 +1167,20 @@ function flyTo(lat, lng, targetW){
 }
 let currentCardId = null;
 function closeEntryCard(){ currentCardId = null; document.getElementById('rtaCard').classList.remove('open'); setSelCluster(null); }
+function placeWithCountry(e){
+  const pn = (e.placeName||'').trim();
+  if(!pn) return '';
+  const cn = e.countryId ? (CID_KO[e.countryId] || COUNTRY_NAME_BY_ID[e.countryId]) : '';
+  if(!cn || pn.includes(cn) || /[()]/.test(pn)) return pn;
+  return `${pn} (${cn})`;
+}
 function showEntryCard(e){
   currentCardId = e.id;
   const card = document.getElementById('rtaCard');
   const tags = tagsChipsHtml(e);
   card.innerHTML = `<button type="button" class="wm-anchor-pop-close" id="rtaCardClose">✕</button>
     <div class="rta-card-title">${tagHtml(e.type)}${tags} ${esc(e.name)}</div>
-    <div class="rta-card-sub">${esc(e.date||'')}${e.date&&e.placeName?' · ':''}${esc(e.placeName||'')}</div>
+    <div class="rta-card-sub">${esc(e.date||'')}${e.date&&e.placeName?' · ':''}${esc(placeWithCountry(e))}</div>
     ${e.description ? `<div class="rta-card-desc">${esc(e.description)}</div>` : ''}
     <div class="pop-entry-item-actions"><button type="button" id="rtaCardEdit">수정</button></div>`;
   card.classList.add('open');
@@ -1195,7 +1205,9 @@ function renderMarkers(){
     g.setAttribute('data-clusterkey', cl.lat+','+cl.lng);
     g.setAttribute('data-x', x); g.setAttribute('data-y', y);
     const r = cl.items.length>1 ? 8 : 6;
-    g.innerHTML = `<circle cx="${x}" cy="${y}" r="${r}"></circle>` + (cl.items.length>1 ? `<text x="${x}" y="${y+3}">${cl.items.length}</text>` : '');
+    g.innerHTML = `<circle cx="${x}" cy="${y}" r="${r}"></circle>` + (cl.items.length>1 ? `<text x="${x}" y="${y+3}">${cl.items.length}</text>` : '')
+      + `<path class="selpin" d="M${x} ${y} L${x-7.5} ${y-12.5} A9 9 0 1 1 ${x+7.5} ${y-12.5} Z"></path>`
+      + (cl.items.length>1 ? `<text class="selnum" x="${x}" y="${y-14.5}">${cl.items.length}</text>` : '');
     g.addEventListener('click', ev=>{ ev.stopPropagation(); document.getElementById('rtaCard').classList.remove('open'); setSelCluster(clusterKey(cl.items[0])); openMarkerInfo(cl.items, cl.lat, cl.lng); });
     layer.appendChild(g);
   });
