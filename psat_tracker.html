@@ -625,21 +625,77 @@ try{ firebase.initializeApp(PSAT_FB_CONFIG, 'psatApp'); psatDb = firebase.app('p
 let psatFbReady = false; // becomes true once the initial load (local or remote) finished, so early saves can't clobber the server
 let psatFbSyncTimer = null;
 const PSAT_LOCAL_TS_KEY = 'psatLocalUpdatedAt_v1';
+
+// 저장 공간(브라우저 localStorage ~5MB)이 꽉 차면 저장이 조용히 실패함 → 이미지는 줄여서 저장하고, 실패하면 알려줌
+let _quotaWarnAt = 0;
+function psatQuotaWarn(){
+  if(Date.now()-_quotaWarnAt < 8000) return; _quotaWarnAt = Date.now();
+  const t = document.createElement('div');
+  t.textContent = '저장 공간이 꽉 찼어요. 큰 이미지를 줄이는 중이에요…';
+  t.style.cssText = 'position:fixed;left:50%;top:18px;transform:translateX(-50%);background:#3b3350;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:5000;';
+  document.body.appendChild(t); setTimeout(()=>t.remove(), 4000);
+  setTimeout(()=>{ if(typeof psatShrinkImages==='function') psatShrinkImages(); }, 0);
+}
+function psatCompressDataUrl(url, maxDim, q){
+  return new Promise(res=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w = img.naturalWidth, h = img.naturalHeight; const k = Math.min(1, (maxDim||1400)/Math.max(w,h));
+      w = Math.round(w*k); h = Math.round(h*k);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0,0,w,h); g.drawImage(img,0,0,w,h);
+      try{ const out = c.toDataURL('image/jpeg', q||0.82); res(out.length < url.length ? out : url); }catch(e){ res(url); }
+    };
+    img.onerror = ()=>res(url);
+    img.src = url;
+  });
+}
+function psatCompressFile(file){
+  return new Promise(res=>{ const r = new FileReader(); r.onload = ()=>psatCompressDataUrl(r.result).then(res); r.onerror = ()=>res(''); r.readAsDataURL(file); });
+}
+let _shrinking = false;
+async function psatShrinkImages(){
+  if(_shrinking) return; _shrinking = true;
+  try{
+    const findUrls = (str)=>{ const out=[]; let i=0; while((i=str.indexOf('data:image/', i))>=0){ let j=i; while(j<str.length && !'"\'<>) '.includes(str[j])) j++; if(j-i>150000) out.push(str.slice(i,j)); i=j; } return out; };
+    let changed = false;
+    const walk = async (o)=>{
+      if(!o || typeof o!=='object') return;
+      for(const k of Object.keys(o)){
+        const v = o[k];
+        if(typeof v==='string' && v.length>150000 && v.indexOf('data:image/')>=0){
+          const urls = findUrls(v); let nv = v;
+          for(const u of urls){ const c = await psatCompressDataUrl(u); if(c!==u){ nv = nv.split(u).join(c); } }
+          if(nv!==v){ o[k] = nv; changed = true; }
+        } else if(v && typeof v==='object'){ await walk(v); }
+      }
+    };
+    await walk(notesStore); await walk(records); await walk(reviewBox);
+    for(const im of document.querySelectorAll('#detailBox img')){
+      if(im.src && im.src.length>150000 && im.src.indexOf('data:image/')===0){
+        const c = await psatCompressDataUrl(im.src);
+        if(c!==im.src){ const host = im.closest('[contenteditable]'); im.src = c; if(host) host.dispatchEvent(new Event('input',{bubbles:true})); changed = true; }
+      }
+    }
+    if(changed){ scheduleFbSync(); }
+  } finally { _shrinking = false; }
+}
 function psatSaveAllToLocal(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-  localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox));
-  localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore));
-  localStorage.setItem(CUTOFF_KEY, JSON.stringify(cutoffs));
-  localStorage.setItem(TODO_KEY, JSON.stringify(todos));
-  localStorage.setItem(NOTES_KEY, JSON.stringify(notesStore));
-  localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
-  localStorage.setItem(ANSWER_KEY, JSON.stringify(answerKeyStore));
+  const _set = (k,v)=>{ try{ localStorage.setItem(k, v); return true; }catch(err){ psatQuotaWarn(); return false; } };
+  _set(STORAGE_KEY, JSON.stringify(records));
+  _set(REVIEW_KEY, JSON.stringify(reviewBox));
+  _set(KEYWORD_KEY, JSON.stringify(keywordStore));
+  _set(CUTOFF_KEY, JSON.stringify(cutoffs));
+  _set(TODO_KEY, JSON.stringify(todos));
+  _set(NOTES_KEY, JSON.stringify(notesStore));
+  _set(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
+  _set(ANSWER_KEY, JSON.stringify(answerKeyStore));
   // Stamped on every local save (synchronous, instant — doesn't wait on the network),
   // so a page that reloads before its 600ms Firebase push goes out still knows its own
   // in-progress edit is newer than whatever is already on the server. Without this, the
   // load-from-server step below would silently overwrite that just-typed edit with the
   // older server copy — exactly the "내용이 갑자기 다 날라갔어" data-loss failure mode.
-  localStorage.setItem(PSAT_LOCAL_TS_KEY, String(Date.now()));
+  _set(PSAT_LOCAL_TS_KEY, String(Date.now()));
 }
 function psatPushToFirebase(){
   if(!psatDb) return;
@@ -658,6 +714,7 @@ function scheduleFbSync(){
 function psatBootAfterLoad(){
   psatFbReady = true;
   psatNormalizeRecords();
+  setTimeout(()=>{ try{ psatShrinkImages(); }catch(e){} }, 800);
   renderDateChips();
   const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
   if(savedTab && document.querySelector(`.tab-btn[data-tab="${savedTab}"]`)){
@@ -816,7 +873,7 @@ let filterReasonKwSelected = new Set();
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); scheduleFbSync(); }
 function saveReview(){ localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox)); scheduleFbSync(); }
-function saveKeywordStore(){ localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore)); scheduleFbSync(); }
+function saveKeywordStore(){ try{ localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore)); }catch(e){ psatQuotaWarn(); } scheduleFbSync(); }
 function saveCutoffs(){ localStorage.setItem(CUTOFF_KEY, JSON.stringify(cutoffs)); scheduleFbSync(); }
 function saveTodos(){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); scheduleFbSync(); }
 function uid(p){ return (p||'r') + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -2270,11 +2327,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
           e.preventDefault();
           const file = item.getAsFile();
           if(!file) continue;
-          const reader = new FileReader();
-          reader.onload = ()=>{
-            document.execCommand('insertHTML', false, `<img src="${reader.result}">`);
-          };
-          reader.readAsDataURL(file);
+          psatCompressFile(file).then(url=>{
+            if(url) document.execCommand('insertHTML', false, `<img src="${url}">`);
+          });
           return;
         }
       }
