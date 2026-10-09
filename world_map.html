@@ -701,7 +701,7 @@ const GAZ_COUNTRIES = `
 705|슬로베니아|Slovenia|류블랴나|46.06|14.51
 090|솔로몬제도|Solomon Is.|호니아라|-9.43|159.95
 706|소말리아|Somalia|모가디슈|2.05|45.32
-710|남아프리카공화국;남아공|South Africa|프리토리아|-25.75|28.19
+710|남아공;남아프리카공화국|South Africa|프리토리아|-25.75|28.19
 410|대한민국;한국;남한|South Korea|서울|37.57|126.98
 724|스페인|Spain|마드리드|40.42|-3.70
 144|스리랑카|Sri Lanka|콜롬보|6.93|79.86
@@ -767,6 +767,33 @@ const GAZ_COUNTRIES = `
 `;
 // 도시: 이름들(;)|위도|경도|나라id   (수도는 위 나라표에서 자동으로 같이 등록됨)
 const GAZ_CITIES = `
+광주;gwangju|35.16|126.85|410
+대구;daegu|35.87|128.60|410
+대전;daejeon|36.35|127.38|410
+인천;incheon|37.46|126.71|410
+울산;ulsan|35.54|129.31|410
+수원;suwon|37.26|127.03|410
+경주;gyeongju|35.86|129.22|410
+전주;jeonju|35.82|127.15|410
+춘천;chuncheon|37.88|127.73|410
+강릉;gangneung|37.75|128.88|410
+여수;yeosu|34.76|127.66|410
+평창;pyeongchang|37.37|128.39|410
+판문점;panmunjom|37.96|126.68|408
+개성;kaesong|37.97|126.55|408
+후쿠오카;fukuoka|33.59|130.40|392
+삿포로;sapporo|43.06|141.35|392
+나고야;nagoya|35.18|136.91|392
+히로시마;hiroshima|34.39|132.46|392
+나가사키;nagasaki|32.75|129.88|392
+교토;kyoto|35.01|135.77|392
+요코하마;yokohama|35.44|139.64|392
+상하이;shanghai|31.23|121.47|156
+광저우;guangzhou|23.13|113.26|156
+선전;shenzhen|22.54|114.06|156
+홍콩;hongkong|22.32|114.17|156
+마카오;macau|22.20|113.55|156
+충칭;chongqing|29.56|106.55|156
 제네바;geneva|46.20|6.14|756
 뉴욕;newyork;유엔본부|40.71|-74.01|840
 워싱턴;워싱턴dc;washington;washingtondc|38.91|-77.04|840
@@ -964,6 +991,21 @@ function distKm(lat1,lng1,lat2,lng2){
   const R=6371, rad=Math.PI/180, dLat=(lat2-lat1)*rad, dLng=(lng2-lng1)*rad;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLng/2)**2;
   return 2*R*Math.asin(Math.sqrt(a));
+}
+// 사전에 없는 장소는 인터넷(OpenStreetMap Nominatim)에서 찾아옴. 실패/오프라인이면 null.
+const _geoCache = {};
+async function geocodeOnline(q){
+  q = (q||'').trim(); if(!q) return null;
+  if(q in _geoCache) return _geoCache[q];
+  try{
+    const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 8000);
+    const res = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ko&q='+encodeURIComponent(q), { signal: ctl.signal });
+    clearTimeout(t);
+    if(!res.ok) return null;
+    const j = await res.json();
+    if(!j || !j.length) return (_geoCache[q] = null);
+    return (_geoCache[q] = { lat: parseFloat(j[0].lat), lng: parseFloat(j[0].lon), label: q, kind:'online' });
+  }catch(err){ return null; }
 }
 function inferCountryId(e){
   if(typeof e.lat==='number'){
@@ -2055,11 +2097,12 @@ function renderEntryModalBody(box, draft, isEdit){
     });
   });
   document.getElementById('cancelEntryBtn').addEventListener('click', closeEntryModal);
-  document.getElementById('saveEntryBtn').addEventListener('click', ()=>{
+  document.getElementById('saveEntryBtn').addEventListener('click', async ()=>{
     collectFieldsIntoDraft(draft);
     if(!draft.type){ alert('종류를 선택해주세요'); return; }
     if(!draft.name){ alert('이름을 입력해주세요'); return; }
-    if(draft.type!=='rta' && draft.lat==null){ alert('지도에서 위치를 선택해주세요'); return; }
+    if(draft.type!=='rta' && draft.lat==null && draft.name) await applyAutoLoc();
+    if(draft.type!=='rta' && draft.lat==null){ alert('장소명으로 위치를 못 찾았어요. "직접 지정"으로 지도에서 찍어주세요'); return; }
     if(draft.type==='rta' && (!draft.memberCountryIds || !draft.memberCountryIds.length)){ alert('회원국을 1개 이상 선택해주세요'); return; }
     if(!draft.createdAt) draft.createdAt = Date.now();
     const idx = entries.findIndex(x=>x.id===draft.id);
@@ -2076,19 +2119,34 @@ function renderEntryModalBody(box, draft, isEdit){
     renderAll();
   });
 
+  let locSeq = 0;
+  const applyAutoLoc = async ()=>{
+    const pn = ((document.getElementById('fPlace')||{}).value||'').trim();
+    if(!pn) return false;
+    const lv = document.getElementById('locVal');
+    const seq = ++locSeq;
+    let r = resolvePlace(pn);
+    if(!r){
+      if(lv) lv.textContent = '인터넷에서 위치 찾는 중…';
+      r = await geocodeOnline(pn);
+      if(seq!==locSeq) return false; // 그 사이 다른 검색이 시작됨
+      if(!r){ if(lv) lv.textContent = draft.lat!=null ? lv.dataset.prev||'' : '위치를 못 찾았어요 (직접 지정 가능)'; return false; }
+    }
+    draft.lat = r.lat; draft.lng = r.lng; delete draft.manualLoc;
+    if(r.cid) draft.countryId = r.cid; else { delete draft.countryId; const c = inferCountryId({lat:r.lat,lng:r.lng,placeName:''}); if(c) draft.countryId = c; }
+    if(lv){ lv.textContent = `${pn} (${r.lat.toFixed(2)}, ${r.lng.toFixed(2)})`; lv.dataset.prev = lv.textContent; }
+    return true;
+  };
+  const placeInp = document.getElementById('fPlace');
+  if(placeInp) placeInp.addEventListener('change', ()=>{ if(!draft.manualLoc) applyAutoLoc(); });
   const autoBtn = document.getElementById('autoLocBtn');
-  if(autoBtn) autoBtn.addEventListener('click', ()=>{
-    collectFieldsIntoDraft(draft);
-    const r = resolvePlace(draft.placeName||'');
-    if(r){ draft.lat = r.lat; draft.lng = r.lng; if(r.cid) draft.countryId = r.cid; else delete draft.countryId; }
-    renderEntryModalBody(box, draft, isEdit);
-  });
+  if(autoBtn) autoBtn.addEventListener('click', ()=>{ delete draft.manualLoc; applyAutoLoc(); });
   const pickBtn = document.getElementById('pickLocBtn');
   if(pickBtn) pickBtn.addEventListener('click', ()=>{
     collectFieldsIntoDraft(draft);
     document.getElementById('entryModalOverlay').classList.remove('open');
     enterPickMode((lat,lng)=>{
-      draft.lat = lat; draft.lng = lng; delete draft.countryId;
+      draft.lat = lat; draft.lng = lng; delete draft.countryId; draft.manualLoc = true;
       document.getElementById('entryModalOverlay').classList.add('open');
       renderEntryModalBody(box, draft, isEdit);
     });
