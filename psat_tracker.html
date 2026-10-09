@@ -239,6 +239,12 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-value textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;resize:vertical;line-height:1.7;}
 .np-richtext{width:100%;min-height:68px;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;line-height:1.7;overflow-wrap:break-word;}
 .np-richtext:focus{outline:none;border-color:var(--lavender-deep);}
+
+.np-richtext img,.np-choice-text img{cursor:zoom-in;}
+.np-richtext img.rs-hover,.np-choice-text img.rs-hover{cursor:se-resize;}
+#imgLightbox{position:fixed;inset:0;background:rgba(30,25,45,.78);display:none;align-items:center;justify-content:center;z-index:2000;cursor:zoom-out;padding:24px;}
+#imgLightbox.open{display:flex;}
+#imgLightbox img{max-width:94vw;max-height:92vh;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.4);background:#fff;}
 .np-richtext img{max-width:100%;border-radius:6px;display:block;margin:4px 0;}
 
 .review-mark{width:12px;height:12px;border-radius:50%;border:1.4px solid #C9C4D4;display:inline-block;margin-right:3px;background:#fff;}
@@ -568,6 +574,34 @@ psatNormalizeRecords();
 let reviewBox = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
 let keywordStore = JSON.parse(localStorage.getItem(KEYWORD_KEY) || '{"reason":[],"type":[],"choice":[]}');
 if(!keywordStore.choice) keywordStore.choice = [];
+// 키워드는 과목별(언어논리/상황판단/자료해석)로 따로 관리. 처음엔 기존 키워드를 세 과목에 복사해서 하나도 안 잃게 함
+function kwEnsure(){
+  if(!keywordStore.bySubject) keywordStore.bySubject = {};
+  SUBJECTS.forEach(sj=>{
+    const first = !keywordStore.bySubject[sj];
+    const o = keywordStore.bySubject[sj] || (keywordStore.bySubject[sj] = {});
+    ['reason','type','choice'].forEach(k=>{ if(!Array.isArray(o[k])) o[k] = first ? [...(keywordStore[k]||[])] : []; });
+  });
+}
+function kwSeedOnce(){
+  if(keywordStore.seedV1) return;
+  const seed={'언어논리':['역사','흐름','논리','밀독','구조','논리이론','빈칸','논쟁','분석','강화약화','과학','실험','두문제형'],
+              '상황판단':['법','퀴즈','경비','조건판단','세금','자릿수','숫자','두문제형','시간','단위']};
+  Object.keys(seed).forEach(sj=>{ const a=keywordStore.bySubject[sj].type; seed[sj].forEach(v=>{ if(!a.includes(v)) a.push(v); }); });
+  keywordStore.seedV1=1; try{localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore));}catch(e){}
+}
+function kwList(kind, subject){
+  kwEnsure();
+  if(subject && keywordStore.bySubject[subject]) return keywordStore.bySubject[subject][kind];
+  return [...new Set(SUBJECTS.flatMap(sj=>keywordStore.bySubject[sj][kind]))];
+}
+function kwAdd(kind, subject, v){
+  kwEnsure();
+  const targets = (subject && keywordStore.bySubject[subject]) ? [subject] : SUBJECTS;
+  targets.forEach(sj=>{ const a = keywordStore.bySubject[sj][kind]; if(!a.includes(v)) a.push(v); });
+  saveKeywordStore();
+}
+kwEnsure(); kwSeedOnce();
 let cutoffs = JSON.parse(localStorage.getItem(CUTOFF_KEY) || '{}');
 let todos = JSON.parse(localStorage.getItem(TODO_KEY) || '[]');
 let notesStore = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}');
@@ -636,6 +670,7 @@ function psatLoadFromFirebase(){
         if(Array.isArray(d.reviewBox)) reviewBox = d.reviewBox;
         if(d.keywordStore) keywordStore = d.keywordStore;
         if(!keywordStore.choice) keywordStore.choice = [];
+        kwEnsure(); kwSeedOnce();
         if(d.cutoffs) cutoffs = d.cutoffs;
         if(Array.isArray(d.todos)) todos = d.todos;
         if(d.notesStore) notesStore = d.notesStore;
@@ -1190,7 +1225,7 @@ document.getElementById('quickPop').addEventListener('click', e=>{
       rec.wrongs[num] = { selectedChoice: choice, reasonText: (existing&&existing.reasonText)||'', reasonKeywords: [...qwReasonKwSet] };
       save(); activeSelection={testId:null,nums:new Set()}; renderTests();
     }, ()=>{
-      wireKeywordSelector('qwReasonKw', 'reason', qwReasonKwSet);
+      wireKeywordSelector('qwReasonKw', 'reason', qwReasonKwSet, rec.subject);
     });
   } else if(action==='detail'){
     activeSelection={testId:null,nums:new Set()}; renderTests();
@@ -1580,7 +1615,7 @@ function keywordSelectorHtml(elId){
     <div class="kw-picker-pop" id="${elId}_pop"></div>
   </div>`;
 }
-function wireKeywordSelector(elId, storeKey, selSet){
+function wireKeywordSelector(elId, storeKey, selSet, subject){
   const chipsEl = document.getElementById(elId+'_chips');
   const popEl = document.getElementById(elId+'_pop');
   function closePop(){ popEl.classList.remove('open'); }
@@ -1603,7 +1638,7 @@ function wireKeywordSelector(elId, storeKey, selSet){
     });
   }
   function drawPop(){
-    const remaining = koSort(keywordStore[storeKey].filter(k=>!selSet.has(k)));
+    const remaining = koSort(kwList(storeKey, subject).filter(k=>!selSet.has(k)));
     popEl.innerHTML = (remaining.length ? `<div class="kw-picker-flow">${remaining.map(k=>`<button type="button" class="kw-picker-chip" data-kw="${k}">${k}</button>`).join('')}</div>` : '<div class="kw-picker-empty">선택할 키워드가 없어요</div>')
       + `<div class="kw-picker-addrow">
           <input type="text" class="kw-picker-input" id="${elId}_newkw" placeholder="새 키워드">
@@ -1623,7 +1658,7 @@ function wireKeywordSelector(elId, storeKey, selSet){
       const input = document.getElementById(elId+'_newkw');
       const v = input.value.trim();
       if(!v) return;
-      if(!keywordStore[storeKey].includes(v)){ keywordStore[storeKey].push(v); saveKeywordStore(); }
+      kwAdd(storeKey, subject, v);
       selSet.add(v);
       draw(); drawPop(); popEl.classList.add('open');
       document.getElementById(elId+'_newkw').focus();
@@ -1670,7 +1705,7 @@ document.getElementById('ctxMenu').addEventListener('click', e=>{
       const kws = [...selSet];
       nums.forEach(n=>{ rec.wrongs[n] = { reasonText: reason, reasonKeywords: kws, selectedChoice: choice }; });
       save(); activeSelection={testId:null,nums:new Set()}; renderTests();
-    }, ()=>wireKeywordSelector('reasonKwSel','reason',selSet));
+    }, ()=>wireKeywordSelector('reasonKwSel','reason',selSet,rec.subject));
   } else if(action==='editType'){
     const selSet = new Set();
     nums.forEach(n=>{ (rec.problemTypeKeywords[n]||[]).forEach(k=>selSet.add(k)); });
@@ -1680,7 +1715,7 @@ document.getElementById('ctxMenu').addEventListener('click', e=>{
       const kws = [...selSet];
       nums.forEach(n=>{ rec.problemTypeKeywords[n] = kws; });
       save(); activeSelection={testId:null,nums:new Set()}; renderTests();
-    }, ()=>wireKeywordSelector('typeKwSel','type',selSet));
+    }, ()=>wireKeywordSelector('typeKwSel','type',selSet,rec.subject));
   }
 });
 
@@ -1840,7 +1875,7 @@ function renderYearOptions(){
 // Notion-style "click to open a flow-wrapped dropdown below" keyword filter widget.
 // getSel must return the CURRENT Set each call (never capture it), since some callers
 // reassign their selected-set variable wholesale (e.g. applying a saved view).
-function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange){
+function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange, getSubject){
   const chipsEl = document.getElementById(chipsId);
   const popEl = document.getElementById(popId);
   if(!chipsEl || !popEl) return;
@@ -1867,7 +1902,7 @@ function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange){
   }
   function drawPop(){
     const sel = getSel();
-    const all = koSort(keywordStore[storeKey]);
+    const all = koSort(kwList(storeKey, getSubject ? getSubject() : null));
     popEl.innerHTML = all.length
       ? `<div class="kw-picker-flow">${all.map(k=>`<button type="button" class="kw-picker-chip${sel.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('')}</div>`
       : `<div class="kw-picker-empty">등록된 키워드가 없어요</div>`;
@@ -1887,8 +1922,8 @@ function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange){
 }
 
 function renderFilterChips(){
-  renderKwFilterBlock('filterTypeKwArea','filterTypeKwPop','type', ()=>filterTypeKwSelected, renderAll);
-  renderKwFilterBlock('filterReasonKwArea','filterReasonKwPop','reason', ()=>filterReasonKwSelected, renderAll);
+  renderKwFilterBlock('filterTypeKwArea','filterTypeKwPop','type', ()=>filterTypeKwSelected, renderAll, ()=>{ const v=document.getElementById('filterSubject').value; return v==='all'?null:v; });
+  renderKwFilterBlock('filterReasonKwArea','filterReasonKwPop','reason', ()=>filterReasonKwSelected, renderAll, ()=>{ const v=document.getElementById('filterSubject').value; return v==='all'?null:v; });
 }
 
 let lastFilteredRows = [];
@@ -2202,9 +2237,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
     if(open && !hasChoiceData) choiceAddBtn.style.display = 'inline-block';
   });
   choiceAddBtn.addEventListener('click', ()=>{ applyChoiceFold(false); });
-  CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n]); });
-  wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet);
-  attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id]); });
+  CHOICE_NUMS.forEach(n=>{ wireKeywordSelector('choiceKwSel'+n, 'choice', choiceSelSets[n], subject); });
+  wireKeywordSelector('typeKwSelDetail', 'type', typeKwSelSet, subject);
+  attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id], subject); });
   // 분석 노트/참고 이론/선지분석: all contenteditable, so a pasted image (e.g. a
   // copied screenshot) can be dropped straight in as an inline <img> anywhere.
   function wireImagePaste(el){
@@ -2337,8 +2372,8 @@ let reviewFilterReasonKwSelected = new Set();
   document.getElementById(id).addEventListener('change', renderReview);
 });
 function renderReview(){
-  renderKwFilterBlock('reviewFilterTypeKwArea','reviewFilterTypeKwPop','type', ()=>reviewFilterTypeKwSelected, renderReview);
-  renderKwFilterBlock('reviewFilterReasonKwArea','reviewFilterReasonKwPop','reason', ()=>reviewFilterReasonKwSelected, renderReview);
+  renderKwFilterBlock('reviewFilterTypeKwArea','reviewFilterTypeKwPop','type', ()=>reviewFilterTypeKwSelected, renderReview, ()=>{ const v=document.getElementById('reviewFilterSubject').value; return v==='all'?null:v; });
+  renderKwFilterBlock('reviewFilterReasonKwArea','reviewFilterReasonKwPop','reason', ()=>reviewFilterReasonKwSelected, renderReview, ()=>{ const v=document.getElementById('reviewFilterSubject').value; return v==='all'?null:v; });
   const lvlF = document.getElementById('reviewFilterLevel').value;
   const subjF = document.getElementById('reviewFilterSubject').value;
   const enriched = reviewBox.map(entry=>{
@@ -2441,6 +2476,52 @@ psatLoadFromFirebase();
 })();
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden && typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} detailFlush=null; } });
 window.addEventListener('pagehide', ()=>{ if(typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} } });
+
+// ---------- 노트 이미지: 클릭하면 크게 보기 / 오른쪽 아래 모서리 끌어서 크기 조절 ----------
+(function(){
+  const lb = document.createElement('div'); lb.id='imgLightbox'; lb.innerHTML='<img alt="">';
+  document.body.appendChild(lb);
+  const close = ()=>lb.classList.remove('open');
+  lb.addEventListener('click', close);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape' && lb.classList.contains('open')){ e.stopPropagation(); close(); } }, true);
+  const sel = '#detailBox .np-richtext img, #detailBox .np-choice-text img';
+  const inCorner = (img,e)=>{ const r=img.getBoundingClientRect(); return e.clientX > r.right-18 && e.clientY > r.bottom-18; };
+  let drag = null;
+  document.addEventListener('mousemove', e=>{
+    if(drag){
+      const w = Math.max(40, Math.round(drag.w + (e.clientX-drag.x)));
+      drag.img.style.width = w+'px'; drag.img.style.height='auto'; drag.img.style.maxWidth='none'; drag.img.style.maxHeight='none';
+      drag.moved = true; return;
+    }
+    const t = e.target;
+    if(t && t.matches && t.matches(sel)) t.classList.toggle('rs-hover', inCorner(t,e));
+  });
+  document.addEventListener('mousedown', e=>{
+    const t = e.target;
+    if(!(t && t.matches && t.matches(sel))) return;
+    if(inCorner(t,e)){
+      e.preventDefault();
+      drag = { img:t, x:e.clientX, w:t.getBoundingClientRect().width, moved:false };
+    }
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(!drag) return;
+    const d = drag; drag = null;
+    if(d.moved){
+      d.img.dataset.justResized = '1'; setTimeout(()=>{ delete d.img.dataset.justResized; }, 50);
+      const host = d.img.closest('[contenteditable]');
+      if(host) host.dispatchEvent(new Event('input', {bubbles:true}));
+    }
+  });
+  document.addEventListener('click', e=>{
+    const t = e.target;
+    if(!(t && t.matches && t.matches(sel))) return;
+    if(t.dataset.justResized || inCorner(t,e)) return;
+    lb.querySelector('img').src = t.src;
+    lb.classList.add('open');
+  });
+  document.addEventListener('dragstart', e=>{ if(drag) e.preventDefault(); });
+})();
 </script>
 </body>
 </html>
