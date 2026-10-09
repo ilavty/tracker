@@ -584,11 +584,12 @@ function kwEnsure(){
   });
 }
 function kwSeedOnce(){
-  if(keywordStore.seedV1) return;
+  if(keywordStore.seedV2) return;
   const seed={'언어논리':['역사','흐름','논리','밀독','구조','논리이론','빈칸','논쟁','분석','강화약화','과학','실험','두문제형'],
               '상황판단':['법','퀴즈','경비','조건판단','세금','자릿수','숫자','두문제형','시간','단위']};
-  Object.keys(seed).forEach(sj=>{ const a=keywordStore.bySubject[sj].type; seed[sj].forEach(v=>{ if(!a.includes(v)) a.push(v); }); });
-  keywordStore.seedV1=1; try{localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore));}catch(e){}
+  Object.keys(seed).forEach(sj=>{ keywordStore.bySubject[sj].type = [...seed[sj]]; });
+  keywordStore.bySubject['자료해석'].type = []; keywordStore.type = [];
+  keywordStore.seedV2=1; try{localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore));}catch(e){}
 }
 function kwList(kind, subject){
   kwEnsure();
