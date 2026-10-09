@@ -1297,7 +1297,7 @@ function typeOptionsHtml(sel){ return typeOrder().map(t=>`<option value="${t}" $
 // 회의의 "첫 회의 / N차", 기구의 "본부" 같은 구분 태그 (차수는 자동, 나머지는 직접 입력한 태그)
 function entryTags(e){
   const out = [];
-  if(e.type==='meeting' && e.round){ if(String(e.round)==='1') out.push('첫 회의'); out.push(e.round+'차'); }
+  if(e.type==='meeting' && e.round){ out.push(e.round+'차'); }
   (e.tags||[]).forEach(t=>{ if(t && !out.includes(t)) out.push(t); });
   return out;
 }
