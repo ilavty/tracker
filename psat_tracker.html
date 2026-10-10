@@ -130,7 +130,7 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .kw-picker-chip.selected{background:var(--lavender);border-color:var(--lavender-deep);color:#2A558C;}
 
 .swp-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
-.swp-head b{color:#2A558C;font-size:12.5px;}
+.swp-head b{color:#2A558C;font-size:14.5px;}
 .swp-more-btn{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;}
 .swp-more-btn:hover{background:#F5F3FA;}
 .swp-empty{color:var(--ink-soft);font-size:11.5px;}
@@ -142,17 +142,21 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .swp-other-chip{font-size:12.5px;font-weight:700;color:#C9C6D1;cursor:pointer;user-select:none;}
 .swp-other-chip.selected{color:var(--ink);}
 .swp-rows{display:flex;flex-direction:column;gap:2px;}
-.swp-row{border-bottom:1px solid var(--line);padding:6px 0;}
+.swp-row{border-bottom:1px solid var(--line);padding:8px 0;}
+#sideWrongModalBox .kw-tag{font-size:12px;padding:2px 8px;}
+#sideWrongModalBox .swp-pin{width:17px;height:17px;}#sideWrongModalBox .swp-pin svg{width:15px;height:15px;}
+#sideWrongModalBox .swp-detail-open{font-size:15px;}
+#sideWrongModalBox .swp-clock svg{width:16px;height:16px;}
 .swp-row:last-child{border-bottom:none;}
-.swp-num{display:inline-flex;align-items:center;justify-content:flex-start;min-width:16px;font-weight:800;font-size:12.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
+.swp-num{display:inline-flex;align-items:center;justify-content:flex-start;min-width:20px;font-weight:800;font-size:14.5px;color:var(--ink);cursor:pointer;flex-shrink:0;}
 .swp-row-main{display:flex;align-items:flex-start;gap:8px;flex-wrap:nowrap;}
-.swp-choice{font-size:12px;font-weight:600;flex-shrink:0;padding-top:1px;}
+.swp-choice{font-size:13.5px;font-weight:600;flex-shrink:0;padding-top:1px;}
 .swp-clock{display:inline-flex;flex-shrink:0;padding-top:2px;}
 .swp-clock.l1{color:#e6b800;}.swp-clock.l2{color:#f08a1c;}.swp-clock.l3{color:#e03a3a;}
 .swp-choice.wrong{color:var(--red-text);}
 .swp-choice.correct{color:var(--ox-correct);}
 .swp-reason-wrap{flex:1 1 auto;min-width:0;}
-.swp-reason{font-size:12px;color:var(--ink);line-height:1.6;word-break:keep-all;overflow-wrap:break-word;margin-right:7px;}
+.swp-reason{font-size:13.5px;color:var(--ink);line-height:1.65;word-break:keep-all;overflow-wrap:break-word;margin-right:7px;}
 .swp-pin{border:none;background:none;cursor:pointer;color:var(--ink-soft);padding:2px;display:flex;align-items:center;width:15px;height:15px;flex-shrink:0;}
 .swp-pin svg{width:13px;height:13px;}
 .swp-pin.on{color:var(--red-text);}
@@ -489,7 +493,7 @@ tr.clickable:hover td{background:#FBF9FE;}
 <div class="ctx-menu" id="quickPop"></div>
 
 <div class="modal-overlay" id="sideWrongModalOverlay">
-  <div class="popup-box" id="sideWrongModalBox" style="width:min(700px,94vw);max-height:none;overflow:visible;position:relative;"></div>
+  <div class="popup-box" id="sideWrongModalBox" style="width:min(800px,94vw);max-height:none;overflow:visible;position:relative;"></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
