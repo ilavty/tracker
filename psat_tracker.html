@@ -295,6 +295,14 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .filter-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;}
 .filter-bar .field{min-width:110px;flex:none;}
 .kw-filter-row{margin-bottom:14px;}
+.kw-split{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:14px;}
+.kw-split-col{min-width:0;}
+.kw-split-col>label{font-size:11.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:8px;}
+.kw-grp-cols{display:grid;gap:14px;align-items:start;}
+.kw-grp{margin-bottom:0;}
+.kw-grp-label{font-size:10.5px;font-weight:700;color:#A9A5B3;margin-bottom:4px;letter-spacing:0.02em;}
+.kw-grp-flow{display:flex;flex-wrap:wrap;gap:5px;}
+.kw-grp-flow .kw-picker-chip{padding:4px 9px;font-size:12px;}
 .kw-filter-row label{font-size:11.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px;}
 table{width:100%;border-collapse:collapse;font-size:12.5px;}
 th{text-align:left;color:var(--ink-soft);font-weight:700;font-size:11px;padding:8px 10px;border-bottom:1.5px solid var(--line);white-space:nowrap;text-transform:uppercase;letter-spacing:.02em;}
@@ -422,13 +430,9 @@ tr.clickable:hover td{background:#FBF9FE;}
         </select>
       </div>
     </div>
-    <div class="kw-filter-row">
-      <label>유형 키워드</label>
-      <div class="kw-compact"><div class="kw-compact-list" id="filterTypeKwArea"></div><div class="kw-picker-pop" id="filterTypeKwPop"></div></div>
-    </div>
-    <div class="kw-filter-row">
-      <label>오답 키워드</label>
-      <div class="kw-compact"><div class="kw-compact-list" id="filterReasonKwArea"></div><div class="kw-picker-pop" id="filterReasonKwPop"></div></div>
+    <div class="kw-split">
+      <div class="kw-split-col"><label>유형 키워드</label><div id="filterTypeKwInline"></div></div>
+      <div class="kw-split-col"><label>오답 키워드</label><div id="filterReasonKwInline"></div></div>
     </div>
 
     <div class="table-scroll">
@@ -2002,7 +2006,35 @@ function renderKwFilterBlock(chipsId, popId, storeKey, getSel, onChange, getSubj
   drawChips();
 }
 
+function renderKwInline(elId, storeKey, getSel, onChange, getSubject){
+  const el = document.getElementById(elId); if(!el) return;
+  kwEnsure();
+  const subj = getSubject ? getSubject() : null;
+  const lists = {}; SUBJECTS.forEach(sj=>{ lists[sj] = keywordStore.bySubject[sj][storeKey] || []; });
+  const common = [];
+  const groups = [];
+  (subj ? [subj] : SUBJECTS).forEach(sj=>{
+    const only = koSort(lists[sj].filter(k=>!common.includes(k)));
+    groups.push([sj, only]);
+  });
+  const sel = getSel();
+  el.innerHTML = groups.length ? `<div class="kw-grp-cols" style="grid-template-columns:repeat(${Math.max(1,groups.length)},minmax(0,1fr))">` + groups.map(([name, arr])=>`<div class="kw-grp"><div class="kw-grp-label">${name}</div><div class="kw-grp-flow">${(arr.length ? arr.map(k=>`<button type="button" class="kw-picker-chip${sel.has(k)?' selected':''}" data-kw="${k}">${k}</button>`).join('') : '<span style="font-size:11px;color:#C9C6D1;">없음</span>')}</div></div>`).join('') + '</div>'
+    : '<div class="kw-picker-empty">등록된 키워드가 없어요</div>';
+  el.querySelectorAll('.kw-picker-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const k = btn.dataset.kw, s2 = getSel();
+      // 같은 키워드가 여러 그룹에 있어도 한꺼번에 켜지고 꺼지게
+      if(s2.has(k)) s2.delete(k); else s2.add(k);
+      el.querySelectorAll('.kw-picker-chip').forEach(b=>{ if(b.dataset.kw===k) b.classList.toggle('selected', s2.has(k)); });
+      onChange();
+    });
+  });
+}
 function renderFilterChips(){
+  const gs = ()=>{ const v=document.getElementById('filterSubject').value; return v==='all'?null:v; };
+  renderKwInline('filterTypeKwInline','type', ()=>filterTypeKwSelected, renderAll, gs);
+  renderKwInline('filterReasonKwInline','reason', ()=>filterReasonKwSelected, renderAll, gs);
+  return;
   renderKwFilterBlock('filterTypeKwArea','filterTypeKwPop','type', ()=>filterTypeKwSelected, renderAll, ()=>{ const v=document.getElementById('filterSubject').value; return v==='all'?null:v; });
   renderKwFilterBlock('filterReasonKwArea','filterReasonKwPop','reason', ()=>filterReasonKwSelected, renderAll, ()=>{ const v=document.getElementById('filterSubject').value; return v==='all'?null:v; });
 }
@@ -2083,7 +2115,7 @@ function renderAll(){
   });
 }
 ['filterLevel','filterYear','filterSubject','filterCorrectness','filterSort'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', renderAll);
+  document.getElementById(id).addEventListener('change', ()=>{ if(id==='filterSubject') renderFilterChips(); renderAll(); });
 
 });
 document.getElementById('filterMinTime').addEventListener('input', renderAll);
