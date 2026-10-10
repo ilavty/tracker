@@ -2391,22 +2391,45 @@ function openProblemDetailPage(idk, num, level, subject, label){
   attemptRecs.forEach(r=>{ wireKeywordSelector('attKw'+r.id, 'reason', attemptKwSelSets[r.id], subject); });
   // 분석 노트/참고 이론/선지분석: all contenteditable, so a pasted image (e.g. a
   // copied screenshot) can be dropped straight in as an inline <img> anywhere.
+  function psatToast(msg){
+    const t = document.createElement('div'); t.textContent = msg;
+    t.style.cssText = 'position:fixed;left:50%;top:18px;transform:translateX(-50%);background:#3b3350;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:5000;max-width:90vw;';
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 4500);
+  }
+  function insertImgUrl(url){ if(url) document.execCommand('insertHTML', false, `<img src="${url}">`); else psatToast('이미지를 가져오지 못했어요'); }
+  function insertImgFile(file){ psatCompressFile(file).then(insertImgUrl); }
+  function blobToFile(blob){ return new File([blob], 'img', {type: blob.type||'image/jpeg'}); }
   function wireImagePaste(el){
     if(!el) return;
     el.addEventListener('paste', e=>{
-      const items = (e.clipboardData && e.clipboardData.items) || [];
-      for(const item of items){
-        if(item.type && item.type.indexOf('image/')===0){
-          e.preventDefault();
-          const file = item.getAsFile();
-          if(!file) continue;
-          psatCompressFile(file).then(url=>{
-            if(url) document.execCommand('insertHTML', false, `<img src="${url}">`);
-          });
+      const cd = e.clipboardData; if(!cd) return;
+      // 1) 이미지 파일이 클립보드에 있으면 (items → files 순서로) 압축해서 넣기
+      let file = null;
+      for(const item of (cd.items||[])){ if(item.kind==='file' && item.type && item.type.indexOf('image/')===0){ file = item.getAsFile(); if(file) break; } }
+      if(!file && cd.files){ for(const f of cd.files){ if(f.type && f.type.indexOf('image/')===0){ file = f; break; } } }
+      if(file){ e.preventDefault(); insertImgFile(file); return; }
+      // 2) 파일은 없고 HTML 안에 <img>만 있는 경우 (아이폰/메모/사진앱에서 복사 등) → 주소를 직접 가져와보기
+      const html = cd.getData('text/html') || '';
+      const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if(m){
+        const src = m[1];
+        e.preventDefault();
+        if(src.indexOf('data:image/')===0){ psatCompressDataUrl(src).then(insertImgUrl); return; }
+        if(/^(blob:|https?:)/i.test(src)){
+          fetch(src).then(r=>r.blob()).then(bl=>insertImgFile(blobToFile(bl))).catch(()=>psatToast('이미지를 가져오지 못했어요. 사진을 파일로 저장한 뒤 끌어다 놓아 보세요'));
           return;
         }
+        psatToast('이 방식으로 복사된 이미지는 붙여넣을 수 없어요. 사진을 파일로 저장한 뒤 끌어다 놓아 보세요');
+        return;
       }
-      // no image on the clipboard — let the normal text paste go through
+      // 3) 이미지가 아니면 → 기본 붙여넣기(글자)
+    });
+    // 끌어다 놓기(드래그&드롭)로도 이미지 넣기
+    el.addEventListener('dragover', e=>{ if(e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files')) e.preventDefault(); });
+    el.addEventListener('drop', e=>{
+      const f = e.dataTransfer && [...(e.dataTransfer.files||[])].find(x=>x.type && x.type.indexOf('image/')===0);
+      if(!f) return;
+      e.preventDefault(); el.focus(); insertImgFile(f);
     });
   }
   wireImagePaste(document.getElementById('npAnalysis'));
