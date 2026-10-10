@@ -2620,6 +2620,12 @@
         
         <div id="memo-emoji-bar" style="display:flex; gap:10px; padding: 4px 15px; border: 1px solid var(--primary-blue); border-radius: 20px; background: rgba(255,255,255,0.8); align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 34px;">
             </div>
+        <div id="pl-month-nav" style="margin-left:auto; display:flex; align-items:center; gap:2px; font-size:0.72rem; color:#9a9a9a; user-select:none;">
+            <span onclick="pl_shiftMonth(-1)" style="cursor:pointer; padding:4px 6px;">‹</span>
+            <span id="pl-month-label" style="min-width:34px; text-align:center;"></span>
+            <span onclick="pl_shiftMonth(1)" style="cursor:pointer; padding:4px 6px;">›</span>
+            <span id="pl-cal-toggle" onclick="pl_toggleCal()" style="cursor:pointer; padding:4px 6px; margin-left:4px; border-left:1px solid #ddd;">달력</span>
+        </div>
         <button id="pl-select-mode-btn" onclick="pl_toggleSelectMode()" title="항목 선택(통합하기)" class="pl-select-mode-btn-mobile-only" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid var(--primary-blue); border-radius:50%; background:rgba(255,255,255,0.8); box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; box-sizing:border-box;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l3.5-1L20 6.5a1.5 1.5 0 0 0 0-2.1l-1.4-1.4a1.5 1.5 0 0 0-2.1 0L3 16.5 2 20l1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 5.5l4 4" stroke="currentColor" stroke-width="1.6"/></svg>
         </button>
@@ -3140,6 +3146,44 @@
         }
     }
 
+    // ── 월별 보기: 한 달 치 카드만 그림 (달 이동 ‹ ›) / 달력: 날짜별 공부시간(시:분)만 두 줄로 표시 ──
+    function pl_updateMonthNav() {
+        let l = document.getElementById('pl-month-label'); if (l) l.textContent = window.plViewMonth + '월';
+        let c = document.getElementById('pl-cal-toggle'); if (c) { c.textContent = window.plCalMode ? '카드' : '달력'; }
+    }
+    function pl_shiftMonth(d) {
+        let m = (window.plViewMonth == null ? Number(pl_getLogicalDateStr().split('.')[0]) : window.plViewMonth) + d;
+        if (m < 1) m = 12; if (m > 12) m = 1;
+        window.plViewMonth = m; pl_renderPlanner();
+    }
+    function pl_toggleCal() { window.plCalMode = !window.plCalMode; pl_renderPlanner(); }
+    function pl_fmtStudy(v) {
+        v = String(v == null ? '' : v).trim(); if (!v) return '';
+        if (/^\d+:\d{1,2}(:\d{1,2})?$/.test(v)) { let [h, m] = v.split(':'); return h + ':' + m.padStart(2, '0'); }
+        if (/^\d+(\.\d+)?$/.test(v)) { let mins = Math.round(parseFloat(v) * 60); return Math.floor(mins / 60) + ':' + String(mins % 60).padStart(2, '0'); }
+        return v;
+    }
+    function pl_renderCalendar(container) {
+        let year = new Date().getFullYear(), m = window.plViewMonth;
+        let first = new Date(year, m - 1, 1).getDay(), days = new Date(year, m, 0).getDate();
+        let todayStr = pl_getLogicalDateStr();
+        let h = '<div style="grid-column:1/-1; display:grid; grid-template-columns:repeat(7,1fr); gap:6px;">';
+        ['일','월','화','수','목','금','토'].forEach(w => h += `<div style="text-align:center; font-size:0.7rem; color:#9a9a9a; padding:2px 0;">${w}</div>`);
+        for (let i = 0; i < first; i++) h += '<div></div>';
+        for (let d = 1; d <= days; d++) {
+            let key = m + '.' + d, t = pl_fmtStudy(pData[key] && pData[key].studyTime);
+            let isToday = key === todayStr;
+            h += `<div onclick="pl_calGoto('${key}')" style="cursor:pointer; position:relative; border:1px solid ${isToday ? 'var(--primary-blue)' : '#e4e4e4'}; border-radius:10px; background:rgba(255,255,255,0.85); height:54px; display:flex; align-items:center; justify-content:center;">
+                <div style="position:absolute; top:5px; left:8px; font-size:0.7rem; color:#9a9a9a; line-height:1;">${d}</div>
+                <div style="font-size:0.9rem; font-weight:600; color:${t ? 'var(--primary-blue)' : '#ccc'}; padding-top:6px;">${t || '–'}</div></div>`;
+        }
+        container.innerHTML = h + '</div>';
+    }
+    function pl_calGoto(key) {
+        window.plCalMode = false; window.plViewMonth = Number(key.split('.')[0]); pl_renderPlanner();
+        setTimeout(() => { let el = document.getElementById('card-' + key); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+    }
+
     function pl_renderPlanner() {
         pl_renderTopDashboard();
         pl_renderHlQuick();
@@ -3156,7 +3200,10 @@
         
         if (!pData[todayStr]) pData[todayStr] = { bgColor: pBgColors[0] || '#e8f1f9', studyTime: "", items: [] };
         
-        let sortedDates = Object.keys(pData).sort((a, b) => { 
+        if (window.plViewMonth == null) window.plViewMonth = tm;
+        pl_updateMonthNav();
+        if (window.plCalMode) { pl_renderCalendar(container); return; }
+        let sortedDates = Object.keys(pData).filter(k => Number(k.split('.')[0]) === window.plViewMonth).sort((a, b) => { 
             let [am, ad] = a.split('.').map(Number); let [bm, bd] = b.split('.').map(Number); 
             if (am !== bm) return bm - am; return bd - ad; 
         });
