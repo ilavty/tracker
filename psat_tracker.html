@@ -296,6 +296,19 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .filter-bar .field{min-width:110px;flex:none;}
 .kw-filter-row{margin-bottom:14px;}
 .kw-split{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:14px;}
+.kw-box{border:1.5px dashed #D9D5E3;border-radius:12px;padding:11px 14px 12px;}
+.kw-box-head{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.kw-box-head label{font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;margin:0;}
+.kw-fold-arrow{display:inline-block;font-size:10px;margin-left:3px;}
+.kw-box-sel{display:flex;flex-wrap:wrap;gap:4px;}
+.kw-box.folded .kw-box-body{display:none;}
+.kw-box.folded .kw-fold-arrow{transform:rotate(-90deg);}
+.kw-box-body{margin-top:10px;}
+.kw-grp-cols{gap:0 !important;}
+.kw-grp-cols .kw-grp{padding:0 16px;}
+.kw-grp-cols .kw-grp:first-child{padding-left:0;}
+.kw-grp-cols .kw-grp:last-child{padding-right:0;}
+.kw-grp-cols .kw-grp+.kw-grp{border-left:1px solid #E4E0EC;}
 .kw-split-col{min-width:0;}
 .kw-split-col>label{font-size:11.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:8px;}
 .kw-grp-cols{display:grid;gap:14px;align-items:start;}
@@ -431,8 +444,14 @@ tr.clickable:hover td{background:#FBF9FE;}
       </div>
     </div>
     <div class="kw-split">
-      <div class="kw-split-col"><label>유형 키워드</label><div id="filterTypeKwInline"></div></div>
-      <div class="kw-split-col"><label>오답 키워드</label><div id="filterReasonKwInline"></div></div>
+      <div class="kw-box" id="kwBoxType">
+        <div class="kw-box-head" data-kwfold="type"><label>유형 키워드 <span class="kw-fold-arrow">▾</span></label><span class="kw-box-sel"></span></div>
+        <div class="kw-box-body" id="filterTypeKwInline"></div>
+      </div>
+      <div class="kw-box" id="kwBoxReason">
+        <div class="kw-box-head" data-kwfold="reason"><label>오답 키워드 <span class="kw-fold-arrow">▾</span></label><span class="kw-box-sel"></span></div>
+        <div class="kw-box-body" id="filterReasonKwInline"></div>
+      </div>
     </div>
 
     <div class="table-scroll">
@@ -2030,7 +2049,24 @@ function renderKwInline(elId, storeKey, getSel, onChange, getSubject){
     });
   });
 }
+function kwBoxApply(){
+  [['type','kwBoxType',()=>filterTypeKwSelected,'filterTypeKwInline'],['reason','kwBoxReason',()=>filterReasonKwSelected,'filterReasonKwInline']].forEach(([k,id,getSel])=>{
+    const box = document.getElementById(id); if(!box) return;
+    let folded = false; try{ folded = localStorage.getItem('psatKwFold_'+k)==='1'; }catch(e){}
+    box.classList.toggle('folded', folded);
+    const selEl = box.querySelector('.kw-box-sel');
+    selEl.innerHTML = folded ? koSort([...getSel()]).map(v=>`<span class="kw-tag-sel" data-kw="${v}" style="padding:2px 9px;font-size:11.5px;">${v}</span>`).join('') : '';
+    selEl.querySelectorAll('.kw-tag-sel').forEach(t=>t.addEventListener('click', e=>{ e.stopPropagation(); getSel().delete(t.dataset.kw); renderFilterChips(); renderAll(); }));
+  });
+}
+document.addEventListener('click', e=>{
+  const h = e.target.closest && e.target.closest('.kw-box-head'); if(!h || e.target.closest('.kw-tag-sel')) return;
+  const k = h.dataset.kwfold; const box = h.parentElement; const f = !box.classList.contains('folded');
+  try{ localStorage.setItem('psatKwFold_'+k, f?'1':'0'); }catch(err){}
+  kwBoxApply();
+});
 function renderFilterChips(){
+  setTimeout(kwBoxApply,0);
   const gs = ()=>{ const v=document.getElementById('filterSubject').value; return v==='all'?null:v; };
   renderKwInline('filterTypeKwInline','type', ()=>filterTypeKwSelected, renderAll, gs);
   renderKwInline('filterReasonKwInline','reason', ()=>filterReasonKwSelected, renderAll, gs);
