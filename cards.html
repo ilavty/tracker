@@ -149,7 +149,8 @@ button{cursor:pointer;border:none;background:none}
 .modal.narrow{max-width:420px}
 .modal h3{font-size:1.1rem;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .modal h3 .sp{flex:1}
-.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;align-items:center}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;align-items:center;flex-wrap:wrap}
+.mfoot .count{white-space:nowrap}
 .mfoot .sp{flex:1}
 .fld{margin-bottom:12px}
 .fld>label{display:block;font-size:.75rem;color:var(--grey);font-weight:600;margin-bottom:4px}
@@ -237,7 +238,9 @@ html,body{overflow-x:clip}
 .fc .side-lbl{position:absolute;top:12px;left:16px;font-size:.7rem;color:var(--grey);letter-spacing:.05em}
 .fc .fstar{position:absolute;top:10px;right:14px;font-size:1.1rem}
 .qt{font-size:1.45rem;font-weight:500;color:var(--txt);white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
-.qt.long{font-size:1.3rem;text-align:left;line-height:1.55}
+.qt.long{font-size:1.3rem;text-align:left;line-height:1.7}
+.fc .qt{line-height:1.65;letter-spacing:.015em}
+.ctitle,.ilab,.itext{line-height:1.65;letter-spacing:.015em}
 .qctx{font-size:1.15rem;color:var(--grey);margin-bottom:10px}
 .qsub{margin-top:8px;font-size:.95rem;color:var(--navy);font-weight:600}
 .qlist{width:100%;text-align:left;display:flex;flex-direction:column;gap:8px}
