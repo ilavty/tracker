@@ -749,11 +749,13 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .bar .hint{color:#7b7266;font-size:11.5px}
 .bar .spacer{margin-left:auto;display:flex;gap:8px;align-items:center}
 .pages{padding:18px 16px 40px;overflow-x:auto;display:flex;flex-direction:column;align-items:center;gap:18px}
-.spread{display:flex;zoom:var(--z,1)}
+.spread{width:calc(var(--pw,210mm)*2*var(--z,1));height:calc(var(--ph,297mm)*var(--z,1));flex:none}
+.sin{display:flex;width:calc(var(--pw,210mm)*2);transform:scale(var(--z,1));transform-origin:0 0}
+.printing .spread{width:auto;height:auto}
+.printing .sin{transform:none;width:auto}
 .spread .page{box-shadow:0 2px 14px rgba(0,0,0,.12)}
 .spread .blank{width:var(--pw,210mm);height:var(--ph,297mm);visibility:hidden}
 .spread .page+.page{border-left:1px solid #e3e0dc}
-.pages.measure .spread{zoom:1}
 .page{width:var(--pw,210mm);height:var(--ph,297mm);background:#fff;position:relative;overflow:hidden}
 .pno{position:absolute;font-size:calc(7.5pt * var(--f,1))}
 .cols{position:absolute;display:flex}
@@ -790,7 +792,8 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
   .pages{padding:0;gap:0;display:block}
   .cats{display:none}
   .main{display:block}
-  .spread{display:block;zoom:normal!important;box-shadow:none}
+  .spread{display:block;width:auto!important;height:auto!important;box-shadow:none}
+  .sin{display:block!important;transform:none!important;width:auto!important}
   .spread .blank{display:none}
   .spread .page+.page{border-left:0}
   .spread .page{box-shadow:none}
@@ -858,8 +861,8 @@ function newPage(){
   const p=document.createElement("div");p.className="page";p.dataset.no=pageNo;
   p.innerHTML='<div class="pno" style="top:'+(MT/2-1.5*F)+'mm;'+(odd?"right:"+R:"left:"+L)+'mm">'+pageNo+'</div>'+
     '<div class="cols" style="left:'+L+'mm;right:'+R+'mm;top:'+MT+'mm;bottom:'+MB+'mm;gap:'+GP+'mm"><div class="col" style="flex:1"></div><div class="col" style="flex:1"></div></div>';
-  let sp=pages.lastElementChild;
-  if(pageNo===1||pageNo%2===0){sp=document.createElement("div");sp.className="spread";pages.appendChild(sp);if(pageNo===1){const bl=document.createElement("div");bl.className="blank";sp.appendChild(bl)}}
+  let sp=pages.lastElementChild&&pages.lastElementChild.firstElementChild;
+  if(pageNo===1||pageNo%2===0){const w=document.createElement("div");w.className="spread";sp=document.createElement("div");sp.className="sin";w.appendChild(sp);pages.appendChild(w);if(pageNo===1){const bl=document.createElement("div");bl.className="blank";sp.appendChild(bl)}}
   sp.appendChild(p);return [...p.querySelectorAll(".col")];
 }
 let cols=[],ci=0;
@@ -919,8 +922,12 @@ function layout(){
   pages.classList.remove("measure");fit();
   document.getElementById("info").textContent=pageNo+"쪽 (인쇄 미리보기 쪽수가 이보다 많으면 인쇄 배율을 낮추세요) · 양면: 안쪽 = 홀수쪽 왼쪽 / 짝수쪽 오른쪽";
 }
-function fit(){const w=document.getElementById("pages").clientWidth-40,full=2*210*(S.pz/100)*96/25.4+2;document.documentElement.style.setProperty("--z",Math.min(1,Math.max(.3,w/full)).toFixed(3))}
+function fit(){if(document.documentElement.classList.contains("printing"))return;const w=document.getElementById("pages").clientWidth-40,full=2*210*(S.pz/100)*96/25.4+2;document.documentElement.style.setProperty("--z",Math.min(1,Math.max(.3,w/full)).toFixed(3))}
 addEventListener("resize",()=>fit());
+const prOn=()=>{document.documentElement.classList.add("printing");document.documentElement.style.setProperty("--z","1")};
+const prOff=()=>{document.documentElement.classList.remove("printing");fit()};
+addEventListener("beforeprint",prOn);addEventListener("afterprint",prOff);
+if(window.matchMedia){const mq=matchMedia("print");(mq.addEventListener?mq.addEventListener("change",e=>e.matches?prOn():prOff()):mq.addListener(e=>e.matches?prOn():prOff()))}
 function css(){
   const r=document.documentElement.style;
   const F=S.pz/100;r.setProperty("--f",F);r.setProperty("--pw",(210*F)+"mm");r.setProperty("--ph",(297*F)+"mm");
@@ -939,7 +946,7 @@ const tw=document.getElementById("tw");tw.value=String(S.tw);tw.addEventListener
 const tc=document.getElementById("toc");tc.checked=!!S.toc;tc.addEventListener("change",()=>{S.toc=tc.checked;save();redo()});
 const kp=document.getElementById("keep");kp.checked=!!S.keep;kp.addEventListener("change",()=>{S.keep=kp.checked;save();redo()});
 document.getElementById("cats").addEventListener("click",e=>{if(e.target.closest("[data-clr]")){S.cats=[];save();cats();redo();return}const b=e.target.closest("[data-c]");if(!b)return;const c=+b.dataset.c;S.cats=S.cats.includes(c)?S.cats.filter(x=>x!==c):[...S.cats,c];save();cats();redo()});
-document.getElementById("go").addEventListener("click",()=>window.print());
+document.getElementById("go").addEventListener("click",()=>{prOn();setTimeout(()=>{window.print();},60)});
 css();cats();layout();
 const setBar=()=>document.documentElement.style.setProperty("--barh",document.querySelector(".bar").offsetHeight+"px");setBar();addEventListener("resize",setBar);
 if(document.fonts){document.fonts.ready.then(()=>layout());document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>redo())}
