@@ -38,10 +38,10 @@ window.makeCloud=function(path,key,getState,applyState){
 :root[data-theme="dark"] #ilc{--ink:#efe9e0;--paper:#141210;--surface:#1c1916;--line:#332d27;--sky:#7cc4ee;--sky-soft:#17303f;--brown:#d1a27a;--brown-soft:#2c2219;--muted:#a39a8e;--danger:#e2735f;--rule:#6b6156;--yes:#ff6b5e;--no:#6aa8ff;color-scheme:dark}
 #ilc *{box-sizing:border-box;scrollbar-width:none}
 #ilc *::-webkit-scrollbar{display:none}
-#ilc .wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 60px}
+#ilc .wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:14px 60px}
 #ilc .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 #ilc h1{font-size:24px;font-weight:600;margin:0;letter-spacing:-.01em}
-#ilc .acts{display:flex;gap:6px;flex-wrap:wrap}
+#ilc .acts{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
 #ilc button{font:inherit;cursor:pointer}
 #ilc .btn{font-size:13px;font-weight:500;padding:7px 13px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 #ilc .btn.pri{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -124,7 +124,6 @@ window.makeCloud=function(path,key,getState,applyState){
 <div id="ilc">
   <div class="wrap">
     <div class="top">
-      <h1>국제법 판례</h1>
       <div class="acts">
         <button class="btn pri" type="button" data-act="add">+ 판례 추가</button>
         <button class="btn" type="button" data-act="export">백업 저장</button>

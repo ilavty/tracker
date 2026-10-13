@@ -11,7 +11,7 @@
 *{box-sizing:border-box;scrollbar-width:none}
 *::-webkit-scrollbar{display:none}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Paperlogy','GmarketSans','Gmarket Sans',sans-serif;font-size:14px;line-height:1.5}
-header{padding:28px 32px 10px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 24px}
+header{padding:14px 32px 8px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 24px}
 h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px}
 h1 span{color:var(--brown)}
 .meta{color:var(--sub);font-size:12.5px}
@@ -163,6 +163,11 @@ table.fit{width:100%;table-layout:fixed}
 #navr .ctl .more{display:flex;flex-direction:column;gap:2px;max-height:0;opacity:0;overflow:hidden;transform:translateY(-4px);transition:max-height .4s ease,opacity .3s ease,transform .3s ease}
 #navr .ctl:hover .more{max-height:180px;opacity:1;transform:none}
 #navr .ctl .lbl{color:var(--sub);font-size:11px;padding:2px 7px;cursor:default}
+
+.heat thead th{position:sticky;top:0;z-index:6;background:#fff;box-shadow:inset 0 -1px var(--line),inset -1px 0 var(--line)}
+.heat tr.lv1 td{position:sticky;top:var(--h0,27px);z-index:5;box-shadow:inset 0 -1px #e3dbd3,inset -1px 0 var(--line)}
+.heat tr.lv2.stk td{position:sticky;top:calc(var(--h0,27px) + var(--h1,27px));z-index:4;box-shadow:inset 0 -1px var(--line),inset -1px 0 var(--line)}
+.heat tr.lv2.stk td:not(.hit){background:#fff}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -187,7 +192,6 @@ window.makeCloud=function(path,key,getState,applyState){
 </head>
 <body>
 <header>
-  <h1>국제정치학 <span>기출 분석</span></h1>
   <div class="hright">
     
     <button class="btn" id="exp">내보내기</button>
@@ -451,7 +455,7 @@ document.addEventListener('click',e=>{
   if(k==='sub-close'){openMid.clear();return render()}
   if(k==='new-only'){newOnly=!newOnly;return render()}
   if(closed.has(k)){closed.delete(k);render()}
-  const el=document.getElementById('big-'+k);if(el)scrollTo({top:el.getBoundingClientRect().top+scrollY-10,behavior:'smooth'});
+  const el=document.getElementById('big-'+k);if(el)scrollTo({top:el.getBoundingClientRect().top+scrollY-((document.querySelector('#main table.heat thead')||{getBoundingClientRect:()=>({height:0})}).getBoundingClientRect().height),behavior:'smooth'});
 });
 /* ===== 세부 논점 편집 (우클릭) ===== */
 let cm=null;
@@ -628,6 +632,25 @@ document.getElementById('impf').onchange=e=>{
   fl.text().then(s=>{try{const o=JSON.parse(s);st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};save();build();render()}catch(err){alert('파일을 읽지 못했어요')}});
   e.target.value='';
 };
+
+/* ===== 스크롤 고정: 연도줄 + 대분류 + (펼친) 중분류 쌓기 ===== */
+function stickySync(){
+  const t=document.querySelector('#main table.heat');if(!t)return;
+  const th=t.querySelector('thead'),h0=th?th.getBoundingClientRect().height:0;
+  const l1=t.querySelector('tr.lv1'),h1=l1?l1.getBoundingClientRect().height:0;
+  t.style.setProperty('--h0',h0+'px');t.style.setProperty('--h1',h1+'px');
+  const line=h0+h1;
+  t.querySelectorAll('tr.lv2').forEach(r=>{
+    let a=r.nextElementSibling,first=null,last=null;
+    while(a&&a.classList.contains('lv3')){first=first||a;last=a;a=a.nextElementSibling}
+    let on=false;
+    if(first){const rh=r.getBoundingClientRect().height;on=first.getBoundingClientRect().top<line+rh&&last.getBoundingClientRect().bottom>line+rh}
+    r.classList.toggle('stk',on);
+  });
+}
+addEventListener('scroll',()=>requestAnimationFrame(stickySync),{passive:true});
+addEventListener('resize',()=>requestAnimationFrame(stickySync));
+{const _r=render;render=function(){_r();requestAnimationFrame(stickySync)}}
 const main=document.getElementById('main');
 build();render();
 window.__cloud=makeCloud('database_v1/intlpol_analysis',KEY,()=>st,o=>{closePicker();closeCM();st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};if(o.ctFix1)st.ctFix1=o.ctFix1;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};build();render()});
