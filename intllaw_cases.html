@@ -798,6 +798,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
   .spread .blank{display:none}
   .spread .page+.page{border-left:0}
   .spread .page{box-shadow:none}
+  .page>.pno,.page>.cols{transform:translateY(var(--sop,0mm))}
   .page{height:calc(var(--ph,297mm) - 1mm);break-after:page;page-break-after:always;break-inside:avoid}
   .spread:last-child .page:last-child{break-after:auto;page-break-after:auto}
 }
@@ -805,7 +806,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 <div class="bar">
   <div class="grp"><b>본문</b><label>글자 pt<input type="number" id="fs" step="0.5" min="5" max="14"></label><label>행간<input type="number" id="lh" step="0.05" min="1" max="2.5"></label><label>자간 %<input type="number" id="ls" step="0.5" min="-10" max="20"></label></div>
   <div class="grp"><b>타이틀</b><label>목차 pt<input type="number" id="cs" step="0.5" min="6" max="24"></label><label>판례명 pt<input type="number" id="ts" step="0.5" min="6" max="20"></label><label>자간 %<input type="number" id="tls" step="0.5" min="-10" max="20"></label><label>굵기<select id="tw"><option value="300">얇게</option><option value="400">보통</option><option value="500">중간</option><option value="600">굵게</option></select></label></div>
-  <div class="grp"><b>여백 mm</b><label>안쪽<input type="number" id="mi" step="1" min="0" max="40"></label><label>바깥쪽<input type="number" id="mo" step="1" min="0" max="40"></label><label>위<input type="number" id="mt" step="1" min="0" max="40"></label><label>아래<input type="number" id="mb" step="1" min="0" max="40"></label><label>인쇄 배율 %<input type="number" id="pz" step="1" min="80" max="100"></label></div>
+  <div class="grp"><b>여백 mm</b><label>안쪽<input type="number" id="mi" step="1" min="0" max="40"></label><label>바깥쪽<input type="number" id="mo" step="1" min="0" max="40"></label><label>위<input type="number" id="mt" step="1" min="0" max="40"></label><label>아래<input type="number" id="mb" step="1" min="0" max="40"></label><label>인쇄 배율 %<input type="number" id="pz" step="1" min="80" max="100"></label><label title="인쇄할 때 내용을 아래로 내림 (사파리는 위가 잘려서 13 정도)">위치 보정<input type="number" id="so" step="1" min="-20" max="30"></label></div>
   <div class="grp"><b>간격 mm</b><label>단 사이<input type="number" id="gap" step="1" min="2" max="30"></label><label>판례 사이<input type="number" id="cg" step="0.5" min="0" max="20"></label><label style="flex-direction:row;align-items:center;gap:5px;color:#16130f;align-self:center"><input type="checkbox" id="keep">판례 안 끊기</label><label style="flex-direction:row;align-items:center;gap:5px;color:#16130f;align-self:center"><input type="checkbox" id="toc">목차 페이지</label></div>
   <div class="spacer"><span class="hint" id="info"></span><button class="pri" id="go">프린트</button></div>
 </div>
@@ -814,7 +815,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 const D=__DATA__;
 const K="ilcases_print_v2";
 const IS_SAFARI=/^((?!chrome|android|crios|fxios|edg).)*safari/i.test(navigator.userAgent);
-const DEF={pz:100,ls:0,tls:0,fs:8,lh:1.45,cs:11,ts:9,tw:"400",mi:20,mo:12,mt:14,mb:14,gap:8,cg:5,keep:true,toc:true,cats:[]};
+const DEF={pz:100,so:IS_SAFARI?13:0,ls:0,tls:0,fs:8,lh:1.45,cs:11,ts:9,tw:"400",mi:20,mo:12,mt:14,mb:14,gap:8,cg:5,keep:true,toc:true,cats:[]};
 let S=Object.assign({},DEF),LS={};try{LS=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){}
 Object.assign(S,(D.settings&&(D.settings.t||0)>(LS.t||0))?D.settings:LS);
 if(!S.m3){if(S.pz===88)S.pz=100;S.m3=1}
@@ -933,7 +934,7 @@ function css(){
   const r=document.documentElement.style;
   const F=S.pz/100;r.setProperty("--f",F);r.setProperty("--pw",(210*F)+"mm");r.setProperty("--ph",(297*F)+"mm");
   r.setProperty("--fs",(S.fs*F)+"pt");r.setProperty("--lh",S.lh);r.setProperty("--cs",(S.cs*F)+"pt");r.setProperty("--ts",(S.ts*F)+"pt");
-  r.setProperty("--tw",S.tw);r.setProperty("--ls",(S.ls/100)+"em");r.setProperty("--tls",(S.tls/100)+"em");r.setProperty("--cg",(S.cg*F)+"mm");r.setProperty("--ind","1em");
+  r.setProperty("--tw",S.tw);r.setProperty("--sop",(S.so||0)+"mm");r.setProperty("--ls",(S.ls/100)+"em");r.setProperty("--tls",(S.tls/100)+"em");r.setProperty("--cg",(S.cg*F)+"mm");r.setProperty("--ind","1em");
 }
 function cats(){
   const cnt={};D.cases.forEach(r=>(r.cats||[]).forEach(c=>cnt[c]=(cnt[c]||0)+1));
@@ -942,7 +943,7 @@ function cats(){
 }
 function save(){S.t=Date.now();try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}try{window.opener&&window.opener.postMessage({type:"ilcPrint",S},"*")}catch(e){}}
 let tm;function redo(){clearTimeout(tm);tm=setTimeout(()=>{css();layout()},150)}
-["fs","lh","ls","cs","ts","tls","mi","mo","mt","mb","pz","gap","cg"].forEach(id=>{const el=document.getElementById(id);el.value=S[id];el.addEventListener("input",()=>{const v=parseFloat(el.value);if(!isNaN(v)){S[id]=v;save();redo()}})});
+["fs","lh","ls","cs","ts","tls","mi","mo","mt","mb","pz","so","gap","cg"].forEach(id=>{const el=document.getElementById(id);el.value=S[id];el.addEventListener("input",()=>{const v=parseFloat(el.value);if(!isNaN(v)){S[id]=v;save();redo()}})});
 const tw=document.getElementById("tw");tw.value=String(S.tw);tw.addEventListener("change",()=>{S.tw=tw.value;save();redo()});
 const tc=document.getElementById("toc");tc.checked=!!S.toc;tc.addEventListener("change",()=>{S.toc=tc.checked;save();redo()});
 const kp=document.getElementById("keep");kp.checked=!!S.keep;kp.addEventListener("change",()=>{S.keep=kp.checked;save();redo()});
