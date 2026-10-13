@@ -15,10 +15,10 @@
 *::-webkit-scrollbar{display:none}
 html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Paperlogy','GmarketSans','Gmarket Sans',sans-serif;overflow:hidden}
 .top{height:64px;display:flex;align-items:center;gap:28px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--bg)}
-.back{font-family:'Montserrat',sans-serif;font-size:.85rem;font-weight:800;letter-spacing:1.5px;color:var(--ink);text-decoration:none;padding:4px 2px;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
-.back:hover{border-bottom-color:var(--ink)}
+.back{font-family:'Montserrat',sans-serif;font-size:.85rem;font-weight:800;letter-spacing:.2px;color:var(--ink);text-decoration:none;padding:4px 2px;transition:.2s;white-space:nowrap}
+.back:hover{color:var(--brown)}
 .tabs{display:flex;align-items:baseline;gap:22px;margin:0 auto;overflow-x:auto}
-.tab{border:0;background:none;cursor:pointer;font:inherit;font-size:1.35rem;font-weight:700;letter-spacing:-.3px;color:var(--gray);padding:6px 0;transition:color .2s;white-space:nowrap}
+.tab{border:0;background:none;cursor:pointer;font:inherit;font-size:1.02rem;font-weight:700;letter-spacing:-.3px;color:var(--gray);padding:6px 0;transition:color .2s;white-space:nowrap}
 .tab:hover{color:#a9a29b}
 .tab.on{color:var(--brown)}
 .spacer{width:78px;flex:none}
@@ -27,9 +27,9 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Paperlo
 .stage iframe.on{display:block}
 @media (max-width:650px){
   .top{gap:12px;padding:0 14px;height:54px}
-  .back{font-size:.65rem;letter-spacing:.5px}
+  .back{font-size:.65rem;letter-spacing:0}
   .tabs{gap:14px}
-  .tab{font-size:.95rem}
+  .tab{font-size:.82rem}
   .spacer{display:none}
   .stage{height:calc(100vh - 54px);height:calc(100dvh - 54px)}
 }
@@ -46,9 +46,9 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:'Paperlo
   <div class="spacer"></div>
 </div>
 <div class="stage">
-  <iframe data-k="ip" data-src="국제정치학_기출분석.html" title="국제정치학"></iframe>
-  <iframe data-k="il" data-src="국제법_기출분석.html" title="국제법"></iframe>
-  <iframe data-k="case" data-src="국제법_판례표.html" title="판례"></iframe>
+  <iframe data-k="ip" data-src="intlpol_analysis.html" title="국제정치학"></iframe>
+  <iframe data-k="il" data-src="intllaw_analysis.html" title="국제법"></iframe>
+  <iframe data-k="case" data-src="intllaw_cases.html" title="판례"></iframe>
 </div>
 <script>
 const KEY='db_last_tab';

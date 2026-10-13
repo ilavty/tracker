@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>국제정치학 기출 분석</title>
+<link href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/fonts-archive/GmarketSans/GmarketSans.css" rel="stylesheet">
+<style>
+:root{--bg:#fcfbfa;--ink:#1b1b1b;--sub:#857d76;--line:#ebe5df;--sky:#6fb0dc;--sky-l:#f0f7fc;--brown:#8a6a4f;--brown-l:#f3ebe3;--trap:#f8e9e6;--trap-t:#9a4a3f;--gray:#efedea;--new:#d65a4f;--o:#3d86c0;--x:#b85a4e}
+*{box-sizing:border-box;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Paperlogy','GmarketSans','Gmarket Sans',sans-serif;font-size:14px;line-height:1.5}
+header{padding:28px 32px 10px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 24px}
+h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px}
+h1 span{color:var(--brown)}
+.meta{color:var(--sub);font-size:12.5px}
+.hright{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.btn:hover{background:var(--sky-l)}
+select,input[type=text]{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:#fff;color:var(--ink)}
+nav{display:flex;gap:4px;padding:0 32px;border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;font:inherit;font-size:14px;padding:10px 12px;cursor:pointer;color:var(--sub);border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button.on{color:var(--ink);border-color:var(--brown);font-weight:600}
+main{padding:18px 32px 60px}
+.fbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.fbar label{font-size:12.5px;color:var(--sub);display:flex;align-items:center;gap:5px}
+.stat{font-size:12.5px;color:var(--sub);margin-left:auto}
+table.db{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.db th{font-weight:500;font-size:12px;color:var(--sub);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);background:#faf8f6;white-space:nowrap}
+.db td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.db tr.qh td{background:#f7f3ef;padding:9px 10px;border-top:1px solid #e3dbd3}
+.src{font-weight:600;color:var(--brown);margin-right:10px}
+.stem{font-weight:500}
+.ans{float:right;font-size:12.5px;color:var(--sub)}
+.ans b{color:var(--ink)}
+.lab{width:34px;text-align:center;color:var(--sub)}
+tr.isans .lab{color:var(--ink);font-weight:700}
+tr.isans td.txt{background:linear-gradient(90deg,var(--sky-l),transparent)}
+.txt{min-width:240px;max-width:380px}
+.ox{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;font-weight:700;font-size:12.5px;cursor:pointer;user-select:none}
+.ox.O{color:var(--o);background:#e8f2fa}.ox.X{color:var(--x);background:#f8e8e5}
+.cell{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:120px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.c-topic{background:var(--sky-l);color:#1f4f73}
+.c-etc{background:var(--brown-l);color:#5e4430}
+.c-trap{background:var(--trap);color:var(--trap-t)}
+.c-anal{background:var(--gray);color:#4d4945}
+.new{font-size:10.5px;font-weight:700;color:#fff;background:var(--new);border-radius:3px;padding:0 3px;line-height:15px;font-family:serif}
+.add{border:1px dashed #d6cec6;background:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:var(--sub);font-size:13px;line-height:1;padding:0}
+.add:hover{background:var(--sky-l)}
+.memo{margin-top:5px;font-size:12.5px;color:#4d4945;min-height:18px;outline:none;border-radius:4px;padding:1px 3px}
+.memo:focus{background:#fbf8f5}
+.picker{position:absolute;z-index:50;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(60,40,20,.12);padding:10px;min-width:340px;max-width:600px}
+.picker input{width:100%;margin-bottom:8px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:6px 9px}
+.picker .opts{display:flex;flex-wrap:wrap;gap:5px}
+.crumb{font-size:12.5px;color:var(--sub);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}
+.crumb span{cursor:pointer;padding:1px 4px;border-radius:4px}.crumb span:hover{background:var(--sky-l);color:var(--ink)}
+.crumb span.cur{color:var(--ink);font-weight:600}
+.lvl{font-size:11px;color:var(--brown);font-weight:600;margin:0 0 6px}
+.arr{font-style:normal;color:#8fb4cf;margin-left:2px}
+.tp-foot{display:flex;gap:6px;margin-top:10px;align-items:center}
+.tp-foot input{margin:0;flex:1}
+.tp-sel{white-space:nowrap}
+.kwsel{display:inline-flex;gap:5px;align-items:center}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+.card .hd{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;flex-wrap:wrap}
+.card .hd .cnt{margin-left:auto;font-size:12.5px;color:var(--sub)}
+.card .hd .yrs{font-size:12px;color:var(--sub)}
+.card .bd{padding:0 14px 12px}
+.mini{width:100%;border-collapse:collapse;font-size:13px}
+.mini td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+.mini .s{white-space:nowrap;color:var(--brown);font-weight:600;font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.seg button{border:0;background:#fff;font:inherit;font-size:12.5px;padding:6px 12px;cursor:pointer;color:var(--sub)}
+.seg button.on{background:var(--brown);color:#fff}
+table.heat{border-collapse:collapse;background:#fff;border:1px solid var(--line)}
+.heat th{white-space:nowrap}
+.heat th,.heat td{padding:5px 7px;border:1px solid var(--line);font-size:12.5px;text-align:center}
+.heat th.post{color:var(--brown)}
+.heat td.hit{background:var(--sky-l);white-space:nowrap}
+.heat tr.mid td.hit{background:#e3eff8}
+.qn{display:inline-block;color:#1f4f73;font-weight:400;font-size:11.5px}
+.qn:not(:last-of-type):after{content:',';color:#9bb6c9;margin-right:2px;font-weight:400}
+.qn.g9{color:var(--brown)}
+.heat td.nm{text-align:left;white-space:nowrap}
+.heat tr.mid td{background:#f7f3ef;font-weight:600}
+.heat td.sub{padding-left:18px;cursor:pointer}
+.heat tr.mid td.sub{padding-left:7px}
+.heat td.sub:hover{text-decoration:underline}
+.note{font-size:12.5px;color:var(--sub);margin:-4px 0 12px}
+.empty{color:var(--sub);padding:30px;text-align:center}
+.db{table-layout:auto}
+.db th{position:sticky;top:0;z-index:2}
+.db td{border-right:1px solid #f3eee9}
+.db td:last-child,.db th:last-child{border-right:0}
+.db tbody tr:hover td{background:#fbf8f5}
+.db td.yr{font-weight:600;white-space:nowrap}
+.db td.num{white-space:nowrap;color:var(--sub);text-align:right}
+.db td.ttl{min-width:150px;max-width:220px;color:#3d3833}
+.db td.lv{white-space:nowrap;color:#3d3833}
+.db td.lv div+div{margin-top:3px}
+.g9t{color:var(--brown);font-size:11px;margin-left:3px}
+.lv2{color:#8fa6b8}
+.tree{font-size:13px;line-height:1.35}
+.tree .n1{font-weight:600;color:var(--ink)}
+.tree .n1+.n1{margin-top:6px}
+.tree .n2,.tree .n3{position:relative;padding-left:16px;font-weight:400}
+.tree .n2:before,.tree .n3:before{content:'';position:absolute;left:5px;top:0;bottom:0;border-left:1px solid #d6ccc2}
+.tree .n2:last-child:before,.tree .n3:last-child:before{bottom:auto;height:11px}
+.tree .n2:after,.tree .n3:after{content:'';position:absolute;left:5px;top:11px;width:8px;border-top:1px solid #d6ccc2}
+.tree .lb{display:inline-block;padding:1px 0;color:#3d3833}
+.tree .n3 .chip{margin:1px 0;padding:1px 7px;font-size:12.5px}
+.tree .n2>.chip{margin:1px 0}
+.tree+.add,.tcell>.add{margin-top:6px}
+.typ{font-size:10.5px;color:var(--sub);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-right:6px}
+.heat td.cnt1{font-weight:700;color:var(--brown);min-width:34px}
+.heat .grp td{background:#f7f3ef;font-weight:600;text-align:left}
+.ans1{text-align:center;font-weight:600;white-space:nowrap}
+.ans1.g9{color:#a39a92;font-weight:500}
+.tchip .b{color:#6f8ea5;font-weight:400}
+.memo:empty{min-height:0;padding:0;margin:0}
+.memo:focus{min-height:18px}
+.mflag{font-size:11.5px;color:#9a4a3f;margin-top:4px}
+.htag{color:#8c837b;font-size:11.5px;margin-left:6px;font-weight:400}
+.hit .new{margin-left:3px;vertical-align:1px}
+.heat tr.mid td.blank{background:#f7f3ef}
+.htg{cursor:context-menu}
+table.fit{width:100%;table-layout:fixed}
+.fit th,.fit td{white-space:normal;padding:4px 2px;font-size:12px;word-break:keep-all}
+.fit td.hit{white-space:normal;line-height:1.35}
+.fit col.c-n{width:44px}.fit col.c-t{width:120px}
+.c-det{background:#f4f2f7;color:#4f4a5c}
+.new{font-size:10px!important;font-weight:400!important;color:#c0786c!important;background:none!important;border:1px solid #d9a69d;border-radius:50%!important;width:15px;height:15px;line-height:13px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center;font-family:serif}
+.fit th,.fit td{font-size:11px!important;letter-spacing:-.4px}
+.fit .qn{font-weight:400!important}
+.fit td.nm{font-weight:400}
+.backbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.backbtn:hover{background:var(--sky-l)}
+.new{display:none!important}
+.bang{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#f7c3d0;color:#fff;font-size:10px;font-weight:700;margin-left:3px;vertical-align:1px;font-family:Arial,sans-serif;line-height:1}
+.heat tr.lv1 td.nm{cursor:pointer;font-weight:600}
+.heat tr.lv2 td.nm{cursor:pointer;padding-left:18px;color:var(--ink)}
+.heat tr.lv3 td.nm{padding-left:34px;color:#5a534d;font-weight:400}
+.car{display:inline-block;width:12px;color:#a59c94;font-size:10px}
+.heat td.cnt1{white-space:nowrap}
+#navr{position:sticky;top:14px;flex:0 0 auto;display:flex;flex-direction:column;gap:2px;z-index:40;background:rgba(252,251,250,.92);border:1px solid var(--line);border-radius:10px;padding:6px 4px;max-height:86vh;overflow-y:auto}
+#navr a{font-size:11px;color:#6b625b;text-decoration:none;padding:2px 7px;border-radius:5px;white-space:nowrap;cursor:pointer}
+#navr a:hover{background:var(--sky-l);color:var(--ink)}
+#navr a.edge{color:var(--brown);font-weight:600}
+.cmenu{position:absolute;z-index:60;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 24px rgba(60,40,20,.12);padding:5px;display:flex;flex-direction:column;min-width:170px}
+.cmenu button{border:0;background:none;text-align:left;font:inherit;font-size:13px;padding:6px 10px;border-radius:6px;cursor:pointer;color:var(--ink)}
+.cmenu button:hover{background:var(--sky-l)}
+.cmenu .hd{font-size:11.5px;color:var(--sub);padding:4px 10px}
+.twrap{display:flex;align-items:flex-start;gap:18px}
+.tbox{flex:0 1 auto;min-width:0}
+#navr .ctl{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
+#navr .ctl a{color:var(--brown)}
+#navr .ctl a.on{background:#fbe3ea;color:#b34a66;font-weight:600}
+.heat tr.lv3 td,.heat tr.lv3 td.hit{background:#fbf9f6!important}
+.heat tr[data-act]{cursor:pointer}
+.heat tr[data-act]:hover td{filter:brightness(.985)}
+#navr .ctl .more{display:flex;flex-direction:column;gap:2px;max-height:0;opacity:0;overflow:hidden;transform:translateY(-4px);transition:max-height .4s ease,opacity .3s ease,transform .3s ease}
+#navr .ctl:hover .more{max-height:180px;opacity:1;transform:none}
+#navr .ctl .lbl{color:var(--sub);font-size:11px;padding:2px 7px;cursor:default}
+</style>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+/* DATABASE ↔ Firebase 동기화 (DESK와 같은 Firebase, 별도 경로) */
+window.makeCloud=function(path,key,getState,applyState){
+  const TK=key+'_cloud_t';
+  let lt=+(localStorage.getItem(TK)||0),fresh=!lt,ready=false,db=null,timer=null;
+  const setT=t=>{lt=t;try{localStorage.setItem(TK,t)}catch(e){}};
+  try{if(!firebase.apps.length)firebase.initializeApp({apiKey:"AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o",projectId:"time-8d30b",databaseURL:"https://tracker-d3a39-default-rtdb.firebaseio.com/"});db=firebase.database()}catch(e){}
+  const push=()=>{if(!db)return;clearTimeout(timer);timer=setTimeout(()=>{db.ref(path).set({t:lt,d:JSON.stringify(getState())}).catch(()=>{})},500)};
+  setTimeout(()=>{ready=true},6000);
+  if(db)db.ref(path).on('value',s=>{
+    const r=s.val();
+    if(r&&r.t&&r.d&&(fresh||r.t>lt)){try{applyState(JSON.parse(r.d))}catch(e){}setT(r.t);fresh=false}
+    else if(!r||!r.t||r.t<lt){if(!lt)setT(Date.now());fresh=false;push()}
+    ready=true;
+  });
+  return{touched(){if(!ready)return;fresh=false;setT(Date.now());push()}};
+};
+</script>
+</head>
+<body>
+<header>
+  <h1>국제정치학 <span>기출 분석</span></h1>
+  <div class="hright">
+    
+    <button class="btn" id="exp">내보내기</button>
+    <button class="btn" id="imp">불러오기</button>
+    <input type="file" id="impf" accept=".json" hidden>
+  </div>
+</header>
+<nav id="tabs">
+  <button data-v="heat" class="on">출제 지도</button>
+  <button data-v="etc">빈출</button>
+  <button data-v="trap">오답패턴</button>
+</nav>
+<main id="main"></main>
+
+<script>
+const SEED=[{"g":7,"y":2007,"n":1,"a":"②","t":["국제정치이론›비판이론"],"e":["학자: 마르크스"],"p":["이론 구분"],"z":[],"d":["마르크스주의 국제정치관"]},{"g":7,"y":2007,"n":2,"a":"④","t":["외교사›동아시아 근대"],"e":["사건: 만주사변","사건: 중일전쟁"],"p":["연도·순서"],"z":[],"d":["태평양전쟁 배경"]},{"g":7,"y":2007,"n":3,"a":"③","t":["글로벌이슈›세계화·문명"],"e":[],"p":["사실관계"],"z":[],"d":["세계화 원인"]},{"g":7,"y":2007,"n":4,"a":"③","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 길핀","학자: 킨들버거","학자: 왈츠"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["패권안정론"]},{"g":7,"y":2007,"n":5,"a":"②","t":["외교사›2차대전"],"e":["조약: 베르사유조약"],"p":["사실관계"],"z":[],"d":["2차대전 원인"]},{"g":7,"y":2007,"n":6,"a":"③","t":["글로벌이슈›세계화·문명","국제정치이론›자유주의"],"e":[],"p":["이론 구분"],"z":[],"d":["문화산업 자유주의 시각"]},{"g":7,"y":2007,"n":7,"a":"①","t":["글로벌이슈›세계화·문명"],"e":[],"p":["이론 구분"],"z":[],"d":["세계화 이론별 입장"]},{"g":7,"y":2007,"n":8,"a":"①","t":["외교사›1차대전·전간기"],"e":["조약: 로카르노조약","사건: 뮌헨협정","사건: 스페인내전"],"p":["연도·순서"],"z":[],"d":["1930년대 베르사유체제 붕괴"]},{"g":7,"y":2007,"n":9,"a":"④","t":["안보›핵비확산"],"e":["조약: NPT"],"p":["조약 내용"],"z":[],"d":["NPT 문제점"]},{"g":7,"y":2007,"n":10,"a":"④","t":["안보›인도적 개입·R2P"],"e":[],"p":["이론 구분"],"z":[],"d":["인도적 개입 논쟁"]},{"g":7,"y":2007,"n":11,"a":"④","t":["외교·국제법›외교·영사"],"e":["조약: 영사관계협약"],"p":["열거 항목"],"z":[],"d":["영사 직무"]},{"g":7,"y":2007,"n":12,"a":"④","t":["글로벌이슈›환경·기후"],"e":["조약: 교토의정서"],"p":["조약 내용"],"z":[],"d":["교토의정서"]},{"g":7,"y":2007,"n":13,"a":"②","t":["국제정치이론›국제체제·권력"],"e":["학자: 나이"],"p":["개념 정의"],"z":["학자매칭"],"d":["소프트파워"]},{"g":7,"y":2007,"n":14,"a":"②","t":["외교·국제법›외교·영사"],"e":["조약: 외교관계협약"],"p":["조약 내용"],"z":[],"d":["외교관 특권면제"]},{"g":7,"y":2007,"n":15,"a":"③","t":["지역›한국 외교"],"e":[],"p":["사실관계"],"z":["조합형"],"d":["한국 미수교국"]},{"g":7,"y":2007,"n":16,"a":"③","t":["국제정치이론›신자유제도주의","국제정치이론›신현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신현실-신자유 논쟁"]},{"g":7,"y":2007,"n":17,"a":"①","t":["지역›중남미","국제정치경제›개발·남북문제"],"e":["사건: 시카고보이스"],"p":["사실관계"],"z":[],"d":["중남미 신자유주의 개혁"]},{"g":7,"y":2007,"n":18,"a":"②","t":["국제기구›지역기구"],"e":[],"p":["사실관계"],"z":[],"d":["지역기구 기능(OAS·아랍연맹·ASEAN)"]},{"g":7,"y":2007,"n":19,"a":"④","t":["지역›한반도·북핵"],"e":["사건: 2·13합의"],"p":["조약 내용"],"z":[],"d":["2·13 합의"]},{"g":7,"y":2007,"n":20,"a":"③","t":["국제정치이론›자유주의"],"e":["학자: 코헤인","학자: 나이"],"p":["이론 구분"],"z":[],"d":["복합상호의존론"]},{"g":7,"y":2008,"n":1,"a":"③","t":["지역›유럽"],"e":[],"p":["사실관계"],"z":[],"d":["유럽통합 배경"]},{"g":7,"y":2008,"n":2,"a":"②","t":["국제정치이론›외교정책결정"],"e":["학자: 린드블롬","학자: 부에노 데 메스키타","학자: 앨리슨","학자: 조지"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["합리적 선택 모델"]},{"g":7,"y":2008,"n":3,"a":"④","t":["국제정치이론›현실주의","안보›집단안보·평화"],"e":["사건: NATO 존속"],"p":["이론 구분"],"z":[],"d":["NATO 존속 이론별 설명"]},{"g":7,"y":2008,"n":4,"a":"①","t":["국제정치이론›세력균형·동맹"],"e":["학자: 모겐소"],"p":["열거 항목"],"z":[],"d":["세력균형 방법"]},{"g":7,"y":2008,"n":5,"a":"②","t":["국제정치이론›자유주의"],"e":[],"p":["사실관계"],"z":["도표"],"d":["행위자 관계 도식"]},{"g":7,"y":2008,"n":6,"a":"①","t":["글로벌이슈›세계화·문명"],"e":["학자: 헌팅턴"],"p":["열거 항목"],"z":["열거암기"],"d":["문명충돌론"]},{"g":7,"y":2008,"n":7,"a":"④","t":["외교사›근대유럽"],"e":["사건: 크림전쟁","조약: 파리조약(1856)"],"p":["사실관계"],"z":[],"d":["크림전쟁·파리회의"]},{"g":7,"y":2008,"n":8,"a":"①","t":["외교사›1차대전·전간기"],"e":["학자: 윌슨","조약: 14개조"],"p":["열거 항목"],"z":["열거암기"],"d":["윌슨 14개조"]},{"g":7,"y":2008,"n":9,"a":"④","t":["국제정치이론›게임이론·협상"],"e":["학자: 액설로드"],"p":["개념 정의"],"z":[],"d":["팃포탯"]},{"g":7,"y":2008,"n":10,"a":"②","t":["안보›집단안보·평화","국제정치이론›세력균형·동맹"],"e":["학자: 허츠"],"p":["개념 정의"],"z":["조합형"],"d":["안보딜레마","집단안보"]},{"g":7,"y":2008,"n":11,"a":"④","t":["국제기구›글로벌거버넌스·NGO"],"e":[],"p":["개념 정의"],"z":[],"d":["글로벌 거버넌스"]},{"g":7,"y":2008,"n":12,"a":"③","t":["지역›유럽","국제정치경제›지역경제통합"],"e":["조약: 로마조약"],"p":["연도·순서"],"z":["순서배열"],"d":["유럽통합 기구 순서"]},{"g":7,"y":2008,"n":13,"a":"②","t":["안보›억지·핵전략"],"e":["학자: 덜레스","학자: 맥나마라","사건: 대량보복"],"p":["학자-이론 매칭"],"z":[],"d":["대량보복"]},{"g":7,"y":2008,"n":14,"a":"②","t":["지역›중국"],"e":[],"p":["사실관계"],"z":[],"d":["중국 개혁개방"]},{"g":7,"y":2008,"n":15,"a":"③","t":["외교사›2차대전"],"e":["사건: 얄타회담","사건: 포츠담회담"],"p":["연도·순서"],"z":["순서배열"],"d":["2차대전 회담 순서"]},{"g":7,"y":2008,"n":16,"a":"②","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 길핀","학자: 로즈노","학자: 모델스키","학자: 오간스키"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["체제변화 이론","장주기론"]},{"g":7,"y":2008,"n":17,"a":"①","t":["안보›억지·핵전략"],"e":[],"p":["개념 정의"],"z":[],"d":["핵무기와 이론 수정"]},{"g":7,"y":2008,"n":18,"a":"④","t":["지역›한반도·북핵"],"e":["사건: 2·13합의"],"p":["열거 항목"],"z":[],"d":["2·13 합의"]},{"g":7,"y":2008,"n":19,"a":"③","t":["국제정치이론›게임이론·협상"],"e":["학자: 퍼트남"],"p":["개념 정의"],"z":[],"d":["양면게임"]},{"g":7,"y":2008,"n":20,"a":"④","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["수치"],"z":[],"d":["안보리 구성·표결"]},{"g":7,"y":2009,"n":1,"a":"①","t":["국제정치경제›무역·FTA","지역›한국 외교"],"e":[],"p":["사실관계"],"z":[],"d":["한국 FTA 현황"]},{"g":7,"y":2009,"n":2,"a":"③","t":["국제기구›지역기구","지역›일본"],"e":["사건: ASEAN+3"],"p":["사실관계"],"z":[],"d":["ASEAN+3"]},{"g":7,"y":2009,"n":3,"a":"②","t":["안보›테러·신안보","지역›중동"],"e":["사건: 헤즈볼라"],"p":["사실관계"],"z":["빈칸"],"d":["중동 무장단체"]},{"g":7,"y":2009,"n":4,"a":"②","t":["글로벌이슈›환경·기후"],"e":["조약: 몬트리올의정서"],"p":["조약 내용"],"z":[],"d":["몬트리올의정서"]},{"g":7,"y":2009,"n":5,"a":"③","t":["국제정치경제›무역·FTA"],"e":["사건: 도하라운드"],"p":["사실관계"],"z":[],"d":["도하개발의제"]},{"g":7,"y":2009,"n":6,"a":"①","t":["지역›유럽"],"e":["조약: 로마조약","조약: 마스트리히트조약","조약: 암스테르담조약","조약: 니스조약"],"p":["연도·순서"],"z":["순서배열"],"d":["EU 조약 순서"]},{"g":7,"y":2009,"n":7,"a":"④","t":["지역›한국 외교"],"e":["조약: 샌프란시스코강화조약"],"p":["조약 내용"],"z":[],"d":["독도"]},{"g":7,"y":2009,"n":8,"a":"③","t":["국제정치경제›지역경제통합"],"e":["사건: FTAA"],"p":["개념 정의"],"z":["빈칸"],"d":["FTAA"]},{"g":7,"y":2009,"n":9,"a":"③","t":["지역›한반도·북핵"],"e":["사건: 10·4선언"],"p":["조약 내용"],"z":[],"d":["10·4 선언"]},{"g":7,"y":2009,"n":10,"a":"②","t":["국제기구›글로벌거버넌스·NGO"],"e":[],"p":["개념 정의"],"z":["빈칸"],"d":["글로벌 거버넌스"]},{"g":7,"y":2009,"n":11,"a":"③","t":["국제정치이론›신자유제도주의","국제정치이론›구성주의"],"e":["학자: 콕스"],"p":["이론 구분"],"z":[],"d":["신현실·신자유·구성 비교"]},{"g":7,"y":2009,"n":12,"a":"④","t":["국제정치이론›신자유제도주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신자유제도주의 가정"]},{"g":7,"y":2009,"n":13,"a":"②","t":["안보›억지·핵전략"],"e":["사건: MAD"],"p":["개념 정의"],"z":[],"d":["MAD"]},{"g":7,"y":2009,"n":14,"a":"③","t":["국제정치이론›외교정책결정"],"e":["학자: 저비스","학자: 재니스","학자: 왈츠","학자: 앨리슨","학자: 로즈노"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["외교정책론 학자"]},{"g":7,"y":2009,"n":15,"a":"①","t":["국제정치경제›개발·남북문제"],"e":["조약: MDGs"],"p":["열거 항목"],"z":["열거암기"],"d":["MDGs"]},{"g":7,"y":2009,"n":16,"a":"④","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["조약 내용"],"z":[],"d":["UN헌장 규정","PKO"]},{"g":7,"y":2009,"n":17,"a":"②","t":["국제기구›글로벌거버넌스·NGO"],"e":[],"p":["열거 항목"],"z":["조합형"],"d":["NGO 원칙"]},{"g":7,"y":2009,"n":18,"a":"③","t":["외교사›근대유럽"],"e":["학자: 비스마르크"],"p":["사실관계"],"z":[],"d":["비스마르크 체제"]},{"g":7,"y":2009,"n":19,"a":"④","t":["국제정치경제›통화·금융"],"e":["사건: 브레튼우즈"],"p":["사실관계"],"z":[],"d":["브레튼우즈 체제"]},{"g":7,"y":2009,"n":20,"a":"②","t":["국제정치이론›패권안정·세력전이","글로벌이슈›세계화·문명"],"e":["학자: 헌팅턴","학자: 오간스키"],"p":["학자-이론 매칭"],"z":[],"d":["세력전이론"]},{"g":7,"y":2010,"n":1,"a":"③","t":["국제정치경제›지역경제통합","지역›중남미"],"e":["사건: MERCOSUR"],"p":["개념 정의"],"z":["빈칸"],"d":["MERCOSUR"]},{"g":7,"y":2010,"n":2,"a":"①","t":["지역›미국"],"e":["사건: 먼로독트린","사건: 트루먼독트린","사건: 부시독트린"],"p":["이론 구분"],"z":[],"d":["미국 고립주의·국제주의"]},{"g":7,"y":2010,"n":3,"a":"④","t":["국제정치이론›고전사상","국제정치이론›영국학파·국제사회론"],"e":["학자: 그로티우스","학자: 홉스","학자: 칸트"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["국제사회관 3전통"]},{"g":7,"y":2010,"n":4,"a":"②","t":["외교사›동아시아 근대"],"e":["조약: 시모노세키조약","사건: 청일전쟁"],"p":["조약 내용"],"z":[],"d":["시모노세키조약"]},{"g":7,"y":2010,"n":5,"a":"①","t":["국제정치경제›IPE이론","국제정치경제›개발·남북문제"],"e":["사건: UNCTAD"],"p":["이론 구분"],"z":[],"d":["중상주의","UNCTAD"]},{"g":7,"y":2010,"n":6,"a":"②","t":["국제정치경제›통화·금융"],"e":["사건: G20"],"p":["사실관계"],"z":[],"d":["G20"]},{"g":7,"y":2010,"n":7,"a":"③","t":["국제정치경제›무역·FTA"],"e":["사건: WTO"],"p":["개념 정의"],"z":[],"d":["WTO 원칙"]},{"g":7,"y":2010,"n":8,"a":"①","t":["안보›테러·신안보"],"e":[],"p":["개념 정의"],"z":[],"d":["비대칭위협"]},{"g":7,"y":2010,"n":9,"a":"④","t":["국제정치이론›외교정책결정"],"e":["학자: 앨리슨"],"p":["개념 정의"],"z":[],"d":["합리적 행위자 모델"]},{"g":7,"y":2010,"n":10,"a":"④","t":["안보›핵비확산"],"e":["사건: 수출통제체제"],"p":["국가·기구 매칭"],"z":[],"d":["수출통제체제"]},{"g":7,"y":2010,"n":11,"a":"①","t":["국제정치경제›무역·FTA"],"e":["조약: 하바나헌장","조약: GATT"],"p":["사실관계"],"z":[],"d":["GATT 체제"]},{"g":7,"y":2010,"n":12,"a":"④","t":["지역›유럽"],"e":["조약: 마스트리히트조약"],"p":["조약 내용"],"z":["빈칸"],"d":["마스트리히트조약"]},{"g":7,"y":2010,"n":13,"a":"③","t":["외교사›2차대전"],"e":["사건: 얄타회담"],"p":["사실관계"],"z":[],"d":["얄타회담"]},{"g":7,"y":2010,"n":14,"a":"②","t":["국제정치이론›게임이론·협상"],"e":["학자: 루소","학자: 허츠","학자: 왈트"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["사슴사냥","안보딜레마"]},{"g":7,"y":2010,"n":15,"a":"③","t":["국제기구›UN"],"e":["사건: 수에즈위기","학자: 부트로스갈리"],"p":["사실관계"],"z":[],"d":["PKO"]},{"g":7,"y":2010,"n":16,"a":"②","t":["국제정치이론›고전사상","국제정치이론›자유주의"],"e":["학자: 칸트"],"p":["열거 항목"],"z":[],"d":["영구평화론"]},{"g":7,"y":2010,"n":17,"a":"④","t":["국제정치이론›외교정책결정"],"e":[],"p":["개념 정의"],"z":["빈칸"],"d":["운영코드"]},{"g":7,"y":2010,"n":18,"a":"②","t":["국제정치이론›신현실주의"],"e":["학자: 왈츠","학자: 미어샤이머"],"p":["이론 구분"],"z":[],"d":["방어적·공격적 현실주의"]},{"g":7,"y":2010,"n":19,"a":"①","t":["국제기구›UN","외교사›2차대전"],"e":["조약: 대서양헌장"],"p":["연도·순서"],"z":["순서배열"],"d":["UN 창설 과정"]},{"g":7,"y":2010,"n":20,"a":"③","t":["국제정치이론›신자유제도주의","국제정치이론›신현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신현실-신자유 논쟁"]},{"g":7,"y":2011,"n":1,"a":"②","t":["지역›한반도·북핵"],"e":["사건: 9·19공동성명"],"p":["조약 내용"],"z":[],"d":["9·19 공동성명"]},{"g":7,"y":2011,"n":2,"a":"④","t":["국제정치경제›통화·금융"],"e":["학자: 트리핀","사건: 브레튼우즈"],"p":["개념 정의"],"z":["빈칸"],"d":["트리핀 딜레마"]},{"g":7,"y":2011,"n":3,"a":"①","t":["외교사›1차대전·전간기"],"e":["사건: 워싱턴회의"],"p":["개념 정의"],"z":["빈칸"],"d":["워싱턴체제"]},{"g":7,"y":2011,"n":4,"a":"②","t":["국제정치이론›세력균형·동맹"],"e":["학자: 스나이더"],"p":["개념 정의"],"z":[],"d":["동맹 안보딜레마(방기·연루)"]},{"g":7,"y":2011,"n":5,"a":"①","t":["국제정치경제›개발·남북문제","국제기구›글로벌거버넌스·NGO"],"e":["사건: 주빌리2000"],"p":["사실관계"],"z":[],"d":["개도국 채무경감 운동"]},{"g":7,"y":2011,"n":6,"a":"③","t":["국제정치이론›신현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신현실주의 가정"]},{"g":7,"y":2011,"n":7,"a":"④","t":["안보›핵비확산"],"e":["조약: NPT"],"p":["조약 내용"],"z":[],"d":["NPT 규정"]},{"g":7,"y":2011,"n":8,"a":"③","t":["외교사›냉전"],"e":["학자: 케넌","학자: 마셜","사건: 마셜플랜"],"p":["학자-이론 매칭"],"z":[],"d":["냉전 기원"]},{"g":7,"y":2011,"n":9,"a":"②","t":["안보›집단안보·평화"],"e":["학자: 갈퉁"],"p":["개념 정의"],"z":["빈칸"],"d":["구조적 폭력·적극적 평화"]},{"g":7,"y":2011,"n":10,"a":"③","t":["지역›미국"],"e":["사건: 먼로독트린","사건: 트루먼독트린","사건: 레이건독트린","사건: 닉슨독트린"],"p":["국가·기구 매칭"],"z":[],"d":["미국 독트린"]},{"g":7,"y":2011,"n":11,"a":"②","t":["지역›일본"],"e":[],"p":["사실관계"],"z":[],"d":["보통국가론"]},{"g":7,"y":2011,"n":12,"a":"③","t":["지역›유럽"],"e":["사건: 유고 해체"],"p":["사실관계"],"z":[],"d":["구유고 해체"]},{"g":7,"y":2011,"n":13,"a":"①","t":["글로벌이슈›환경·기후"],"e":["조약: 유엔해양법협약"],"p":["개념 정의"],"z":[],"d":["공유재"]},{"g":7,"y":2011,"n":14,"a":"②","t":["국제정치경제›무역·FTA"],"e":[],"p":["개념 정의"],"z":[],"d":["무역 용어(상계관세)"]},{"g":7,"y":2011,"n":15,"a":"④","t":["국제정치이론›자유주의"],"e":["학자: 도일","학자: 칸트","학자: 러셋"],"p":["학자-이론 매칭"],"z":[],"d":["민주평화론"]},{"g":7,"y":2011,"n":16,"a":"①","t":["국제정치경제›통화·금융"],"e":["사건: G20"],"p":["사실관계"],"z":[],"d":["G20 서울정상회의"]},{"g":7,"y":2011,"n":17,"a":"③","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 오간스키"],"p":["이론 구분"],"z":[],"d":["세력전이론"]},{"g":7,"y":2011,"n":18,"a":"③","t":["국제정치경제›무역·FTA"],"e":["학자: 스톨퍼-사무엘슨"],"p":["개념 정의"],"z":[],"d":["스톨퍼-사무엘슨 정리"]},{"g":7,"y":2011,"n":19,"a":"④","t":["글로벌이슈›환경·기후"],"e":["조약: UNFCCC"],"p":["개념 정의"],"z":[],"d":["공동이지만 차별화된 책임"]},{"g":7,"y":2011,"n":20,"a":"④","t":["지역›중국","외교사›냉전"],"e":["사건: 상하이공동코뮤니케","사건: 대만관계법"],"p":["사실관계"],"z":[],"d":["1970년대 미중관계"]},{"g":7,"y":2012,"n":1,"a":"①","t":["외교사›동아시아 근대"],"e":["조약: 강화도조약","조약: 조미수호통상조약"],"p":["연도·순서"],"z":["순서배열"],"d":["조선 수호조약 순서"]},{"g":7,"y":2012,"n":2,"a":"④","t":["지역›한반도·북핵"],"e":["사건: 안보리결의1874"],"p":["조약 내용"],"z":[],"d":["대북 제재결의"]},{"g":7,"y":2012,"n":3,"a":"①","t":["국제정치경제›개발·남북문제"],"e":["조약: MDGs"],"p":["열거 항목"],"z":["열거암기"],"d":["MDGs"]},{"g":7,"y":2012,"n":4,"a":"④","t":["국제기구›지역기구","지역›유럽"],"e":["사건: ARF"],"p":["사실관계"],"z":["조합형"],"d":["유럽·동아시아 지역협력 비교"]},{"g":7,"y":2012,"n":5,"a":"①","t":["국제정치이론›외교정책결정"],"e":["학자: 로즈노","학자: 케글리"],"p":["개념 정의"],"z":[],"d":["분석수준"]},{"g":7,"y":2012,"n":6,"a":"③","t":["국제기구›지역기구"],"e":["사건: SCO"],"p":["사실관계"],"z":["조합형"],"d":["상하이협력기구"]},{"g":7,"y":2012,"n":7,"a":"②","t":["외교사›2차대전"],"e":["사건: 포츠담회담"],"p":["사실관계"],"z":[],"d":["포츠담회담"]},{"g":7,"y":2012,"n":8,"a":"②","t":["국제정치경제›개발·남북문제"],"e":["사건: NIEO"],"p":["개념 정의"],"z":[],"d":["신국제경제질서"]},{"g":7,"y":2012,"n":9,"a":"②","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["조약 내용"],"z":[],"d":["UN 주요기관"]},{"g":7,"y":2012,"n":10,"a":"③","t":["국제정치이론›자유주의"],"e":["학자: 코헤인","학자: 나이"],"p":["개념 정의"],"z":["빈칸"],"d":["민감성·취약성"]},{"g":7,"y":2012,"n":11,"a":"①","t":["지역›일본"],"e":[],"p":["연도·순서"],"z":[],"d":["일본 방위정책(1990년대)"]},{"g":7,"y":2012,"n":12,"a":"①","t":["외교사›근대유럽"],"e":["조약: 베스트팔렌조약","학자: 보댕"],"p":["학자-이론 매칭"],"z":[],"d":["베스트팔렌 체제"]},{"g":7,"y":2012,"n":13,"a":"②","t":["국제정치이론›구성주의"],"e":["학자: 웬트"],"p":["이론 구분"],"z":[],"d":["구성주의 기본관점"]},{"g":7,"y":2012,"n":14,"a":"③","t":["지역›중국"],"e":[],"p":["연도·순서"],"z":[],"d":["중국 대외관계 변화"]},{"g":7,"y":2012,"n":15,"a":"②","t":["안보›억지·핵전략"],"e":[],"p":["개념 정의"],"z":[],"d":["핵억지 개념"]},{"g":7,"y":2012,"n":16,"a":"④","t":["지역›미국"],"e":["사건: 부시독트린"],"p":["개념 정의"],"z":[],"d":["신보수주의"]},{"g":7,"y":2012,"n":17,"a":"①","t":["국제정치이론›비판이론"],"e":["학자: 월러스타인"],"p":["개념 정의"],"z":[],"d":["세계체제론"]},{"g":7,"y":2012,"n":18,"a":"④","t":["지역›한반도·북핵"],"e":["사건: 한반도비핵화공동선언"],"p":["조약 내용"],"z":[],"d":["한반도 비핵화 공동선언"]},{"g":7,"y":2012,"n":19,"a":"①","t":["지역›러시아"],"e":[],"p":["사실관계"],"z":["조합형"],"d":["러시아 동북아정책"]},{"g":7,"y":2012,"n":20,"a":"④","t":["지역›미국"],"e":["학자: 미드"],"p":["학자-이론 매칭"],"z":["빈칸"],"d":["미드 4전통"]},{"g":7,"y":2013,"n":1,"a":"①","t":["안보›군비통제·군축"],"e":["조약: 제네바의정서","조약: ABM조약","조약: SALT","조약: START"],"p":["조약 내용"],"z":[],"d":["군축조약 내용"]},{"g":7,"y":2013,"n":2,"a":"①","t":["안보›집단안보·평화"],"e":["학자: 윌슨"],"p":["개념 정의"],"z":[],"d":["집단안보"]},{"g":7,"y":2013,"n":3,"a":"③","t":["안보›억지·핵전략"],"e":[],"p":["개념 정의"],"z":["조합형"],"d":["억지이론"]},{"g":7,"y":2013,"n":4,"a":"④","t":["외교사›탈냉전","글로벌이슈›세계화·문명"],"e":["학자: 후쿠야마","학자: 헌팅턴","학자: 도일","학자: 미어샤이머"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["탈냉전 학자 주장"]},{"g":7,"y":2013,"n":5,"a":"④","t":["지역›한반도·북핵"],"e":["사건: 2·29합의"],"p":["조약 내용"],"z":[],"d":["2·29 북미합의"]},{"g":7,"y":2013,"n":6,"a":"②","t":["안보›전쟁원인"],"e":["학자: 허츠","학자: 스키너","학자: 저비스","학자: 반에베라"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["전쟁원인 학설"]},{"g":7,"y":2013,"n":7,"a":"②","t":["국제정치이론›구성주의"],"e":[],"p":["이론 구분"],"z":["조합형"],"d":["구성주의 관점","안보공동체"]},{"g":7,"y":2013,"n":8,"a":"①","t":["국제정치경제›통화·금융"],"e":["학자: 트리핀","사건: 플라자합의"],"p":["사실관계"],"z":[],"d":["트리핀 딜레마"]},{"g":7,"y":2013,"n":9,"a":"①","t":["지역›중국"],"e":[],"p":["개념 정의"],"z":["조합형"],"d":["중국 외교노선(도광양회·유소작위)"]},{"g":7,"y":2013,"n":10,"a":"②","t":["국제기구›지역기구"],"e":["사건: ARF","사건: NEACD"],"p":["연도·순서"],"z":[],"d":["ARF·NEACD"]},{"g":7,"y":2013,"n":11,"a":"④","t":["안보›핵비확산"],"e":[],"p":["개념 정의"],"z":[],"d":["소극적 안전보장"]},{"g":7,"y":2013,"n":12,"a":"③","t":["국제정치이론›영국학파·국제사회론"],"e":["학자: 불","학자: 그로티우스"],"p":["이론 구분"],"z":[],"d":["불의 3전통"]},{"g":7,"y":2013,"n":13,"a":"②","t":["외교·국제법›외교·영사"],"e":["사건: 오슬로협정"],"p":["개념 정의"],"z":[],"d":["트랙Ⅱ 외교"]},{"g":7,"y":2013,"n":14,"a":"①","t":["국제정치이론›외교정책결정"],"e":["학자: 재니스","사건: 피그만 침공"],"p":["학자-이론 매칭"],"z":[],"d":["집단사고"]},{"g":7,"y":2013,"n":15,"a":"②","t":["국제기구›UN"],"e":["사건: 커피클럽"],"p":["사실관계"],"z":[],"d":["안보리 개혁"]},{"g":7,"y":2013,"n":16,"a":"③","t":["외교사›2차대전"],"e":["사건: 모겐소계획"],"p":["개념 정의"],"z":["빈칸"],"d":["모겐소 계획"]},{"g":7,"y":2013,"n":17,"a":"④","t":["국제정치이론›외교정책결정"],"e":[],"p":["개념 정의"],"z":["조합형"],"d":["포괄적·제한된 합리성"]},{"g":7,"y":2013,"n":18,"a":"③","t":["국제정치이론›통합이론","국제정치이론›신현실주의","국제정치이론›게임이론·협상"],"e":["학자: 왈츠"],"p":["이론 구분"],"z":[],"d":["신기능주의","합리적 제도주의"]},{"g":7,"y":2013,"n":19,"a":"③","t":["국제정치이론›고전사상"],"e":["학자: 칸트"],"p":["열거 항목"],"z":[],"d":["영구평화론"]},{"g":7,"y":2013,"n":20,"a":"③","t":["글로벌이슈›환경·기후"],"e":["조약: 교토의정서","조약: 마라케시협정"],"p":["조약 내용"],"z":[],"d":["교토 메커니즘(CDM·ET)"]},{"g":7,"y":2014,"n":1,"a":"②","t":["안보›억지·핵전략"],"e":[],"p":["개념 정의"],"z":[],"d":["확장억지","유연반응"]},{"g":7,"y":2014,"n":2,"a":"③","t":["국제정치이론›신현실주의"],"e":["학자: 왈츠"],"p":["이론 구분"],"z":[],"d":["구조적 현실주의"]},{"g":7,"y":2014,"n":3,"a":"①","t":["안보›군비통제·군축"],"e":["조약: NPT","조약: CTBT","조약: SALT","조약: START"],"p":["연도·순서"],"z":["순서배열"],"d":["군축조약 순서"]},{"g":7,"y":2014,"n":4,"a":"④","t":["국제정치이론›세력균형·동맹"],"e":["학자: 슈웰러","학자: 라이터","학자: 올슨","학자: 월트"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["동맹이론","이익균형론","위협균형론"]},{"g":7,"y":2014,"n":5,"a":"④","t":["국제정치경제›무역·FTA"],"e":["사건: 도하라운드"],"p":["사실관계"],"z":[],"d":["GATT 다자협상 라운드"]},{"g":7,"y":2014,"n":6,"a":"④","t":["국제정치이론›통합이론"],"e":["학자: 하스","학자: 미트라니"],"p":["이론 구분"],"z":[],"d":["기능주의·신기능주의"]},{"g":7,"y":2014,"n":7,"a":"④","t":["국제정치이론›현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신고전현실주의"]},{"g":7,"y":2014,"n":8,"a":"②","t":["국제정치이론›현실주의"],"e":["학자: 모겐소","학자: 카"],"p":["이론 구분"],"z":[],"d":["고전현실주의"]},{"g":7,"y":2014,"n":9,"a":"③","t":["국제정치이론›외교정책결정"],"e":["학자: 왈츠","학자: 조지","학자: 싱어","학자: 로즈노"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["분석수준"]},{"g":7,"y":2014,"n":10,"a":"③","t":["국제기구›지역기구"],"e":["사건: ARF","사건: EAS"],"p":["사실관계"],"z":[],"d":["ASEAN 외교"]},{"g":7,"y":2014,"n":11,"a":"①","t":["안보›군비통제·군축"],"e":["조약: ABM조약","조약: INF조약","조약: START","조약: 방콕조약"],"p":["조약 내용"],"z":[],"d":["군축조약 내용"]},{"g":7,"y":2014,"n":12,"a":"③","t":["외교사›근대유럽"],"e":["조약: 베스트팔렌조약"],"p":["조약 내용"],"z":[],"d":["베스트팔렌 조약"]},{"g":7,"y":2014,"n":13,"a":"③","t":["외교사›1차대전·전간기"],"e":["조약: 로카르노조약"],"p":["조약 내용"],"z":[],"d":["로카르노 조약"]},{"g":7,"y":2014,"n":14,"a":"③","t":["글로벌이슈›인권·난민"],"e":["조약: 세계인권선언"],"p":["연도·순서"],"z":["조합형"],"d":["UN 인권체제"]},{"g":7,"y":2014,"n":15,"a":"②","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["조약 내용"],"z":[],"d":["UN 회원국 지위"]},{"g":7,"y":2014,"n":16,"a":"①","t":["국제정치경제›지역경제통합"],"e":["사건: TPP"],"p":["사실관계"],"z":[],"d":["TPP"]},{"g":7,"y":2014,"n":17,"a":"①","t":["지역›중국"],"e":["사건: SCO"],"p":["연도·순서"],"z":[],"d":["중국 외교정책"]},{"g":7,"y":2014,"n":18,"a":"③","t":["국제기구›국제기구 이론"],"e":[],"p":["이론 구분"],"z":[],"d":["국제기구 이론별 시각"]},{"g":7,"y":2014,"n":19,"a":"③","t":["국제정치경제›다국적기업·투자"],"e":["사건: MAI"],"p":["사실관계"],"z":[],"d":["다자간투자협정"]},{"g":7,"y":2014,"n":20,"a":"④","t":["지역›미국"],"e":["사건: 전쟁권한법"],"p":["수치"],"z":[],"d":["전쟁권한법"]},{"g":7,"y":2015,"n":1,"a":"③","t":["국제정치이론›현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["현실주의 인간관"]},{"g":7,"y":2015,"n":2,"a":"③","t":["외교사›근대유럽"],"e":["사건: 비엔나체제","사건: 몰타회담"],"p":["연도·순서"],"z":["순서배열"],"d":["근대 국제체제 순서"]},{"g":7,"y":2015,"n":3,"a":"④","t":["국제정치이론›외교정책결정"],"e":["학자: 재니스"],"p":["개념 정의"],"z":[],"d":["집단사고"]},{"g":7,"y":2015,"n":4,"a":"④","t":["국제정치이론›신현실주의"],"e":[],"p":["개념 정의"],"z":[],"d":["상대적 이득"]},{"g":7,"y":2015,"n":5,"a":"①","t":["안보›인도적 개입·R2P"],"e":["사건: 리비아 사태"],"p":["사실관계"],"z":[],"d":["보호책임(R2P)"]},{"g":7,"y":2015,"n":6,"a":"②","t":["국제정치이론›구성주의","국제정치이론›외교정책결정","국제정치이론›신현실주의"],"e":["학자: 웬트"],"p":["이론 구분"],"z":["조합형"],"d":["무정부 3문화","전망이론","공격적 현실주의"]},{"g":7,"y":2015,"n":7,"a":"①","t":["국제정치경제›통화·금융"],"e":["사건: 플라자합의"],"p":["사실관계"],"z":[],"d":["플라자 합의"]},{"g":7,"y":2015,"n":8,"a":"①","t":["국제정치경제›무역·FTA"],"e":["사건: WTO"],"p":["사실관계"],"z":[],"d":["GATT·WTO 비교"]},{"g":7,"y":2015,"n":9,"a":"①","t":["국제정치경제›다국적기업·투자"],"e":["학자: 더닝"],"p":["개념 정의"],"z":[],"d":["OLI 이론"]},{"g":7,"y":2015,"n":10,"a":"④","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 오간스키"],"p":["열거 항목"],"z":["조합형"],"d":["평화적 세력전이"]},{"g":7,"y":2015,"n":11,"a":"②","t":["국제정치이론›국제체제·권력","지역›미국"],"e":["학자: 나이"],"p":["개념 정의"],"z":[],"d":["스마트파워"]},{"g":7,"y":2015,"n":12,"a":"②","t":["지역›한반도·북핵"],"e":[],"p":["이론 구분"],"z":[],"d":["한반도 평화체제 이론별 시각"]},{"g":7,"y":2015,"n":13,"a":"①","t":["지역›유럽"],"e":["조약: 단일유럽의정서","조약: 마스트리히트조약","조약: 암스테르담조약","조약: 니스조약"],"p":["연도·순서"],"z":["순서배열"],"d":["EU 조약 순서"]},{"g":7,"y":2015,"n":14,"a":"③","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 킨들버거"],"p":["이론 구분"],"z":[],"d":["킨들버거 패권안정론"]},{"g":7,"y":2015,"n":15,"a":"①","t":["국제정치이론›게임이론·협상"],"e":["학자: 퍼트남"],"p":["개념 정의"],"z":[],"d":["윈셋 결정요인"]},{"g":7,"y":2015,"n":16,"a":"①","t":["외교사›냉전","지역›중국"],"e":["사건: 미중 데탕트"],"p":["사실관계"],"z":[],"d":["1972 미중 관계개선"]},{"g":7,"y":2015,"n":17,"a":"②","t":["국제정치경제›통화·금융"],"e":["사건: 브레튼우즈"],"p":["사실관계"],"z":[],"d":["브레튼우즈 체제","내재적 자유주의"]},{"g":7,"y":2015,"n":18,"a":"②","t":["지역›유럽"],"e":["사건: 코펜하겐 기준"],"p":["열거 항목"],"z":[],"d":["EU 가입조건"]},{"g":7,"y":2015,"n":19,"a":"④","t":["외교사›동아시아 근대"],"e":["조약: 시모노세키조약"],"p":["조약 내용"],"z":[],"d":["시모노세키조약"]},{"g":7,"y":2015,"n":20,"a":"④","t":["지역›미국"],"e":["사건: 먼로독트린","사건: 트루먼독트린","사건: 닉슨독트린","사건: 부시독트린"],"p":["국가·기구 매칭"],"z":[],"d":["미국 독트린"]},{"g":7,"y":2016,"n":1,"a":"②","t":["지역›미국"],"e":[],"p":["사실관계"],"z":[],"d":["미국 대통령 권한"]},{"g":7,"y":2016,"n":2,"a":"④","t":["지역›유럽"],"e":[],"p":["사실관계"],"z":[],"d":["EU 일반"]},{"g":7,"y":2016,"n":3,"a":"③","t":["국제정치이론›세력균형·동맹"],"e":[],"p":["이론 구분"],"z":[],"d":["세력균형","편승"]},{"g":7,"y":2016,"n":4,"a":"③","t":["외교사›1차대전·전간기"],"e":["사건: 사라예보사건"],"p":["사실관계"],"z":[],"d":["1차대전"]},{"g":7,"y":2016,"n":5,"a":"②","t":["외교사›냉전"],"e":["사건: 마셜플랜","사건: 애치슨선언"],"p":["사실관계"],"z":["조합형"],"d":["냉전 형성기 미국 정책"]},{"g":7,"y":2016,"n":6,"a":"②","t":["국제정치경제›통화·금융"],"e":["사건: SDR"],"p":["개념 정의"],"z":[],"d":["SDR"]},{"g":7,"y":2016,"n":7,"a":"③","t":["국제기구›지역기구"],"e":[],"p":["열거 항목"],"z":[],"d":["ASEAN 규범"]},{"g":7,"y":2016,"n":8,"a":"③","t":["국제정치이론›외교정책결정"],"e":[],"p":["개념 정의"],"z":[],"d":["전망이론"]},{"g":7,"y":2016,"n":9,"a":"④","t":["국제정치경제›무역·FTA"],"e":["사건: 존스법"],"p":["사실관계"],"z":[],"d":["존스법"]},{"g":7,"y":2016,"n":10,"a":"③","t":["국제정치이론›고전사상"],"e":["학자: 생피에르"],"p":["학자-이론 매칭"],"z":[],"d":["생피에르 평화구상"]},{"g":7,"y":2016,"n":11,"a":"③","t":["지역›유럽"],"e":["조약: 솅겐조약"],"p":["조약 내용"],"z":[],"d":["솅겐조약"]},{"g":7,"y":2016,"n":12,"a":"④","t":["지역›중국"],"e":[],"p":["열거 항목"],"z":[],"d":["신형대국관계"]},{"g":7,"y":2016,"n":13,"a":"④","t":["국제기구›UN"],"e":[],"p":["사실관계"],"z":[],"d":["UN 일반"]},{"g":7,"y":2016,"n":14,"a":"③","t":["국제정치이론›신자유제도주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신자유제도주의"]},{"g":7,"y":2016,"n":15,"a":"②","t":["안보›전쟁원인"],"e":[],"p":["개념 정의"],"z":["열거암기"],"d":["정의의 전쟁(jus ad bellum)"]},{"g":7,"y":2016,"n":16,"a":"①","t":["글로벌이슈›환경·기후"],"e":["조약: 파리협정"],"p":["조약 내용"],"z":[],"d":["파리협정"]},{"g":7,"y":2016,"n":17,"a":"③","t":["외교·국제법›외교·영사"],"e":[],"p":["개념 정의"],"z":[],"d":["공공외교"]},{"g":7,"y":2016,"n":18,"a":"①","t":["안보›군비통제·군축","국제기구›글로벌거버넌스·NGO"],"e":["조약: 오타와협약","학자: 조디 윌리엄스"],"p":["사실관계"],"z":[],"d":["대인지뢰금지운동"]},{"g":7,"y":2016,"n":19,"a":"④","t":["국제정치이론›자유주의"],"e":[],"p":["이론 구분"],"z":[],"d":["민주평화론"]},{"g":7,"y":2016,"n":20,"a":"①","t":["외교사›근대유럽"],"e":["사건: 7년전쟁"],"p":["사실관계"],"z":[],"d":["18세기 국제관계"]},{"g":7,"y":2017,"n":1,"a":"①","t":["외교사›2차대전"],"e":["사건: 카이로회담","사건: 얄타회담","사건: 포츠담회담","사건: 트루먼독트린"],"p":["연도·순서"],"z":["순서배열"],"d":["1940년대 회담 순서"]},{"g":7,"y":2017,"n":2,"a":"①","t":["국제정치이론›신현실주의"],"e":["학자: 왈츠"],"p":["이론 구분"],"z":[],"d":["신현실주의 가정"]},{"g":7,"y":2017,"n":3,"a":"③","t":["안보›억지·핵전략"],"e":[],"p":["열거 항목"],"z":[],"d":["억지 요소"]},{"g":7,"y":2017,"n":4,"a":"④","t":["국제기구›국제연맹"],"e":["조약: 국제연맹규약"],"p":["조약 내용"],"z":[],"d":["국제연맹"]},{"g":7,"y":2017,"n":5,"a":"①","t":["외교사›냉전"],"e":["조약: SALT","조약: 헬싱키최종의정서","조약: INF조약"],"p":["연도·순서"],"z":[],"d":["1970년대 데탕트"]},{"g":7,"y":2017,"n":6,"a":"②","t":["국제정치경제›IPE이론"],"e":["학자: 러기"],"p":["개념 정의"],"z":[],"d":["내재된 자유주의"]},{"g":7,"y":2017,"n":7,"a":"④","t":["지역›미국"],"e":["사건: 먼로독트린"],"p":["사실관계"],"z":[],"d":["미국 고립주의"]},{"g":7,"y":2017,"n":8,"a":"②","t":["지역›한국 외교"],"e":["사건: 6·23선언"],"p":["조약 내용"],"z":[],"d":["6·23 선언"]},{"g":7,"y":2017,"n":9,"a":"①","t":["국제정치경제›통화·금융"],"e":["학자: 트리핀"],"p":["개념 정의"],"z":["빈칸"],"d":["트리핀 딜레마"]},{"g":7,"y":2017,"n":10,"a":"③","t":["국제정치이론›자유주의"],"e":[],"p":["사실관계"],"z":[],"d":["민주평화론 경험연구"]},{"g":7,"y":2017,"n":11,"a":"③","t":["외교·국제법›외교·영사"],"e":[],"p":["개념 정의"],"z":[],"d":["신외교·구외교"]},{"g":7,"y":2017,"n":12,"a":"④","t":["국제기구›UN","국제기구›지역기구"],"e":["조약: UN헌장"],"p":["조약 내용"],"z":[],"d":["UN-지역기구 관계(헌장 8장)"]},{"g":7,"y":2017,"n":13,"a":"②","t":["외교사›냉전","지역›일본"],"e":["조약: 샌프란시스코강화조약"],"p":["조약 내용"],"z":[],"d":["샌프란시스코 강화조약"]},{"g":7,"y":2017,"n":14,"a":"④","t":["국제정치이론›게임이론·협상"],"e":["학자: 액설로드"],"p":["개념 정의"],"z":["조합형"],"d":["팃포탯"]},{"g":7,"y":2017,"n":15,"a":"②","t":["국제정치경제›통화·금융"],"e":["사건: 브레튼우즈","사건: 닉슨쇼크"],"p":["사실관계"],"z":[],"d":["브레튼우즈 해체"]},{"g":7,"y":2017,"n":16,"a":"②","t":["지역›미국"],"e":["사건: 닉슨독트린"],"p":["조약 내용"],"z":[],"d":["닉슨 독트린"]},{"g":7,"y":2017,"n":17,"a":"④","t":["외교사›근대유럽"],"e":["사건: 이탈리아 통일","학자: 마치니"],"p":["사실관계"],"z":["조합형"],"d":["이탈리아 통일"]},{"g":7,"y":2017,"n":18,"a":"③","t":["지역›한국 외교"],"e":[],"p":["사실관계"],"z":[],"d":["한미관계사"]},{"g":7,"y":2017,"n":19,"a":"④","t":["지역›한국 외교"],"e":[],"p":["연도·순서"],"z":[],"d":["1970년대 한국 다자외교"]},{"g":7,"y":2017,"n":20,"a":"③","t":["지역›한반도·북핵"],"e":["조약: 정전협정"],"p":["조약 내용"],"z":[],"d":["정전협정"]},{"g":7,"y":2018,"n":1,"a":"②","t":["외교사›근대유럽"],"e":["사건: 비스마르크체제","사건: 비엔나체제"],"p":["국가·기구 매칭"],"z":[],"d":["전쟁과 국제체제"]},{"g":7,"y":2018,"n":2,"a":"①","t":["안보›핵비확산"],"e":["조약: NPT"],"p":["조약 내용"],"z":[],"d":["NPT 규정"]},{"g":7,"y":2018,"n":3,"a":"①","t":["지역›미국"],"e":["사건: 캠프데이비드협정","사건: 이란-콘트라"],"p":["국가·기구 매칭"],"z":[],"d":["미국 대통령별 정책"]},{"g":7,"y":2018,"n":4,"a":"④","t":["국제기구›지역기구"],"e":["사건: ARF","사건: EAS"],"p":["사실관계"],"z":[],"d":["ASEAN"]},{"g":7,"y":2018,"n":5,"a":"③","t":["국제정치경제›개발·남북문제","지역›중국"],"e":["사건: AIIB"],"p":["사실관계"],"z":["조합형"],"d":["AIIB"]},{"g":7,"y":2018,"n":6,"a":"①","t":["국제정치이론›국제체제·권력","국제정치이론›구성주의"],"e":["학자: 맥킨더","학자: 웬트","학자: 킨들버거","학자: 미어샤이머"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["지정학","이론가 주장"]},{"g":7,"y":2018,"n":7,"a":"④","t":["글로벌이슈›인권·난민"],"e":["사건: UPR"],"p":["사실관계"],"z":[],"d":["인권이사회·UPR"]},{"g":7,"y":2018,"n":8,"a":"②","t":["지역›유럽"],"e":["조약: 단일유럽의정서","조약: 마스트리히트조약"],"p":["조약 내용"],"z":[],"d":["유럽통합 과정"]},{"g":7,"y":2018,"n":9,"a":"②","t":["국제정치이론›게임이론·협상"],"e":["학자: 퍼트남"],"p":["개념 정의"],"z":[],"d":["윈셋"]},{"g":7,"y":2018,"n":10,"a":"③","t":["외교사›1차대전·전간기"],"e":["사건: 뮌헨협정"],"p":["연도·순서"],"z":["순서배열"],"d":["1930년대 독일 외교"]},{"g":7,"y":2018,"n":11,"a":"②","t":["외교사›2차대전"],"e":["사건: 포츠담회담","사건: 카이로회담"],"p":["조약 내용"],"z":[],"d":["포츠담 선언"]},{"g":7,"y":2018,"n":12,"a":"④","t":["국제정치이론›외교정책결정"],"e":["학자: 앨리슨"],"p":["개념 정의"],"z":[],"d":["조직행태 모델"]},{"g":7,"y":2018,"n":13,"a":"③","t":["국제정치경제›IPE이론"],"e":[],"p":["이론 구분"],"z":[],"d":["IPE 3대 시각"]},{"g":7,"y":2018,"n":14,"a":"①","t":["지역›유럽"],"e":[],"p":["국가·기구 매칭"],"z":[],"d":["EU 기구"]},{"g":7,"y":2018,"n":15,"a":"④","t":["국제정치이론›현실주의"],"e":["학자: 잭 스나이더"],"p":["학자-이론 매칭"],"z":[],"d":["제국의 신화(국내정치와 팽창)"]},{"g":7,"y":2018,"n":16,"a":"④","t":["글로벌이슈›인권·난민"],"e":["조약: 난민협약"],"p":["조약 내용"],"z":[],"d":["난민 지위"]},{"g":7,"y":2018,"n":17,"a":"②","t":["국제정치경제›통화·금융"],"e":[],"p":["개념 정의"],"z":[],"d":["기축통화"]},{"g":7,"y":2018,"n":18,"a":"③","t":["국제정치이론›현실주의"],"e":["학자: 슈웰러"],"p":["이론 구분"],"z":[],"d":["신고전현실주의"]},{"g":7,"y":2018,"n":19,"a":"②","t":["국제정치경제›개발·남북문제"],"e":["사건: DAC"],"p":["사실관계"],"z":[],"d":["DAC"]},{"g":7,"y":2018,"n":20,"a":"③","t":["글로벌이슈›인권·난민"],"e":["조약: 아동권리협약","조약: 여성차별철폐협약"],"p":["연도·순서"],"z":["순서배열"],"d":["인권협약 순서"],"s":1},{"g":7,"y":2019,"n":1,"a":"②","t":["글로벌이슈›환경·기후"],"e":[],"p":["개념 정의"],"z":[],"d":["공유지의 비극"]},{"g":7,"y":2019,"n":2,"a":"③","t":["국제기구›지역기구"],"e":["사건: MERCOSUR","사건: ARF","사건: SCO","조약: 리스본조약"],"p":["국가·기구 매칭"],"z":[],"d":["지역주의"]},{"g":7,"y":2019,"n":3,"a":"①","t":["외교사›2차대전"],"e":["사건: 라인란트 재무장","사건: 뮌헨협정","조약: 독소불가침조약","조약: 일소중립조약"],"p":["연도·순서"],"z":["순서배열"],"d":["2차대전 전후 사건 순서"]},{"g":7,"y":2019,"n":4,"a":"③","t":["글로벌이슈›환경·기후"],"e":["조약: 바젤협약"],"p":["조약 내용"],"z":[],"d":["바젤협약"]},{"g":7,"y":2019,"n":5,"a":"①","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["사실관계"],"z":[],"d":["UN 사무총장"]},{"g":7,"y":2019,"n":6,"a":"①","t":["국제정치경제›에너지·자원"],"e":[],"p":["개념 정의"],"z":[],"d":["자원의 저주"]},{"g":7,"y":2019,"n":7,"a":"②","t":["외교·국제법›외교·영사","지역›미국"],"e":["사건: USIA","사건: 스미스-문트법"],"p":["사실관계"],"z":[],"d":["미국 공공외교"]},{"g":7,"y":2019,"n":8,"a":"②","t":["지역›중국"],"e":["사건: 일대일로","사건: AIIB"],"p":["사실관계"],"z":[],"d":["일대일로"]},{"g":7,"y":2019,"n":9,"a":"④","t":["지역›유럽"],"e":["사건: 동방정책","사건: 할슈타인원칙"],"p":["사실관계"],"z":[],"d":["독일 외교정책"]},{"g":7,"y":2019,"n":10,"a":"②","t":["지역›중동"],"e":["사건: 벨푸어선언","사건: 욤키푸르전쟁","사건: 캠프데이비드협정","사건: 이란-이라크전쟁"],"p":["연도·순서"],"z":["순서배열"],"d":["중동분쟁 순서"]},{"g":7,"y":2019,"n":11,"a":"③","t":["안보›테러·신안보"],"e":["조약: 탈린매뉴얼"],"p":["사실관계"],"z":[],"d":["사이버안보"]},{"g":7,"y":2019,"n":12,"a":"③","t":["국제정치이론›고전사상","국제정치이론›패권안정·세력전이"],"e":["학자: 투키디데스","사건: 펠로폰네소스전쟁"],"p":["사실관계"],"z":[],"d":["펠로폰네소스 전쟁"]},{"g":7,"y":2019,"n":13,"a":"①","t":["외교사›동아시아 근대"],"e":["사건: 제너럴셔먼호","조약: 강화도조약","조약: 조미수호통상조약","사건: 갑신정변"],"p":["연도·순서"],"z":["순서배열"],"d":["조선 외교 순서"]},{"g":7,"y":2019,"n":14,"a":"①","t":["지역›미국"],"e":["사건: 커티스-라이트 판결","사건: 전쟁권한법"],"p":["사실관계"],"z":[],"d":["의회의 외교 감독"]},{"g":7,"y":2019,"n":15,"a":"④","t":["국제정치경제›개발·남북문제","지역›한국 외교"],"e":["사건: ODA"],"p":["사실관계"],"z":[],"d":["한국 ODA"]},{"g":7,"y":2019,"n":16,"a":"②","t":["지역›한반도·북핵"],"e":["사건: 남북기본합의서","사건: 한반도비핵화공동선언","사건: 6·15선언","사건: 10·4선언"],"p":["국가·기구 매칭"],"z":[],"d":["남북 군비통제 합의"]},{"g":7,"y":2019,"n":17,"a":"①","t":["외교사›근대유럽"],"e":["사건: 비엔나회의","조약: 위트레흐트조약"],"p":["사실관계"],"z":[],"d":["유럽협조체제"]},{"g":7,"y":2019,"n":18,"a":"③","t":["국제정치이론›외교정책결정"],"e":["학자: 알몬드","학자: 리프만"],"p":["개념 정의"],"z":[],"d":["알몬드-리프만 컨센서스"]},{"g":7,"y":2019,"n":19,"a":"④","t":["국제정치이론›게임이론·협상"],"e":[],"p":["개념 정의"],"z":["도표"],"d":["치킨게임"]},{"g":7,"y":2019,"n":20,"a":"④","t":["국제정치이론›세력균형·동맹"],"e":["학자: 사마천"],"p":["개념 정의"],"z":["빈칸"],"d":["합종연횡(견제·편승)"]},{"g":7,"y":2020,"n":1,"a":"④","t":["국제정치이론›현실주의","국제정치이론›자유주의"],"e":[],"p":["이론 구분"],"z":[],"d":["현실주의·자유주의 비교"],"s":1},{"g":7,"y":2020,"n":2,"a":"③","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 앨리슨","학자: 투키디데스"],"p":["개념 정의"],"z":[],"d":["투키디데스 함정"],"s":1},{"g":7,"y":2020,"n":3,"a":"②","t":["글로벌이슈›환경·기후"],"e":["조약: 교토의정서","사건: 코펜하겐협정"],"p":["사실관계"],"z":[],"d":["기후변화 회의"],"s":1},{"g":7,"y":2020,"n":4,"a":"②","t":["안보›전쟁원인"],"e":["학자: 허츠","학자: 저비스"],"p":["개념 정의"],"z":[],"d":["안보딜레마","공격-방어 균형"],"s":1},{"g":7,"y":2020,"n":5,"a":"③","t":["국제정치이론›세력균형·동맹"],"e":["학자: 스나이더"],"p":["개념 정의"],"z":[],"d":["동맹 안보딜레마(방기·연루)"],"s":1},{"g":7,"y":2020,"n":6,"a":"①","t":["국제정치경제›통화·금융"],"e":["사건: 브레튼우즈","학자: 트리핀"],"p":["사실관계"],"z":[],"d":["브레튼우즈 체제"],"s":1},{"g":7,"y":2020,"n":7,"a":"④","t":["국제정치경제›에너지·자원"],"e":["사건: OPEC"],"p":["사실관계"],"z":[],"d":["OPEC"],"s":1},{"g":7,"y":2020,"n":8,"a":"①","t":["국제정치이론›구성주의"],"e":[],"p":["이론 구분"],"z":[],"d":["구성주의 기본관점"],"s":1},{"g":7,"y":2020,"n":9,"a":"③","t":["지역›미국"],"e":["사건: 먼로독트린","사건: 부시독트린","사건: 아시아 회귀"],"p":["사실관계"],"z":[],"d":["미국 외교정책 일반"],"s":1},{"g":7,"y":2020,"n":10,"a":"①","t":["국제정치이론›외교정책결정"],"e":["학자: 틸리","학자: 피어론","학자: 부에노 데 메스키타","학자: 퍼트남"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["결집효과","청중비용","선출인단이론"],"s":1},{"g":7,"y":2020,"n":11,"a":"①","t":["지역›일본"],"e":["사건: 무라야마담화","사건: 아베담화"],"p":["사실관계"],"z":[],"d":["일본 역사담화"],"s":1},{"g":7,"y":2020,"n":12,"a":"②","t":["지역›한국 외교"],"e":["사건: 신남방정책"],"p":["사실관계"],"z":[],"d":["신남방정책"],"s":1},{"g":7,"y":2020,"n":13,"a":"④","t":["외교사›근대유럽"],"e":["사건: 비엔나회의"],"p":["사실관계"],"z":["조합형"],"d":["비엔나회의"],"s":1},{"g":7,"y":2020,"n":14,"a":"②","t":["외교사›근대유럽"],"e":["조약: 베스트팔렌조약","조약: 위트레흐트조약","조약: 파리조약","조약: 베르사유조약"],"p":["연도·순서"],"z":["순서배열"],"d":["근대 유럽 조약 순서"],"s":1},{"g":7,"y":2020,"n":15,"a":"②","t":["외교사›냉전"],"e":["사건: 트루먼독트린","사건: 마셜플랜","사건: 코민포름"],"p":["연도·순서"],"z":["순서배열"],"d":["냉전 형성 순서"],"s":1},{"g":7,"y":2020,"n":16,"a":"④","t":["지역›중동"],"e":["사건: 이란혁명"],"p":["사실관계"],"z":[],"d":["이란 혁명"],"s":1},{"g":7,"y":2020,"n":17,"a":"②","t":["안보›핵비확산"],"e":["조약: NPT","학자: 세이건"],"p":["개념 정의"],"z":["조합형"],"d":["핵확산 논쟁"],"s":1},{"g":7,"y":2020,"n":18,"a":"③","t":["지역›중국"],"e":[],"p":["연도·순서"],"z":["조합형"],"d":["중국 시기별 대외정책"],"s":1},{"g":7,"y":2020,"n":19,"a":"④","t":["국제정치경제›무역·FTA"],"e":["학자: 스톨퍼-사무엘슨"],"p":["개념 정의"],"z":[],"d":["스톨퍼-사무엘슨 정리"],"s":1},{"g":7,"y":2020,"n":20,"a":"④","t":["외교사›냉전","지역›한반도·북핵"],"e":["사건: 한국전쟁","조약: 한미상호방위조약"],"p":["사실관계"],"z":["조합형"],"d":["한국전쟁"],"s":1},{"g":7,"y":2021,"n":1,"a":"④","t":["외교·국제법›외교·영사","지역›한국 외교"],"e":["조약: 공공외교법"],"p":["조약 내용"],"z":[],"d":["공공외교법"]},{"g":7,"y":2021,"n":2,"a":"③","t":["국제정치이론›현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["현실주의 가정"]},{"g":7,"y":2021,"n":3,"a":"②","t":["국제정치경제›IPE이론"],"e":[],"p":["이론 구분"],"z":["조합형"],"d":["중상주의"]},{"g":7,"y":2021,"n":4,"a":"②","t":["국제정치이론›통합이론"],"e":[],"p":["이론 구분"],"z":["조합형"],"d":["신기능주의"]},{"g":7,"y":2021,"n":5,"a":"③","t":["국제정치이론›국제체제·권력"],"e":["학자: 나이","학자: 사이드"],"p":["학자-이론 매칭"],"z":[],"d":["소프트파워","오리엔탈리즘"]},{"g":7,"y":2021,"n":6,"a":"④","t":["국제정치이론›세력균형·동맹"],"e":["학자: 스나이더"],"p":["개념 정의"],"z":[],"d":["동맹 안보딜레마(방기·연루)"]},{"g":7,"y":2021,"n":7,"a":"①","t":["국제정치이론›비판이론"],"e":["학자: 콕스"],"p":["학자-이론 매칭"],"z":[],"d":["콕스 비판이론"]},{"g":7,"y":2021,"n":8,"a":"①","t":["국제정치이론›국제체제·권력"],"e":["학자: 오간스키","학자: 쿠퍼"],"p":["학자-이론 매칭"],"z":[],"d":["중견국"]},{"g":7,"y":2021,"n":9,"a":"③","t":["국제정치이론›패권안정·세력전이"],"e":[],"p":["이론 구분"],"z":[],"d":["패권안정론"]},{"g":7,"y":2021,"n":10,"a":"③","t":["외교사›동아시아 근대"],"e":["조약: 난징조약"],"p":["조약 내용"],"z":[],"d":["난징조약"]},{"g":7,"y":2021,"n":11,"a":"④","t":["지역›중국"],"e":[],"p":["연도·순서"],"z":["순서배열"],"d":["중국 외교원칙 순서"]},{"g":7,"y":2021,"n":12,"a":"④","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["수치"],"z":[],"d":["안보리 구성·표결"]},{"g":7,"y":2021,"n":13,"a":"②","t":["지역›일본"],"e":[],"p":["개념 정의"],"z":[],"d":["집단적 자위권","평화헌법"]},{"g":7,"y":2021,"n":14,"a":"③","t":["지역›미국"],"e":["사건: 레이건독트린","사건: 닉슨독트린","사건: 아시아 회귀"],"p":["국가·기구 매칭"],"z":[],"d":["미국 외교정책 일반"]},{"g":7,"y":2021,"n":15,"a":"④","t":["외교사›1차대전·전간기"],"e":["조약: 베르사유조약"],"p":["사실관계"],"z":[],"d":["1차대전"]},{"g":7,"y":2021,"n":16,"a":"②","t":["지역›유럽"],"e":["조약: 리스본조약"],"p":["조약 내용"],"z":[],"d":["EU 공동외교안보정책"]},{"g":7,"y":2021,"n":17,"a":"③","t":["안보›인도적 개입·R2P"],"e":["사건: ICISS 보고서"],"p":["개념 정의"],"z":[],"d":["보호책임(R2P)"]},{"g":7,"y":2021,"n":18,"a":"①","t":["지역›한반도·북핵"],"e":["사건: 남북기본합의서"],"p":["조약 내용"],"z":[],"d":["남북기본합의서"]},{"g":7,"y":2021,"n":19,"a":"②","t":["지역›중국","지역›일본"],"e":["사건: 남중국해 분쟁"],"p":["사실관계"],"z":[],"d":["아시아 영토분쟁"]},{"g":7,"y":2021,"n":20,"a":"②","t":["글로벌이슈›식량·보건"],"e":[],"p":["개념 정의"],"z":[],"d":["식량안보"]},{"g":7,"y":2021,"n":21,"a":"④","t":["국제정치경제›IPE이론"],"e":["학자: 러기"],"p":["개념 정의"],"z":[],"d":["내재된 자유주의"]},{"g":7,"y":2021,"n":22,"a":"②","t":["국제정치경제›무역·FTA"],"e":["사건: 도하라운드"],"p":["사실관계"],"z":[],"d":["GATT 다자협상 라운드"]},{"g":7,"y":2021,"n":23,"a":"①","t":["안보›군비통제·군축"],"e":["조약: 제네바의정서","조약: NPT","조약: CWC","조약: BWC"],"p":["조약 내용"],"z":["조합형"],"d":["대량살상무기 통제협정"]},{"g":7,"y":2021,"n":24,"a":"①","t":["글로벌이슈›인권·난민"],"e":["조약: 세계인권선언"],"p":["조약 내용"],"z":["조합형"],"d":["세계인권선언"]},{"g":7,"y":2021,"n":25,"a":"④","t":["국제정치경제›무역·FTA"],"e":["사건: 우루과이라운드"],"p":["사실관계"],"z":[],"d":["WTO 분쟁해결"]},{"g":7,"y":2022,"n":1,"a":"③","t":["국제정치경제›개발·남북문제"],"e":["사건: 워싱턴 컨센서스"],"p":["사실관계"],"z":[],"d":["워싱턴 컨센서스"],"s":1},{"g":7,"y":2022,"n":2,"a":"④","t":["국제정치이론›외교정책결정"],"e":["학자: 구레비치","학자: 왈츠"],"p":["개념 정의"],"z":["조합형"],"d":["제2이미지 역전"],"s":1},{"g":7,"y":2022,"n":3,"a":"③","t":["외교사›냉전"],"e":["사건: 철의 장막 연설","사건: 트루먼독트린","사건: 마셜플랜","사건: 베를린 봉쇄"],"p":["연도·순서"],"z":["순서배열"],"d":["냉전 형성 순서"],"s":1},{"g":7,"y":2022,"n":4,"a":"①","t":["글로벌이슈›세계화·문명"],"e":["학자: 앤더슨"],"p":["학자-이론 매칭"],"z":[],"d":["상상된 공동체(민족주의)"],"s":1},{"g":7,"y":2022,"n":5,"a":"③","t":["국제정치이론›구성주의"],"e":["학자: 핀모어","학자: 시킨크"],"p":["개념 정의"],"z":[],"d":["규범의 생활주기"],"s":1},{"g":7,"y":2022,"n":6,"a":"③","t":["안보›테러·신안보"],"e":["사건: 보코하람"],"p":["사실관계"],"z":[],"d":["테러리즘"],"s":1},{"g":7,"y":2022,"n":7,"a":"①","t":["국제기구›UN"],"e":[],"p":["사실관계"],"z":[],"d":["PKO"],"s":1},{"g":7,"y":2022,"n":8,"a":"④","t":["국제정치이론›외교정책결정"],"e":["학자: 재니스","사건: 피그만 침공"],"p":["개념 정의"],"z":["조합형"],"d":["집단사고"],"s":1},{"g":7,"y":2022,"n":9,"a":"①","t":["외교사›냉전"],"e":["사건: 쿠바 미사일 위기","사건: 우수리강 분쟁","사건: 상하이공동코뮤니케","사건: 소련 아프간 침공"],"p":["연도·순서"],"z":["순서배열"],"d":["냉전기 사건 순서"],"s":1},{"g":7,"y":2022,"n":10,"a":"④","t":["국제정치이론›자유주의"],"e":["학자: 러셋"],"p":["이론 구분"],"z":["조합형"],"d":["민주평화론"],"s":1},{"g":7,"y":2022,"n":11,"a":"③","t":["국제기구›글로벌거버넌스·NGO"],"e":[],"p":["사실관계"],"z":[],"d":["IGO-NGO 협력(협의지위)"],"s":1},{"g":7,"y":2022,"n":12,"a":"③","t":["안보›군비통제·군축"],"e":["조약: ABM조약","조약: SALT","조약: START","조약: CTBT"],"p":["조약 내용"],"z":[],"d":["군축조약 내용"],"s":1},{"g":7,"y":2022,"n":13,"a":"④","t":["외교사›동아시아 근대"],"e":["사건: 류큐 병합","조약: 강화도조약","사건: 만주사변","사건: 중일전쟁"],"p":["연도·순서"],"z":["순서배열"],"d":["근대 동북아 사건 순서"],"s":1},{"g":7,"y":2022,"n":14,"a":"②","t":["외교사›동아시아 근대","외교사›2차대전"],"e":["조약: 샌프란시스코강화조약","조약: 가쓰라-태프트밀약","사건: 포츠담회담"],"p":["사실관계"],"z":[],"d":["동아시아 국제관계사"],"s":1},{"g":7,"y":2022,"n":15,"a":"④","t":["국제정치이론›통합이론","국제정치이론›구성주의","국제정치이론›비판이론"],"e":[],"p":["이론 구분"],"z":[],"d":["이론별 기본가정"],"s":1},{"g":7,"y":2022,"n":16,"a":"②","t":["안보›핵비확산"],"e":["조약: NPT","학자: 왈츠"],"p":["사실관계"],"z":[],"d":["핵확산 논쟁"],"s":1},{"g":7,"y":2022,"n":17,"a":"②","t":["지역›중국"],"e":["사건: 일대일로"],"p":["사실관계"],"z":[],"d":["시진핑 시기 중국"],"s":1},{"g":7,"y":2022,"n":18,"a":"①","t":["국제기구›글로벌거버넌스·NGO"],"e":[],"p":["개념 정의"],"z":[],"d":["글로벌 거버넌스"],"s":1},{"g":7,"y":2022,"n":19,"a":"②","t":["지역›미국"],"e":["사건: 전쟁권한법"],"p":["조약 내용"],"z":[],"d":["전쟁권한법"],"s":1},{"g":7,"y":2022,"n":20,"a":"①","t":["국제기구›국제연맹","국제정치경제›통화·금융"],"e":["사건: 브레튼우즈"],"p":["사실관계"],"z":[],"d":["2차대전 이후 국제기구"],"s":1},{"g":7,"y":2022,"n":21,"a":"②","t":["글로벌이슈›세계화·문명"],"e":["학자: 헌팅턴"],"p":["이론 구분"],"z":[],"d":["문명충돌론"],"s":1},{"g":7,"y":2022,"n":22,"a":"④","t":["국제정치이론›신현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신현실주의 국제협력관"],"s":1},{"g":7,"y":2022,"n":23,"a":"②","t":["지역›일본"],"e":["사건: 요시다 독트린","사건: 플라자합의","사건: 쿼드"],"p":["사실관계"],"z":[],"d":["일본 외교정책"],"s":1},{"g":7,"y":2022,"n":24,"a":"③","t":["안보›테러·신안보"],"e":["조약: 인간개발보고서"],"p":["개념 정의"],"z":[],"d":["인간안보"],"s":1},{"g":7,"y":2022,"n":25,"a":"①","t":["국제기구›UN"],"e":["사건: ILO"],"p":["개념 정의"],"z":["빈칸"],"d":["ILO"],"s":1},{"g":7,"y":2023,"n":1,"a":"④","t":["국제정치이론›현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["현실주의 가정"],"s":1},{"g":7,"y":2023,"n":2,"a":"①","t":["안보›군비통제·군축"],"e":["조약: INF조약","조약: START","조약: SORT","조약: CTBT"],"p":["연도·순서"],"z":[],"d":["탈냉전기 군축협정"],"s":1},{"g":7,"y":2023,"n":3,"a":"②","t":["국제기구›UN","지역›한국 외교"],"e":[],"p":["사실관계"],"z":["조합형"],"d":["PKO","한국 PKO"],"s":1},{"g":7,"y":2023,"n":4,"a":"①","t":["외교사›냉전"],"e":["사건: 트루먼독트린"],"p":["사실관계"],"z":[],"d":["트루먼 독트린"],"s":1},{"g":7,"y":2023,"n":5,"a":"②","t":["국제정치경제›지역경제통합"],"e":[],"p":["연도·순서"],"z":["순서배열"],"d":["경제통합 단계"],"s":1},{"g":7,"y":2023,"n":6,"a":"④","t":["국제정치이론›구성주의"],"e":["학자: 웬트"],"p":["이론 구분"],"z":[],"d":["웬트 구성주의"],"s":1},{"g":7,"y":2023,"n":7,"a":"①","t":["외교사›동아시아 근대"],"e":["조약: 시모노세키조약","사건: 삼국간섭","사건: 청일전쟁"],"p":["사실관계"],"z":[],"d":["청일전쟁 전후"],"s":1},{"g":7,"y":2023,"n":8,"a":"④","t":["안보›전쟁원인"],"e":["학자: 왈저"],"p":["학자-이론 매칭"],"z":[],"d":["정의로운 전쟁(왈저)"],"s":1},{"g":7,"y":2023,"n":9,"a":"④","t":["국제정치이론›외교정책결정"],"e":["학자: 앨리슨","학자: 모겐소","학자: 로즈노"],"p":["학자-이론 매칭"],"z":["조합형"],"d":["앨리슨 모델","분석수준"],"s":1},{"g":7,"y":2023,"n":10,"a":"③","t":["지역›미국"],"e":["사건: 인도태평양 전략","사건: 쿼드"],"p":["사실관계"],"z":[],"d":["미국 인도태평양 전략"],"s":1},{"g":7,"y":2023,"n":11,"a":"④","t":["국제정치경제›통화·금융"],"e":["사건: AIIB","사건: SDR","사건: 플라자합의","사건: AMF"],"p":["사실관계"],"z":[],"d":["국제통화금융질서"],"s":1},{"g":7,"y":2023,"n":12,"a":"①","t":["국제기구›국제기구 이론"],"e":[],"p":["이론 구분"],"z":["조합형"],"d":["국제기구 이론별 시각"],"s":1},{"g":7,"y":2023,"n":13,"a":"③","t":["안보›핵비확산"],"e":["조약: NPT"],"p":["조약 내용"],"z":[],"d":["NPT 규정"],"s":1},{"g":7,"y":2023,"n":14,"a":"②","t":["안보›테러·신안보"],"e":["조약: 인간개발보고서"],"p":["열거 항목"],"z":["열거암기"],"d":["인간안보"],"s":1},{"g":7,"y":2023,"n":15,"a":"①","t":["외교·국제법›외교·영사","지역›한국 외교"],"e":["조약: 공공외교법"],"p":["사실관계"],"z":[],"d":["한국 공공외교"],"s":1},{"g":7,"y":2023,"n":16,"a":"③","t":["국제정치이론›고전사상"],"e":["학자: 칸트"],"p":["열거 항목"],"z":[],"d":["영구평화론"],"s":1},{"g":7,"y":2023,"n":17,"a":"②","t":["국제정치경제›개발·남북문제"],"e":["조약: SDGs"],"p":["사실관계"],"z":[],"d":["SDGs"],"s":1},{"g":7,"y":2023,"n":18,"a":"③","t":["지역›일본"],"e":[],"p":["국가·기구 매칭"],"z":[],"d":["일본 총리별 외교안보"],"s":1},{"g":7,"y":2023,"n":19,"a":"②","t":["지역›한반도·북핵"],"e":["사건: 안보리결의2270","사건: 핵무력정책법"],"p":["연도·순서"],"z":["순서배열"],"d":["북핵 사건 순서"],"s":1},{"g":7,"y":2023,"n":20,"a":"①","t":["글로벌이슈›인권·난민"],"e":["조약: 북한인권법","조약: 고문방지협약"],"p":["연도·순서"],"z":[],"d":["국제인권 동향"],"s":1},{"g":7,"y":2023,"n":21,"a":"④","t":["지역›한반도·북핵"],"e":["사건: 민족공동체통일방안"],"p":["조약 내용"],"z":["조합형"],"d":["민족공동체 통일방안"],"s":1},{"g":7,"y":2023,"n":22,"a":"①","t":["외교사›냉전"],"e":["조약: 미일안보조약","조약: 한미상호방위조약","조약: 조소동맹","조약: 조중동맹"],"p":["연도·순서"],"z":["순서배열"],"d":["동맹 체결 순서"],"s":1},{"g":7,"y":2023,"n":23,"a":"③","t":["글로벌이슈›환경·기후"],"e":["조약: 교토의정서","조약: 파리협정"],"p":["조약 내용"],"z":[],"d":["기후변화 거버넌스"],"s":1},{"g":7,"y":2023,"n":24,"a":"④","t":["외교사›1차대전·전간기"],"e":["조약: 베르사유조약","조약: 사이크스-피코협정","조약: 로잔조약"],"p":["조약 내용"],"z":[],"d":["1차대전 전후 처리"],"s":1},{"g":7,"y":2023,"n":25,"a":"④","t":["지역›중국","지역›일본"],"e":["사건: 남중국해 분쟁","사건: 센카쿠 분쟁"],"p":["사실관계"],"z":[],"d":["동아시아 영토분쟁"],"s":1},{"g":7,"y":2024,"n":1,"a":"①","t":["국제정치이론›현실주의","국제정치이론›신현실주의"],"e":["학자: 왈츠","학자: 미어샤이머","학자: 모겐소"],"p":["학자-이론 매칭"],"z":[],"d":["현실주의 분파 비교"],"s":1},{"g":7,"y":2024,"n":2,"a":"①","t":["국제정치이론›게임이론·협상"],"e":["학자: 퍼트남"],"p":["개념 정의"],"z":[],"d":["윈셋"],"s":1},{"g":7,"y":2024,"n":3,"a":"③","t":["국제정치이론›패권안정·세력전이"],"e":["학자: 오간스키"],"p":["이론 구분"],"z":[],"d":["세력전이론"],"s":1},{"g":7,"y":2024,"n":4,"a":"④","t":["국제정치이론›신자유제도주의","국제정치이론›구성주의"],"e":[],"p":["이론 구분"],"z":[],"d":["이론별 안보관"],"s":1},{"g":7,"y":2024,"n":5,"a":"④","t":["국제정치이론›신자유제도주의","국제정치이론›패권안정·세력전이"],"e":[],"p":["이론 구분"],"z":[],"d":["이론별 국제협력관"],"s":1},{"g":7,"y":2024,"n":6,"a":"②","t":["국제정치이론›고전사상"],"e":["학자: 루소","학자: 마키아벨리","학자: 그로티우스","학자: 칸트"],"p":["학자-이론 매칭"],"z":["조합형"],"d":["국제정치사상가"],"s":1},{"g":7,"y":2024,"n":7,"a":"②","t":["국제정치이론›비판이론"],"e":["학자: 레닌","학자: 월러스타인","학자: 그람시"],"p":["학자-이론 매칭"],"z":["조합형"],"d":["구조주의 이론"],"s":1},{"g":7,"y":2024,"n":8,"a":"③","t":["국제기구›국제기구 이론"],"e":[],"p":["이론 구분"],"z":[],"d":["국제기구 이론별 시각"],"s":1},{"g":7,"y":2024,"n":9,"a":"④","t":["지역›유럽"],"e":["조약: 단일유럽의정서","조약: 마스트리히트조약","조약: 암스테르담조약","조약: 니스조약","조약: 리스본조약"],"p":["연도·순서"],"z":["순서배열"],"d":["EU 조약 순서"],"s":1},{"g":7,"y":2024,"n":10,"a":"③","t":["국제정치경제›다국적기업·투자"],"e":[],"p":["개념 정의"],"z":[],"d":["해외직접투자"],"s":1},{"g":7,"y":2024,"n":11,"a":"④","t":["안보›집단안보·평화"],"e":["사건: NATO"],"p":["사실관계"],"z":[],"d":["NATO"],"s":1},{"g":7,"y":2024,"n":12,"a":"③","t":["국제정치이론›통합이론"],"e":["학자: 모라브칙"],"p":["이론 구분"],"z":["조합형"],"d":["자유주의적 정부간주의"],"s":1},{"g":7,"y":2024,"n":13,"a":"②","t":["국제정치경제›개발·남북문제"],"e":["학자: 프레비시","학자: 카르도소"],"p":["학자-이론 매칭"],"z":[],"d":["종속이론"],"s":1},{"g":7,"y":2024,"n":14,"a":"②","t":["지역›유럽"],"e":[],"p":["국가·기구 매칭"],"z":["조합형"],"d":["EU 기구"],"s":1},{"g":7,"y":2024,"n":15,"a":"④","t":["글로벌이슈›인권·난민"],"e":["조약: 난민협약"],"p":["조약 내용"],"z":[],"d":["난민 지위"],"s":1},{"g":7,"y":2024,"n":16,"a":"①","t":["국제정치이론›국제체제·권력"],"e":["학자: 라첼","학자: 맥킨더","학자: 머핸","학자: 스파이크만"],"p":["학자-이론 매칭"],"z":["학자매칭"],"d":["지정학"],"s":1},{"g":7,"y":2024,"n":17,"a":"②","t":["지역›중국"],"e":["사건: 일대일로"],"p":["사실관계"],"z":["조합형"],"d":["시진핑 외교(인류운명공동체)"],"s":1},{"g":7,"y":2024,"n":18,"a":"④","t":["지역›중국"],"e":["사건: 반분열국가법","사건: 타이베이법"],"p":["사실관계"],"z":[],"d":["양안관계"],"s":1},{"g":7,"y":2024,"n":19,"a":"②","t":["지역›러시아"],"e":["사건: 크림반도 병합","사건: 우크라이나 침공"],"p":["사실관계"],"z":[],"d":["러시아 무력 현상변경"],"s":1},{"g":7,"y":2024,"n":20,"a":"②","t":["외교사›근대유럽"],"e":["조약: 베스트팔렌조약"],"p":["조약 내용"],"z":[],"d":["베스트팔렌 조약"],"s":1},{"g":7,"y":2024,"n":21,"a":"①","t":["국제정치이론›고전사상"],"e":["학자: 투키디데스","사건: 펠로폰네소스전쟁"],"p":["개념 정의"],"z":["빈칸"],"d":["투키디데스 함정"],"s":1},{"g":7,"y":2024,"n":22,"a":"③","t":["지역›유럽"],"e":["조약: 동서독 기본조약","조약: 2+4조약"],"p":["사실관계"],"z":["조합형"],"d":["독일 통일"],"s":1},{"g":7,"y":2024,"n":23,"a":"④","t":["국제기구›지역기구"],"e":["사건: ASEM","사건: AMF","사건: EAS","조약: TAC"],"p":["사실관계"],"z":[],"d":["동아시아 지역협력"],"s":1},{"g":7,"y":2024,"n":24,"a":"③","t":["외교사›탈냉전"],"e":["사건: G20","사건: BRICS","사건: RCEP"],"p":["사실관계"],"z":[],"d":["탈냉전기 국제관계"],"s":1},{"g":7,"y":2024,"n":25,"a":"②","t":["지역›중동"],"e":["조약: 맥마흔-후세인 서한"],"p":["사실관계"],"z":["조합형"],"d":["이-팔 분쟁 배경"],"s":1},{"g":7,"y":2025,"n":1,"a":"③","t":["국제기구›국제연맹","안보›집단안보·평화"],"e":["조약: 국제연맹규약"],"p":["개념 정의"],"z":["빈칸"],"d":["국제연맹","집단안보"],"s":1},{"g":7,"y":2025,"n":2,"a":"②","t":["국제정치이론›신현실주의"],"e":["학자: 미어샤이머"],"p":["이론 구분"],"z":[],"d":["공격적 현실주의"],"s":1},{"g":7,"y":2025,"n":3,"a":"②","t":["국제기구›국제기구 이론"],"e":[],"p":["이론 구분"],"z":[],"d":["국제기구 이론별 시각"],"s":1},{"g":7,"y":2025,"n":4,"a":"③","t":["국제기구›UN"],"e":["조약: UN헌장"],"p":["수치"],"z":[],"d":["UN 주요기관"],"s":1},{"g":7,"y":2025,"n":5,"a":"④","t":["국제정치이론›신자유제도주의","국제정치이론›신현실주의"],"e":[],"p":["이론 구분"],"z":[],"d":["신현실-신자유 논쟁"],"s":1},{"g":7,"y":2025,"n":6,"a":"①","t":["외교사›1차대전·전간기"],"e":["사건: 보스니아 합병","사건: 발칸전쟁"],"p":["연도·순서"],"z":["순서배열"],"d":["1차대전 전후 사건 순서"],"s":1},{"g":7,"y":2025,"n":7,"a":"④","t":["지역›유럽"],"e":["조약: 로마조약","조약: 마스트리히트조약","조약: 단일유럽의정서","조약: 파리조약(1951)"],"p":["조약 내용"],"z":[],"d":["유럽통합 과정"],"s":1},{"g":7,"y":2025,"n":8,"a":"④","t":["글로벌이슈›환경·기후"],"e":["사건: 코펜하겐협정"],"p":["개념 정의"],"z":["빈칸"],"d":["기후변화 당사국총회"],"s":1},{"g":7,"y":2025,"n":9,"a":"④","t":["국제정치이론›구성주의"],"e":[],"p":["이론 구분"],"z":[],"d":["구성주의 기본관점"],"s":1},{"g":7,"y":2025,"n":10,"a":"④","t":["국제정치이론›자유주의"],"e":["학자: 도일","학자: 마오즈"],"p":["이론 구분"],"z":[],"d":["민주평화론"],"s":1},{"g":7,"y":2025,"n":11,"a":"③","t":["국제정치이론›자유주의"],"e":["학자: 러셋","학자: 오닐"],"p":["열거 항목"],"z":[],"d":["칸트적 평화 삼각구도"],"s":1},{"g":7,"y":2025,"n":12,"a":"①","t":["국제기구›지역기구"],"e":[],"p":["사실관계"],"z":[],"d":["ASEAN"],"s":1},{"g":7,"y":2025,"n":13,"a":"①","t":["국제정치경제›개발·남북문제","지역›한국 외교"],"e":["사건: DAC"],"p":["개념 정의"],"z":["빈칸"],"d":["한국 ODA"],"s":1},{"g":7,"y":2025,"n":14,"a":"①","t":["안보›인도적 개입·R2P"],"e":[],"p":["개념 정의"],"z":[],"d":["보호책임(R2P)"],"s":1},{"g":7,"y":2025,"n":15,"a":"③","t":["지역›한반도·북핵"],"e":["사건: 제네바합의","사건: 6자회담","사건: 9·19공동성명"],"p":["연도·순서"],"z":["순서배열"],"d":["북핵 사건 순서"],"s":1},{"g":7,"y":2025,"n":16,"a":"③","t":["국제정치경제›통화·금융"],"e":["사건: 브레튼우즈"],"p":["열거 항목"],"z":["조합형"],"d":["브레튼우즈 기구"],"s":1},{"g":7,"y":2025,"n":17,"a":"④","t":["안보›전쟁원인"],"e":["학자: 피어론"],"p":["학자-이론 매칭"],"z":[],"d":["협상모델(피어론)"],"s":1},{"g":7,"y":2025,"n":18,"a":"④","t":["외교사›근대유럽"],"e":["사건: 비엔나체제"],"p":["국가·기구 매칭"],"z":[],"d":["전쟁과 국제체제"],"s":1},{"g":7,"y":2025,"n":19,"a":"④","t":["지역›미국","국제정치경제›무역·FTA"],"e":["사건: 스무트-홀리법","사건: 호혜통상협정법"],"p":["사실관계"],"z":[],"d":["미국 대외경제정책사"],"s":1},{"g":7,"y":2025,"n":20,"a":"②","t":["지역›한반도·북핵"],"e":["사건: 7·4공동성명","사건: 남북기본합의서"],"p":["국가·기구 매칭"],"z":[],"d":["정부별 남북관계"],"s":1},{"g":7,"y":2025,"n":21,"a":"③","t":["글로벌이슈›인권·난민"],"e":["조약: 인종차별철폐협약","조약: 아동권리협약","조약: 장애인권리협약"],"p":["연도·순서"],"z":["순서배열"],"d":["인권협약 순서"],"s":1},{"g":7,"y":2025,"n":22,"a":"②","t":["지역›중국"],"e":["사건: FOCAC","사건: 일대일로"],"p":["사실관계"],"z":[],"d":["중국-아프리카 관계"],"s":1},{"g":7,"y":2025,"n":23,"a":"②","t":["외교사›냉전"],"e":["사건: 마셜플랜"],"p":["개념 정의"],"z":["빈칸"],"d":["마셜플랜"],"s":1},{"g":7,"y":2025,"n":24,"a":"①","t":["안보›핵비확산"],"e":["조약: NPT","조약: PTBT","조약: CTBT","조약: SALT"],"p":["사실관계"],"z":[],"d":["핵확산·핵실험 금지"],"s":1},{"g":7,"y":2025,"n":25,"a":"③","t":["외교·국제법›외교·영사","지역›미국"],"e":["사건: USIA"],"p":["사실관계"],"z":[],"d":["공공외교"],"s":1},{"g":7,"y":2026,"n":1,"a":"③","t":["안보›전쟁원인"],"e":["학자: 저비스"],"p":["개념 정의"],"z":[],"d":["안보딜레마","공격-방어 균형"],"s":1},{"g":7,"y":2026,"n":2,"a":"②","t":["국제정치이론›현실주의","국제정치이론›고전사상"],"e":["학자: 투키디데스","사건: 멜로스 대화"],"p":["이론 구분"],"z":[],"d":["멜로스 대화"],"s":1},{"g":7,"y":2026,"n":3,"a":"③","t":["외교사›2차대전"],"e":["사건: 뮌헨협정","사건: 폴란드 침공","사건: 진주만 공습","사건: 얄타회담"],"p":["연도·순서"],"z":["순서배열"],"d":["2차대전 사건 순서"],"s":1},{"g":7,"y":2026,"n":4,"a":"①","t":["국제정치이론›비판이론"],"e":["학자: 콕스","학자: 그람시"],"p":["학자-이론 매칭"],"z":[],"d":["콕스 헤게모니"],"s":1},{"g":7,"y":2026,"n":5,"a":"②","t":["국제정치이론›구성주의"],"e":["학자: 웬트"],"p":["열거 항목"],"z":[],"d":["무정부 3문화"],"s":1},{"g":7,"y":2026,"n":6,"a":"②","t":["글로벌이슈›환경·기후"],"e":["사건: 코펜하겐협정","조약: 교토의정서","사건: UNEP"],"p":["사실관계"],"z":[],"d":["기후변화 거버넌스"],"s":1},{"g":7,"y":2026,"n":7,"a":"④","t":["국제정치경제›무역·FTA"],"e":["사건: WTO"],"p":["사실관계"],"z":[],"d":["WTO 의사결정"],"s":1},{"g":7,"y":2026,"n":8,"a":"③","t":["국제정치이론›통합이론"],"e":[],"p":["이론 구분"],"z":[],"d":["기능주의·신기능주의"],"s":1},{"g":7,"y":2026,"n":9,"a":"④","t":["국제기구›UN"],"e":["사건: ICC"],"p":["국가·기구 매칭"],"z":[],"d":["UN 전문기구"],"s":1},{"g":7,"y":2026,"n":10,"a":"④","t":["안보›테러·신안보"],"e":["조약: 인간개발보고서"],"p":["열거 항목"],"z":["조합형"],"d":["인간안보"],"s":1},{"g":7,"y":2026,"n":11,"a":"③","t":["지역›미국"],"e":["사건: 전쟁권한법"],"p":["사실관계"],"z":[],"d":["전쟁권한법"],"s":1},{"g":7,"y":2026,"n":12,"a":"①","t":["지역›한국 외교"],"e":["사건: 한반도 신뢰프로세스"],"p":["국가·기구 매칭"],"z":[],"d":["정부별 대외정책"],"s":1},{"g":7,"y":2026,"n":13,"a":"④","t":["외교사›냉전"],"e":["학자: 케넌","사건: 트루먼독트린"],"p":["개념 정의"],"z":["빈칸"],"d":["봉쇄정책","긴 전문"],"s":1},{"g":7,"y":2026,"n":14,"a":"③","t":["국제정치이론›영국학파·국제사회론"],"e":["학자: 와이트","학자: 불","학자: 버터필드"],"p":["이론 구분"],"z":["조합형"],"d":["영국학파 국제사회론"],"s":1},{"g":7,"y":2026,"n":15,"a":"①","t":["지역›중동"],"e":["사건: 수에즈위기","사건: 욤키푸르전쟁"],"p":["사실관계"],"z":[],"d":["중동전쟁"],"s":1},{"g":7,"y":2026,"n":16,"a":"②","t":["지역›한반도·북핵"],"e":["사건: 민족공동체통일방안"],"p":["조약 내용"],"z":[],"d":["민족공동체 통일방안"],"s":1},{"g":7,"y":2026,"n":17,"a":"③","t":["지역›유럽"],"e":["조약: 리스본조약"],"p":["조약 내용"],"z":["빈칸"],"d":["리스본조약"],"s":1},{"g":7,"y":2026,"n":18,"a":"①","t":["국제정치경제›개발·남북문제"],"e":["사건: 글로벌 사우스"],"p":["개념 정의"],"z":[],"d":["글로벌 사우스"],"s":1},{"g":7,"y":2026,"n":19,"a":"②","t":["국제정치이론›패권안정·세력전이","지역›중국"],"e":["학자: 브랜즈","학자: 베클리","학자: 앨리슨"],"p":["학자-이론 매칭"],"z":["조합형"],"d":["피크 차이나"],"s":1},{"g":7,"y":2026,"n":20,"a":"①","t":["안보›핵비확산"],"e":["조약: NPT"],"p":["조약 내용"],"z":[],"d":["NPT 규정"],"s":1},{"g":7,"y":2026,"n":21,"a":"③","t":["외교사›동아시아 근대"],"e":["조약: 포츠머스조약","사건: 러일전쟁"],"p":["조약 내용"],"z":[],"d":["포츠머스 조약"],"s":1},{"g":7,"y":2026,"n":22,"a":"①","t":["국제정치경제›개발·남북문제"],"e":["조약: SDGs"],"p":["열거 항목"],"z":["열거암기"],"d":["SDGs"],"s":1},{"g":7,"y":2026,"n":23,"a":"④","t":["국제기구›지역기구"],"e":["사건: ARF","사건: EAS","사건: ASEAN+3"],"p":["연도·순서"],"z":["순서배열"],"d":["동아시아 지역협의체 순서"],"s":1},{"g":7,"y":2026,"n":24,"a":"①","t":["외교사›1차대전·전간기"],"e":["조약: 베르사유조약"],"p":["조약 내용"],"z":["조합형"],"d":["베르사유 조약"],"s":1},{"g":7,"y":2026,"n":25,"a":"②","t":["국제정치이론›현실주의"],"e":["학자: 모겐소"],"p":["이론 구분"],"z":[],"d":["모겐소 정치적 현실주의"],"s":1}];
+
+const KEY='intl_pol_gichul_v1',BASE=2019,F=['topic','det','etc','trap','anal'];
+const FN={topic:'논점',det:'세부 논점',etc:'기타',trap:'오답유형',anal:'분석'};
+let st={ov:{},kw:{topic:[],det:[],etc:[],trap:[],anal:[]},cat:[],caseTag:{},detParent:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s){st.ov=s.ov||{};st.kw=Object.assign(st.kw,s.kw||{});st.cat=s.cat||[];st.caseTag=s.caseTag||{};st.detParent=s.detParent||{}}}catch(e){}
+const LV=['대목차','중목차'];
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};if(window.__cloud)__cloud.touched()};
+const ko=(a,b)=>a.localeCompare(b,'ko');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uniq=a=>[...new Set(a)];
+let ROWS=[],FIRST={},view='heat',closedBig=new Set(),openMid=new Set(),closedEtc=new Set(),newOnly=false,G='',open=new Set(),etcType='';
+let flt={y1:'',y2:'',big:'',q:'',kw:null};
+const navStack=[];
+function goBack(){const s=navStack.pop();if(!s)return;view=s.view;etcType=s.etcType;flt.kw=s.kw;render();requestAnimationFrame(()=>scrollTo(0,s.y))}
+addEventListener('popstate',()=>{if(navStack.length)goBack()});
+
+function build(){
+  ROWS=SEED.map(q=>{
+    const id=`${q.g}-${q.y}-${q.n}`;
+    return Object.assign({id,q,topic:q.t||[],det:q.d||[],etc:q.e||[],trap:q.p||[],anal:q.z||[],memo:q.m||''},st.ov[id]||{});
+  });
+  FIRST={};
+  ROWS.forEach(r=>['topic','det','etc'].forEach(f=>r[f].forEach(t=>{const k=f+'|'+t;if(!(k in FIRST)||r.q.y<FIRST[k])FIRST[k]=r.q.y})));
+}
+const isNew=(f,t)=>FIRST[f+'|'+t]>BASE;
+const gRows=()=>ROWS.filter(r=>!G||String(r.q.g)===G);
+const qkey=q=>`${q.g}-${q.y}-${q.n}`;
+const srcL=q=>`${q.y} · ${q.n}번${q.g===9?' (9급)':''}`;
+const big=t=>t.split('›')[0];
+function short(f,t){
+  if(f==='etc')return t.replace(/^(학자|조약|사건|기타):\s*/,'');
+  return t;
+}
+function topicLabel(t){const p=t.split('›');return p.length>1?`${esc(p[0])} <span class="b">›</span> ${esc(p[1])}`:esc(p[0])}
+function pool(f){const s=new Set(st.kw[f]);ROWS.forEach(r=>r[f].forEach(t=>s.add(t)));return[...s].sort(ko)}
+function chip(f,t,id){
+  const n=f==='etc'&&isNew(f,t)?'<b class="new">初</b>':'';
+  const act=id?`data-act="rm" data-id="${id}"`:`data-act="kwf"`;
+  const lab=f==='topic'?topicLabel(t):esc(short(f,t));
+  return `<span class="chip c-${f}${f==='topic'?' tchip':''}" ${act} data-f="${f}" data-t="${esc(t)}" title="${esc(t)}${id?' · 클릭하면 삭제':''}">${lab}${n}</span>`;
+}
+const addBtn=(r,f)=>`<button class="add" data-act="add" data-id="${r.id}" data-f="${f}">+</button>`;
+const cell=(r,f)=>`<div class="cell">${r[f].map(t=>chip(f,t,r.id)).join('')}${addBtn(r,f)}</div>`;
+function setOv(id,f,v){st.ov[id]=st.ov[id]||{};st.ov[id][f]=v;save();build()}
+
+/* ===== 전체 표 ===== */
+function yearsAll(){return uniq(gRows().map(r=>r.q.y)).sort()}
+function bigs(){return uniq(ROWS.flatMap(r=>r.topic.map(big))).sort(ko)}
+function renderTableView(){
+  const ys=yearsAll();
+  const yo=v=>'<option value="">-</option>'+ys.map(y=>`<option ${String(y)===v?'selected':''}>${y}</option>`).join('');
+  main.innerHTML=`<div class="fbar">${navStack.length?'<button class="backbtn" data-act="back">← 뒤로</button>':''}
+    <label>연도 <select id="y1">${yo(flt.y1)}</select> ~ <select id="y2">${yo(flt.y2)}</select></label>
+    <label>대목차 <select id="bigs"><option value="">전체</option>${bigs().map(b=>`<option ${b===flt.big?'selected':''}>${esc(b)}</option>`).join('')}</select></label>
+    <input type="text" id="qs" placeholder="검색" value="${esc(flt.q)}">
+    <span class="kwsel" id="kwbox"></span>
+    <span class="stat" id="stat"></span></div><div id="tbl"></div>`;
+  const on=(id,ev,fn)=>document.getElementById(id).addEventListener(ev,fn);
+  on('y1','change',e=>{flt.y1=e.target.value;renderTable()});
+  on('y2','change',e=>{flt.y2=e.target.value;renderTable()});
+  on('bigs','change',e=>{flt.big=e.target.value;renderTable()});
+  on('qs','input',e=>{flt.q=e.target.value.trim();renderTable()});
+  renderTable();
+}
+function filtered(){
+  return gRows().filter(r=>{
+    if(flt.y1&&r.q.y<+flt.y1)return false;
+    if(flt.y2&&r.q.y>+flt.y2)return false;
+    if(flt.big&&!r.topic.some(t=>big(t)===flt.big))return false;
+    if(flt.kw){const k=flt.kw;if(k.f==='topic'?!r.topic.some(t=>t===k.t||t.startsWith(k.t+'›')):!r[k.f].includes(k.t))return false}
+    if(flt.q){const hay=[r.memo,...F.flatMap(f=>r[f])].join(' ');if(!hay.includes(flt.q))return false}
+    return true;
+  });
+}
+function renderTable(){
+  const kb=document.getElementById('kwbox');
+  kb.innerHTML=flt.kw?`<span class="chip c-${flt.kw.f}" data-act="clrkw" title="클릭하면 해제">${FN[flt.kw.f]}: ${flt.kw.f==='topic'?topicLabel(flt.kw.t):esc(short(flt.kw.f,flt.kw.t))} ✕</span>`:'';
+  const rs=filtered().sort((a,b)=>a.q.y-b.q.y||a.q.g-b.q.g||a.q.n-b.q.n);
+  document.getElementById('stat').textContent=`${rs.length}문항`;
+  if(!rs.length){tbl.innerHTML='<div class="empty">조건에 맞는 문항이 없어요</div>';return}
+  let h='<table class="db"><thead><tr><th>연도</th><th>번호</th><th>정답</th><th>논점</th><th>세부 논점</th><th>기타</th><th>오답유형</th><th>분석</th></tr></thead><tbody>';
+  rs.forEach(r=>{
+    const g9=r.q.g===9||!!r.q.s;
+    h+=`<tr><td class="yr">${r.q.y}${g9?'<span class="g9t">9급</span>':''}</td><td class="num">${r.q.n}</td>
+      <td class="ans1${g9?' g9':''}" title="${g9?'가답안 없음 — 직접 풀이':'가답안'}">${r.q.a}</td>
+      <td class="tcell">${cell(r,'topic')}</td><td>${cell(r,'det')}</td><td>${cell(r,'etc')}</td><td>${cell(r,'trap')}</td>
+      <td>${cell(r,'anal')}<div class="memo" contenteditable="true" data-id="${r.id}">${esc(r.memo)}</div></td></tr>`;
+  });
+  tbl.innerHTML=h+'</tbody></table>';
+}
+
+/* ===== 공통 ===== */
+function numCell(st,isNewYear){
+  if(!st||!st.size)return isNewYear?'<td><b class="bang">!</b></td>':'<td></td>';
+  const ks=[...st].map(k=>k.split('-')).sort((a,b)=>a[0]-b[0]||a[2]-b[2]);
+  return `<td class="hit">${ks.map(([g,,n])=>`<span class="qn${g==='9'?' g9':''}" title="${g}급 ${n}번">${n}</span>`).join('')}${isNewYear?'<b class="bang">!</b>':''}</td>`;
+}
+const blankRow=ys=>ys.map(()=>'<td class="blank"></td>').join('');
+const CASE_TAG={"학자: 마르크스":["국제정치이론›비판이론"],"사건: 만주사변":["외교사›동아시아 근대"],"사건: 중일전쟁":["외교사›동아시아 근대"],"학자: 길핀":["국제정치이론›패권안정·세력전이"],"학자: 킨들버거":["국제정치이론›패권안정·세력전이","국제정치이론›국제체제·권력"],"학자: 왈츠":["국제정치이론›신현실주의","국제정치이론›외교정책결정","안보›핵비확산"],"조약: 베르사유조약":["외교사"],"조약: 로카르노조약":["외교사›1차대전·전간기"],"사건: 뮌헨협정":["외교사›1차대전·전간기","외교사›2차대전"],"사건: 스페인내전":["외교사›1차대전·전간기"],"조약: NPT":["안보›핵비확산"],"조약: 영사관계협약":["외교·국제법›외교·영사"],"조약: 교토의정서":["글로벌이슈›환경·기후"],"학자: 나이":["국제정치이론›국제체제·권력","국제정치이론›자유주의","지역›미국"],"조약: 외교관계협약":["외교·국제법›외교·영사"],"사건: 시카고보이스":["국제정치경제›개발·남북문제","지역›중남미"],"사건: 2·13합의":["지역›한반도·북핵"],"학자: 코헤인":["국제정치이론›자유주의"],"학자: 린드블롬":["국제정치이론›외교정책결정"],"학자: 부에노 데 메스키타":["국제정치이론›외교정책결정"],"학자: 앨리슨":["국제정치이론›외교정책결정","지역›중국"],"학자: 조지":["국제정치이론›외교정책결정"],"사건: NATO 존속":["국제정치이론›현실주의","안보›집단안보·평화"],"학자: 모겐소":["국제정치이론›현실주의","국제정치이론›세력균형·동맹"],"학자: 헌팅턴":["글로벌이슈›세계화·문명","국제정치이론›패권안정·세력전이","외교사›탈냉전"],"사건: 크림전쟁":["외교사›근대유럽"],"조약: 파리조약(1856)":["외교사›근대유럽"],"학자: 윌슨":["외교사›1차대전·전간기","안보›집단안보·평화"],"조약: 14개조":["외교사›1차대전·전간기"],"학자: 액설로드":["국제정치이론›게임이론·협상"],"학자: 허츠":["안보›전쟁원인","국제정치이론›세력균형·동맹","국제정치이론›게임이론·협상"],"조약: 로마조약":["지역›유럽","국제정치경제›지역경제통합"],"학자: 덜레스":["안보›억지·핵전략"],"학자: 맥나마라":["안보›억지·핵전략"],"사건: 대량보복":["안보›억지·핵전략"],"사건: 얄타회담":["외교사›2차대전"],"사건: 포츠담회담":["외교사›2차대전"],"학자: 로즈노":["국제정치이론›외교정책결정"],"학자: 모델스키":["국제정치이론›패권안정·세력전이"],"학자: 오간스키":["국제정치이론›패권안정·세력전이","글로벌이슈›세계화·문명"],"학자: 퍼트남":["국제정치이론›게임이론·협상"],"조약: UN헌장":["국제기구›UN"],"사건: ASEAN+3":["국제기구›지역기구","지역›일본"],"사건: 헤즈볼라":["안보›테러·신안보","지역›중동"],"조약: 몬트리올의정서":["글로벌이슈›환경·기후"],"사건: 도하라운드":["국제정치경제›무역·FTA"],"조약: 마스트리히트조약":["지역›유럽"],"조약: 암스테르담조약":["지역›유럽"],"조약: 니스조약":["지역›유럽"],"조약: 샌프란시스코강화조약":["외교사","지역›한국 외교","지역›일본"],"사건: FTAA":["국제정치경제›지역경제통합"],"사건: 10·4선언":["지역›한반도·북핵"],"학자: 콕스":["국제정치이론›비판이론","국제정치이론›신자유제도주의"],"사건: MAD":["안보›억지·핵전략"],"학자: 저비스":["안보›전쟁원인","국제정치이론›외교정책결정"],"학자: 재니스":["국제정치이론›외교정책결정"],"조약: MDGs":["국제정치경제›개발·남북문제"],"학자: 비스마르크":["외교사›근대유럽"],"사건: 브레튼우즈":["국제정치경제›통화·금융","국제기구›국제연맹"],"사건: MERCOSUR":["국제정치경제›지역경제통합","국제기구›지역기구","지역›중남미"],"사건: 먼로독트린":["지역›미국"],"사건: 트루먼독트린":["외교사›냉전","지역›미국"],"사건: 부시독트린":["지역›미국"],"학자: 그로티우스":["국제정치이론›고전사상","국제정치이론›영국학파·국제사회론"],"학자: 홉스":["국제정치이론›고전사상","국제정치이론›영국학파·국제사회론"],"학자: 칸트":["국제정치이론›고전사상","국제정치이론›자유주의"],"조약: 시모노세키조약":["외교사›동아시아 근대"],"사건: 청일전쟁":["외교사›동아시아 근대"],"사건: UNCTAD":["국제정치경제›IPE이론","국제정치경제›개발·남북문제"],"사건: G20":["국제정치경제›통화·금융","외교사›탈냉전"],"사건: WTO":["국제정치경제›무역·FTA"],"사건: 수출통제체제":["안보›핵비확산"],"조약: 하바나헌장":["국제정치경제›무역·FTA"],"조약: GATT":["국제정치경제›무역·FTA"],"학자: 루소":["국제정치이론›게임이론·협상","국제정치이론›고전사상"],"학자: 왈트":["국제정치이론›게임이론·협상"],"사건: 수에즈위기":["국제기구›UN","지역›중동"],"학자: 부트로스갈리":["국제기구›UN"],"학자: 미어샤이머":["국제정치이론›신현실주의","국제정치이론›국제체제·권력","외교사›탈냉전"],"조약: 대서양헌장":["외교사›2차대전","국제기구›UN"],"사건: 9·19공동성명":["지역›한반도·북핵"],"학자: 트리핀":["국제정치경제›통화·금융"],"사건: 워싱턴회의":["외교사›1차대전·전간기"],"학자: 스나이더":["국제정치이론›세력균형·동맹"],"사건: 주빌리2000":["국제정치경제›개발·남북문제","국제기구›글로벌거버넌스·NGO"],"학자: 케넌":["외교사›냉전"],"학자: 마셜":["외교사›냉전"],"사건: 마셜플랜":["외교사›냉전"],"학자: 갈퉁":["안보›집단안보·평화"],"사건: 레이건독트린":["지역›미국"],"사건: 닉슨독트린":["지역›미국"],"사건: 유고 해체":["지역›유럽"],"조약: 유엔해양법협약":["글로벌이슈›환경·기후"],"학자: 도일":["국제정치이론›자유주의","외교사›탈냉전","글로벌이슈›세계화·문명"],"학자: 러셋":["국제정치이론›자유주의"],"학자: 스톨퍼-사무엘슨":["국제정치경제›무역·FTA"],"조약: UNFCCC":["글로벌이슈›환경·기후"],"사건: 상하이공동코뮤니케":["외교사›냉전","지역›중국"],"사건: 대만관계법":["외교사›냉전","지역›중국"],"조약: 강화도조약":["외교사›동아시아 근대"],"조약: 조미수호통상조약":["외교사›동아시아 근대"],"사건: 안보리결의1874":["지역›한반도·북핵"],"사건: ARF":["국제기구›지역기구","지역›유럽"],"학자: 케글리":["국제정치이론›외교정책결정"],"사건: SCO":["국제기구›지역기구","지역›중국"],"사건: NIEO":["국제정치경제›개발·남북문제"],"조약: 베스트팔렌조약":["외교사›근대유럽"],"학자: 보댕":["외교사›근대유럽"],"학자: 웬트":["국제정치이론›구성주의","국제정치이론›외교정책결정"],"학자: 월러스타인":["국제정치이론›비판이론"],"사건: 한반도비핵화공동선언":["지역›한반도·북핵"],"학자: 미드":["지역›미국"],"조약: 제네바의정서":["안보›군비통제·군축"],"조약: ABM조약":["안보›군비통제·군축"],"조약: SALT":["안보›군비통제·군축","외교사›냉전"],"조약: START":["안보›군비통제·군축"],"학자: 후쿠야마":["외교사›탈냉전","글로벌이슈›세계화·문명"],"사건: 2·29합의":["지역›한반도·북핵"],"학자: 스키너":["안보›전쟁원인"],"학자: 반에베라":["안보›전쟁원인"],"사건: 플라자합의":["국제정치경제›통화·금융","지역›일본"],"사건: NEACD":["국제기구›지역기구"],"학자: 불":["국제정치이론›영국학파·국제사회론"],"사건: 오슬로협정":["외교·국제법›외교·영사"],"사건: 피그만 침공":["국제정치이론›외교정책결정"],"사건: 커피클럽":["국제기구›UN"],"사건: 모겐소계획":["외교사›2차대전"],"조약: 마라케시협정":["글로벌이슈›환경·기후"],"조약: CTBT":["안보›군비통제·군축"],"학자: 슈웰러":["국제정치이론›세력균형·동맹","국제정치이론›현실주의"],"학자: 라이터":["국제정치이론›세력균형·동맹"],"학자: 올슨":["국제정치이론›세력균형·동맹"],"학자: 월트":["국제정치이론›세력균형·동맹"],"학자: 하스":["국제정치이론›통합이론"],"학자: 미트라니":["국제정치이론›통합이론"],"학자: 카":["국제정치이론›현실주의"],"학자: 싱어":["국제정치이론›외교정책결정"],"사건: EAS":["국제기구›지역기구"],"조약: INF조약":["안보›군비통제·군축","외교사›냉전"],"조약: 방콕조약":["안보›군비통제·군축"],"조약: 세계인권선언":["글로벌이슈›인권·난민"],"사건: TPP":["국제정치경제›지역경제통합"],"사건: MAI":["국제정치경제›다국적기업·투자"],"사건: 전쟁권한법":["지역›미국"],"사건: 비엔나체제":["외교사›근대유럽"],"사건: 몰타회담":["외교사›근대유럽"],"사건: 리비아 사태":["안보›인도적 개입·R2P"],"학자: 더닝":["국제정치경제›다국적기업·투자"],"조약: 단일유럽의정서":["지역›유럽"],"사건: 미중 데탕트":["외교사›냉전","지역›중국"],"사건: 코펜하겐 기준":["지역›유럽"],"사건: 사라예보사건":["외교사›1차대전·전간기"],"사건: 애치슨선언":["외교사›냉전"],"사건: SDR":["국제정치경제›통화·금융"],"사건: 존스법":["국제정치경제›무역·FTA"],"학자: 생피에르":["국제정치이론›고전사상"],"조약: 솅겐조약":["지역›유럽"],"조약: 파리협정":["글로벌이슈›환경·기후"],"조약: 오타와협약":["안보›군비통제·군축","국제기구›글로벌거버넌스·NGO"],"학자: 조디 윌리엄스":["안보›군비통제·군축","국제기구›글로벌거버넌스·NGO"],"사건: 7년전쟁":["외교사›근대유럽"],"사건: 카이로회담":["외교사›2차대전"],"조약: 국제연맹규약":["국제기구›국제연맹","안보›집단안보·평화"],"조약: 헬싱키최종의정서":["외교사›냉전"],"학자: 러기":["국제정치경제›IPE이론"],"사건: 6·23선언":["지역›한국 외교"],"사건: 닉슨쇼크":["국제정치경제›통화·금융"],"사건: 이탈리아 통일":["외교사›근대유럽"],"학자: 마치니":["외교사›근대유럽"],"조약: 정전협정":["지역›한반도·북핵"],"사건: 비스마르크체제":["외교사›근대유럽"],"사건: 캠프데이비드협정":["지역›미국","지역›중동"],"사건: 이란-콘트라":["지역›미국"],"사건: AIIB":["국제정치경제›개발·남북문제","국제정치경제›통화·금융","지역›중국"],"학자: 맥킨더":["국제정치이론›국제체제·권력"],"사건: UPR":["글로벌이슈›인권·난민"],"학자: 잭 스나이더":["국제정치이론›현실주의"],"조약: 난민협약":["글로벌이슈›인권·난민"],"사건: DAC":["국제정치경제›개발·남북문제","지역›한국 외교"],"조약: 아동권리협약":["글로벌이슈›인권·난민"],"조약: 여성차별철폐협약":["글로벌이슈›인권·난민"],"조약: 리스본조약":["지역›유럽","국제기구›지역기구"],"사건: 라인란트 재무장":["외교사›2차대전"],"조약: 독소불가침조약":["외교사›2차대전"],"조약: 일소중립조약":["외교사›2차대전"],"조약: 바젤협약":["글로벌이슈›환경·기후"],"사건: USIA":["외교·국제법›외교·영사","지역›미국"],"사건: 스미스-문트법":["외교·국제법›외교·영사","지역›미국"],"사건: 일대일로":["지역›중국"],"사건: 동방정책":["지역›유럽"],"사건: 할슈타인원칙":["지역›유럽"],"사건: 벨푸어선언":["지역›중동"],"사건: 욤키푸르전쟁":["지역›중동"],"사건: 이란-이라크전쟁":["지역›중동"],"조약: 탈린매뉴얼":["안보›테러·신안보"],"학자: 투키디데스":["국제정치이론›고전사상","국제정치이론›패권안정·세력전이"],"사건: 펠로폰네소스전쟁":["국제정치이론›고전사상"],"사건: 제너럴셔먼호":["외교사›동아시아 근대"],"사건: 갑신정변":["외교사›동아시아 근대"],"사건: 커티스-라이트 판결":["지역›미국"],"사건: ODA":["국제정치경제›개발·남북문제","지역›한국 외교"],"사건: 남북기본합의서":["지역›한반도·북핵"],"사건: 6·15선언":["지역›한반도·북핵"],"사건: 비엔나회의":["외교사›근대유럽"],"조약: 위트레흐트조약":["외교사›근대유럽"],"학자: 알몬드":["국제정치이론›외교정책결정"],"학자: 리프만":["국제정치이론›외교정책결정"],"학자: 사마천":["국제정치이론›세력균형·동맹"],"사건: 코펜하겐협정":["글로벌이슈›환경·기후"],"사건: OPEC":["국제정치경제›에너지·자원"],"사건: 아시아 회귀":["지역›미국"],"학자: 틸리":["국제정치이론›외교정책결정"],"학자: 피어론":["국제정치이론›외교정책결정","안보›전쟁원인"],"사건: 무라야마담화":["지역›일본"],"사건: 아베담화":["지역›일본"],"사건: 신남방정책":["지역›한국 외교"],"조약: 파리조약":["외교사›근대유럽"],"사건: 코민포름":["외교사›냉전"],"사건: 이란혁명":["지역›중동"],"학자: 세이건":["안보›핵비확산"],"사건: 한국전쟁":["외교사›냉전","지역›한반도·북핵"],"조약: 한미상호방위조약":["외교사›냉전","지역›한반도·북핵"],"조약: 공공외교법":["외교·국제법›외교·영사","지역›한국 외교"],"학자: 사이드":["국제정치이론›국제체제·권력"],"학자: 쿠퍼":["국제정치이론›국제체제·권력"],"조약: 난징조약":["외교사›동아시아 근대"],"사건: ICISS 보고서":["안보›인도적 개입·R2P"],"사건: 남중국해 분쟁":["지역›중국","지역›일본"],"조약: CWC":["안보›군비통제·군축"],"조약: BWC":["안보›군비통제·군축"],"사건: 우루과이라운드":["국제정치경제›무역·FTA"],"사건: 워싱턴 컨센서스":["국제정치경제›개발·남북문제"],"학자: 구레비치":["국제정치이론›외교정책결정"],"사건: 철의 장막 연설":["외교사›냉전"],"사건: 베를린 봉쇄":["외교사›냉전"],"학자: 앤더슨":["글로벌이슈›세계화·문명"],"학자: 핀모어":["국제정치이론›구성주의"],"학자: 시킨크":["국제정치이론›구성주의"],"사건: 보코하람":["안보›테러·신안보"],"사건: 쿠바 미사일 위기":["외교사›냉전"],"사건: 우수리강 분쟁":["외교사›냉전"],"사건: 소련 아프간 침공":["외교사›냉전"],"사건: 류큐 병합":["외교사›동아시아 근대"],"조약: 가쓰라-태프트밀약":["외교사›동아시아 근대","외교사›2차대전"],"사건: 요시다 독트린":["지역›일본"],"사건: 쿼드":["지역›일본","지역›미국"],"조약: 인간개발보고서":["안보›테러·신안보"],"사건: ILO":["국제기구›UN"],"조약: SORT":["안보›군비통제·군축"],"사건: 삼국간섭":["외교사›동아시아 근대"],"학자: 왈저":["안보›전쟁원인"],"사건: 인도태평양 전략":["지역›미국"],"사건: AMF":["국제정치경제›통화·금융","국제기구›지역기구"],"조약: SDGs":["국제정치경제›개발·남북문제"],"사건: 안보리결의2270":["지역›한반도·북핵"],"사건: 핵무력정책법":["지역›한반도·북핵"],"조약: 북한인권법":["글로벌이슈›인권·난민"],"조약: 고문방지협약":["글로벌이슈›인권·난민"],"사건: 민족공동체통일방안":["지역›한반도·북핵"],"조약: 미일안보조약":["외교사›냉전"],"조약: 조소동맹":["외교사›냉전"],"조약: 조중동맹":["외교사›냉전"],"조약: 사이크스-피코협정":["외교사›1차대전·전간기"],"조약: 로잔조약":["외교사›1차대전·전간기"],"사건: 센카쿠 분쟁":["지역›중국","지역›일본"],"학자: 마키아벨리":["국제정치이론›고전사상"],"학자: 레닌":["국제정치이론›비판이론"],"학자: 그람시":["국제정치이론›비판이론"],"사건: NATO":["안보›집단안보·평화"],"학자: 모라브칙":["국제정치이론›통합이론"],"학자: 프레비시":["국제정치경제›개발·남북문제"],"학자: 카르도소":["국제정치경제›개발·남북문제"],"학자: 라첼":["국제정치이론›국제체제·권력"],"학자: 머핸":["국제정치이론›국제체제·권력"],"학자: 스파이크만":["국제정치이론›국제체제·권력"],"사건: 반분열국가법":["지역›중국"],"사건: 타이베이법":["지역›중국"],"사건: 크림반도 병합":["지역›러시아"],"사건: 우크라이나 침공":["지역›러시아"],"조약: 동서독 기본조약":["지역›유럽"],"조약: 2+4조약":["지역›유럽"],"사건: ASEM":["국제기구›지역기구"],"조약: TAC":["국제기구›지역기구"],"사건: BRICS":["외교사›탈냉전"],"사건: RCEP":["외교사›탈냉전"],"조약: 맥마흔-후세인 서한":["지역›중동"],"사건: 보스니아 합병":["외교사›1차대전·전간기"],"사건: 발칸전쟁":["외교사›1차대전·전간기"],"조약: 파리조약(1951)":["지역›유럽"],"학자: 마오즈":["국제정치이론›자유주의"],"학자: 오닐":["국제정치이론›자유주의"],"사건: 제네바합의":["지역›한반도·북핵"],"사건: 6자회담":["지역›한반도·북핵"],"사건: 스무트-홀리법":["국제정치경제›무역·FTA","지역›미국"],"사건: 호혜통상협정법":["국제정치경제›무역·FTA","지역›미국"],"사건: 7·4공동성명":["지역›한반도·북핵"],"조약: 인종차별철폐협약":["글로벌이슈›인권·난민"],"조약: 장애인권리협약":["글로벌이슈›인권·난민"],"사건: FOCAC":["지역›중국"],"조약: PTBT":["안보›핵비확산"],"사건: 멜로스 대화":["국제정치이론›현실주의","국제정치이론›고전사상"],"사건: 폴란드 침공":["외교사›2차대전"],"사건: 진주만 공습":["외교사›2차대전"],"사건: UNEP":["글로벌이슈›환경·기후"],"사건: ICC":["국제기구›UN"],"사건: 한반도 신뢰프로세스":["지역›한국 외교"],"학자: 와이트":["국제정치이론›영국학파·국제사회론"],"학자: 버터필드":["국제정치이론›영국학파·국제사회론"],"사건: 글로벌 사우스":["국제정치경제›개발·남북문제"],"학자: 브랜즈":["국제정치이론›패권안정·세력전이","지역›중국"],"학자: 베클리":["국제정치이론›패권안정·세력전이","지역›중국"],"조약: 포츠머스조약":["외교사›동아시아 근대"],"사건: 러일전쟁":["외교사›동아시아 근대"]};
+const DET_PAR={"마르크스주의 국제정치관":"국제정치이론›비판이론","태평양전쟁 배경":"외교사›동아시아 근대","세계화 원인":"글로벌이슈›세계화·문명","패권안정론":"국제정치이론›패권안정·세력전이","2차대전 원인":"외교사›2차대전","문화산업 자유주의 시각":"국제정치이론›자유주의","세계화 이론별 입장":"글로벌이슈›세계화·문명","1930년대 베르사유체제 붕괴":"외교사›1차대전·전간기","NPT 문제점":"안보›핵비확산","인도적 개입 논쟁":"안보›인도적 개입·R2P","영사 직무":"외교·국제법›외교·영사","교토의정서":"글로벌이슈›환경·기후","소프트파워":"국제정치이론›국제체제·권력","외교관 특권면제":"외교·국제법›외교·영사","한국 미수교국":"지역›한국 외교","신현실-신자유 논쟁":"국제정치이론›신현실주의","중남미 신자유주의 개혁":"국제정치경제›개발·남북문제","지역기구 기능(OAS·아랍연맹·ASEAN)":"국제기구›지역기구","2·13 합의":"지역›한반도·북핵","복합상호의존론":"국제정치이론›자유주의","유럽통합 배경":"지역›유럽","합리적 선택 모델":"국제정치이론›외교정책결정","NATO 존속 이론별 설명":"국제정치이론›현실주의","세력균형 방법":"국제정치이론›세력균형·동맹","행위자 관계 도식":"국제정치이론›자유주의","문명충돌론":"글로벌이슈›세계화·문명","크림전쟁·파리회의":"외교사›근대유럽","윌슨 14개조":"외교사›1차대전·전간기","팃포탯":"국제정치이론›게임이론·협상","안보딜레마":"안보›전쟁원인","집단안보":"안보›집단안보·평화","글로벌 거버넌스":"국제기구›글로벌거버넌스·NGO","유럽통합 기구 순서":"국제정치경제›지역경제통합","대량보복":"안보›억지·핵전략","중국 개혁개방":"지역›중국","2차대전 회담 순서":"외교사›2차대전","체제변화 이론":"국제정치이론›패권안정·세력전이","장주기론":"국제정치이론›패권안정·세력전이","핵무기와 이론 수정":"안보›억지·핵전략","양면게임":"국제정치이론›게임이론·협상","안보리 구성·표결":"국제기구›UN","한국 FTA 현황":"국제정치경제›무역·FTA","ASEAN+3":"국제기구›지역기구","중동 무장단체":"안보›테러·신안보","몬트리올의정서":"글로벌이슈›환경·기후","도하개발의제":"국제정치경제›무역·FTA","EU 조약 순서":"지역›유럽","독도":"지역›한국 외교","FTAA":"국제정치경제›지역경제통합","10·4 선언":"지역›한반도·북핵","신현실·신자유·구성 비교":"국제정치이론›신자유제도주의","신자유제도주의 가정":"국제정치이론›신자유제도주의","MAD":"안보›억지·핵전략","외교정책론 학자":"국제정치이론›외교정책결정","MDGs":"국제정치경제›개발·남북문제","UN헌장 규정":"국제기구›UN","PKO":"국제기구›UN","NGO 원칙":"국제기구›글로벌거버넌스·NGO","비스마르크 체제":"외교사›근대유럽","브레튼우즈 체제":"국제정치경제›통화·금융","세력전이론":"국제정치이론›패권안정·세력전이","MERCOSUR":"국제정치경제›지역경제통합","미국 고립주의·국제주의":"지역›미국","국제사회관 3전통":"국제정치이론›고전사상","시모노세키조약":"외교사›동아시아 근대","중상주의":"국제정치경제›IPE이론","UNCTAD":"국제정치경제›개발·남북문제","G20":"국제정치경제›통화·금융","WTO 원칙":"국제정치경제›무역·FTA","비대칭위협":"안보›테러·신안보","합리적 행위자 모델":"국제정치이론›외교정책결정","수출통제체제":"안보›핵비확산","GATT 체제":"국제정치경제›무역·FTA","마스트리히트조약":"지역›유럽","얄타회담":"외교사›2차대전","사슴사냥":"국제정치이론›게임이론·협상","영구평화론":"국제정치이론›고전사상","운영코드":"국제정치이론›외교정책결정","방어적·공격적 현실주의":"국제정치이론›신현실주의","UN 창설 과정":"외교사›2차대전","9·19 공동성명":"지역›한반도·북핵","트리핀 딜레마":"국제정치경제›통화·금융","워싱턴체제":"외교사›1차대전·전간기","동맹 안보딜레마(방기·연루)":"국제정치이론›세력균형·동맹","개도국 채무경감 운동":"국제정치경제›개발·남북문제","신현실주의 가정":"국제정치이론›신현실주의","NPT 규정":"안보›핵비확산","냉전 기원":"외교사›냉전","구조적 폭력·적극적 평화":"안보›집단안보·평화","미국 독트린":"지역›미국","보통국가론":"지역›일본","구유고 해체":"지역›유럽","공유재":"글로벌이슈›환경·기후","무역 용어(상계관세)":"국제정치경제›무역·FTA","민주평화론":"국제정치이론›자유주의","G20 서울정상회의":"국제정치경제›통화·금융","스톨퍼-사무엘슨 정리":"국제정치경제›무역·FTA","공동이지만 차별화된 책임":"글로벌이슈›환경·기후","1970년대 미중관계":"외교사›냉전","조선 수호조약 순서":"외교사›동아시아 근대","대북 제재결의":"지역›한반도·북핵","유럽·동아시아 지역협력 비교":"국제기구›지역기구","분석수준":"국제정치이론›외교정책결정","상하이협력기구":"국제기구›지역기구","포츠담회담":"외교사›2차대전","신국제경제질서":"국제정치경제›개발·남북문제","UN 주요기관":"국제기구›UN","민감성·취약성":"국제정치이론›자유주의","일본 방위정책(1990년대)":"지역›일본","베스트팔렌 체제":"외교사›근대유럽","구성주의 기본관점":"국제정치이론›구성주의","중국 대외관계 변화":"지역›중국","핵억지 개념":"안보›억지·핵전략","신보수주의":"지역›미국","세계체제론":"국제정치이론›비판이론","한반도 비핵화 공동선언":"지역›한반도·북핵","러시아 동북아정책":"지역›러시아","미드 4전통":"지역›미국","군축조약 내용":"안보›군비통제·군축","억지이론":"안보›억지·핵전략","탈냉전 학자 주장":"외교사›탈냉전","2·29 북미합의":"지역›한반도·북핵","전쟁원인 학설":"안보›전쟁원인","구성주의 관점":"국제정치이론›구성주의","안보공동체":"국제정치이론›구성주의","중국 외교노선(도광양회·유소작위)":"지역›중국","ARF·NEACD":"국제기구›지역기구","소극적 안전보장":"안보›핵비확산","불의 3전통":"국제정치이론›영국학파·국제사회론","트랙Ⅱ 외교":"외교·국제법›외교·영사","집단사고":"국제정치이론›외교정책결정","안보리 개혁":"국제기구›UN","모겐소 계획":"외교사›2차대전","포괄적·제한된 합리성":"국제정치이론›외교정책결정","신기능주의":"국제정치이론›통합이론","합리적 제도주의":"국제정치이론›신현실주의","교토 메커니즘(CDM·ET)":"글로벌이슈›환경·기후","확장억지":"안보›억지·핵전략","유연반응":"안보›억지·핵전략","구조적 현실주의":"국제정치이론›신현실주의","군축조약 순서":"안보›군비통제·군축","동맹이론":"국제정치이론›세력균형·동맹","이익균형론":"국제정치이론›세력균형·동맹","위협균형론":"국제정치이론›세력균형·동맹","GATT 다자협상 라운드":"국제정치경제›무역·FTA","기능주의·신기능주의":"국제정치이론›통합이론","신고전현실주의":"국제정치이론›현실주의","고전현실주의":"국제정치이론›현실주의","ASEAN 외교":"국제기구›지역기구","베스트팔렌 조약":"외교사›근대유럽","로카르노 조약":"외교사›1차대전·전간기","UN 인권체제":"글로벌이슈›인권·난민","UN 회원국 지위":"국제기구›UN","TPP":"국제정치경제›지역경제통합","중국 외교정책":"지역›중국","국제기구 이론별 시각":"국제기구›국제기구 이론","다자간투자협정":"국제정치경제›다국적기업·투자","전쟁권한법":"지역›미국","현실주의 인간관":"국제정치이론›현실주의","근대 국제체제 순서":"외교사›근대유럽","상대적 이득":"국제정치이론›신현실주의","보호책임(R2P)":"안보›인도적 개입·R2P","무정부 3문화":"국제정치이론›구성주의","전망이론":"국제정치이론›외교정책결정","공격적 현실주의":"국제정치이론›신현실주의","플라자 합의":"국제정치경제›통화·금융","GATT·WTO 비교":"국제정치경제›무역·FTA","OLI 이론":"국제정치경제›다국적기업·투자","평화적 세력전이":"국제정치이론›패권안정·세력전이","스마트파워":"국제정치이론›국제체제·권력","한반도 평화체제 이론별 시각":"지역›한반도·북핵","킨들버거 패권안정론":"국제정치이론›패권안정·세력전이","윈셋 결정요인":"국제정치이론›게임이론·협상","1972 미중 관계개선":"외교사›냉전","내재적 자유주의":"국제정치경제›통화·금융","EU 가입조건":"지역›유럽","미국 대통령 권한":"지역›미국","EU 일반":"지역›유럽","세력균형":"국제정치이론›세력균형·동맹","편승":"국제정치이론›세력균형·동맹","1차대전":"외교사›1차대전·전간기","냉전 형성기 미국 정책":"외교사›냉전","SDR":"국제정치경제›통화·금융","ASEAN 규범":"국제기구›지역기구","존스법":"국제정치경제›무역·FTA","생피에르 평화구상":"국제정치이론›고전사상","솅겐조약":"지역›유럽","신형대국관계":"지역›중국","UN 일반":"국제기구›UN","신자유제도주의":"국제정치이론›신자유제도주의","정의의 전쟁(jus ad bellum)":"안보›전쟁원인","파리협정":"글로벌이슈›환경·기후","공공외교":"외교·국제법›외교·영사","대인지뢰금지운동":"안보›군비통제·군축","18세기 국제관계":"외교사›근대유럽","1940년대 회담 순서":"외교사›2차대전","억지 요소":"안보›억지·핵전략","국제연맹":"국제기구›국제연맹","1970년대 데탕트":"외교사›냉전","내재된 자유주의":"국제정치경제›IPE이론","미국 고립주의":"지역›미국","6·23 선언":"지역›한국 외교","민주평화론 경험연구":"국제정치이론›자유주의","신외교·구외교":"외교·국제법›외교·영사","UN-지역기구 관계(헌장 8장)":"국제기구›UN","샌프란시스코 강화조약":"외교사›냉전","브레튼우즈 해체":"국제정치경제›통화·금융","닉슨 독트린":"지역›미국","이탈리아 통일":"외교사›근대유럽","한미관계사":"지역›한국 외교","1970년대 한국 다자외교":"지역›한국 외교","정전협정":"지역›한반도·북핵","전쟁과 국제체제":"외교사›근대유럽","미국 대통령별 정책":"지역›미국","ASEAN":"국제기구›지역기구","AIIB":"국제정치경제›개발·남북문제","지정학":"국제정치이론›국제체제·권력","이론가 주장":"국제정치이론›구성주의","인권이사회·UPR":"글로벌이슈›인권·난민","유럽통합 과정":"지역›유럽","윈셋":"국제정치이론›게임이론·협상","1930년대 독일 외교":"외교사›1차대전·전간기","포츠담 선언":"외교사›2차대전","조직행태 모델":"국제정치이론›외교정책결정","IPE 3대 시각":"국제정치경제›IPE이론","EU 기구":"지역›유럽","제국의 신화(국내정치와 팽창)":"국제정치이론›현실주의","난민 지위":"글로벌이슈›인권·난민","기축통화":"국제정치경제›통화·금융","DAC":"국제정치경제›개발·남북문제","인권협약 순서":"글로벌이슈›인권·난민","공유지의 비극":"글로벌이슈›환경·기후","지역주의":"국제기구›지역기구","2차대전 전후 사건 순서":"외교사›2차대전","바젤협약":"글로벌이슈›환경·기후","UN 사무총장":"국제기구›UN","자원의 저주":"국제정치경제›에너지·자원","미국 공공외교":"외교·국제법›외교·영사","일대일로":"지역›중국","독일 외교정책":"지역›유럽","중동분쟁 순서":"지역›중동","사이버안보":"안보›테러·신안보","펠로폰네소스 전쟁":"국제정치이론›고전사상","조선 외교 순서":"외교사›동아시아 근대","의회의 외교 감독":"지역›미국","한국 ODA":"국제정치경제›개발·남북문제","남북 군비통제 합의":"지역›한반도·북핵","유럽협조체제":"외교사›근대유럽","알몬드-리프만 컨센서스":"국제정치이론›외교정책결정","치킨게임":"국제정치이론›게임이론·협상","합종연횡(견제·편승)":"국제정치이론›세력균형·동맹","현실주의·자유주의 비교":"국제정치이론›현실주의","투키디데스 함정":"국제정치이론›고전사상","기후변화 회의":"글로벌이슈›환경·기후","공격-방어 균형":"안보›전쟁원인","OPEC":"국제정치경제›에너지·자원","미국 외교정책 일반":"지역›미국","결집효과":"국제정치이론›외교정책결정","청중비용":"국제정치이론›외교정책결정","선출인단이론":"국제정치이론›외교정책결정","일본 역사담화":"지역›일본","신남방정책":"지역›한국 외교","비엔나회의":"외교사›근대유럽","근대 유럽 조약 순서":"외교사›근대유럽","냉전 형성 순서":"외교사›냉전","이란 혁명":"지역›중동","핵확산 논쟁":"안보›핵비확산","중국 시기별 대외정책":"지역›중국","한국전쟁":"외교사›냉전","공공외교법":"외교·국제법›외교·영사","현실주의 가정":"국제정치이론›현실주의","오리엔탈리즘":"국제정치이론›국제체제·권력","콕스 비판이론":"국제정치이론›비판이론","중견국":"국제정치이론›국제체제·권력","난징조약":"외교사›동아시아 근대","중국 외교원칙 순서":"지역›중국","집단적 자위권":"지역›일본","평화헌법":"지역›일본","EU 공동외교안보정책":"지역›유럽","남북기본합의서":"지역›한반도·북핵","아시아 영토분쟁":"지역›중국","식량안보":"글로벌이슈›식량·보건","대량살상무기 통제협정":"안보›군비통제·군축","세계인권선언":"글로벌이슈›인권·난민","WTO 분쟁해결":"국제정치경제›무역·FTA","워싱턴 컨센서스":"국제정치경제›개발·남북문제","제2이미지 역전":"국제정치이론›외교정책결정","상상된 공동체(민족주의)":"글로벌이슈›세계화·문명","규범의 생활주기":"국제정치이론›구성주의","테러리즘":"안보›테러·신안보","냉전기 사건 순서":"외교사›냉전","IGO-NGO 협력(협의지위)":"국제기구›글로벌거버넌스·NGO","근대 동북아 사건 순서":"외교사›동아시아 근대","동아시아 국제관계사":"외교사›동아시아 근대","이론별 기본가정":"국제정치이론›구성주의","시진핑 시기 중국":"지역›중국","2차대전 이후 국제기구":"국제정치경제›통화·금융","신현실주의 국제협력관":"국제정치이론›신현실주의","일본 외교정책":"지역›일본","인간안보":"안보›테러·신안보","ILO":"국제기구›UN","탈냉전기 군축협정":"안보›군비통제·군축","한국 PKO":"지역›한국 외교","트루먼 독트린":"외교사›냉전","경제통합 단계":"국제정치경제›지역경제통합","웬트 구성주의":"국제정치이론›구성주의","청일전쟁 전후":"외교사›동아시아 근대","정의로운 전쟁(왈저)":"안보›전쟁원인","앨리슨 모델":"국제정치이론›외교정책결정","미국 인도태평양 전략":"지역›미국","국제통화금융질서":"국제정치경제›통화·금융","한국 공공외교":"외교·국제법›외교·영사","SDGs":"국제정치경제›개발·남북문제","일본 총리별 외교안보":"지역›일본","북핵 사건 순서":"지역›한반도·북핵","국제인권 동향":"글로벌이슈›인권·난민","민족공동체 통일방안":"지역›한반도·북핵","동맹 체결 순서":"외교사›냉전","기후변화 거버넌스":"글로벌이슈›환경·기후","1차대전 전후 처리":"외교사›1차대전·전간기","동아시아 영토분쟁":"지역›중국","현실주의 분파 비교":"국제정치이론›현실주의","이론별 안보관":"국제정치이론›신자유제도주의","이론별 국제협력관":"국제정치이론›신자유제도주의","국제정치사상가":"국제정치이론›고전사상","구조주의 이론":"국제정치이론›비판이론","해외직접투자":"국제정치경제›다국적기업·투자","NATO":"안보›집단안보·평화","자유주의적 정부간주의":"국제정치이론›통합이론","종속이론":"국제정치경제›개발·남북문제","시진핑 외교(인류운명공동체)":"지역›중국","양안관계":"지역›중국","러시아 무력 현상변경":"지역›러시아","독일 통일":"지역›유럽","동아시아 지역협력":"국제기구›지역기구","탈냉전기 국제관계":"외교사›탈냉전","이-팔 분쟁 배경":"지역›중동","1차대전 전후 사건 순서":"외교사›1차대전·전간기","기후변화 당사국총회":"글로벌이슈›환경·기후","칸트적 평화 삼각구도":"국제정치이론›자유주의","브레튼우즈 기구":"국제정치경제›통화·금융","협상모델(피어론)":"안보›전쟁원인","미국 대외경제정책사":"국제정치경제›무역·FTA","정부별 남북관계":"지역›한반도·북핵","중국-아프리카 관계":"지역›중국","마셜플랜":"외교사›냉전","핵확산·핵실험 금지":"안보›핵비확산","멜로스 대화":"국제정치이론›고전사상","2차대전 사건 순서":"외교사›2차대전","콕스 헤게모니":"국제정치이론›비판이론","WTO 의사결정":"국제정치경제›무역·FTA","UN 전문기구":"국제기구›UN","정부별 대외정책":"지역›한국 외교","봉쇄정책":"외교사›냉전","긴 전문":"외교사›냉전","영국학파 국제사회론":"국제정치이론›영국학파·국제사회론","중동전쟁":"지역›중동","리스본조약":"지역›유럽","글로벌 사우스":"국제정치경제›개발·남북문제","피크 차이나":"국제정치이론›패권안정·세력전이","포츠머스 조약":"외교사›동아시아 근대","동아시아 지역협의체 순서":"국제기구›지역기구","베르사유 조약":"외교사›1차대전·전간기","모겐소 정치적 현실주의":"국제정치이론›현실주의"};
+function caseTagPaths(t,rs){
+  if(st.caseTag[t])return st.caseTag[t];
+  if(CASE_TAG[t])return CASE_TAG[t];
+  const m={};rs.forEach(r=>r.topic.forEach(x=>{const b=big(x);(m[b]=m[b]||new Set()).add(x)}));
+  return Object.keys(m).map(b=>m[b].size>1?b:[...m[b]][0]);
+}
+function byYear(rs){const m={};rs.forEach(r=>(m[r.q.y]=m[r.q.y]||new Set()).add(qkey(r.q)));return m}
+const yhead=ys=>ys.map(y=>`<th class="${y>BASE?'post':''}">${String(y).slice(2)}</th>`).join('');
+(function(){try{if(st.ctFix1)return;Object.keys(st.caseTag||{}).forEach(t=>{const d=CASE_TAG[t]||[];st.caseTag[t]=uniq([...d,...st.caseTag[t]])});st.ctFix1=1;save()}catch(e){}})();
+const tagName=p=>p.includes('›')?p.split('›')[1]:p;
+function mini(rs){
+  rs=[...rs].sort((a,b)=>a.q.y-b.q.y||a.q.n-b.q.n);
+  return '<table class="mini">'+rs.map(r=>`<tr><td class="s">${srcL(r.q)}</td><td><div class="cell">${r.topic.map(t=>chip('topic',t)).join('')}</div></td><td><div class="cell">${r.etc.map(t=>chip('etc',t)).join('')}</div></td></tr>`).join('')+'</table>';
+}
+function collect(f){
+  const m={};gRows().forEach(r=>r[f].forEach(t=>(m[t]=m[t]||[]).push(r)));
+  return Object.entries(m).map(([t,rs])=>({f,t,rs,qn:rs.length,yrs:rs.map(r=>r.q).sort((a,b)=>a.y-b.y).map(q=>`${String(q.y).slice(2)}-${q.n}${q.g===9?'(9)':''}`).join(' · ')}));
+}
+
+const GENERIC_ETC=[];
+/* ===== 새 논점 ===== */
+function renderNew(){
+  const ys=yearsAll().filter(y=>y>BASE),grp={};
+  const etcNames=new Set();ROWS.forEach(r=>r.etc.forEach(t=>{if(!GENERIC_ETC.includes(t))etcNames.add(short('etc',t))}));
+  const dupCase=t=>[...etcNames].some(e=>e===t||e.startsWith(t)||t.startsWith(e));
+  const bigOf=rs=>{const c={};rs.forEach(r=>r.topic.forEach(x=>{const b=big(x);c[b]=(c[b]||0)+1}));return Object.keys(c).sort((x,y)=>c[y]-c[x]||ko(x,y))[0]||'미분류'};
+  collect('det').filter(i=>isNew('det',i.t)&&!dupCase(i.t)).forEach(i=>(grp[bigOf(i.rs)]=grp[bigOf(i.rs)]||[]).push(i));
+  collect('etc').filter(i=>isNew('etc',i.t)&&!GENERIC_ETC.includes(i.t)).forEach(i=>{const b=big(caseTagPaths(i.t,i.rs)[0]||'미분류');(grp[b]=grp[b]||[]).push(i)});
+  const bs=Object.keys(grp).sort((x,y)=>grp[y].length-grp[x].length||ko(x,y));
+  if(!bs.length){main.innerHTML='<div class="empty">아직 새 논점이 없어요</div>';return}
+  let h=`<table class="heat"><thead><tr><th>새 논점 / 학자·조약·사건</th>${yhead(ys)}<th>개수</th></tr></thead><tbody>`;
+  bs.forEach(b=>{
+    h+=`<tr class="mid"><td class="nm">${esc(b)}</td>${blankRow(ys)}<td class="cnt1">${grp[b].length}</td></tr>`;
+    grp[b].sort((x,y)=>FIRST[x.f+'|'+x.t]-FIRST[y.f+'|'+y.t]||(x.f==='det'?-1:1)-(y.f==='det'?-1:1)||ko(x.t,y.t)).forEach(i=>{
+      const m=byYear(i.rs),fy=FIRST[i.f+'|'+i.t],typ=i.f==='etc'?(i.t.match(/^(학자|조약|사건|기타):/)||[])[1]:'논점';
+      h+=`<tr><td class="nm sub" data-f="${i.f}" data-t="${esc(i.t)}"><span class="typ">${typ}</span>${esc(short(i.f,i.t))}</td>${ys.map(y=>numCell(m[y],+y===fy)).join('')}<td class="cnt1">${i.qn}</td></tr>`;
+    });
+  });
+  main.innerHTML=h+'</tbody></table>';
+}
+/* ===== 판례·조약 빈출 (표) ===== */
+function renderEtc(){
+  const ys=yearsAll(),grp={},byT={};
+  gRows().forEach(r=>r.etc.forEach(t=>{
+    if(GENERIC_ETC.includes(t))return;
+    if(etcType&&!t.startsWith(etcType))return;
+    (byT[t]=byT[t]||[]).push(r);
+  }));
+  Object.entries(byT).forEach(([t,rs])=>{
+    const b=big((CASE_TAG[t]||caseTagPaths(t,rs))[0]||'미분류');
+    (grp[b]=grp[b]||{})[t]=rs;
+  });
+  const SEGN={'':'전체','학자:':'학자','조약:':'문헌·조약','사건:':'사건'};const seg=Object.keys(SEGN).map(t=>`<button class="${etcType===t?'on':''}" data-act="etype" data-t="${t}">${SEGN[t]}</button>`).join('');
+  const bs=sortBig(Object.keys(grp));
+  if(!bs.length){main.innerHTML=`<div class="seg">${seg}</div><div class="empty">항목이 없어요</div>`;return}
+  let h=`<table class="heat"><thead><tr><th>논점 / 학자·조약·사건</th>${yhead(ys)}<th>개수</th></tr></thead><tbody>`;
+  bs.forEach(b=>{
+    const items=Object.entries(grp[b]).sort((x,y)=>y[1].length-x[1].length||ko(x[0],y[0]));
+    const all=uniq(items.flatMap(x=>x[1]));
+    const cb=closedEtc.has(b);
+    h+=`<tr class="mid lv1" id="big-${esc(b)}" data-act="tg-etc" data-t="${esc(b)}"><td class="nm" data-t="${esc(b)}"><span class="car">${cb?'▸':'▾'}</span>${esc(b)}</td>${blankRow(ys)}<td class="cnt1">${all.length}</td></tr>`;
+    if(cb)return;
+    items.forEach(([t,rs])=>{
+      const m=byYear(rs),typ=(t.match(/^(학자|조약|사건|기타):/)||[])[1],fy=FIRST['etc|'+t];
+      const tags=caseTagPaths(t,rs).map(x=>`<span class="htg" data-t="${esc(t)}" data-p="${esc(x)}" title="우클릭: 삭제">#${esc(tagName(x))}</span>`).join(' ');
+      h+=`<tr><td class="nm sub" data-f="etc" data-t="${esc(t)}" title="우클릭: 키워드 추가">${typ&&!etcType?`<span class="typ">${typ}</span>`:''}${esc(short('etc',t))}<span class="htag">${tags}</span></td>${ys.map(y=>numCell(m[y],fy>BASE&&+y===fy)).join('')}<td class="cnt1">${rs.length}</td></tr>`;
+    });
+  });
+  main.innerHTML=`<div class="seg">${seg}</div>`+wrapNav(h+'</tbody></table>',bs,'etc');
+}
+/* ===== 오답패턴 (표) ===== */
+function renderTrap(){
+  const ys=yearsAll(),items=collect('trap').sort((a,b)=>b.qn-a.qn||ko(a.t,b.t));
+  if(!items.length){main.innerHTML='<div class="empty">아직 오답유형이 없어요</div>';return}
+  let h=`<table class="heat fit"><colgroup><col class="c-n"><col class="c-t">${ys.map(()=>'<col>').join('')}</colgroup><thead><tr><th>개수</th><th>오답유형</th>${yhead(ys)}</tr></thead><tbody>`;
+  items.forEach(i=>{const m=byYear(i.rs);h+=`<tr><td class="cnt1">${i.qn}</td><td class="nm sub" data-f="trap" data-t="${esc(i.t)}">${esc(i.t)}</td>${ys.map(y=>numCell(m[y])).join('')}</tr>`});
+  main.innerHTML=h+'</tbody></table>';
+}
+/* ===== 출제 지도 ===== */
+const ORDER_BIG=["국제정치이론", "외교사", "안보", "국제정치경제", "국제기구", "외교·국제법", "지역", "글로벌이슈"];
+const ORDER_MID={"국제정치이론": ["고전사상", "현실주의", "신현실주의", "자유주의", "신자유제도주의", "구성주의", "영국학파·국제사회론", "비판이론", "패권안정·세력전이", "세력균형·동맹", "국제체제·권력", "게임이론·협상", "외교정책결정", "통합이론"], "외교사": ["근대유럽", "동아시아 근대", "1차대전·전간기", "2차대전", "냉전", "탈냉전"], "안보": ["전쟁원인", "억지·핵전략", "핵비확산", "군비통제·군축", "집단안보·평화", "인도적 개입·R2P", "테러·신안보"], "국제정치경제": ["IPE이론", "무역·FTA", "통화·금융", "다국적기업·투자", "개발·남북문제", "지역경제통합", "에너지·자원"], "국제기구": ["국제기구 이론", "국제연맹", "UN", "지역기구", "글로벌거버넌스·NGO"], "외교·국제법": ["외교·영사"], "지역": ["미국", "중국", "일본", "러시아", "유럽", "중동", "중남미", "한반도·북핵", "한국 외교"], "글로벌이슈": ["세계화·문명", "환경·기후", "인권·난민", "식량·보건"]};
+const ordIdx=(arr,x)=>{const i=arr.indexOf(x);return i<0?999:i};
+function sortBig(a){return a.sort((x,y)=>ordIdx(ORDER_BIG,x)-ordIdx(ORDER_BIG,y)||ko(x,y))}
+function sortMid(b,a){const o=ORDER_MID[b]||[];return a.sort((x,y)=>ordIdx(o,x.split('›')[1])-ordIdx(o,y.split('›')[1])||ko(x,y))}
+function detParentOf(tag,rows){
+  if(st.detParent[tag])return st.detParent[tag];
+  if(DET_PAR[tag])return DET_PAR[tag];
+  const c={};
+  rows.forEach(r=>{const w=r.topic.length===1?2:1;r.topic.forEach(t=>{let sc=w;const mid=(t.split('›')[1]||'');for(let i=0;i<mid.length-1;i++){if(tag.includes(mid.slice(i,i+2))){sc+=1.5;break}}c[t]=(c[t]||0)+sc})});
+  return Object.keys(c).sort((x,y)=>c[y]-c[x]||ko(x,y))[0]||'미분류›기타';
+}
+function renderHeat(){
+  const rs=gRows(),ys=yearsAll(),tree={};
+  rs.forEach(r=>r.topic.forEach(t=>{
+    const b=big(t),node=(tree[b]=tree[b]||{})[t]=tree[b][t]||{yrs:{},det:{}};
+    (node.yrs[r.q.y]=node.yrs[r.q.y]||new Set()).add(qkey(r.q));
+  }));
+  const detRows={};rs.forEach(r=>r.det.forEach(d=>(detRows[d]=detRows[d]||[]).push(r)));
+  Object.entries(detRows).forEach(([d,drs])=>{
+    const par=detParentOf(d,drs),b=big(par);
+    const node=(tree[b]=tree[b]||{})[par]=tree[b][par]||{yrs:{},det:{}};
+    node.det[d]=drs;
+  });
+  const sum=o=>Object.values(o).reduce((a,s)=>a+s.size,0);
+  const isNewD=d=>FIRST['det|'+d]>BASE;
+  let h=`<table class="heat"><thead><tr><th>논점</th>${yhead(ys)}<th>개수</th></tr></thead><tbody>`;
+  let bigs=sortBig(Object.keys(tree));
+  if(newOnly)bigs=bigs.filter(b=>Object.values(tree[b]).some(n=>Object.keys(n.det).some(isNewD)));
+  bigs.forEach(b=>{
+    const subs=tree[b],tot={};
+    Object.values(subs).forEach(n=>Object.entries(n.yrs).forEach(([y,s])=>{(tot[y]=tot[y]||new Set());s.forEach(x=>tot[y].add(x))}));
+    const cb=!newOnly&&closedBig.has(b);
+    h+=`<tr class="mid lv1" id="big-${esc(b)}" data-act="tg-big" data-t="${esc(b)}"><td class="nm" data-t="${esc(b)}"><span class="car">${cb?'▸':'▾'}</span>${esc(b)}</td>${blankRow(ys)}<td class="cnt1">${sum(tot)}</td></tr>`;
+    if(cb)return;
+    let mids=sortMid(b,Object.keys(subs));
+    if(newOnly)mids=mids.filter(t=>Object.keys(subs[t].det).some(isNewD));
+    mids.forEach(t=>{
+      const n=subs[t],om=newOnly||openMid.has(t),dets=Object.keys(n.det),nd=dets.length;
+      const newYs=new Set(dets.filter(isNewD).map(d=>FIRST['det|'+d]));
+      h+=`<tr class="lv2" data-act="tg-mid" data-t="${esc(t)}"><td class="nm" data-mid="${esc(t)}"><span class="car">${nd?(om?'▾':'▸'):''}</span>${esc(t.split('›').pop()||t)}</td>${ys.map(y=>numCell(n.yrs[y],newYs.has(+y))).join('')}<td class="cnt1">${sum(n.yrs)}</td></tr>`;
+      if(!om)return;
+      Object.entries(n.det).filter(([d])=>!newOnly||isNewD(d)).sort((x,y)=>y[1].length-x[1].length||FIRST['det|'+x[0]]-FIRST['det|'+y[0]]||ko(x[0],y[0])).forEach(([d,drs])=>{
+        const m=byYear(drs),fy=FIRST['det|'+d];
+        h+=`<tr class="lv3"><td class="nm" data-det="${esc(d)}" data-mid="${esc(t)}" title="우클릭: 수정">${esc(d)}</td>${ys.map(y=>numCell(m[y],fy>BASE&&+y===fy)).join('')}<td class="cnt1">${drs.length}</td></tr>`;
+      });
+    });
+  });
+  main.innerHTML=wrapNav(h+'</tbody></table>',bigs,'heat');
+  window.__heatMids=Object.values(tree).flatMap(o=>Object.keys(o));
+}
+function wrapNav(tbl,bigs,mode){
+  const ctl=mode==='heat'
+    ?`<a data-nav="all-open">전체 열기</a><a data-nav="all-close">전체 닫기</a><a data-nav="mid-open">중분류 모두 열기</a><a data-nav="sub-close">소분류 닫기</a><a data-nav="new-only" class="${newOnly?'on':''}">! 새 논점만</a>`
+    :`<a data-nav="all-open">전체 열기</a><a data-nav="all-close">전체 닫기</a>`;
+  return `<div class="twrap"><div class="tbox">${tbl}</div><aside id="navr" data-mode="${mode}"><a class="edge" data-nav="top">▲ top</a>${bigs.map(b=>`<a data-nav="${esc(b)}">${esc(b)}</a>`).join('')}<a class="edge" data-nav="bottom">▼ bottom</a><div class="ctl"><span class="lbl">☰ 펼치기·접기</span><div class="more">${ctl}</div></div></aside></div>`;
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('#navr a');if(!a)return;
+  const k=a.dataset.nav,mode=a.closest('#navr').dataset.mode,closed=mode==='etc'?closedEtc:closedBig;
+  if(k==='top')return scrollTo({top:0,behavior:'smooth'});
+  if(k==='bottom')return scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  if(k==='all-open'){closed.clear();if(mode==='heat')(window.__heatMids||[]).forEach(m=>openMid.add(m));return render()}
+  if(k==='all-close'){document.querySelectorAll('#main tr.lv1 td[data-t]').forEach(td=>closed.add(td.dataset.t));if(mode==='heat')openMid.clear();return render()}
+  if(k==='mid-open'){closed.clear();openMid.clear();return render()}
+  if(k==='sub-close'){openMid.clear();return render()}
+  if(k==='new-only'){newOnly=!newOnly;return render()}
+  if(closed.has(k)){closed.delete(k);render()}
+  const el=document.getElementById('big-'+k);if(el)scrollTo({top:el.getBoundingClientRect().top+scrollY-10,behavior:'smooth'});
+});
+/* ===== 세부 논점 편집 (우클릭) ===== */
+let cm=null;
+function closeCM(){if(cm){cm.remove();cm=null}}
+function rowsWithDet(d){return ROWS.filter(r=>r.det.includes(d))}
+function setDet(r,arr){st.ov[r.id]=st.ov[r.id]||{};st.ov[r.id].det=arr}
+function openCM(x,y,items){
+  closeCM();cm=document.createElement('div');cm.className='cmenu';
+  cm.innerHTML=items.map((it,i)=>it.hd?`<div class="hd">${esc(it.hd)}</div>`:`<button data-i="${i}">${esc(it.label)}</button>`).join('');
+  document.body.appendChild(cm);
+  cm.style.top=y+'px';cm.style.left=Math.min(x,scrollX+innerWidth-cm.offsetWidth-12)+'px';
+  cm.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const it=items[+b.dataset.i];closeCM();it.fn()};
+}
+function parseQ(str){
+  return str.split(/[,\s]+/).filter(Boolean).map(tok=>{const m=tok.match(/^(7|9)급?[-.\/](\d{2,4})[-.\/](\d{1,2})$/);if(!m)return null;let y=+m[2];if(y<100)y+=2000;return `${m[1]}-${y}-${+m[3]}`}).filter(Boolean);
+}
+document.addEventListener('contextmenu',e=>{
+  if(view!=='heat')return;
+  const dt=e.target.closest('td[data-det]'),md=e.target.closest('tr.lv2 td[data-mid]');
+  if(!dt&&!md)return;
+  e.preventDefault();
+  if(dt){
+    const d=dt.dataset.det,mid=dt.dataset.mid;
+    openCM(e.pageX,e.pageY,[{hd:d},
+      {label:'이름 바꾸기',fn:()=>{const v=prompt('새 이름',d);if(!v||v===d)return;rowsWithDet(d).forEach(r=>setDet(r,uniq(r.det.map(x=>x===d?v.trim():x))));if(st.detParent[d]){st.detParent[v.trim()]=st.detParent[d];delete st.detParent[d]}save();build();render()}},
+      {label:'출제 문제 추가 (예: 7-2023-5)',fn:()=>{const v=prompt('추가할 문제 (급-연도-번호, 여러 개는 쉼표)\n예: 7-2023-5, 9-2021-3','');if(!v)return;parseQ(v).forEach(id=>{const r=ROWS.find(x=>x.id===id);if(r&&!r.det.includes(d))setDet(r,[...r.det,d])});save();build();render()}},
+      {label:'출제 문제 빼기',fn:()=>{const list=rowsWithDet(d).map(r=>r.id).join(', ');const v=prompt('뺄 문제 (현재: '+list+')','');if(!v)return;const ids=parseQ(v);rowsWithDet(d).forEach(r=>{if(ids.includes(r.id))setDet(r,r.det.filter(x=>x!==d))});save();build();render()}},
+      {label:'다른 중분류로 옮기기',fn:()=>openMidPicker(e,d)},
+      {label:'삭제',fn:()=>{if(!confirm(`'${d}' 삭제할까요?`))return;rowsWithDet(d).forEach(r=>setDet(r,r.det.filter(x=>x!==d)));save();build();render()}}]);
+  }else{
+    const mid=md.dataset.mid;
+    openCM(e.pageX,e.pageY,[{hd:mid.replace('›',' › ')},
+      {label:'세부 논점 추가',fn:()=>{const name=prompt('세부 논점 이름','');if(!name)return;const v=prompt('출제 문제 (급-연도-번호, 여러 개는 쉼표)\n예: 7-2023-5, 9-2021-3','');if(!v)return;parseQ(v).forEach(id=>{const r=ROWS.find(x=>x.id===id);if(r&&!r.det.includes(name.trim()))setDet(r,[...r.det,name.trim()])});st.detParent[name.trim()]=mid;openMid.add(mid);save();build();render()}}]);
+  }
+});
+function openMidPicker(e,d){
+  closePicker();
+  const dv=document.createElement('div');dv.className='picker';document.body.appendChild(dv);
+  pk={el:dv,mode:'detmove',t:d,path:[]};renderTopicPicker();
+  dv.style.top=(e.pageY+6)+'px';dv.style.left=Math.max(8,Math.min(e.pageX,scrollX+innerWidth-dv.offsetWidth-12))+'px';
+}
+addEventListener('click',e=>{if(cm&&!e.target.closest('.cmenu'))closeCM()});
+function render(){
+    document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  ({table:renderTableView,new:renderNew,etc:renderEtc,trap:renderTrap,heat:renderHeat})[view]();
+}
+function rerender(){view==='table'?renderTable():render()}
+
+/* ===== 키워드 피커 ===== */
+let pk=null;
+function closePicker(){if(pk){pk.el.remove();pk=null}}
+function topicTree(){
+  const paths=new Set([...st.cat,...st.kw.topic]);
+  ROWS.forEach(r=>r.topic.forEach(t=>paths.add(t)));
+  const root={};
+  [...paths].forEach(p=>{let n=root;p.split('›').slice(0,2).forEach(seg=>{n=n[seg]=n[seg]||{}})});
+  return root;
+}
+function usedPrefix(p){return ROWS.some(r=>r.topic.some(t=>t===p||t.startsWith(p+'›')))}
+function renderTopicPicker(){
+  const d=pk.el,path=pk.path,depth=path.length,cur=pk.mode==='case'?caseTagPaths(pk.t,[]):pk.mode==='detmove'?[st.detParent[pk.t]||'']:ROWS.find(x=>x.id===pk.id).topic;
+  let node=topicTree();for(const sg of path)node=node[sg]||{};
+  const kids=Object.keys(node).sort(ko),leaf=depth>=1;
+  const crumb=`<div class="crumb"><span data-act="tp-go" data-i="0" class="${depth?'':'cur'}">전체</span>${path.map((sg,i)=>`›<span data-act="tp-go" data-i="${i+1}" class="cur">${esc(sg)}</span>`).join('')}</div>`;
+  const list=kids.map(k=>{
+    const full=[...path,k].join('›'),on=cur.includes(full);
+    return `<span class="chip c-topic" data-act="tp-in" data-k="${esc(k)}" title="${leaf?'선택':'하위로'}${st.cat.includes(full)&&!usedPrefix(full)?' · 우클릭 삭제':''}" style="${on?'outline:1.5px solid #6fb0dc':''}">${esc(k)}${leaf?'':'<i class="arr">›</i>'}</span>`;
+  }).join('')||'<span style="color:#b5ada6;font-size:12.5px">아직 없음 — 아래에서 추가</span>';
+  d.innerHTML=crumb+`<div class="lvl">${LV[Math.min(depth,1)]}</div><div class="opts">${list}</div>
+    <div class="tp-foot"><input placeholder="+ 새 ${LV[Math.min(depth,1)]} 추가 후 Enter">${depth?`<button class="btn tp-sel" data-act="tp-sel">「${esc(path[0])}」만 선택</button>`:''}</div>`;
+  const inp=d.querySelector('input');inp.focus({preventScroll:true});
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closePicker();
+    if(e.key==='Enter'&&inp.value.trim()){
+      const v=inp.value.trim().replace(/›/g,''),full=[...path,v].join('›');
+      if(!st.cat.includes(full))st.cat.push(full);save();
+      if(leaf)pkSelect(full);else{pk.path.push(v);renderTopicPicker()}
+    }
+  });
+}
+function place(d,btn){
+  const b=btn.getBoundingClientRect();
+  d.style.top=(b.bottom+scrollY+4)+'px';
+  d.style.left=Math.max(8,Math.min(b.left+scrollX,scrollX+innerWidth-d.offsetWidth-12))+'px';
+}
+function openPicker(btn){
+  closePicker();
+  const id=btn.dataset.id,f=btn.dataset.f,r=ROWS.find(x=>x.id===id);
+  const d=document.createElement('div');d.className='picker';document.body.appendChild(d);
+  if(f==='topic'){pk={el:d,id,f,path:[]};renderTopicPicker();place(d,btn);return}
+  const opts=pool(f).filter(t=>!r[f].includes(t));
+  d.innerHTML=`<input placeholder="검색 또는 새 키워드 입력 후 Enter${f==='etc'?' (예: 학자: 왈츠 / 조약: NPT / 사건: 쿠바 미사일 위기)':''}"><div class="opts">${opts.map(t=>`<span class="chip c-${f}" data-act="pick" data-t="${esc(t)}" title="${esc(t)}">${esc(short(f,t))}</span>`).join('')}</div>`;
+  place(d,btn);pk={el:d,id,f};
+  const inp=d.querySelector('input');inp.focus({preventScroll:true});
+  inp.addEventListener('input',()=>{const v=inp.value.trim();d.querySelectorAll('.opts .chip').forEach(c=>c.style.display=c.dataset.t.includes(v)?'':'none')});
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closePicker();
+    if(e.key==='Enter'&&inp.value.trim())addTag(id,f,inp.value.trim());
+  });
+}
+function pkSelect(full){
+  if(pk&&pk.mode==='detmove'){if(!full.includes('›'))return;st.detParent[pk.t]=full;openMid.add(full);save();closePicker();render();return}
+  if(pk&&pk.mode==='case'){
+    const t=pk.t,cur=[...caseTagPaths(t,[])];
+    if(!cur.includes(full))cur.push(full);
+    st.caseTag[t]=cur;save();closePicker();render();return;
+  }
+  addTag(pk.id,'topic',full);
+}
+function addTag(id,f,t){
+  const r=ROWS.find(x=>x.id===id);
+  if(!r[f].includes(t)){if(f!=='topic'&&!st.kw[f].includes(t))st.kw[f].push(t);setOv(id,f,[...r[f],t])}
+  closePicker();rerender();
+}
+
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');
+  if(pk&&!e.target.closest('.picker')&&!(a&&(a.dataset.act==='add'||a.dataset.act.startsWith('tp-'))))closePicker();
+  if(!a)return;
+  const act=a.dataset.act,id=a.dataset.id,f=a.dataset.f,t=a.dataset.t;
+  if(act==='tg-big'){closedBig.has(t)?closedBig.delete(t):closedBig.add(t);render();return}
+  if(act==='tg-etc'){closedEtc.has(t)?closedEtc.delete(t):closedEtc.add(t);render();return}
+  if(act==='tg-mid'){openMid.has(t)?openMid.delete(t):openMid.add(t);render();return}
+  if(act==='add')openPicker(a);
+  else if(act==='pick'&&pk)addTag(pk.id,pk.f,t);
+  else if(act==='tp-go'&&pk){pk.path=pk.path.slice(0,+a.dataset.i);renderTopicPicker()}
+  else if(act==='tp-in'&&pk){const k=a.dataset.k;if(pk.path.length>=1)pkSelect([...pk.path,k].join('›'));else{pk.path.push(k);renderTopicPicker()}}
+  else if(act==='tp-sel'&&pk)pkSelect(pk.path[0]);
+  else if(act==='ctag-rm'){const p2=a.dataset.p;st.caseTag[t]=caseTagPaths(t,[]).filter(x=>x!==p2);save();render()}
+  else if(act==='rm'){const r=ROWS.find(x=>x.id===id);setOv(id,f,r[f].filter(x=>x!==t));rerender()}
+  else if(act==='kwf'){navStack.push({view,y:scrollY,etcType,kw:flt.kw});try{history.pushState({n:navStack.length},'')}catch(e){};flt.kw={f,t};view='table';render();scrollTo(0,0)}
+  else if(act==='back'){if(history.state&&history.state.n){history.back()}else goBack()}
+  else if(act==='clrkw'){flt.kw=null;renderTable()}
+  else if(act==='tog'){const k=a.dataset.k;open.has(k)?open.delete(k):open.add(k);render()}
+  else if(act==='etype'){etcType=t;render()}
+});
+document.addEventListener('contextmenu',e=>{
+  const tg=e.target.closest('.htg');
+  if(tg&&view==='etc'){
+    e.preventDefault();const t=tg.dataset.t,p2=tg.dataset.p;
+    openCM(e.pageX,e.pageY,[{hd:'#'+tagName(p2)},{label:'이 키워드 삭제',fn:()=>{st.caseTag[t]=caseTagPaths(t,[]).filter(x=>x!==p2);save();render()}}]);
+    return;
+  }
+  const row=e.target.closest('td.nm.sub[data-f="etc"]');
+  if(row&&view==='etc'){
+    e.preventDefault();closePicker();
+    const d=document.createElement('div');d.className='picker';document.body.appendChild(d);
+    pk={el:d,mode:'case',t:row.dataset.t,path:[]};renderTopicPicker();
+    d.style.top=(e.pageY+6)+'px';d.style.left=Math.max(8,Math.min(e.pageX,scrollX+innerWidth-d.offsetWidth-12))+'px';
+    return;
+  }
+  const a=e.target.closest('[data-act="tp-in"]');if(!a||!pk)return;
+  const full=[...pk.path,a.dataset.k].join('›');
+  if(!st.cat.includes(full)||usedPrefix(full))return;
+  e.preventDefault();
+  st.cat=st.cat.filter(x=>x!==full&&!x.startsWith(full+'›'));save();renderTopicPicker();
+});
+let mt;
+document.addEventListener('input',e=>{
+  if(!e.target.classList.contains('memo'))return;
+  const id=e.target.dataset.id,v=e.target.innerText.trim();
+  clearTimeout(mt);mt=setTimeout(()=>{st.ov[id]=st.ov[id]||{};st.ov[id].memo=v;save();const r=ROWS.find(x=>x.id===id);if(r)r.memo=v},400);
+});
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){view=b.dataset.v;render()}});
+document.getElementById('gsel')?.addEventListener('change',e=>{G=e.target.value;render()});
+document.getElementById('exp').onclick=()=>{
+  const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'});
+  const u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download=`국제법_기출분석_백업_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);
+};
+document.getElementById('imp').onclick=()=>document.getElementById('impf').click();
+document.getElementById('impf').onchange=e=>{
+  const fl=e.target.files[0];if(!fl)return;
+  fl.text().then(s=>{try{const o=JSON.parse(s);st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};save();build();render()}catch(err){alert('파일을 읽지 못했어요')}});
+  e.target.value='';
+};
+const main=document.getElementById('main');
+build();render();
+window.__cloud=makeCloud('database_v1/intlpol_analysis',KEY,()=>st,o=>{closePicker();closeCM();st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};if(o.ctFix1)st.ctFix1=o.ctFix1;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};build();render()});
+</script>
+</body>
+</html>

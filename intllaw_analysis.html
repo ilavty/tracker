@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>국제법 기출 분석</title>
+<link href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/fonts-archive/GmarketSans/GmarketSans.css" rel="stylesheet">
+<style>
+:root{--bg:#fcfbfa;--ink:#1b1b1b;--sub:#857d76;--line:#ebe5df;--sky:#6fb0dc;--sky-l:#f0f7fc;--brown:#8a6a4f;--brown-l:#f3ebe3;--trap:#f8e9e6;--trap-t:#9a4a3f;--gray:#efedea;--new:#d65a4f;--o:#3d86c0;--x:#b85a4e}
+*{box-sizing:border-box;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Paperlogy','GmarketSans','Gmarket Sans',sans-serif;font-size:14px;line-height:1.5}
+header{padding:28px 32px 10px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 24px}
+h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.3px}
+h1 span{color:var(--brown)}
+.meta{color:var(--sub);font-size:12.5px}
+.hright{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.btn:hover{background:var(--sky-l)}
+select,input[type=text]{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 9px;background:#fff;color:var(--ink)}
+nav{display:flex;gap:4px;padding:0 32px;border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;font:inherit;font-size:14px;padding:10px 12px;cursor:pointer;color:var(--sub);border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button.on{color:var(--ink);border-color:var(--brown);font-weight:600}
+main{padding:18px 32px 60px}
+.fbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.fbar label{font-size:12.5px;color:var(--sub);display:flex;align-items:center;gap:5px}
+.stat{font-size:12.5px;color:var(--sub);margin-left:auto}
+table.db{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.db th{font-weight:500;font-size:12px;color:var(--sub);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);background:#faf8f6;white-space:nowrap}
+.db td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.db tr.qh td{background:#f7f3ef;padding:9px 10px;border-top:1px solid #e3dbd3}
+.src{font-weight:600;color:var(--brown);margin-right:10px}
+.stem{font-weight:500}
+.ans{float:right;font-size:12.5px;color:var(--sub)}
+.ans b{color:var(--ink)}
+.lab{width:34px;text-align:center;color:var(--sub)}
+tr.isans .lab{color:var(--ink);font-weight:700}
+tr.isans td.txt{background:linear-gradient(90deg,var(--sky-l),transparent)}
+.txt{min-width:240px;max-width:380px}
+.ox{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;font-weight:700;font-size:12.5px;cursor:pointer;user-select:none}
+.ox.O{color:var(--o);background:#e8f2fa}.ox.X{color:var(--x);background:#f8e8e5}
+.cell{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:120px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.c-topic{background:var(--sky-l);color:#1f4f73}
+.c-etc{background:var(--brown-l);color:#5e4430}
+.c-trap{background:var(--trap);color:var(--trap-t)}
+.c-anal{background:var(--gray);color:#4d4945}
+.new{font-size:10.5px;font-weight:700;color:#fff;background:var(--new);border-radius:3px;padding:0 3px;line-height:15px;font-family:serif}
+.add{border:1px dashed #d6cec6;background:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:var(--sub);font-size:13px;line-height:1;padding:0}
+.add:hover{background:var(--sky-l)}
+.memo{margin-top:5px;font-size:12.5px;color:#4d4945;min-height:18px;outline:none;border-radius:4px;padding:1px 3px}
+.memo:focus{background:#fbf8f5}
+.picker{position:absolute;z-index:50;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(60,40,20,.12);padding:10px;min-width:340px;max-width:600px}
+.picker input{width:100%;margin-bottom:8px;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:6px 9px}
+.picker .opts{display:flex;flex-wrap:wrap;gap:5px}
+.crumb{font-size:12.5px;color:var(--sub);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}
+.crumb span{cursor:pointer;padding:1px 4px;border-radius:4px}.crumb span:hover{background:var(--sky-l);color:var(--ink)}
+.crumb span.cur{color:var(--ink);font-weight:600}
+.lvl{font-size:11px;color:var(--brown);font-weight:600;margin:0 0 6px}
+.arr{font-style:normal;color:#8fb4cf;margin-left:2px}
+.tp-foot{display:flex;gap:6px;margin-top:10px;align-items:center}
+.tp-foot input{margin:0;flex:1}
+.tp-sel{white-space:nowrap}
+.kwsel{display:inline-flex;gap:5px;align-items:center}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+.card .hd{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;flex-wrap:wrap}
+.card .hd .cnt{margin-left:auto;font-size:12.5px;color:var(--sub)}
+.card .hd .yrs{font-size:12px;color:var(--sub)}
+.card .bd{padding:0 14px 12px}
+.mini{width:100%;border-collapse:collapse;font-size:13px}
+.mini td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+.mini .s{white-space:nowrap;color:var(--brown);font-weight:600;font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.seg button{border:0;background:#fff;font:inherit;font-size:12.5px;padding:6px 12px;cursor:pointer;color:var(--sub)}
+.seg button.on{background:var(--brown);color:#fff}
+table.heat{border-collapse:collapse;background:#fff;border:1px solid var(--line)}
+.heat th{white-space:nowrap}
+.heat th,.heat td{padding:5px 7px;border:1px solid var(--line);font-size:12.5px;text-align:center}
+.heat th.post{color:var(--brown)}
+.heat td.hit{background:var(--sky-l);white-space:nowrap}
+.heat tr.mid td.hit{background:#e3eff8}
+.qn{display:inline-block;color:#1f4f73;font-weight:400;font-size:11.5px}
+.qn:not(:last-of-type):after{content:',';color:#9bb6c9;margin-right:2px;font-weight:400}
+.qn.g9{color:var(--brown)}
+.heat td.nm{text-align:left;white-space:nowrap}
+.heat tr.mid td{background:#f7f3ef;font-weight:600}
+.heat td.sub{padding-left:18px;cursor:pointer}
+.heat tr.mid td.sub{padding-left:7px}
+.heat td.sub:hover{text-decoration:underline}
+.note{font-size:12.5px;color:var(--sub);margin:-4px 0 12px}
+.empty{color:var(--sub);padding:30px;text-align:center}
+.db{table-layout:auto}
+.db th{position:sticky;top:0;z-index:2}
+.db td{border-right:1px solid #f3eee9}
+.db td:last-child,.db th:last-child{border-right:0}
+.db tbody tr:hover td{background:#fbf8f5}
+.db td.yr{font-weight:600;white-space:nowrap}
+.db td.num{white-space:nowrap;color:var(--sub);text-align:right}
+.db td.ttl{min-width:150px;max-width:220px;color:#3d3833}
+.db td.lv{white-space:nowrap;color:#3d3833}
+.db td.lv div+div{margin-top:3px}
+.g9t{color:var(--brown);font-size:11px;margin-left:3px}
+.lv2{color:#8fa6b8}
+.tree{font-size:13px;line-height:1.35}
+.tree .n1{font-weight:600;color:var(--ink)}
+.tree .n1+.n1{margin-top:6px}
+.tree .n2,.tree .n3{position:relative;padding-left:16px;font-weight:400}
+.tree .n2:before,.tree .n3:before{content:'';position:absolute;left:5px;top:0;bottom:0;border-left:1px solid #d6ccc2}
+.tree .n2:last-child:before,.tree .n3:last-child:before{bottom:auto;height:11px}
+.tree .n2:after,.tree .n3:after{content:'';position:absolute;left:5px;top:11px;width:8px;border-top:1px solid #d6ccc2}
+.tree .lb{display:inline-block;padding:1px 0;color:#3d3833}
+.tree .n3 .chip{margin:1px 0;padding:1px 7px;font-size:12.5px}
+.tree .n2>.chip{margin:1px 0}
+.tree+.add,.tcell>.add{margin-top:6px}
+.typ{font-size:10.5px;color:var(--sub);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-right:6px}
+.heat td.cnt1{font-weight:700;color:var(--brown);min-width:34px}
+.heat .grp td{background:#f7f3ef;font-weight:600;text-align:left}
+.ans1{text-align:center;font-weight:600;white-space:nowrap}
+.ans1.g9{color:#a39a92;font-weight:500}
+.tchip .b{color:#6f8ea5;font-weight:400}
+.memo:empty{min-height:0;padding:0;margin:0}
+.memo:focus{min-height:18px}
+.mflag{font-size:11.5px;color:#9a4a3f;margin-top:4px}
+.htag{color:#8c837b;font-size:11.5px;margin-left:6px;font-weight:400}
+.hit .new{margin-left:3px;vertical-align:1px}
+.heat tr.mid td.blank{background:#f7f3ef}
+.htg{cursor:context-menu}
+table.fit{width:100%;table-layout:fixed}
+.fit th,.fit td{white-space:normal;padding:4px 2px;font-size:12px;word-break:keep-all}
+.fit td.hit{white-space:normal;line-height:1.35}
+.fit col.c-n{width:44px}.fit col.c-t{width:120px}
+.c-det{background:#f4f2f7;color:#4f4a5c}
+.new{font-size:10px!important;font-weight:400!important;color:#c0786c!important;background:none!important;border:1px solid #d9a69d;border-radius:50%!important;width:15px;height:15px;line-height:13px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center;font-family:serif}
+.fit th,.fit td{font-size:11px!important;letter-spacing:-.4px}
+.fit .qn{font-weight:400!important}
+.fit td.nm{font-weight:400}
+.backbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.backbtn:hover{background:var(--sky-l)}
+.new{display:none!important}
+.bang{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#f7c3d0;color:#fff;font-size:10px;font-weight:700;margin-left:3px;vertical-align:1px;font-family:Arial,sans-serif;line-height:1}
+.heat tr.lv1 td.nm{cursor:pointer;font-weight:600}
+.heat tr.lv2 td.nm{cursor:pointer;padding-left:18px;color:var(--ink)}
+.heat tr.lv3 td.nm{padding-left:34px;color:#5a534d;font-weight:400}
+.car{display:inline-block;width:12px;color:#a59c94;font-size:10px}
+.heat td.cnt1{white-space:nowrap}
+#navr{position:sticky;top:14px;flex:0 0 auto;display:flex;flex-direction:column;gap:2px;z-index:40;background:rgba(252,251,250,.92);border:1px solid var(--line);border-radius:10px;padding:6px 4px;max-height:86vh;overflow-y:auto}
+#navr a{font-size:11px;color:#6b625b;text-decoration:none;padding:2px 7px;border-radius:5px;white-space:nowrap;cursor:pointer}
+#navr a:hover{background:var(--sky-l);color:var(--ink)}
+#navr a.edge{color:var(--brown);font-weight:600}
+.cmenu{position:absolute;z-index:60;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 8px 24px rgba(60,40,20,.12);padding:5px;display:flex;flex-direction:column;min-width:170px}
+.cmenu button{border:0;background:none;text-align:left;font:inherit;font-size:13px;padding:6px 10px;border-radius:6px;cursor:pointer;color:var(--ink)}
+.cmenu button:hover{background:var(--sky-l)}
+.cmenu .hd{font-size:11.5px;color:var(--sub);padding:4px 10px}
+.twrap{display:flex;align-items:flex-start;gap:18px}
+.tbox{flex:0 1 auto;min-width:0}
+#navr .ctl{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
+#navr .ctl a{color:var(--brown)}
+#navr .ctl a.on{background:#fbe3ea;color:#b34a66;font-weight:600}
+.heat tr.lv3 td,.heat tr.lv3 td.hit{background:#fbf9f6!important}
+.heat tr[data-act]{cursor:pointer}
+.heat tr[data-act]:hover td{filter:brightness(.985)}
+#navr .ctl .more{display:flex;flex-direction:column;gap:2px;max-height:0;opacity:0;overflow:hidden;transform:translateY(-4px);transition:max-height .4s ease,opacity .3s ease,transform .3s ease}
+#navr .ctl:hover .more{max-height:180px;opacity:1;transform:none}
+#navr .ctl .lbl{color:var(--sub);font-size:11px;padding:2px 7px;cursor:default}
+</style>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+/* DATABASE ↔ Firebase 동기화 (DESK와 같은 Firebase, 별도 경로) */
+window.makeCloud=function(path,key,getState,applyState){
+  const TK=key+'_cloud_t';
+  let lt=+(localStorage.getItem(TK)||0),fresh=!lt,ready=false,db=null,timer=null;
+  const setT=t=>{lt=t;try{localStorage.setItem(TK,t)}catch(e){}};
+  try{if(!firebase.apps.length)firebase.initializeApp({apiKey:"AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o",projectId:"time-8d30b",databaseURL:"https://tracker-d3a39-default-rtdb.firebaseio.com/"});db=firebase.database()}catch(e){}
+  const push=()=>{if(!db)return;clearTimeout(timer);timer=setTimeout(()=>{db.ref(path).set({t:lt,d:JSON.stringify(getState())}).catch(()=>{})},500)};
+  setTimeout(()=>{ready=true},6000);
+  if(db)db.ref(path).on('value',s=>{
+    const r=s.val();
+    if(r&&r.t&&r.d&&(fresh||r.t>lt)){try{applyState(JSON.parse(r.d))}catch(e){}setT(r.t);fresh=false}
+    else if(!r||!r.t||r.t<lt){if(!lt)setT(Date.now());fresh=false;push()}
+    ready=true;
+  });
+  return{touched(){if(!ready)return;fresh=false;setT(Date.now());push()}};
+};
+</script>
+</head>
+<body>
+<header>
+  <h1>국제법 <span>기출 분석</span></h1>
+  <div class="hright">
+    <select id="gsel"><option value="">7급+9급</option><option value="7">7급</option><option value="9">9급</option></select>
+    <button class="btn" id="exp">내보내기</button>
+    <button class="btn" id="imp">불러오기</button>
+    <input type="file" id="impf" accept=".json" hidden>
+  </div>
+</header>
+<nav id="tabs">
+  <button data-v="heat" class="on">출제 지도</button>
+  <button data-v="etc">빈출</button>
+  <button data-v="trap">오답패턴</button>
+</nav>
+<main id="main"></main>
+
+<script>
+const SEED=[{"g":7,"y":2007,"n":1,"a":"①","t":["총론›국제법과 국내법"],"e":[],"p":["개념 혼동"],"z":[],"d":["일원론·이원론","VCLT 27조"]},{"g":7,"y":2007,"n":2,"a":"③","t":["국제형사법›ICC"],"e":[],"p":["범위 축소"],"z":[],"d":["ICC","뉘른베르크"]},{"g":7,"y":2007,"n":3,"a":"④","t":["해양법›국제해협·군도수역"],"e":[],"p":[],"z":[],"d":["통과통항"]},{"g":7,"y":2007,"n":4,"a":"③","t":["외교·영사›외교특권면제"],"e":[],"p":["예외 삭제"],"z":[],"d":["외교관 형사면제","외교관 민사면제 예외","면제 포기"]},{"g":7,"y":2007,"n":5,"a":"④","t":["국제환경법›개별 환경조약"],"e":[],"p":["출처 혼동"],"z":[],"d":["생물다양성협약","CITES"]},{"g":7,"y":2007,"n":6,"a":"①","t":["외교·영사›영사관계"],"e":[],"p":["범위 축소"],"z":[],"d":["영사관사","영사 계급","영사 출두"]},{"g":7,"y":2007,"n":7,"a":"②","t":["무력사용›자위권"],"e":["판례: Nicaragua","판례: Corfu Channel"],"p":["정반대 진술"],"z":["판례 결론"],"d":["Nicaragua","Corfu Channel","집단적 자위권 요청"]},{"g":7,"y":2007,"n":8,"a":"①","t":["해양법›EEZ"],"e":[],"p":["기준 혼동"],"z":[],"d":["EEZ 범위","EEZ 관할권 vs 주권적 권리"]},{"g":7,"y":2007,"n":9,"a":"③","t":["국제경제법›기타 협정"],"e":[],"p":["정반대 진술"],"z":[],"d":["TRIMs"]},{"g":7,"y":2007,"n":10,"a":"④","t":["해양법›공해"],"e":[],"p":["요건 추가"],"z":[],"d":["해적"]},{"g":7,"y":2007,"n":11,"a":"③","t":["총론›국제관습법"],"e":[],"p":["개념 혼동"],"z":[],"d":["조약-관습 관계","성문화"]},{"g":7,"y":2007,"n":12,"a":"④","t":["국가›국가승인"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["묵시적 승인"]},{"g":7,"y":2007,"n":13,"a":"④","t":["국제기구·UN›UN 안보리"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["안보리 구성"]},{"g":7,"y":2007,"n":14,"a":"②","t":["국제기구·UN›국제기구 일반"],"e":[],"p":["범위 확대"],"z":[],"d":["국제기구 법인격","NGO"]},{"g":7,"y":2007,"n":15,"a":"①","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["외국인 입국","외국인 추방"]},{"g":7,"y":2007,"n":16,"a":"②","t":["국제기구·UN›UN 목적·원칙"],"e":["조약: UN헌장 1조"],"p":["열거 외 항목"],"z":["조문 암기"],"d":["헌장 1조 목적"]},{"g":7,"y":2007,"n":17,"a":"③","t":["분쟁해결›ICJ 관할"],"e":[],"p":["범위 확대"],"z":[],"d":["ICJ 당사자능력","선택조항"]},{"g":7,"y":2007,"n":18,"a":"①","t":["국제인권법›UN 인권체제","국제인권법›지역인권"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["세계인권선언","자유권규약 개인통보","유럽인권협약","미주인권협약"]},{"g":7,"y":2007,"n":19,"a":"①","t":["외교·영사›외교특권면제"],"e":["판례: Asylum"],"p":["판례 결론 왜곡"],"z":[],"d":["외교관 민사면제 예외","Asylum","외교관 조세면제","면제 소멸"]},{"g":7,"y":2007,"n":20,"a":"④","t":["국제경제법›무역구제"],"e":[],"p":["요건 추가"],"z":[],"d":["상계관세"]},{"g":7,"y":2008,"n":1,"a":"②","t":["조약법›체결","조약법›무효"],"e":[],"p":["예외 삭제"],"z":["조문 암기"],"d":["구두조약","VCLT 27조","조약 개념","전권위임장"]},{"g":7,"y":2008,"n":2,"a":"②","t":["개인›난민"],"e":["판례: Asylum"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["비호권","Asylum","강제송환금지"]},{"g":7,"y":2008,"n":3,"a":"①","t":["외교·영사›외교특권면제"],"e":[],"p":["예외 신설"],"z":[],"d":["공관 불가침","공관 통신"]},{"g":7,"y":2008,"n":4,"a":"④","t":["관할권·면제›관할권 원칙"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["속인주의","객관적 속지주의","효과이론","수동적 속인주의"]},{"g":7,"y":2008,"n":5,"a":"③","t":["해양법›대륙붕","해양법›EEZ","해양법›섬·간출지"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["EEZ·대륙붕 비교","암석","경계획정 원칙"]},{"g":7,"y":2008,"n":6,"a":"②","t":["국가책임›외교적 보호"],"e":[],"p":["정반대 진술"],"z":[],"d":["국내구제 완료 예외"]},{"g":7,"y":2008,"n":7,"a":"④","t":["분쟁해결›ICJ 관할"],"e":[],"p":["요건 삭제"],"z":[],"d":["ICJ 당사자능력","확대관할권","특별협정(ICJ)","선택조항"]},{"g":7,"y":2008,"n":8,"a":"④","t":["국제경제법›GATT 원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["최혜국대우","FTA 예외","WTO 협정 개정 절차"]},{"g":7,"y":2008,"n":9,"a":"②","t":["국제환경법›기후변화"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["교토 메커니즘"]},{"g":7,"y":2008,"n":10,"a":"①","t":["외교·영사›외교사절 파견·직무"],"e":[],"p":["개념 혼동"],"z":[],"d":["아그레망","기능설","외교특권 개시"]},{"g":7,"y":2008,"n":11,"a":"④","t":["총론›국제법과 국내법"],"e":[],"p":["범위 확대"],"z":[],"d":["VCLT 27조","영국 관습법 수용","헌법 6조 조약 효력","미국 행정협정"]},{"g":7,"y":2008,"n":12,"a":"③","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["정반대 진술"],"z":[],"d":["WTO 강제관할","상소기구","선례구속"]},{"g":7,"y":2008,"n":13,"a":"④","t":["외교·영사›영사관계"],"e":[],"p":["절대표현"],"z":[],"d":["영사관사 불가침","영사행낭","영사 직무"]},{"g":7,"y":2008,"n":14,"a":"①","t":["국가책임›귀속"],"e":[],"p":["정반대 진술"],"z":[],"d":["공권력 부재시 행위","고의·과실 불요","반란단체 행위"]},{"g":7,"y":2008,"n":15,"a":"③","t":["공역·우주›우주법","해양법›심해저"],"e":[],"p":[],"z":[],"d":["인류공동유산","달조약"]},{"g":7,"y":2008,"n":16,"a":"①","t":["관할권·면제›관할권 원칙"],"e":["판례: Lotus호","판례: Nottebohm","판례: Anglo-Norwegian Fisheries","판례: Reparation for Injuries"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Lotus","Nottebohm","Anglo-Norwegian","Reparation"]},{"g":7,"y":2008,"n":17,"a":"②","t":["국제기구·UN›UN 회원국","국제기구·UN›UN 안보리"],"e":[],"p":["절대표현"],"z":[],"d":["UN 가입 절차","지역적 약정"]},{"g":7,"y":2008,"n":18,"a":"④","t":["개인›범죄인인도"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["범죄인인도법 거절사유","정치범불인도"]},{"g":7,"y":2008,"n":19,"a":"③","t":["국제기구·UN›지역기구(EU)"],"e":[],"p":["연혁 혼동"],"z":[],"d":["EU"]},{"g":7,"y":2008,"n":20,"a":"③","t":["국제인권법›자유권규약","국제인권법›사회권규약"],"e":[],"p":[],"z":["비교 암기"],"d":["자결권"]},{"g":7,"y":2009,"n":1,"a":"③","t":["국가›국내문제불간섭"],"e":["판례: Nicaragua","판례: 튀니지-모로코 국적법"],"p":["주체 바꾸기"],"z":[],"d":["헌장 2조7항","연맹규약 15조8항","튀니지-모로코","Nicaragua"]},{"g":7,"y":2009,"n":2,"a":"③","t":["국제형사법›ICC"],"e":[],"p":[],"z":[],"d":["침략범죄"]},{"g":7,"y":2009,"n":3,"a":"④","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["외국인 의무"]},{"g":7,"y":2009,"n":4,"a":"④","t":["해양법›영해·무해통항","해양법›기선·내수","해양법›접속수역"],"e":[],"p":["용어 바꿔치기"],"z":[],"d":["직선기선","접속수역","군도기선","무해통항"]},{"g":7,"y":2009,"n":5,"a":"②","t":["분쟁해결›ICJ 절차","국제경제법›WTO 분쟁해결"],"e":[],"p":["숫자 변경"],"z":["비교 암기"],"d":["ICJ·WTO 비교"]},{"g":7,"y":2009,"n":6,"a":"③","t":["외교·영사›외교특권면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["외교특권 개시","공관규모 제한","면제 계속","외교적 비호"]},{"g":7,"y":2009,"n":7,"a":"②","t":["관할권·면제›국가면제"],"e":[],"p":["범위 확대"],"z":[],"d":["국가면제 개념","UN 국가면제협약"]},{"g":7,"y":2009,"n":8,"a":"②","t":["분쟁해결›ICJ 절차"],"e":[],"p":["정반대 진술"],"z":[],"d":["선결적 항변"]},{"g":7,"y":2009,"n":9,"a":"③","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["범위 확대"],"z":[],"d":["DSU 시한","TPRM","패널 심의 비공개"]},{"g":7,"y":2009,"n":10,"a":"④","t":["국제경제법›WTO 설립협정"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["WTO 탈퇴","WTO 의무면제","WTO 가입"]},{"g":7,"y":2009,"n":11,"a":"①","t":["조약법›강행규범"],"e":[],"p":["정반대 진술"],"z":[],"d":["강행규범"]},{"g":7,"y":2009,"n":12,"a":"③","t":["총론›국제법과 국내법"],"e":["조약: 헌법 6조"],"p":["개념 혼동"],"z":["조문 암기"],"d":["일원론·이원론","헌법 6조 조약 효력"]},{"g":7,"y":2009,"n":13,"a":"①","t":["외교·영사›영사관계"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["영사 직무"]},{"g":7,"y":2009,"n":14,"a":"④","t":["개인›범죄인인도"],"e":[],"p":["정반대 진술"],"z":[],"d":["범죄인인도 의무","정치범불인도","범죄인인도 대상범죄"]},{"g":7,"y":2009,"n":15,"a":"①","t":["해양법›EEZ"],"e":[],"p":["연혁 혼동"],"z":[],"d":["EEZ 연혁","EEZ 어업 법령집행","해양과학조사 동의","인공섬 안전수역"]},{"g":7,"y":2009,"n":16,"a":"②","t":["조약법›유보"],"e":[],"p":["요건 추가"],"z":["조문 암기"],"d":["유보 철회","유보 시기"]},{"g":7,"y":2009,"n":17,"a":"③","t":["국가책임›대응조치"],"e":[],"p":["정반대 진술"],"z":[],"d":["대응조치 절차"]},{"g":7,"y":2009,"n":18,"a":"④","t":["국제기구·UN›UN 안보리"],"e":[],"p":["범위 확대"],"z":[],"d":["안보리 표결","거부권 범위"]},{"g":7,"y":2009,"n":19,"a":"②","t":["국제인권법›자유권규약","국제인권법›사회권규약"],"e":[],"p":["범위 확대"],"z":["비교 암기"],"d":["점진적 실현","사회권규약 개인통보","공공비상사태 이탈","사회권규약 외국인 차별"]},{"g":7,"y":2009,"n":20,"a":"②","t":["국제환경법›기후변화"],"e":[],"p":["범위 확대"],"z":[],"d":["교토의정서"]},{"g":7,"y":2010,"n":1,"a":"④","t":["개인›난민"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["난민 정의"]},{"g":7,"y":2010,"n":2,"a":"②","t":["해양법›섬·간출지"],"e":[],"p":["범위 확대"],"z":[],"d":["통과통항","암석","군함 퇴거","내수"]},{"g":7,"y":2010,"n":3,"a":"④","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["수용 요건","국유화 보상"]},{"g":7,"y":2010,"n":4,"a":"②","t":["국가책임›위법성조각사유"],"e":[],"p":["예외 삭제"],"z":[],"d":["자위","불가항력","대응조치 절차","무력복구"]},{"g":7,"y":2010,"n":5,"a":"④","t":["외교·영사›외교특권면제"],"e":[],"p":["범위 축소"],"z":[],"d":["외교신서사"]},{"g":7,"y":2010,"n":6,"a":"①","t":["해양법›대륙붕"],"e":[],"p":[],"z":[],"d":["대륙붕 범위"]},{"g":7,"y":2010,"n":7,"a":"①","t":["분쟁해결›ICJ 관할"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["선결적 항변","관할권 결정권"]},{"g":7,"y":2010,"n":8,"a":"③","t":["국제경제법›기타 협정"],"e":[],"p":["정반대 진술"],"z":[],"d":["반덤핑","SPS협정","TRIPS 지리적 표시","교차보복"]},{"g":7,"y":2010,"n":9,"a":"②","t":["국제형사법›ICC"],"e":[],"p":["개념 혼동"],"z":[],"d":["ICC 보충성"]},{"g":7,"y":2010,"n":10,"a":"③","t":["국가›국가승인"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["묵시적 승인"]},{"g":7,"y":2010,"n":11,"a":"②","t":["총론›국제관습법"],"e":[],"p":[],"z":[],"d":["관습법 요건","집요한 반대자"]},{"g":7,"y":2010,"n":12,"a":"①","t":["국제경제법›GATT 예외"],"e":[],"p":["열거 외 항목"],"z":[],"d":["GATT 11조 예외","긴급수입제한","GATT 20조"]},{"g":7,"y":2010,"n":13,"a":"④","t":["총론›법원(ICJ 38조)"],"e":[],"p":["개념 혼동"],"z":[],"d":["ICJ규정 38조 재판준칙","학설"]},{"g":7,"y":2010,"n":14,"a":"④","t":["관할권·면제›국가면제"],"e":[],"p":["범위 확대"],"z":[],"d":["국가면제 근거","상업적 거래","입법관할권 면제"]},{"g":7,"y":2010,"n":15,"a":"②","t":["국제환경법›기후변화","국제환경법›원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["지속가능개발","배출권거래","교토의정서"]},{"g":7,"y":2010,"n":16,"a":"③","t":["관할권·면제›관할권 원칙"],"e":[],"p":[],"z":["비교 암기"],"d":["수동적 속인주의"]},{"g":7,"y":2010,"n":17,"a":"④","t":["무력사용›자위권"],"e":[],"p":["정반대 진술"],"z":[],"d":["자위권 요건"]},{"g":7,"y":2010,"n":18,"a":"①","t":["공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":[],"d":["우주물체 등록","우주활동 자유","평화적 이용","영유금지"]},{"g":7,"y":2010,"n":19,"a":"②","t":["조약법›제3국"],"e":[],"p":["요건 삭제"],"z":["비교 암기"],"d":["제3국 권리·의무"]},{"g":7,"y":2010,"n":20,"a":"③","t":["국가책임›외교적 보호"],"e":["판례: Asylum","판례: Nottebohm","판례: Interhandel","판례: Anglo-Norwegian Fisheries"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["Asylum","Nottebohm","Interhandel","Anglo-Norwegian"]},{"g":7,"y":2011,"n":1,"a":"③","t":["총론›국제법과 국내법"],"e":[],"p":["정반대 진술"],"z":[],"d":["국제법 우위 일원론","변형·편입","VCLT 27조"]},{"g":7,"y":2011,"n":2,"a":"②","t":["총론›법원(ICJ 38조)"],"e":[],"p":["개념 혼동"],"z":[],"d":["선례구속","특별법·후법 우선","형평과 선"]},{"g":7,"y":2011,"n":3,"a":"③","t":["무력사용›집단안전보장","국제기구·UN›UN 안보리"],"e":[],"p":["범위 축소"],"z":[],"d":["총회의 이차적 책임","ICJ 판결 이행(94조)","안보리 결정 구속력","절차사항 표결"]},{"g":7,"y":2011,"n":4,"a":"④","t":["국가›국가승인"],"e":[],"p":["열거 외 항목"],"z":[],"d":["창설적 효과설","조건부 승인","묵시적 승인"]},{"g":7,"y":2011,"n":5,"a":"②","t":["무력사용›자위권"],"e":["조약: UN헌장 51조"],"p":["정반대 진술"],"z":[],"d":["집단적 자위권","자위권 보고 의무","비례성"]},{"g":7,"y":2011,"n":6,"a":"③","t":["국제경제법›WTO 설립협정","국제기구·UN›국제기구 일반"],"e":[],"p":[],"z":[],"d":["국가평등 의사결정"]},{"g":7,"y":2011,"n":7,"a":"②","t":["해양법›공해"],"e":[],"p":["요건 추가"],"z":[],"d":["해적","aut dedere aut judicare"]},{"g":7,"y":2011,"n":8,"a":"①","t":["국제형사법›ICC"],"e":[],"p":["정반대 진술"],"z":[],"d":["국가원수 면제 부인","침략범죄","ICC 시간적 관할","ICC 보충성"]},{"g":7,"y":2011,"n":9,"a":"③","t":["국제인권법›사회권규약"],"e":[],"p":["제도 혼동"],"z":[],"d":["세계인권선언 구속력","사회권규약 국가간통보","자유권규약위원회"]},{"g":7,"y":2011,"n":10,"a":"①","t":["영토›극지","해양법›심해저","공역·우주›우주법"],"e":[],"p":["출처 혼동"],"z":[],"d":["인류공동유산","남극조약","달조약"]},{"g":7,"y":2011,"n":11,"a":"③","t":["해양법›EEZ","해양법›경계획정"],"e":[],"p":["개념 혼동"],"z":[],"d":["EEZ 법적 성격","경계획정 원칙"]},{"g":7,"y":2011,"n":12,"a":"①","t":["분쟁해결›ICJ 관할","분쟁해결›권고적 의견"],"e":["판례: Nuclear Weapons 권고적 의견"],"p":["범위 축소"],"z":[],"d":["ICJ 당사자능력","권고적의견 요건","ICJ 판결 이행(94조)"]},{"g":7,"y":2011,"n":13,"a":"④","t":["외교·영사›외교특권면제"],"e":[],"p":["요건 삭제"],"z":[],"d":["외교특권 개시","파견국 관할권","면제 포기"]},{"g":7,"y":2011,"n":14,"a":"①","t":["분쟁해결›평화적 해결수단"],"e":[],"p":["개념 혼동"],"z":[],"d":["조정","교섭","주선·중개","사실심사"]},{"g":7,"y":2011,"n":15,"a":"①","t":["조약법›발효·적용","조약법›체결","조약법›무효","조약법›등록·기탁"],"e":[],"p":["범위 확대"],"z":["열거 암기"],"m":"가답안은 ①인데 ㄱ(국제기구 조약도 적용)은 틀린 진술이라 내용상 ②(ㄴ,ㄷ)로 보임 — 확인 필요","d":["VCLT 적용범위","조약 개념","기속적 동의 방법","조약 등록(102조)"]},{"g":7,"y":2011,"n":16,"a":"④","t":["공역·우주›우주법"],"e":[],"p":["정반대 진술"],"z":[],"d":["우주조약","군인 이용"]},{"g":7,"y":2011,"n":17,"a":"④","t":["국가책임›외교적 보호","국제기구·UN›국제기구 일반"],"e":["판례: Reparation for Injuries"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["직무보호","Reparation"]},{"g":7,"y":2011,"n":18,"a":"①","t":["국제환경법›원칙"],"e":[],"p":["출처 혼동"],"z":[],"d":["CBDR","사전주의","지속가능개발","오염자부담"]},{"g":7,"y":2011,"n":19,"a":"②","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["개념 혼동"],"z":[],"d":["보복의 성격","교차보복","보복수준 중재"]},{"g":7,"y":2011,"n":20,"a":"④","t":["국제경제법›GATT 원칙"],"e":[],"p":["연혁 혼동"],"z":[],"d":["내국민대우","동종상품 판단"]},{"g":7,"y":2012,"n":1,"a":"①","t":["총론›일방행위·연성법","국제기구·UN›UN 안보리"],"e":[],"p":[],"z":[],"d":["안보리 결의 구속력","총회결의","리우선언","세계인권선언 구속력"]},{"g":7,"y":2012,"n":2,"a":"②","t":["조약법›종료·정지"],"e":[],"p":["당연·자동"],"z":[],"d":["적대행위와 조약","후발적 이행불능","중대한 위반","외교단절과 조약"]},{"g":7,"y":2012,"n":3,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["정반대 진술"],"z":[],"d":["DSU 시한","역총의","상소기구","교차보복"]},{"g":7,"y":2012,"n":4,"a":"③","t":["국제기구·UN›UN 안보리"],"e":[],"p":["범위 확대"],"z":[],"d":["거부권 범위","이중거부권","ICJ 재판관 선출"]},{"g":7,"y":2012,"n":5,"a":"④","t":["총론›법원(ICJ 38조)"],"e":[],"p":["정반대 진술"],"z":[],"d":["관습법 요건","법의 일반원칙","형평과 선","국내판결"]},{"g":7,"y":2012,"n":6,"a":"④","t":["국가›국가승인"],"e":[],"p":[],"z":[],"d":["로디지아 불승인","몬테비데오협약","승인 국내적 효과"]},{"g":7,"y":2012,"n":7,"a":"③","t":["분쟁해결›ICJ 관할"],"e":[],"p":["범위 확대"],"z":[],"d":["선택조항","PCIJ 선택조항 승계"]},{"g":7,"y":2012,"n":8,"a":"④","t":["관할권·면제›국가면제"],"e":[],"p":["당연·자동"],"z":[],"d":["상업적 거래","고용계약 면제","집행면제"]},{"g":7,"y":2012,"n":9,"a":"①","t":["개인›범죄인인도","국제형사법›ICC"],"e":[],"p":["범위 확대"],"z":[],"d":["정치범불인도","자국민 불인도","특정성 원칙"]},{"g":7,"y":2012,"n":10,"a":"②","t":["분쟁해결›ICJ 관할"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["ICJ 당사자능력","관할권 결정권","전문성 원칙","상소 불허"]},{"g":7,"y":2012,"n":11,"a":"④","t":["해양법›EEZ","해양법›섬·간출지"],"e":[],"p":[],"z":[],"d":["EEZ 범위","내륙국 잉여어획","암석"]},{"g":7,"y":2012,"n":12,"a":"②","t":["국제기구·UN›UN 사무국·기타기관"],"e":[],"p":["정반대 진술"],"z":[],"d":["사무총장 임명","사무총장 주의환기"]},{"g":7,"y":2012,"n":13,"a":"①","t":["국제환경법›원칙"],"e":[],"p":["열거 외 항목"],"z":[],"d":["사후주의","CBDR","오염자부담","지속가능개발"]},{"g":7,"y":2012,"n":14,"a":"③","t":["조약법›체결"],"e":[],"p":["범위 확대"],"z":["열거 암기"],"d":["전권위임장"]},{"g":7,"y":2012,"n":15,"a":"②","t":["해양법›기선·내수","해양법›접속수역","해양법›국제해협·군도수역"],"e":[],"p":[],"z":["숫자 암기"],"d":["영해 폭","접속수역","만 폐쇄선","군도기선"]},{"g":7,"y":2012,"n":16,"a":"③","t":["외교·영사›외교특권면제"],"e":["판례: Asylum"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["외교관 신체불가침","공관 불가침","Asylum","단교시 공관 보호"]},{"g":7,"y":2012,"n":17,"a":"①","t":["관할권·면제›관할권 원칙"],"e":[],"p":[],"z":["비교 암기"],"d":["속인주의","보호주의","속지주의"]},{"g":7,"y":2012,"n":18,"a":"③","t":["국제경제법›기타 협정","국제경제법›GATT 원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["정부조달협정","정부조달 예외(GATT 3조8항)"]},{"g":7,"y":2012,"n":19,"a":"②","t":["해양법›공해"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["임검권","추적권","공해상 충돌","추적권 소멸"]},{"g":7,"y":2012,"n":20,"a":"④","t":["국가책임›외교적 보호"],"e":["판례: Nottebohm","판례: Interhandel"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["Nottebohm","Interhandel","국내구제 완료"]},{"g":7,"y":2013,"n":1,"a":"①","t":["국가›국가승인"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["묵시적 승인"]},{"g":7,"y":2013,"n":2,"a":"③","t":["조약법›강행규범"],"e":[],"p":["소급 혼동"],"z":[],"d":["강행규범","신강행규범"]},{"g":7,"y":2013,"n":3,"a":"①","t":["국제환경법›원칙"],"e":["판례: Trail Smelter"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["Trail Smelter","월경피해 방지"]},{"g":7,"y":2013,"n":4,"a":"②","t":["조약법›유보"],"e":[],"p":["요건 추가"],"z":[],"d":["유보 정의","유보 허용성","유보 철회"]},{"g":7,"y":2013,"n":5,"a":"②","t":["국제기구·UN›UN 총회","국제기구·UN›UN 안보리"],"e":[],"p":["절대표현"],"z":[],"d":["총회-안보리 관계(12조)","중요문제 표결","절차사항 표결"]},{"g":7,"y":2013,"n":6,"a":"②","t":["조약법›체결","조약법›발효·적용","조약법›종료·정지"],"e":[],"p":["범위 확대"],"z":["열거 암기"],"d":["조약체결능력","전권위임장","발효 전 의무","당사국 수 감소"]},{"g":7,"y":2013,"n":7,"a":"①","t":["개인›범죄인인도"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["범죄인인도법 거절사유"]},{"g":7,"y":2013,"n":8,"a":"④","t":["총론›법의 일반원칙·형평"],"e":["판례: Temple of Preah Vihear"],"p":["연혁 혼동"],"z":[],"d":["법의 일반원칙","Temple of Preah Vihear","금반언"]},{"g":7,"y":2013,"n":9,"a":"②","t":["해양법›영해·무해통항","해양법›기선·내수"],"e":[],"p":["요건 삭제"],"z":[],"d":["영해 폭","무해통항 정지","잠수함 부상","직선기선"]},{"g":7,"y":2013,"n":10,"a":"③","t":["외교·영사›국제기구 특권면제"],"e":[],"p":["범위 확대"],"z":[],"d":["UN 특권면제협약"]},{"g":7,"y":2013,"n":11,"a":"③","t":["외교·영사›영사관계"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["영사 직무"]},{"g":7,"y":2013,"n":12,"a":"④","t":["국제경제법›GATT 예외"],"e":[],"p":[],"z":["조문 암기"],"d":["스크린쿼터(GATT 4조)"]},{"g":7,"y":2013,"n":13,"a":"②","t":["국가책임›위법성조각사유"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["위법성조각사유 목록"]},{"g":7,"y":2013,"n":14,"a":"④","t":["해양법›공해"],"e":[],"p":["범위 축소"],"z":[],"d":["임검권"]},{"g":7,"y":2013,"n":15,"a":"③","t":["외교·영사›외교특권면제"],"e":[],"p":["예외 신설"],"z":[],"d":["공관 불가침","공관 재산 면제"]},{"g":7,"y":2013,"n":16,"a":"④","t":["분쟁해결›기타 국제재판소","분쟁해결›권고적 의견"],"e":[],"p":["범위 축소"],"z":[],"d":["국제포획재판소","권고적의견 요청 주체"]},{"g":7,"y":2013,"n":17,"a":"③","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["개념 혼동"],"z":[],"d":["패널 구성","패널 설치"]},{"g":7,"y":2013,"n":18,"a":"②","t":["해양법›국제해협·군도수역","해양법›영해·무해통항"],"e":[],"p":["절대표현"],"z":[],"d":["통과통항","해협 조사활동","군함 무해통항","영해 수수료"]},{"g":7,"y":2013,"n":19,"a":"④","t":["국제형사법›ICC"],"e":[],"p":["정반대 진술"],"z":[],"d":["ICC 연령","ICC 일사부재리","시효 부적용"]},{"g":7,"y":2013,"n":20,"a":"③","t":["분쟁해결›ICJ 관할"],"e":[],"p":["범위 확대"],"z":[],"d":["관할권 결정권","재판관 특권면제","선택조항","잠정조치"]},{"g":7,"y":2014,"n":1,"a":"①","t":["국가›국가의 요건·자결권"],"e":[],"p":["요건 추가"],"z":["열거 암기"],"d":["몬테비데오협약","국가 요건"]},{"g":7,"y":2014,"n":2,"a":"③","t":["국가›국내문제불간섭"],"e":["판례: Nicaragua"],"p":["판례 결론 왜곡"],"z":[],"d":["국내문제 가변성","Nicaragua","헌장 2조7항"]},{"g":7,"y":2014,"n":3,"a":"④","t":["영토›극지"],"e":[],"p":["정반대 진술"],"z":[],"d":["남극조약"]},{"g":7,"y":2014,"n":4,"a":"④","t":["해양법›공해"],"e":[],"p":["당연·자동"],"z":[],"d":["해적"]},{"g":7,"y":2014,"n":5,"a":"②","t":["분쟁해결›중재"],"e":[],"p":["정반대 진술"],"z":["비교 암기"],"d":["중재 구속력","중재 상소"]},{"g":7,"y":2014,"n":6,"a":"②","t":["국제형사법›ICC"],"e":[],"p":["정반대 진술"],"z":[],"d":["ICC 법인격","안보리 회부","ICC 시간적 관할"]},{"g":7,"y":2014,"n":7,"a":"③","t":["총론›국제법과 국내법"],"e":[],"p":["개념 혼동"],"z":[],"d":["이원론","VCLT 27조","미국 조약 효력","영국 관습법 수용"]},{"g":7,"y":2014,"n":8,"a":"①","t":["공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["우주책임협약","절대책임"]},{"g":7,"y":2014,"n":9,"a":"①","t":["조약법›유보","조약법›체결"],"e":[],"p":["요건 추가"],"z":[],"d":["유보 철회","전권위임장","기속적 동의 방법","체약국"]},{"g":7,"y":2014,"n":10,"a":"②","t":["국제경제법›GATT 원칙","국제경제법›GATT 예외"],"e":[],"p":["열거 외 항목"],"z":[],"d":["MFN 예외","GSP","스크린쿼터(GATT 4조)","GATT 21조 안보예외"]},{"g":7,"y":2014,"n":11,"a":"③","t":["총론›법원(ICJ 38조)","총론›법의 일반원칙·형평"],"e":[],"p":["요건 삭제"],"z":[],"d":["관습법 요건","법의 일반원칙","형평과 선","조약 등록(102조)"]},{"g":7,"y":2014,"n":12,"a":"③","t":["무력사용›PKO","무력사용›집단안전보장"],"e":[],"p":["열거 외 항목"],"z":[],"d":["PKO","비군사적 조치","군사적 조치","지역적 약정"]},{"g":7,"y":2014,"n":13,"a":"④","t":["국가책임›귀속"],"e":[],"p":["열거 외 항목"],"z":[],"d":["지방자치단체 행위 귀속","월권행위 귀속","공권력 위임 행위 귀속"]},{"g":7,"y":2014,"n":14,"a":"②","t":["해양법›영해·무해통항","해양법›EEZ","해양법›공해"],"e":[],"p":["범위 축소"],"z":[],"d":["해양과학조사 동의","핵추진선 항로대","항만시설","추적권"]},{"g":7,"y":2014,"n":15,"a":"④","t":["분쟁해결›권고적 의견"],"e":[],"p":["개념 혼동"],"z":[],"d":["권고적의견 요청 주체","전문기구 권고적의견"]},{"g":7,"y":2014,"n":16,"a":"②","t":["외교·영사›외교특권면제"],"e":[],"p":["정반대 진술"],"z":["비교 암기"],"d":["외교면제 인적범위"]},{"g":7,"y":2014,"n":17,"a":"①","t":["개인›범죄인인도"],"e":[],"p":["개념 혼동"],"z":[],"d":["특정성 원칙","자국민 불인도","범죄인인도 의무"]},{"g":7,"y":2014,"n":18,"a":"③","t":["국제환경법›개별 환경조약"],"e":[],"p":["출처 혼동"],"z":[],"d":["런던덤핑협약","오존층 비엔나협약","몬트리올의정서","바젤협약"]},{"g":7,"y":2014,"n":19,"a":"①","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["정반대 진술"],"z":[],"d":["DSU 공개성","상소기구 검토범위"]},{"g":7,"y":2014,"n":20,"a":"④","t":["국제기구·UN›UN 안보리","분쟁해결›평화적 해결수단"],"e":[],"p":["요건 삭제"],"z":[],"d":["안보리 권고(분쟁해결)","안보리 결정 구속력","헌장 103조"]},{"g":7,"y":2015,"n":1,"a":"①","t":["국제형사법›국제범죄·임시재판소"],"e":[],"p":["범위 축소"],"z":[],"d":["제노사이드협약"]},{"g":7,"y":2015,"n":2,"a":"③","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["외국인 출국","외국인 추방"]},{"g":7,"y":2015,"n":3,"a":"③","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["주체 바꾸기"],"z":["숫자 암기"],"d":["패널 구성"]},{"g":7,"y":2015,"n":4,"a":"③","t":["해양법›EEZ","해양법›국제해협·군도수역","해양법›공해"],"e":[],"p":["정반대 진술"],"z":[],"d":["해협 무해통항(45조)","인공섬 안전수역","편의치적"]},{"g":7,"y":2015,"n":5,"a":"①","t":["국제환경법›원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["국제환경법 특징","기본협약-의정서 방식"]},{"g":7,"y":2015,"n":6,"a":"③","t":["관할권·면제›국가면제"],"e":["판례: Jurisdictional Immunities(독일 v. 이탈리아)","판례: Al-Adsani"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["강행규범과 국가면제","Jurisdictional Immunities","Al-Adsani"]},{"g":7,"y":2015,"n":7,"a":"③","t":["조약법›무효"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["국내법 위반(46조)","착오","부정","대표 강박"]},{"g":7,"y":2015,"n":8,"a":"②","t":["국가›국가의 요건·자결권"],"e":[],"p":["연혁 혼동"],"z":[],"d":["분리독립"]},{"g":7,"y":2015,"n":9,"a":"④","t":["국가책임›위법성조각사유","국가책임›귀속"],"e":[],"p":["개념 혼동"],"z":[],"d":["위법성조각과 보상","고의·과실 불요"]},{"g":7,"y":2015,"n":10,"a":"①","t":["국제기구·UN›국제기구 일반"],"e":[],"p":["범위 확대"],"z":[],"d":["국제기구 법인격","묵시적 권한"]},{"g":7,"y":2015,"n":11,"a":"②","t":["해양법›영해·무해통항","해양법›국제해협·군도수역"],"e":[],"p":["범위 확대"],"z":[],"d":["군함 무해통항","통과통항"]},{"g":7,"y":2015,"n":12,"a":"④","t":["국제기구·UN›UN 총회","분쟁해결›평화적 해결수단"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["헌장 33조","비회원국 주의환기","총회 권한"]},{"g":7,"y":2015,"n":13,"a":"③","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["범위 확대"],"z":[],"d":["비위반제소","제3국 상소","역총의"]},{"g":7,"y":2015,"n":14,"a":"①","t":["외교·영사›영사관계"],"e":[],"p":["개념 혼동"],"z":[],"d":["영사관원 외교활동","외교관계와 영사관계","영사 서열"]},{"g":7,"y":2015,"n":15,"a":"②","t":["외교·영사›외교특권면제","개인›난민"],"e":[],"p":["개념 혼동"],"z":[],"d":["공관 불가침","외교적 비호","난민 지위","고문방지협약"]},{"g":7,"y":2015,"n":16,"a":"①","t":["무력사용›국제인도법"],"e":[],"p":["개념 혼동"],"z":[],"d":["마르텐스 조항"]},{"g":7,"y":2015,"n":17,"a":"①","t":["국가책임›외교적 보호"],"e":["판례: Nottebohm"],"p":["요건 추가"],"z":[],"d":["국적계속","이중국적","주주 외교보호","Nottebohm"]},{"g":7,"y":2015,"n":18,"a":"②","t":["관할권·면제›국가면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["UN 국가면제협약","면제 동의","증인 출석"]},{"g":7,"y":2015,"n":19,"a":"④","t":["국제기구·UN›UN 총회","국제기구·UN›UN 안보리"],"e":[],"p":["요건 추가"],"z":[],"d":["총회-안보리 관계(12조)","특별회기","군사적 조치"]},{"g":7,"y":2015,"n":20,"a":"①","t":["공역·우주›항공법"],"e":[],"p":["출처 혼동"],"z":[],"d":["동경협약","헤이그협약(항공기납치)","몬트리올협약(항공)","북경협약"]},{"g":7,"y":2016,"n":1,"a":"③","t":["국가›국가승인","국가›정부승인"],"e":[],"p":["개념 혼동"],"z":[],"d":["Estrada 주의","선언적 효과설","묵시적 승인"]},{"g":7,"y":2016,"n":2,"a":"①","t":["조약법›유보"],"e":[],"p":["정반대 진술"],"z":["숫자 암기"],"d":["유보 묵시 수락","유보 철회"]},{"g":7,"y":2016,"n":3,"a":"③","t":["국제환경법›원칙"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["CBDR","사전주의","오염자부담","월경피해 방지"]},{"g":7,"y":2016,"n":4,"a":"④","t":["무력사용›집단안전보장"],"e":[],"p":["연혁 혼동"],"z":[],"d":["군사적 조치","군사참모위원회","특별협정(43조)","한국전쟁 UN군"]},{"g":7,"y":2016,"n":5,"a":"①","t":["개인›외국인 지위","국가책임›법적 효과"],"e":[],"p":["개념 혼동"],"z":[],"d":["위법 수용 구제","영구주권 결의","수용 요건"]},{"g":7,"y":2016,"n":6,"a":"③","t":["해양법›심해저","영토›극지","공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":[],"d":["달조약","남극조약","심해저 병행개발","11부 이행협정"]},{"g":7,"y":2016,"n":7,"a":"④","t":["해양법›분쟁해결"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["해양분쟁 절차 선택(287조)","해양분쟁 조정"]},{"g":7,"y":2016,"n":8,"a":"①","t":["국제기구·UN›국제기구 일반"],"e":[],"p":["정반대 진술"],"z":[],"d":["국제기구 법인격","묵시적 권한"]},{"g":7,"y":2016,"n":9,"a":"①","t":["총론›국제법과 국내법"],"e":["판례: 급식조례 사건"],"p":["정반대 진술"],"z":[],"d":["ICC 로마규정 국회동의","관습법과 법률 충돌","급식조례 사건","마라케쉬협정 헌재"]},{"g":7,"y":2016,"n":10,"a":"③","t":["국제기구·UN›UN 안보리","무력사용›PKO"],"e":["판례: Lockerbie"],"p":["연혁 혼동"],"z":[],"d":["UNEF","스위스 UN가입","Lockerbie","헌장 103조"]},{"g":7,"y":2016,"n":11,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["대상협정"]},{"g":7,"y":2016,"n":12,"a":"②","t":["관할권·면제›국가면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["부동산 소송","제한적 면제","행위 목적 기준","한국 법원 면제"]},{"g":7,"y":2016,"n":13,"a":"③","t":["외교·영사›외교특권면제"],"e":[],"p":["정반대 진술"],"z":[],"d":["외교관 신체불가침","외교관 형사면제","외교관 증언 면제","외교관 개인주거 불가침"]},{"g":7,"y":2016,"n":14,"a":"③","t":["국제경제법›GATT 원칙"],"e":["판례: 한국 주세 사건"],"p":[],"z":["판례 결론"],"d":["내국민대우","직접경쟁·대체상품"]},{"g":7,"y":2016,"n":15,"a":"②","t":["국제인권법›자유권규약","국제인권법›사회권규약"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["재산권 미규정","공공비상사태 이탈","자결권"]},{"g":7,"y":2016,"n":16,"a":"①","t":["해양법›경계획정"],"e":[],"p":["정반대 진술"],"z":[],"d":["경계획정 원칙","영해 경계(중간선)"]},{"g":7,"y":2016,"n":17,"a":"②","t":["외교·영사›영사관계"],"e":[],"p":["개념 혼동"],"z":[],"d":["영사관원 외교활동","영사관원 체포"]},{"g":7,"y":2016,"n":18,"a":"①","t":["국제형사법›ICC"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["ICC 재판관 선출","안보리 회부","침략범죄"]},{"g":7,"y":2016,"n":19,"a":"②","t":["분쟁해결›ICJ 절차"],"e":[],"p":["정반대 진술"],"z":[],"d":["소송참가"]},{"g":7,"y":2016,"n":20,"a":"②","t":["총론›법원(ICJ 38조)","총론›국제관습법"],"e":["판례: Qatar v. Bahrain","판례: Right of Passage"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Qatar v. Bahrain","Right of Passage","형평","법의 일반원칙"]},{"g":9,"y":2016,"n":1,"a":"④","t":["총론›국제법과 국내법"],"e":[],"p":["개념 혼동"],"z":[],"d":["일원론·이원론","헌법 6조 조약 효력","국내법=사실"]},{"g":9,"y":2016,"n":2,"a":"④","t":["총론›법원(ICJ 38조)"],"e":["조약: ICJ규정 38조"],"p":["열거 외 항목"],"z":["열거 암기"],"d":["ICJ규정 38조 재판준칙","법칙결정 보조수단"]},{"g":9,"y":2016,"n":3,"a":"③","t":["국제기구·UN›UN 총회","국제기구·UN›UN 안보리"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["ICJ 재판관 선출","총회-안보리 관계(12조)","권고적의견 요청 주체"]},{"g":9,"y":2016,"n":4,"a":"①","t":["관할권·면제›관할권 원칙"],"e":["조약: 형법 4조"],"p":[],"z":["조문 암기"],"d":["형법 4조 기국주의"]},{"g":9,"y":2016,"n":5,"a":"①","t":["국가›국가승인"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["묵시적 승인"]},{"g":9,"y":2016,"n":6,"a":"①","t":["국가›정부승인"],"e":[],"p":["개념 혼동"],"z":[],"d":["정부승인 요부"]},{"g":9,"y":2016,"n":7,"a":"④","t":["개인›난민"],"e":[],"p":["범위 확대"],"z":[],"d":["난민 정의","난민 판정권"]},{"g":9,"y":2016,"n":8,"a":"①","t":["해양법›경계획정"],"e":[],"p":[],"z":["비교 암기"],"d":["영해 경계(중간선)","경계획정 원칙"]},{"g":9,"y":2016,"n":9,"a":"③","t":["국제환경법›기후변화"],"e":[],"p":["출처 혼동"],"z":[],"d":["기후변화협약","교토 메커니즘","CBDR","유보 금지 조약"]},{"g":9,"y":2016,"n":10,"a":"③","t":["무력사용›집단안전보장"],"e":[],"p":["범위 확대"],"z":[],"d":["비군사적 조치","군사적 조치","표적제재"]},{"g":9,"y":2016,"n":11,"a":"④","t":["조약법›유보"],"e":[],"p":["범위 확대"],"z":["열거 암기"],"d":["유보 시기","유보 형식"]},{"g":9,"y":2016,"n":12,"a":"①","t":["국가책임›대응조치"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["대응조치 제한 의무"]},{"g":9,"y":2016,"n":13,"a":"④","t":["분쟁해결›평화적 해결수단"],"e":["판례: Alabama호 중재"],"p":["개념 혼동"],"z":["비교 암기"],"d":["사실심사","주선·중개","조정","Alabama"]},{"g":9,"y":2016,"n":14,"a":"②","t":["분쟁해결›ICJ 절차"],"e":[],"p":["정반대 진술"],"z":[],"d":["잠정조치","재심","권고적의견 재량"]},{"g":9,"y":2016,"n":15,"a":"②","t":["국제경제법›WTO 설립협정"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["WTO 협정 개정 절차"]},{"g":9,"y":2016,"n":16,"a":"②","t":["국제인권법›자유권규약"],"e":[],"p":["범위 확대"],"z":[],"d":["자유권규약 개인통보"]},{"g":9,"y":2016,"n":17,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["정반대 진술"],"z":[],"d":["보상·양허정지"]},{"g":9,"y":2016,"n":18,"a":"③","t":["해양법›EEZ"],"e":[],"p":[],"z":["비교 암기"],"d":["EEZ 관할권 vs 주권적 권리"]},{"g":9,"y":2016,"n":19,"a":"②","t":["외교·영사›외교특권면제"],"e":[],"p":["정반대 진술"],"z":[],"d":["외교관 개인주거 불가침","공관 불가침","단교시 공관 보호"]},{"g":9,"y":2016,"n":20,"a":"②","t":["해양법›분쟁해결"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["선택적 적용배제(298조)"]},{"g":7,"y":2017,"n":1,"a":"②","t":["관할권·면제›관할권 원칙"],"e":[],"p":[],"z":["비교 암기"],"d":["수동적 속인주의"]},{"g":7,"y":2017,"n":2,"a":"②","t":["해양법›EEZ"],"e":[],"p":["범위 확대"],"z":[],"d":["EEZ 관할권 vs 주권적 권리","EEZ 상공비행","암석","인공섬 안전수역"]},{"g":7,"y":2017,"n":3,"a":"④","t":["개인›국적"],"e":["판례: Nottebohm"],"p":["정반대 진술"],"z":[],"d":["Nottebohm","헤이그 국적법협약","부모양계혈통주의"]},{"g":7,"y":2017,"n":4,"a":"④","t":["분쟁해결›ICJ 관할"],"e":[],"p":["요건 삭제"],"z":[],"d":["선결적 항변","선택조항 유보","선택조항 상호주의"]},{"g":7,"y":2017,"n":5,"a":"④","t":["국제기구·UN›UN 안보리"],"e":[],"p":["범위 확대"],"z":[],"d":["안보리 구성","분쟁당사국 기권","안보리 표결"]},{"g":7,"y":2017,"n":6,"a":"④","t":["개인›난민"],"e":[],"p":[],"z":[],"d":["난민 추방","난민 입국","난민 배제조항"]},{"g":7,"y":2017,"n":7,"a":"③","t":["국제형사법›ICC"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["ICC 자연인 관할","안보리 수사연기(16조)","ICC 연령","침략범죄"]},{"g":7,"y":2017,"n":8,"a":"③","t":["개인›범죄인인도"],"e":["판례: 류창(劉强) 사건"],"p":[],"z":["판례 결론"],"d":["범죄인인도법 거절사유","류창 사건","쌍방가벌성"]},{"g":7,"y":2017,"n":9,"a":"③","t":["해양법›공해"],"e":[],"p":["요건 추가"],"z":[],"d":["해적","임검권","추적권","기국주의"]},{"g":7,"y":2017,"n":10,"a":"④","t":["무력사용›국제인도법"],"e":[],"p":["정반대 진술"],"z":[],"d":["무차별 공격 금지","민간인 추정","민간인 승무원 포로"]},{"g":7,"y":2017,"n":11,"a":"③","t":["국제경제법›WTO 설립협정"],"e":[],"p":["열거 외 항목"],"z":[],"d":["WTO 기능"]},{"g":7,"y":2017,"n":12,"a":"①","t":["총론›국제법과 국내법"],"e":[],"p":["당연·자동"],"z":[],"d":["국제법 위반 국내법 효력","이원론","자기집행조약","국제법 우위 일원론"]},{"g":7,"y":2017,"n":13,"a":"①","t":["국가책임›외교적 보호"],"e":[],"p":["요건 추가"],"z":[],"d":["외교보호 요청","법인 외교보호","국적계속","국내구제 완료 예외"]},{"g":7,"y":2017,"n":14,"a":"④","t":["조약법›유보"],"e":[],"p":["예외 신설"],"z":[],"d":["유보 묵시 수락","ICC 유보 금지","국제기구 설립문서 유보","유보 형식"]},{"g":7,"y":2017,"n":15,"a":"②","t":["해양법›해양환경","국제환경법›원칙"],"e":["판례: MOX Plant"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["MOX Plant","핵연료 재처리"]},{"g":7,"y":2017,"n":16,"a":"③","t":["분쟁해결›ICJ 절차"],"e":[],"p":["정반대 진술"],"z":[],"d":["ICJ 재판관","임시재판관","재판소장 선출"]},{"g":7,"y":2017,"n":17,"a":"①","t":["조약법›무효","조약법›종료·정지"],"e":[],"p":["예외 신설"],"z":["비교 암기"],"d":["가분성","신강행규범","외교단절과 조약","사정의 근본적 변경"]},{"g":7,"y":2017,"n":18,"a":"②","t":["국제환경법›원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["리우선언","의제21","CBDR"]},{"g":7,"y":2017,"n":19,"a":"①","t":["국가책임›귀속"],"e":[],"p":["정반대 진술"],"z":[],"d":["반란단체 행위","월권행위 귀속","손해 요건"]},{"g":7,"y":2017,"n":20,"a":"①","t":["국제환경법›개별 환경조약"],"e":[],"p":["연혁 혼동"],"z":[],"d":["람사르협약","CITES","녹색기후기금","생물다양성협약"]},{"g":9,"y":2017,"n":1,"a":"②","t":["외교·영사›외교사절 파견·직무"],"e":[],"p":["요건 추가"],"z":[],"d":["아그레망"]},{"g":9,"y":2017,"n":2,"a":"②","t":["해양법›영해·무해통항"],"e":[],"p":["주체 바꾸기"],"z":["열거 암기"],"d":["영해 형사관할권"]},{"g":9,"y":2017,"n":3,"a":"④","t":["국가›국내문제불간섭"],"e":[],"p":["예외 삭제"],"z":[],"d":["헌장 2조7항","연맹규약 15조8항"]},{"g":9,"y":2017,"n":4,"a":"③","t":["국제경제법›WTO 설립협정"],"e":[],"p":["개념 혼동"],"z":[],"d":["WTO 의사결정","WTO 협정 해석권"]},{"g":9,"y":2017,"n":5,"a":"③","t":["국가›국가승인"],"e":[],"p":["개념 혼동"],"z":[],"d":["승인 효과","UN가입과 승인"]},{"g":9,"y":2017,"n":6,"a":"①","t":["조약법›제3국"],"e":[],"p":["요건 삭제"],"z":["비교 암기"],"d":["제3국 권리·의무"]},{"g":9,"y":2017,"n":7,"a":"④","t":["국제형사법›ICC"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["ICC 소추관 독자수사","안보리 회부","ICC 재판관 선출","시효 부적용"]},{"g":9,"y":2017,"n":8,"a":"④","t":["총론›국제관습법"],"e":[],"p":["예외 신설"],"z":[],"d":["조약-관습 관계","신생국과 관습법"]},{"g":9,"y":2017,"n":9,"a":"③","t":["영토›현상유지(uti possidetis)"],"e":["판례: 부르키나파소-말리 국경분쟁"],"p":["정반대 진술"],"z":[],"d":["uti possidetis","OAU 카이로 결의"]},{"g":9,"y":2017,"n":10,"a":"④","t":["국제인권법›사회권규약"],"e":[],"p":["제도 혼동"],"z":[],"d":["점진적 실현","사회권규약 외국인 차별"]},{"g":9,"y":2017,"n":11,"a":"④","t":["국제기구·UN›UN 회원국"],"e":[],"p":["당연·자동"],"z":[],"d":["UN 가입 절차","UN 제명","전문기구 회원자격"]},{"g":9,"y":2017,"n":12,"a":"①","t":["국제기구·UN›UN 총회","국제기구·UN›UN 안보리"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["중요문제 표결","사무총장 주의환기"]},{"g":9,"y":2017,"n":13,"a":"③","t":["국가책임›위법성조각사유"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["위법성조각사유 목록","무력복구"]},{"g":9,"y":2017,"n":14,"a":"③","t":["총론›법원(ICJ 38조)"],"e":[],"p":["범위 축소"],"z":[],"d":["ICJ규정 38조 재판준칙","구두조약"]},{"g":9,"y":2017,"n":15,"a":"①","t":["국제경제법›GATT 원칙"],"e":[],"p":["범위 확대"],"z":[],"d":["내국민대우","스크린쿼터(GATT 4조)"]},{"g":9,"y":2017,"n":16,"a":"④","t":["외교·영사›외교특권면제"],"e":[],"p":["예외 삭제"],"z":[],"d":["외교관 개인주거 불가침","외교행낭","외교관 민사면제 예외"]},{"g":9,"y":2017,"n":17,"a":"③","t":["해양법›영해·무해통항"],"e":["판례: Corfu Channel"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["Corfu Channel","무해통항"]},{"g":9,"y":2017,"n":18,"a":"③","t":["국제기구·UN›국제기구 일반"],"e":["판례: Reparation for Injuries"],"p":["당연·자동"],"z":[],"d":["국제기구 법인격","국제기구 특권면제","직무보호"]},{"g":9,"y":2017,"n":19,"a":"①","t":["국제환경법›원칙"],"e":["판례: Gabčíkovo-Nagymaros"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["지속가능개발","Brundtland 보고서"]},{"g":9,"y":2017,"n":20,"a":"②","t":["분쟁해결›ICJ 절차"],"e":[],"p":["요건 추가"],"z":[],"d":["ICJ 불출석","재심","소송참가","현장방문"]},{"g":7,"y":2018,"n":1,"a":"③","t":["총론›국제법과 국내법"],"e":[],"p":["범위 확대"],"z":[],"d":["자기집행조약","영국 이원론","헌법 6조 조약 효력","독일 동의법률"]},{"g":7,"y":2018,"n":2,"a":"②","t":["조약법›무효","조약법›종료·정지"],"e":[],"p":["무효/종료 혼동"],"z":["열거 암기"],"d":["무효사유 vs 종료사유"]},{"g":7,"y":2018,"n":3,"a":"①","t":["외교·영사›외교사절 파견·직무"],"e":[],"p":["범위 확대"],"z":[],"d":["외교관 정의","공관장 계급","공관장 서열"]},{"g":7,"y":2018,"n":4,"a":"③","t":["국제경제법›GATT 예외"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["GATT 24조 관세동맹·FTA"]},{"g":7,"y":2018,"n":5,"a":"①","t":["국제환경법›원칙"],"e":[],"p":[],"z":[],"d":["스톡홀름선언","월경피해 방지"]},{"g":7,"y":2018,"n":6,"a":"①","t":["국제경제법›투자분쟁(ICSID)"],"e":[],"p":["열거 외 항목"],"z":[],"d":["ICSID"]},{"g":7,"y":2018,"n":7,"a":"③","t":["분쟁해결›ICJ 절차"],"e":[],"p":["정반대 진술"],"z":[],"d":["권고적의견 임시재판관","확대관할권","선결적 쟁점 직권검토","권고적의견 우회이용"]},{"g":7,"y":2018,"n":8,"a":"④","t":["외교·영사›영사관계"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["외교관계와 영사관계","외교공관 영사직무","영사기관 설치"]},{"g":7,"y":2018,"n":9,"a":"④","t":["관할권·면제›관할권 원칙"],"e":[],"p":[],"z":[],"d":["효과이론","이행이론","공정거래법 역외적용"]},{"g":7,"y":2018,"n":10,"a":"②","t":["국가›국가승계"],"e":[],"p":["개념 혼동"],"z":[],"d":["조약승계협약","국가 분리","clean slate","국경조약 승계"]},{"g":7,"y":2018,"n":11,"a":"②","t":["개인›난민"],"e":[],"p":["정반대 진술"],"z":[],"d":["난민 차별금지","난민 귀화","난민 추방","강제송환금지"]},{"g":7,"y":2018,"n":12,"a":"④","t":["국제기구·UN›UN 안보리"],"e":[],"p":["범위 확대"],"z":[],"d":["안보리 의사규칙","안보리 결정 구속력","비이사국 참여"]},{"g":7,"y":2018,"n":13,"a":"③","t":["해양법›EEZ"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["EEZ 관할권 vs 주권적 권리"]},{"g":7,"y":2018,"n":14,"a":"④","t":["국제경제법›WTO 분쟁해결","국제환경법›원칙"],"e":["판례: EC-Biotech","판례: Brazil-Tyres","판례: EC-Seal Products","판례: Whaling in the Antarctic"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["EC-Biotech","Brazil-Tyres","EC-Seal","Whaling"]},{"g":7,"y":2018,"n":15,"a":"②","t":["무력사용›자위권"],"e":["판례: Nicaragua","판례: Oil Platforms"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["집단적 자위권","Nicaragua","Oil Platforms"]},{"g":7,"y":2018,"n":16,"a":"①","t":["국제형사법›국제범죄·임시재판소","국제형사법›ICC"],"e":[],"p":[],"z":[],"d":["인도에 반한 죄"]},{"g":7,"y":2018,"n":17,"a":"④","t":["국가책임›법적 효과"],"e":[],"p":[],"z":[],"d":["중지·재발방지","국제범죄 개념 삭제","대응조치와 분쟁해결"]},{"g":7,"y":2018,"n":18,"a":"④","t":["공역·우주›우주법"],"e":[],"p":[],"z":[],"d":["우주책임협약","비정부주체 우주활동"]},{"g":7,"y":2018,"n":19,"a":"③","t":["해양법›공해"],"e":[],"p":[],"z":["열거 암기"],"d":["무허가방송"]},{"g":7,"y":2018,"n":20,"a":"④","t":["관할권·면제›국가면제"],"e":["판례: Jurisdictional Immunities(독일 v. 이탈리아)"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["한국 법원 면제","제한적 면제","Ferrini","국가원수 면제"]},{"g":9,"y":2018,"n":1,"a":"④","t":["총론›법원(ICJ 38조)"],"e":["조약: ICJ규정 38조"],"p":["열거 외 항목"],"z":["열거 암기"],"d":["법칙결정 보조수단"]},{"g":9,"y":2018,"n":2,"a":"④","t":["총론›국제법과 국내법"],"e":[],"p":["학자 혼동"],"z":[],"d":["일원론·이원론","켈젠"]},{"g":9,"y":2018,"n":3,"a":"③","t":["관할권·면제›관할권 원칙"],"e":["판례: Lotus호"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["Lotus","공해상 충돌"]},{"g":9,"y":2018,"n":4,"a":"③","t":["국가책임›귀속"],"e":[],"p":["정반대 진술"],"z":[],"d":["지방자치단체 행위 귀속","대응조치 비례성"]},{"g":9,"y":2018,"n":5,"a":"③","t":["국가›교전단체승인"],"e":[],"p":["범위 축소"],"z":[],"d":["교전단체승인"]},{"g":9,"y":2018,"n":6,"a":"②","t":["국제경제법›WTO 설립협정"],"e":[],"p":["범위 축소"],"z":[],"d":["WTO 유보 금지","독자적 관세영역","WTO 탈퇴","조약 등록(102조)"]},{"g":9,"y":2018,"n":7,"a":"①","t":["해양법›영해·무해통항"],"e":[],"p":["정반대 진술"],"z":[],"d":["영해 수수료","핵추진선 항로대","영해 형사관할권"]},{"g":9,"y":2018,"n":8,"a":"②","t":["관할권·면제›관할권 원칙"],"e":[],"p":[],"z":["비교 암기"],"d":["객관적 속지주의"]},{"g":9,"y":2018,"n":9,"a":"③","t":["국제인권법›UN 인권체제"],"e":[],"p":["주체 바꾸기"],"z":["숫자 암기"],"d":["인권이사회","UPR"]},{"g":9,"y":2018,"n":10,"a":"④","t":["국제기구·UN›UN 안보리"],"e":[],"p":["정반대 진술"],"z":[],"d":["UN 가입 절차","사무총장 임명","전문기구 권고적의견","회원국 주의환기"]},{"g":9,"y":2018,"n":11,"a":"①","t":["국제경제법›GATT 원칙"],"e":[],"p":["열거 외 항목"],"z":[],"d":["GATT 기본원칙"]},{"g":9,"y":2018,"n":12,"a":"①","t":["분쟁해결›ICJ 관할"],"e":[],"p":["범위 확대"],"z":[],"d":["ICJ 당사자능력","PCIJ 선택조항 승계","확대관할권","형평과 선"]},{"g":9,"y":2018,"n":13,"a":"①","t":["무력사용›집단안전보장","무력사용›자위권"],"e":[],"p":["정반대 진술"],"z":[],"d":["자위권","안보리 결정 구속력","비군사적 조치","군사적 조치"]},{"g":9,"y":2018,"n":14,"a":"④","t":["개인›범죄인인도"],"e":[],"p":["열거 외 항목"],"z":["비교 암기"],"d":["범죄인인도법 거절사유"]},{"g":9,"y":2018,"n":15,"a":"②","t":["국제형사법›ICC"],"e":["조약: 로마규정 13조"],"p":["열거 외 항목"],"z":["열거 암기"],"d":["ICC 제소주체(13조)"]},{"g":9,"y":2018,"n":16,"a":"①","t":["해양법›영해·무해통항","해양법›EEZ"],"e":[],"p":["요건 추가"],"z":[],"d":["군함 무해통항","EEZ 어업 법령집행"]},{"g":9,"y":2018,"n":17,"a":"②","t":["외교·영사›외교특권면제"],"e":[],"p":["범위 확대"],"z":[],"d":["공관문서 불가침","면제 포기","무선송신기"]},{"g":9,"y":2018,"n":18,"a":"①","t":["조약법›해석"],"e":[],"p":["범위 축소"],"z":[],"d":["조약 해석 문맥"]},{"g":9,"y":2018,"n":19,"a":"③","t":["무력사용›무력사용금지"],"e":["판례: Caroline호"],"p":["연혁 혼동"],"z":[],"d":["Porter 협약","연맹규약 전쟁 제한","부전조약","Caroline"]},{"g":9,"y":2018,"n":20,"a":"②","t":["해양법›해양환경"],"e":[],"p":[],"z":["비교 암기"],"d":["육상기인 오염"]},{"g":7,"y":2019,"n":1,"a":"②","t":["관할권·면제›국가면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["부동산 소송","반소","타국법 적용 동의"]},{"g":7,"y":2019,"n":2,"a":"④","t":["분쟁해결›중재","분쟁해결›ICJ 절차"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["중재-조정 구별","중재 당사자","재심"]},{"g":7,"y":2019,"n":3,"a":"①","t":["외교·영사›영사관계"],"e":[],"p":["절대표현"],"z":[],"d":["영사 감독권","영사관원 외교활동","명예영사","영사인가장"]},{"g":7,"y":2019,"n":4,"a":"③","t":["해양법›기선·내수"],"e":[],"p":["정반대 진술"],"z":[],"d":["직선기선","간조노출지","만 폐쇄선"]},{"g":7,"y":2019,"n":5,"a":"①","t":["공역·우주›항공법","해양법›국제해협·군도수역","공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":[],"d":["통과통항 상공","우주조약","ADIZ","FIR"]},{"g":7,"y":2019,"n":6,"a":"①","t":["국제경제법›GATT 예외"],"e":[],"p":[],"z":["열거 암기"],"d":["수량제한 금지(11조)"]},{"g":7,"y":2019,"n":7,"a":"②","t":["무력사용›국제인도법"],"e":[],"p":["절대표현"],"z":[],"d":["제4협약(민간인 보호)","점령법","강제이송 금지"]},{"g":7,"y":2019,"n":8,"a":"④","t":["국제환경법›기후변화"],"e":[],"p":["범위 확대"],"z":[],"d":["기후변화협약","교토의정서","파리협정"]},{"g":7,"y":2019,"n":9,"a":"③","t":["국제경제법›GATT 예외"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["GATT 12조 국제수지","긴급수입제한","GATT 20조","GATT 21조 안보예외"]},{"g":7,"y":2019,"n":10,"a":"④","t":["국가책임›위법성조각사유"],"e":[],"p":["범위 확대"],"z":[],"d":["위법성조각과 보상","긴급피난","조난"]},{"g":7,"y":2019,"n":11,"a":"③","t":["국제기구·UN›UN 총회"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["총회 단독 결정사항"]},{"g":7,"y":2019,"n":12,"a":"③","t":["국제인권법›자유권규약","국제인권법›사회권규약"],"e":[],"p":["요건 삭제"],"z":[],"d":["자결권","자유권규약 개인통보","사회권규약 선택의정서"]},{"g":7,"y":2019,"n":13,"a":"②","t":["국가›국가승인"],"e":[],"p":["정반대 진술"],"z":[],"d":["승인 효과","UN가입과 승인","단교와 승인","무력 수립 국가 불승인"]},{"g":7,"y":2019,"n":14,"a":"①","t":["외교·영사›외교특권면제"],"e":[],"p":["범위 확대"],"z":[],"d":["제3국 통과","외교행낭"]},{"g":7,"y":2019,"n":15,"a":"②","t":["무력사용›자위권"],"e":[],"p":["당연·자동"],"z":[],"d":["자위권 입증책임","자위권 시간적 한계","무력복구"]},{"g":7,"y":2019,"n":16,"a":"③","t":["총론›일방행위·연성법"],"e":[],"p":["요건 추가"],"z":[],"d":["일방적 선언(ILC 지도원칙)"]},{"g":7,"y":2019,"n":17,"a":"④","t":["조약법›체결"],"e":[],"p":["절대표현"],"z":[],"d":["가서명","착오 정정","정본인증"]},{"g":7,"y":2019,"n":18,"a":"③","t":["국제기구·UN›국제기구 일반","외교·영사›국제기구 특권면제"],"e":[],"p":["당연·자동"],"z":[],"d":["국제기구 법인격","상주대표부","묵시적 권한","전문가 특권면제"]},{"g":7,"y":2019,"n":19,"a":"②","t":["개인›국적"],"e":[],"p":[],"z":[],"d":["부모양계혈통주의","복수국적 서약"]},{"g":7,"y":2019,"n":20,"a":"③","t":["해양법›영해·무해통항","해양법›접속수역"],"e":[],"p":["범위 확대"],"z":[],"d":["접속수역","영해 민사관할","영해 형사관할권","영공주권"]},{"g":9,"y":2019,"n":1,"a":"②","t":["조약법›강행규범"],"e":[],"p":["개념 혼동"],"z":[],"d":["강행규범","대세적 의무"]},{"g":9,"y":2019,"n":2,"a":"①","t":["공역·우주›항공법"],"e":[],"p":["범위 확대"],"z":[],"d":["영공주권","국가항공기"]},{"g":9,"y":2019,"n":3,"a":"④","t":["국제형사법›ICC"],"e":[],"p":["정반대 진술"],"z":[],"d":["시효 부적용","ICC 시간적 관할","ICC 보충성","국가원수 면제 부인"]},{"g":9,"y":2019,"n":4,"a":"④","t":["국제경제법›WTO 설립협정"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["다자간무역협정","복수국간무역협정"]},{"g":9,"y":2019,"n":5,"a":"③","t":["관할권·면제›국가면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["국가면제 근거","국가면제와 국가책임"]},{"g":9,"y":2019,"n":6,"a":"③","t":["조약법›해석"],"e":[],"p":["개념 혼동"],"z":[],"d":["조약 해석 문맥","추후합의·관행"]},{"g":9,"y":2019,"n":7,"a":"③","t":["국제인권법›개별 인권조약","국제인권법›자유권규약","개인›난민"],"e":[],"p":[],"z":["열거 암기"],"d":["개인통보 가능 조약","CEDAW","CERD","아동권리협약"]},{"g":9,"y":2019,"n":8,"a":"④","t":["외교·영사›외교사절 파견·직무"],"e":[],"p":["범위 축소"],"z":[],"d":["persona non grata"]},{"g":9,"y":2019,"n":9,"a":"②","t":["관할권·면제›관할권 원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["관할권 경합","aut dedere aut judicare"]},{"g":9,"y":2019,"n":10,"a":"③","t":["국가›국가승계"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["조약승계협약","clean slate","조약경계이동"]},{"g":9,"y":2019,"n":11,"a":"②","t":["국가책임›귀속"],"e":[],"p":["정반대 진술"],"z":[],"d":["공권력 위임 행위 귀속","월권행위 귀속","공권력 부재시 행위"]},{"g":9,"y":2019,"n":12,"a":"①","t":["국제환경법›원칙"],"e":["판례: Pulp Mills"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["Pulp Mills","환경영향평가"]},{"g":9,"y":2019,"n":13,"a":"③","t":["분쟁해결›ICJ 관할"],"e":["조약: ICJ규정 36조"],"p":["범위 확대"],"z":[],"d":["선택조항","선택조항 기탁"]},{"g":9,"y":2019,"n":14,"a":"②","t":["국제기구·UN›UN 총회"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["총회 단독 결정사항"]},{"g":9,"y":2019,"n":15,"a":"④","t":["국제기구·UN›UN 총회","국제기구·UN›UN 회원국"],"e":[],"p":["정반대 진술"],"z":[],"d":["UN 제명·탈퇴","신탁통치이사회","거부권 범위","평화를 위한 단결 결의"]},{"g":9,"y":2019,"n":16,"a":"③","t":["해양법›기선·내수"],"e":[],"p":["예외 삭제"],"z":[],"d":["내수","직선기선 내수화 무해통항"]},{"g":9,"y":2019,"n":17,"a":"①","t":["해양법›공해","해양법›심해저"],"e":[],"p":["인과 역전"],"z":[],"d":["심해저 범위","추적권","공해 정의"]},{"g":9,"y":2019,"n":18,"a":"④","t":["국제경제법›무역구제"],"e":[],"p":["개념 혼동"],"z":[],"d":["보조금협정","수출보조금","심각한 손상"]},{"g":9,"y":2019,"n":19,"a":"④","t":["외교·영사›외교특권면제"],"e":[],"p":["범위 확대"],"z":[],"d":["외교특권 개시","사망 후 가족 특권","제3국 통과"]},{"g":9,"y":2019,"n":20,"a":"①","t":["무력사용›자위권"],"e":["판례: Nicaragua"],"p":["당연·자동"],"z":[],"d":["자위권 시간적 한계","비국가행위자 무력공격","집단적 자위권 요청"]},{"g":7,"y":2020,"n":1,"a":"①","t":["총론›국제관습법"],"e":["판례: Nicaragua","판례: Anglo-Norwegian Fisheries","판례: Right of Passage","판례: North Sea Continental Shelf"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Nicaragua","Anglo-Norwegian","Right of Passage","North Sea"]},{"g":7,"y":2020,"n":2,"a":"②","t":["총론›국제법 주체·역사"],"e":[],"p":["학자 혼동"],"z":[],"d":["Bynkershoek","Gentili","Zouche","Bentham"]},{"g":7,"y":2020,"n":3,"a":"②","t":["관할권·면제›국가면제"],"e":["판례: Arrest Warrant","판례: Jurisdictional Immunities(독일 v. 이탈리아)","판례: Ferrini"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Arrest Warrant","Jurisdictional Immunities","Ferrini","타국법 적용 동의"]},{"g":7,"y":2020,"n":4,"a":"②","t":["국가›국가승인","국가›교전단체승인"],"e":[],"p":["개념 혼동"],"z":[],"d":["창설적 효과설","몬테비데오협약","교전단체승인"]},{"g":7,"y":2020,"n":5,"a":"④","t":["무력사용›자위권"],"e":["판례: Armed Activities(DRC v. Uganda)","판례: Caroline호"],"p":["판례 결론 왜곡"],"z":[],"d":["뉘른베르크","Armed Activities","Caroline","선제적 자위"]},{"g":7,"y":2020,"n":6,"a":"③","t":["국가책임›국제기구 책임"],"e":["판례: Nuhanović","판례: Behrami & Saramati"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["국제기구 책임초안","Nuhanović","Behrami & Saramati"]},{"g":7,"y":2020,"n":7,"a":"③","t":["국가책임›위법성조각사유"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["불가항력","긴급피난","조난","사후 동의"]},{"g":7,"y":2020,"n":8,"a":"④","t":["국제형사법›ICC"],"e":["조약: 국제형사재판소 관할범죄 처벌법"],"p":["범위 축소"],"z":["조문 암기"],"d":["ICC 이행법률","상급자 책임"]},{"g":7,"y":2020,"n":9,"a":"④","t":["국제인권법›UN 인권체제"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["UPR","인권위원회(경사리)","인권고등판무관"]},{"g":7,"y":2020,"n":10,"a":"①","t":["해양법›내륙국·과학조사","해양법›심해저"],"e":[],"p":["개념 혼동"],"z":[],"d":["해양과학조사","ISA 권리정지","내륙국"]},{"g":7,"y":2020,"n":11,"a":"③","t":["공역·우주›우주법"],"e":[],"p":["요건 추가"],"z":[],"d":["우주물체 등록협약","원격탐사 원칙","우주물체 반환"]},{"g":7,"y":2020,"n":12,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["범위 축소"],"z":[],"d":["DSB 보고서 채택","패널 심의 비공개","이행 감시(DSU)"]},{"g":7,"y":2020,"n":13,"a":"④","t":["국제기구·UN›국제기구 일반","국가책임›국제기구 책임"],"e":[],"p":["범위 축소"],"z":[],"d":["ICRC","국제기구 책임초안","1986 국제기구 조약법협약"]},{"g":7,"y":2020,"n":14,"a":"②","t":["영토›극지"],"e":[],"p":["개념 혼동"],"z":[],"d":["남극해양생물자원협약","북극이사회","남극 환경보호의정서"]},{"g":7,"y":2020,"n":15,"a":"③","t":["조약법›발효·적용","조약법›개정·변경","조약법›종료·정지"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["VCLT 불소급(4조)","조약 발효","다자조약 개정","후조약에 의한 정지"]},{"g":7,"y":2020,"n":16,"a":"④","t":["외교·영사›영사관계"],"e":[],"p":["정반대 진술"],"z":[],"d":["영사기관 설치","영사 관할구역","영사 계급","명예영사"]},{"g":7,"y":2020,"n":17,"a":"②","t":["무력사용›국제인도법"],"e":[],"p":["개념 혼동"],"z":[],"d":["St. Petersburg 선언","교전조리·전수이론","덤덤탄 금지","집속탄협약"]},{"g":7,"y":2020,"n":18,"a":"③","t":["분쟁해결›ICJ 관할"],"e":["판례: Right of Passage","판례: Norwegian Loans","판례: Nicaragua","판례: Anglo-Iranian Oil"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["선택조항 기탁","Norwegian Loans","Nicaragua","Anglo-Iranian"]},{"g":7,"y":2020,"n":19,"a":"①","t":["국제환경법›원칙","해양법›해양환경"],"e":["판례: Lac Lanoux","판례: Meuse강"],"p":["판례 결론 왜곡"],"z":[],"d":["런던덤핑의정서","유류오염 민사책임협약","Lac Lanoux","Meuse"]},{"g":7,"y":2020,"n":20,"a":"①","t":["국제경제법›기타 협정"],"e":[],"p":["범위 확대"],"z":[],"d":["TBT협정"]},{"g":9,"y":2020,"n":1,"a":"③","t":["해양법›영해·무해통항"],"e":[],"p":["정반대 진술"],"z":[],"d":["무해통항 정지","조사·측량활동","영해 수수료"]},{"g":9,"y":2020,"n":2,"a":"②","t":["총론›국제법과 국내법"],"e":["판례: 급식조례 사건","판례: Certain German Interests"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["변형·편입","급식조례 사건","Certain German Interests"]},{"g":9,"y":2020,"n":3,"a":"①","t":["관할권·면제›관할권 원칙","해양법›공해"],"e":[],"p":["절대표현"],"z":[],"d":["해적","보호주의","형법 3조 속인주의"]},{"g":9,"y":2020,"n":4,"a":"③","t":["영토›영역취득"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["선점","시효"]},{"g":9,"y":2020,"n":5,"a":"③","t":["국가›국내문제불간섭"],"e":["판례: Nicaragua"],"p":["요건 삭제"],"z":[],"d":["Nicaragua","헌장 2조7항"]},{"g":9,"y":2020,"n":6,"a":"①","t":["국제기구·UN›전문기구"],"e":[],"p":["개념 혼동"],"z":[],"d":["전문기구","경제사회이사회","ILC"]},{"g":9,"y":2020,"n":7,"a":"①","t":["국가책임›외교적 보호","개인›국적"],"e":[],"p":["정반대 진술"],"z":[],"d":["난민 외교보호","개인 국제책임","이중국적","집단추방"]},{"g":9,"y":2020,"n":8,"a":"④","t":["총론›국제법 주체·역사"],"e":[],"p":["학자 혼동"],"z":[],"d":["jus gentium","푸펜도르프","국제사법"]},{"g":9,"y":2020,"n":9,"a":"②","t":["국제경제법›GATT 예외"],"e":["조약: GATT 24조"],"p":["개념 혼동"],"z":[],"d":["GATT 24조 관세동맹·FTA"]},{"g":9,"y":2020,"n":10,"a":"①","t":["개인›범죄인인도"],"e":["판례: Alvarez-Machain"],"p":["판례 결론 왜곡"],"z":[],"d":["Alvarez-Machain","유럽체포영장","정치범불인도","비인도적 대우 인도거절"]},{"g":9,"y":2020,"n":11,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["개념 혼동"],"z":[],"d":["보상·양허정지","역총의"]},{"g":9,"y":2020,"n":12,"a":"①","t":["분쟁해결›중재"],"e":[],"p":["정반대 진술"],"z":[],"d":["중재 구속력","중재 준칙"]},{"g":9,"y":2020,"n":13,"a":"③","t":["무력사용›집단안전보장","국제기구·UN›UN 안보리"],"e":[],"p":["절대표현"],"z":[],"d":["안보리 보조기관","비군사적 조치","절차사항 표결"]},{"g":9,"y":2020,"n":14,"a":"④","t":["국가책임›대응조치"],"e":[],"p":["범위 확대"],"z":[],"d":["대응조치 제한 의무","대응조치와 제3국"]},{"g":9,"y":2020,"n":15,"a":"②","t":["공역·우주›항공법"],"e":[],"p":["범위 축소"],"z":[],"d":["국제민간항공협약","FIR","ADIZ","접속수역 상공"]},{"g":9,"y":2020,"n":16,"a":"②","t":["해양법›영해·무해통항"],"e":["판례: Chung Chi Cheung","판례: M/V Saiga호"],"p":["판례 결론 왜곡"],"z":[],"d":["Chung Chi Cheung","영해 민사관할","M/V Saiga","군함 면제"]},{"g":9,"y":2020,"n":17,"a":"④","t":["조약법›체결"],"e":[],"p":["개념 혼동"],"z":[],"d":["신강행규범","외교단절과 조약","구두조약"]},{"g":9,"y":2020,"n":18,"a":"①","t":["국가책임›귀속","국가책임›법적 효과"],"e":["판례: Nicaragua","판례: Chorzów Factory","판례: Gabčíkovo-Nagymaros","판례: Yeager"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Nicaragua","Chorzów","Gabčíkovo","Yeager"]},{"g":9,"y":2020,"n":19,"a":"④","t":["무력사용›국제인도법"],"e":[],"p":["정반대 진술"],"z":[],"d":["포로 대우","포로 노동"]},{"g":9,"y":2020,"n":20,"a":"③","t":["국제환경법›원칙"],"e":[],"p":["용어 바꿔치기"],"z":[],"d":["협력의 원칙","사전주의","세대간 형평","IUCN"]},{"g":7,"y":2021,"n":1,"a":"③","t":["관할권·면제›관할권 원칙"],"e":["판례: Lotus호"],"p":["개념 혼동"],"z":["비교 암기"],"d":["Lotus","수동적 속인주의","보편주의","입법관할권"]},{"g":7,"y":2021,"n":2,"a":"①","t":["국가›국가승인","국가›정부승인"],"e":[],"p":["정반대 진술"],"z":["열거 암기"],"d":["묵시적 승인","정부승인 요부","미승인국 국가면제"]},{"g":7,"y":2021,"n":3,"a":"④","t":["국가책임›귀속"],"e":[],"p":["정반대 진술"],"z":[],"d":["공권력 위임 행위 귀속","사인 행위 귀속","월권행위 귀속"]},{"g":7,"y":2021,"n":4,"a":"④","t":["외교·영사›외교특권면제","외교·영사›영사관계"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["영사문서","명예영사","영사관원 체포","영사행낭"]},{"g":7,"y":2021,"n":5,"a":"③","t":["해양법›공해"],"e":["판례: M/V Saiga호"],"p":["범위 확대"],"z":[],"d":["M/V Saiga","추적권"]},{"g":7,"y":2021,"n":6,"a":"①","t":["총론›국제법 주체·역사"],"e":[],"p":["학자 혼동"],"z":[],"d":["그로티우스","칼보조항","드라고주의"]},{"g":7,"y":2021,"n":7,"a":"②","t":["국제인권법›자유권규약"],"e":[],"p":["정반대 진술"],"z":[],"d":["세계인권선언","자유권규약 탈퇴","국가보고","최종견해 구속력"]},{"g":7,"y":2021,"n":8,"a":"②","t":["조약법›유보"],"e":[],"p":["범위 축소"],"z":["열거 암기"],"d":["유보 수락","유보 시기","유보 철회","국제기구 설립문서 유보"]},{"g":7,"y":2021,"n":9,"a":"①","t":["국제경제법›GATT 예외"],"e":["판례: US-Shrimp","판례: US-Gasoline"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["US-Shrimp","GATT 20조 두문","US-Gasoline","입증책임"]},{"g":7,"y":2021,"n":10,"a":"③","t":["관할권·면제›국가면제"],"e":[],"p":[],"z":["열거 암기"],"d":["고용계약 면제","불법행위 면제","명예훼손"]},{"g":7,"y":2021,"n":11,"a":"④","t":["국제기구·UN›UN 안보리","국제기구·UN›UN 총회"],"e":[],"p":["정반대 진술"],"z":[],"d":["총회-안보리 관계(12조)","표적제재","헌장 103조"]},{"g":7,"y":2021,"n":12,"a":"③","t":["무력사용›자위권"],"e":["판례: Wall 권고적 의견"],"p":["판례 결론 왜곡"],"z":[],"d":["자위권 보고 의무","비례성","Wall","비국가행위자 무력공격"]},{"g":7,"y":2021,"n":13,"a":"③","t":["해양법›EEZ","해양법›경계획정"],"e":["판례: Black Sea(루마니아 v. 우크라이나)"],"p":["판례 결론 왜곡"],"z":[],"d":["EEZ 관할권 vs 주권적 권리","Black Sea","경계획정 협정"]},{"g":7,"y":2021,"n":14,"a":"④","t":["무력사용›국제인도법"],"e":[],"p":["범위 확대"],"z":[],"d":["포로 지위","간첩","상선 승무원 포로"]},{"g":7,"y":2021,"n":15,"a":"②","t":["분쟁해결›ICJ 절차","분쟁해결›ICJ 관할"],"e":[],"p":[],"z":[],"d":["소재판부","관할권 결정권","ICJ 판결 이행(94조)","선택조항"]},{"g":7,"y":2021,"n":16,"a":"①","t":["총론›국제법과 국내법"],"e":[],"p":["정반대 진술"],"z":[],"d":["자기집행조약","영국 조약 이행","미국 인권조약","관습법 국내적용"]},{"g":7,"y":2021,"n":17,"a":"①","t":["무력사용›집단안전보장"],"e":[],"p":["용어 바꿔치기"],"z":[],"d":["평화에 대한 위협","인도법 위반과 평화위협","무력사용 허가"]},{"g":7,"y":2021,"n":18,"a":"②","t":["해양법›대륙붕"],"e":[],"p":["정반대 진술"],"z":[],"d":["대륙붕 범위","정착성어종","대륙붕 시추","대륙붕 바깥한계 기탁"]},{"g":7,"y":2021,"n":19,"a":"①","t":["공역·우주›항공법"],"e":[],"p":["정반대 진술"],"z":["비교 암기"],"d":["몬트리올협약(항공)","동경협약","헤이그협약(항공기납치)"]},{"g":7,"y":2021,"n":20,"a":"②","t":["국가책임›법적 효과"],"e":[],"p":["순서 바꾸기"],"z":[],"d":["원상회복 우선","강행규범 위반 불승인 의무","정신적 손해"]},{"g":7,"y":2021,"n":21,"a":"②","t":["국가책임›외교적 보호"],"e":["판례: Nottebohm"],"p":[],"z":[],"d":["우세국적","외교보호 의무","주주 외교보호","Nottebohm"]},{"g":7,"y":2021,"n":22,"a":"③","t":["개인›난민"],"e":[],"p":[],"z":[],"d":["환경난민","강제송환금지","성적지향 박해"]},{"g":7,"y":2021,"n":23,"a":"④","t":["국제환경법›원칙"],"e":["판례: Pulp Mills","판례: San Juan River 도로(코스타리카 v. 니카라과)","판례: Gabčíkovo-Nagymaros"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["환경영향평가","Pulp Mills","San Juan River 도로","Gabčíkovo"]},{"g":7,"y":2021,"n":24,"a":"②","t":["국제경제법›GATT 원칙"],"e":[],"p":[],"z":[],"d":["직접경쟁·대체상품","내국민대우","사실상 차별","동종상품 판단"]},{"g":7,"y":2021,"n":25,"a":"③","t":["국제형사법›ICC","국제형사법›국제범죄·임시재판소"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["제노사이드협약","인도에 반한 죄","ICC 보충성","전쟁범죄"]},{"g":9,"y":2021,"n":1,"a":"②","t":["총론›국제법 주체·역사"],"e":[],"p":["개념 혼동"],"z":[],"d":["국제사회 구조"]},{"g":9,"y":2021,"n":2,"a":"③","t":["국가›국내문제불간섭","국가›국가의 기본권리"],"e":[],"p":["예외 삭제"],"z":[],"d":["헌장 55조","자결권과 무력지원","헌장 2조7항","실패국가"]},{"g":9,"y":2021,"n":3,"a":"①","t":["국제경제법›WTO 설립협정"],"e":[],"p":["정반대 진술"],"z":[],"d":["독자적 관세영역","WTO 법인격","WTO 협정 해석권","WTO 의사결정"]},{"g":9,"y":2021,"n":4,"a":"②","t":["관할권·면제›관할권 원칙"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["속지주의","능동적 속인주의","보호주의","효과이론"]},{"g":9,"y":2021,"n":5,"a":"①","t":["영토›영역취득"],"e":["판례: Western Sahara"],"p":["절대표현"],"z":[],"d":["결정적 기일","할양","Western Sahara","탈베그"]},{"g":9,"y":2021,"n":6,"a":"③","t":["국제기구·UN›국제기구 일반","국가책임›외교적 보호"],"e":["판례: Reparation for Injuries"],"p":["범위 축소"],"z":[],"d":["UN 직원 지위","UN 특권면제협약","직무보호"]},{"g":9,"y":2021,"n":7,"a":"①","t":["국제기구·UN›국제기구 일반"],"e":["판례: Reparation for Injuries"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Reparation","UN 옵저버","국제기구 특권면제"]},{"g":9,"y":2021,"n":8,"a":"④","t":["국제인권법›개별 인권조약"],"e":[],"p":["정반대 진술"],"z":[],"d":["고문방지협약","aut dedere aut judicare"]},{"g":9,"y":2021,"n":9,"a":"③","t":["총론›국제법과 국내법"],"e":["조약: 헌법 60조"],"p":[],"z":["열거 암기"],"d":["헌법 60조 국회동의"]},{"g":9,"y":2021,"n":10,"a":"④","t":["영토›극지","공역·우주›우주법","해양법›심해저"],"e":[],"p":[],"z":["비교 암기"],"d":["남극조약","달조약","심해저","중앙북극해 어업협정"]},{"g":9,"y":2021,"n":11,"a":"④","t":["분쟁해결›평화적 해결수단"],"e":[],"p":[],"z":["비교 암기"],"d":["교섭","조정","중재"]},{"g":9,"y":2021,"n":12,"a":"②","t":["개인›난민"],"e":[],"p":["범위 확대"],"z":[],"d":["국내실향민","난민 대우","난민 입증","난민 판정권"]},{"g":9,"y":2021,"n":13,"a":"③","t":["국제경제법›GATT 예외"],"e":["조약: GATT 20조"],"p":["열거 외 항목"],"z":["열거 암기"],"d":["GATT 20조","영화필름"]},{"g":9,"y":2021,"n":14,"a":"④","t":["국가책임›귀속"],"e":[],"p":["열거 외 항목"],"z":[],"d":["사인 행위 귀속","반란단체 행위"]},{"g":9,"y":2021,"n":15,"a":"④","t":["조약법›발효·적용"],"e":[],"p":["개념 혼동"],"z":[],"d":["VCLT 불소급(4조)"]},{"g":9,"y":2021,"n":16,"a":"③","t":["해양법›대륙붕","해양법›경계획정"],"e":["판례: North Sea Continental Shelf"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["트루먼 선언","1958 대륙붕협약","North Sea","대륙붕한계위원회"]},{"g":9,"y":2021,"n":17,"a":"②","t":["외교·영사›외교특권면제"],"e":[],"p":["범위 확대"],"z":[],"d":["내정불간섭 의무(외교관)","외교관 영리활동 금지","외교사절 직무"]},{"g":9,"y":2021,"n":18,"a":"①","t":["국제환경법›개별 환경조약","국제환경법›원칙"],"e":[],"p":["출처 혼동"],"z":[],"d":["LRTAP","바젤협약","Espoo협약","오염자부담"]},{"g":9,"y":2021,"n":19,"a":"①","t":["공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["우주책임협약","절대책임"]},{"g":9,"y":2021,"n":20,"a":"④","t":["분쟁해결›권고적 의견"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["권고적의견 요청 주체"]},{"g":7,"y":2022,"n":1,"a":"③","t":["총론›국제관습법","조약법›해석","조약법›강행규범"],"e":[],"p":["범위 축소"],"z":[],"d":["ICJ규정 38조 재판준칙","신강행규범","조약 해석 관계규칙"]},{"g":7,"y":2022,"n":2,"a":"①","t":["관할권·면제›관할권 원칙"],"e":["조약: 형법 4조"],"p":["개념 혼동"],"z":["조문 암기"],"d":["형법 4조 기국주의","수동적 속인주의","보호주의","보편주의"]},{"g":7,"y":2022,"n":3,"a":"①","t":["관할권·면제›국가면제"],"e":[],"p":["범위 축소"],"z":[],"d":["면제 동의","고용계약 면제","국가원수 면제"]},{"g":7,"y":2022,"n":4,"a":"②","t":["국제기구·UN›국제기구 일반","국가책임›국제기구 책임"],"e":["판례: Certain Expenses"],"p":["판례 결론 왜곡"],"z":[],"d":["국제기구 회원","Certain Expenses","국제기구 책임초안","헌장 105조"]},{"g":7,"y":2022,"n":5,"a":"①","t":["국제인권법›자유권규약"],"e":[],"p":["개념 혼동"],"z":[],"d":["자유권규약 국가간통보"]},{"g":7,"y":2022,"n":6,"a":"②","t":["해양법›분쟁해결"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["해양분쟁 절차 선택(287조)","선택적 적용배제(298조)","297조 EEZ 분쟁"]},{"g":7,"y":2022,"n":7,"a":"②","t":["공역·우주›항공법"],"e":[],"p":["개념 혼동"],"z":[],"d":["국제민간항공협약","국가항공기","부정기항공"]},{"g":7,"y":2022,"n":8,"a":"③","t":["관할권·면제›관할권 원칙"],"e":["판례: Eichmann","판례: Banković"],"p":["판례 결론 왜곡"],"z":[],"d":["준보편관할","Eichmann","Banković","일사부재리"]},{"g":7,"y":2022,"n":9,"a":"③","t":["국가책임›외교적 보호"],"e":["판례: ELSI","판례: Avena"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["이중국적","ELSI","Avena","무국적자 외교보호"]},{"g":7,"y":2022,"n":10,"a":"②","t":["무력사용›자위권"],"e":["판례: Nicaragua"],"p":["요건 삭제"],"z":[],"d":["자위권 시간적 한계","집단적 자위권 요청","비례성"]},{"g":7,"y":2022,"n":11,"a":"②","t":["조약법›종료·정지"],"e":[],"p":["당연·자동"],"z":[],"d":["묵시적 탈퇴권","중대한 위반","사정의 근본적 변경","후발적 이행불능"]},{"g":7,"y":2022,"n":12,"a":"④","t":["국제경제법›GATT 원칙","국제경제법›GATT 예외"],"e":[],"p":[],"z":[],"d":["관세양허","반덤핑","수출 수량제한","농수산물 수입제한"]},{"g":7,"y":2022,"n":13,"a":"④","t":["해양법›국제해협·군도수역"],"e":[],"p":["정반대 진술"],"z":[],"d":["군도수역","군도항로대"]},{"g":7,"y":2022,"n":14,"a":"③","t":["분쟁해결›ICJ 절차","분쟁해결›ICJ 관할"],"e":[],"p":["정반대 진술"],"z":[],"d":["권고적의견 요청 주체","소재판부","중재판정 무효소송","ICJ 재판관 선출"]},{"g":7,"y":2022,"n":15,"a":"③","t":["조약법›무효"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["가분성"]},{"g":7,"y":2022,"n":16,"a":"③","t":["국제경제법›GATT 예외"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["정부조달 예외(GATT 3조8항)","국내생산자 보조금","스크린쿼터(GATT 4조)"]},{"g":7,"y":2022,"n":17,"a":"②","t":["국제형사법›ICC"],"e":[],"p":["범위 확대"],"z":[],"d":["ICC 개인책임","중지미수"]},{"g":7,"y":2022,"n":18,"a":"④","t":["국제인권법›인권조약 일반"],"e":["판례: Wall 권고적 의견","판례: Bosnia Genocide"],"p":["판례 결론 왜곡"],"z":[],"d":["인권조약 역외적용","Wall","Bosnia Genocide"]},{"g":7,"y":2022,"n":19,"a":"①","t":["외교·영사›외교특권면제"],"e":[],"p":["요건 추가"],"z":[],"d":["외교관 가족","일부다처제 가족","사망 후 가족 특권","배우자 영리활동"]},{"g":7,"y":2022,"n":20,"a":"④","t":["국제기구·UN›UN 사무국·기타기관"],"e":[],"p":["범위 축소"],"z":[],"d":["경제사회이사회"]},{"g":7,"y":2022,"n":21,"a":"①","t":["분쟁해결›ICJ 절차"],"e":["판례: Cameroon v. Nigeria 해석청구","판례: LaGrand","판례: Medellín"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Cameroon v. Nigeria","LaGrand","Medellín"]},{"g":7,"y":2022,"n":22,"a":"②","t":["조약법›발효·적용","조약법›종료·정지"],"e":[],"p":["절대표현"],"z":[],"d":["조약 발효","조약 불소급(28조)","당사국 수 감소","잠정적용"]},{"g":7,"y":2022,"n":23,"a":"④","t":["해양법›영해·무해통항"],"e":[],"p":["요건 삭제"],"z":[],"d":["무해통항 법령","어로활동","핵추진선 항로대","무해통항 정지"]},{"g":7,"y":2022,"n":24,"a":"④","t":["국제경제법›기타 협정"],"e":[],"p":["정반대 진술"],"z":[],"d":["SPS협정","SPS-TBT 관계","동등성 인정","SPS 잠정조치"]},{"g":7,"y":2022,"n":25,"a":"②","t":["국제환경법›원칙"],"e":["판례: Gabčíkovo-Nagymaros","판례: Certain Activities(코스타리카 v. 니카라과)","판례: Iron Rhine","판례: Trail Smelter"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Gabčíkovo","Certain Activities","Iron Rhine","Trail Smelter"]},{"g":9,"y":2022,"n":1,"a":"③","t":["총론›법원(ICJ 38조)","총론›법의 일반원칙·형평"],"e":[],"p":["개념 혼동"],"z":[],"d":["형평과 선","법의 일반원칙","선례구속"]},{"g":9,"y":2022,"n":2,"a":"①","t":["총론›국제법과 국내법"],"e":[],"p":["범위 확대"],"z":[],"d":["국제법 위반 국내법 효력","헌법 6조 조약 효력","VCLT 27조"]},{"g":9,"y":2022,"n":3,"a":"①","t":["개인›범죄인인도"],"e":[],"p":["정반대 진술"],"z":[],"d":["범죄인인도 의무","특정성 원칙","일사부재리"]},{"g":9,"y":2022,"n":4,"a":"①","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["영구주권 결의","Hull 공식","수용 요건"]},{"g":9,"y":2022,"n":5,"a":"④","t":["무력사용›인도적 개입·R2P","국제형사법›ICC"],"e":[],"p":["열거 외 항목"],"z":[],"d":["R2P","침략범죄"]},{"g":9,"y":2022,"n":6,"a":"④","t":["국제기구·UN›UN 총회","무력사용›집단안전보장"],"e":[],"p":["요건 삭제"],"z":[],"d":["지역적 약정","특별협정(43조)","평화를 위한 단결 결의","총회-안보리 관계(12조)"]},{"g":9,"y":2022,"n":7,"a":"②","t":["해양법›해양환경","국제환경법›원칙"],"e":[],"p":["열거 외 항목"],"z":[],"d":["UNCLOS 12부","사전주의","환경영향평가"]},{"g":9,"y":2022,"n":8,"a":"③","t":["외교·영사›영사관계"],"e":[],"p":["정반대 진술"],"z":[],"d":["외교관계와 영사관계","영사관원 외교활동"]},{"g":9,"y":2022,"n":9,"a":"③","t":["조약법›체결"],"e":[],"p":["범위 확대"],"z":["열거 암기"],"d":["전권위임장"]},{"g":9,"y":2022,"n":10,"a":"③","t":["외교·영사›외교특권면제"],"e":[],"p":["정반대 진술"],"z":[],"d":["공관문서 불가침","단교시 공관 보호"]},{"g":9,"y":2022,"n":11,"a":"④","t":["국제기구·UN›UN 회원국","국제기구·UN›UN 안보리"],"e":[],"p":["정반대 진술"],"z":[],"d":["의장성명","UN 옵저버","UN 가입 절차"]},{"g":9,"y":2022,"n":12,"a":"③","t":["조약법›강행규범"],"e":[],"p":["소급 혼동"],"z":[],"d":["강행규범","신강행규범","가분성"]},{"g":9,"y":2022,"n":13,"a":"③","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["외국인 입국","외국인 추방","집단추방"]},{"g":9,"y":2022,"n":14,"a":"②","t":["분쟁해결›ICJ 절차"],"e":[],"p":["요건 추가"],"z":[],"d":["PCIJ","임시재판관","소재판부","재심"]},{"g":9,"y":2022,"n":15,"a":"②","t":["국가책임›귀속"],"e":[],"p":["요건 삭제"],"z":[],"d":["사인 행위 귀속","승인·채택에 의한 귀속"]},{"g":9,"y":2022,"n":16,"a":"③","t":["개인›국적","국가책임›외교적 보호"],"e":["판례: Barcelona Traction"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["국적 부여 재량","Barcelona Traction"]},{"g":9,"y":2022,"n":17,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["범위 축소"],"z":[],"d":["보상·양허정지","교차보복"]},{"g":9,"y":2022,"n":18,"a":"④","t":["국제경제법›GATT 원칙"],"e":[],"p":["범위 축소"],"z":[],"d":["최혜국대우","사실상 차별","GATT 24조 관세동맹·FTA"]},{"g":9,"y":2022,"n":19,"a":"④","t":["조약법›해석"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["조약 해석 문맥","교섭기록"]},{"g":9,"y":2022,"n":20,"a":"②","t":["해양법›섬·간출지","해양법›EEZ"],"e":[],"p":["개념 혼동"],"z":[],"d":["섬 제도","인공섬 안전수역","암석","간조노출지"]},{"g":7,"y":2023,"n":1,"a":"②","t":["총론›법원(ICJ 38조)","총론›국제관습법","총론›법의 일반원칙·형평"],"e":[],"p":[],"z":[],"d":["조약-관습 관계","지역관습법","총회결의","법의 일반원칙"]},{"g":7,"y":2023,"n":2,"a":"④","t":["총론›국제법과 국내법"],"e":[],"p":["개념 혼동"],"z":[],"d":["VCLT 27조","국제기구 결의 효력","헌법 60조 국회동의","네덜란드 조약 효력"]},{"g":7,"y":2023,"n":3,"a":"②","t":["개인›범죄인인도"],"e":[],"p":["정반대 진술"],"z":[],"d":["범죄인인도 관할","범죄인인도 상호주의","범죄인인도법 거절사유"]},{"g":7,"y":2023,"n":4,"a":"①","t":["국가›국가승인"],"e":[],"p":["열거 외 항목"],"z":[],"d":["묵시적 승인","승인 효과","단교와 승인"]},{"g":7,"y":2023,"n":5,"a":"①","t":["관할권·면제›국가면제"],"e":["판례: Schooner Exchange"],"p":[],"z":["판례 결론"],"d":["Schooner Exchange","제한적 면제","집행면제","국가 개념"]},{"g":7,"y":2023,"n":6,"a":"③","t":["국제기구·UN›국제기구 일반"],"e":["판례: Effect of Awards(UN 행정재판소)","판례: Reparation for Injuries","판례: Certain Expenses"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Effect of Awards","Reparation","Certain Expenses","PKO"]},{"g":7,"y":2023,"n":7,"a":"③","t":["외교·영사›국제기구 특권면제"],"e":[],"p":[],"z":[],"d":["UN 특권면제협약","사무총장 면제 포기"]},{"g":7,"y":2023,"n":8,"a":"②","t":["개인›외국인 지위"],"e":[],"p":[],"z":[],"d":["국내표준주의","국제표준주의","외국인 추방","Hull 공식"]},{"g":7,"y":2023,"n":9,"a":"②","t":["개인›난민"],"e":["판례: Asylum"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["난민 입국","Asylum","UNHCR","난민 재산권"]},{"g":7,"y":2023,"n":10,"a":"④","t":["국제형사법›ICC"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["ICC 법인격","범죄구성요건 개정","소추관 수사허가","안보리 수사연기(16조)"]},{"g":7,"y":2023,"n":11,"a":"④","t":["외교·영사›외교특권면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["면제 포기","공관 수송수단","외교관 형사면제","외교특권 개시"]},{"g":7,"y":2023,"n":12,"a":"③","t":["국가책임›귀속","국가책임›법적 효과"],"e":["판례: Chorzów Factory","판례: Corfu Channel","판례: LaGrand","판례: Nuclear Tests"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Chorzów","Corfu Channel","LaGrand","Nuclear Tests"]},{"g":7,"y":2023,"n":13,"a":"④","t":["분쟁해결›권고적 의견"],"e":["판례: Nuclear Weapons(WHO 요청)","판례: Wall 권고적 의견","판례: Reparation for Injuries"],"p":["사건 바꿔치기"],"z":["판례 결론"],"d":["권고적의견 거절(WHO)","Cumaraswamy","Wall","Reparation"]},{"g":7,"y":2023,"n":14,"a":"①","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["범위 축소"],"z":[],"d":["비위반제소","잠정보고서","패널 구성","이행 유예"]},{"g":7,"y":2023,"n":15,"a":"②","t":["국제경제법›GATT 원칙"],"e":[],"p":["정반대 진술"],"z":[],"d":["내국민대우","최혜국대우"]},{"g":7,"y":2023,"n":16,"a":"②","t":["해양법›EEZ","해양법›공해"],"e":[],"p":["열거 외 항목"],"z":[],"d":["EEZ에 적용되는 공해 규정"]},{"g":7,"y":2023,"n":17,"a":"③","t":["영토›영역취득"],"e":["판례: Minquiers and Ecrehos","판례: Pedra Branca","판례: Ligitan & Sipadan","판례: South China Sea 중재"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Minquiers and Ecrehos","Pedra Branca","Ligitan & Sipadan","South China Sea"]},{"g":7,"y":2023,"n":18,"a":"②","t":["공역·우주›우주법"],"e":[],"p":[],"z":[],"d":["우주조약","우주활동 인증·감독","핵무기 궤도배치 금지"]},{"g":7,"y":2023,"n":19,"a":"④","t":["국제환경법›개별 환경조약","해양법›영해·무해통항"],"e":[],"p":["요건 추가"],"z":[],"d":["바젤협약","바젤 의정서","Ban Amendment","핵물질 선박"]},{"g":7,"y":2023,"n":20,"a":"③","t":["국가›국가승계"],"e":[],"p":["요건 추가"],"z":[],"d":["국가재산·부채 승계협약","국적 승계"]},{"g":7,"y":2023,"n":21,"a":"③","t":["분쟁해결›ICJ 관할"],"e":[],"p":[],"z":[],"d":["ICJ 당사자능력","관할권 결정권","PCIJ 선택조항 승계","형평과 선"]},{"g":7,"y":2023,"n":22,"a":"①","t":["조약법›무효"],"e":["판례: Cameroon v. Nigeria(2002)"],"p":["예외 신설"],"z":["비교 암기"],"d":["하자의 치유","권한 제한(47조)","대표 강박","Cameroon v. Nigeria"]},{"g":7,"y":2023,"n":23,"a":"①","t":["국가책임›위법성조각사유"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["긴급피난","위법성조각과 보상","불가항력","동의"]},{"g":7,"y":2023,"n":24,"a":"③","t":["관할권·면제›관할권 원칙"],"e":["조약: 형법 7조"],"p":["정반대 진술"],"z":[],"d":["형법 4조 기국주의","형법 5·6조","형법 7조","공정거래법 역외적용"]},{"g":7,"y":2023,"n":25,"a":"②","t":["무력사용›국제인도법"],"e":[],"p":["범위 축소"],"z":[],"d":["적십자 표장"]},{"g":9,"y":2023,"n":1,"a":"③","t":["국가책임›외교적 보호"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["국내구제 완료 예외"]},{"g":9,"y":2023,"n":2,"a":"①","t":["해양법›공해"],"e":[],"p":["범위 확대"],"z":[],"d":["해적","무허가방송","편의치적"]},{"g":9,"y":2023,"n":3,"a":"③","t":["개인›범죄인인도"],"e":[],"p":[],"z":["비교 암기"],"d":["범죄인인도법 거절사유"]},{"g":9,"y":2023,"n":4,"a":"④","t":["조약법›무효"],"e":[],"p":["범위 확대"],"z":["비교 암기"],"d":["하자의 치유","가분성","착오","국가 강박"]},{"g":9,"y":2023,"n":5,"a":"②","t":["국제환경법›기후변화"],"e":[],"p":["범위 확대"],"z":[],"d":["CBDR","교토의정서","파리협정"]},{"g":9,"y":2023,"n":6,"a":"④","t":["국제기구·UN›UN 회원국"],"e":[],"p":["주체 바꾸기"],"z":["숫자 암기"],"d":["UN 가입 절차","권리정지 회복","UN 제명"]},{"g":9,"y":2023,"n":7,"a":"①","t":["총론›국제관습법","총론›법원(ICJ 38조)"],"e":[],"p":["개념 혼동"],"z":[],"d":["조약-관습 관계","성문화"]},{"g":9,"y":2023,"n":8,"a":"②","t":["분쟁해결›ICJ 관할"],"e":[],"p":["정반대 진술"],"z":[],"d":["ICJ 당사자능력","선택조항 유보","확대관할권"]},{"g":9,"y":2023,"n":9,"a":"④","t":["총론›국제관습법"],"e":[],"p":["개념 혼동"],"z":[],"d":["국가실행","법적 확신","총회결의와 관습"]},{"g":9,"y":2023,"n":10,"a":"③","t":["관할권·면제›관할권 원칙"],"e":[],"p":["개념 혼동"],"z":[],"d":["객관적 속지주의","관할권 경합","aut dedere aut judicare"]},{"g":9,"y":2023,"n":11,"a":"④","t":["관할권·면제›국가면제"],"e":[],"p":["정반대 진술"],"z":[],"d":["UN 국가면제협약","상업적 거래 판단기준","증인 출석"]},{"g":9,"y":2023,"n":12,"a":"③","t":["국제기구·UN›UN 총회"],"e":["판례: Certain Expenses"],"p":["범위 확대"],"z":[],"d":["총회-안보리 관계(12조)","Certain Expenses"]},{"g":9,"y":2023,"n":13,"a":"③","t":["조약법›해석"],"e":[],"p":["개념 혼동"],"z":[],"d":["조약 해석 일반규칙","보충적 수단","복수 정본"]},{"g":9,"y":2023,"n":14,"a":"④","t":["국제경제법›GATT 예외"],"e":["조약: GATT 11조"],"p":["열거 외 항목"],"z":["열거 암기"],"d":["GATT 11조 예외"]},{"g":9,"y":2023,"n":15,"a":"②","t":["해양법›섬·간출지"],"e":["판례: South China Sea 중재"],"p":["정반대 진술"],"z":[],"d":["섬 제도","간조노출지","South China Sea"]},{"g":9,"y":2023,"n":16,"a":"①","t":["국가책임›위법성조각사유"],"e":[],"p":["범위 확대"],"z":[],"d":["위법성조각과 보상","긴급피난","자위","강행규범"]},{"g":9,"y":2023,"n":17,"a":"③","t":["국가›국가승인","국가›정부승인"],"e":[],"p":["개념 혼동"],"z":[],"d":["영사인가장","한중수교"]},{"g":9,"y":2023,"n":18,"a":"②","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["범위 축소"],"z":[],"d":["이행 감시(DSU)","보상·양허정지"]},{"g":9,"y":2023,"n":19,"a":"④","t":["해양법›영해·무해통항","해양법›기선·내수"],"e":[],"p":["정반대 진술"],"z":[],"d":["내수 외국선박 관할","항만국 통제","영해 형사관할권"]},{"g":9,"y":2023,"n":20,"a":"①","t":["외교·영사›국제기구 특권면제"],"e":[],"p":["범위 확대"],"z":[],"d":["UN 특권면제협약","전문가 특권면제"]},{"g":7,"y":2024,"n":1,"a":"②","t":["국가›국가승인"],"e":[],"p":[],"z":["열거 암기"],"d":["묵시적 승인"]},{"g":7,"y":2024,"n":2,"a":"②","t":["국제기구·UN›국제기구 일반"],"e":["판례: Reparation for Injuries"],"p":[],"z":[],"d":["국제기구 권리의무 범위","Reparation","회원국 공동책임"]},{"g":7,"y":2024,"n":3,"a":"③","t":["국가책임›외교적 보호"],"e":[],"p":["요건 추가"],"z":[],"d":["법인 외교보호","이중국적","외교보호 의무","무국적자 외교보호"]},{"g":7,"y":2024,"n":4,"a":"④","t":["개인›범죄인인도"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["범죄인인도법 거절사유","가해 정부수반 가족(벨기에 조항)"]},{"g":7,"y":2024,"n":5,"a":"③","t":["국제형사법›ICC","국제형사법›국제범죄·임시재판소"],"e":[],"p":["범위 축소"],"z":[],"d":["제노사이드협약","인도에 반한 죄","비국제적 무력충돌 전쟁범죄","침략범죄"]},{"g":7,"y":2024,"n":6,"a":"④","t":["총론›국제관습법"],"e":["판례: Nuclear Weapons 권고적 의견","판례: Wall 권고적 의견","판례: Asylum","판례: North Sea Continental Shelf"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Nuclear Weapons","Wall","Asylum","North Sea"]},{"g":7,"y":2024,"n":7,"a":"④","t":["조약법›강행규범","관할권·면제›국가면제"],"e":["판례: Armed Activities(DRC v. Rwanda)","판례: Arrest Warrant"],"p":["판례 결론 왜곡"],"z":[],"d":["강행규범 위반 협력의무","Armed Activities","Arrest Warrant"]},{"g":7,"y":2024,"n":8,"a":"①","t":["국가›국가승계"],"e":[],"p":["개념 혼동"],"z":[],"d":["조약경계이동","인권조약 승계"]},{"g":7,"y":2024,"n":9,"a":"①","t":["관할권·면제›관할권 원칙"],"e":["판례: Lotus호"],"p":["개념 혼동"],"z":[],"d":["입법관할권","Lotus","수동적 속인주의","해적"]},{"g":7,"y":2024,"n":10,"a":"③","t":["국제기구·UN›UN 총회","국제기구·UN›UN 안보리","국제기구·UN›UN 회원국"],"e":[],"p":[],"z":[],"d":["분담금 연체","UN 제명·탈퇴","상임이사국 기권","분쟁당사국 기권"]},{"g":7,"y":2024,"n":11,"a":"③","t":["국제인권법›자유권규약","국제인권법›사회권규약"],"e":[],"p":["범위 축소"],"z":["비교 암기"],"d":["자결권","남녀동등권","사회권규약 선택의정서","공공비상사태 이탈"]},{"g":7,"y":2024,"n":12,"a":"①","t":["해양법›국제해협·군도수역"],"e":[],"p":[],"z":[],"d":["통과통항","해협 무해통항(45조)"]},{"g":7,"y":2024,"n":13,"a":"②","t":["공역·우주›우주법"],"e":[],"p":[],"z":[],"d":["우주물체 소유권","우주물체 관할권","우주비행사","우주물체 반환"]},{"g":7,"y":2024,"n":14,"a":"③","t":["관할권·면제›국가면제"],"e":[],"p":[],"z":["열거 암기"],"d":["상업적 거래 판단기준","고용계약 면제","불법행위 면제","부동산 소송"]},{"g":7,"y":2024,"n":15,"a":"④","t":["해양법›공해","해양법›대륙붕","해양법›국제해협·군도수역"],"e":[],"p":["범위 확대"],"z":[],"d":["대륙붕 고유권리","통과통항","EEZ 항행자유","추적권 소멸"]},{"g":7,"y":2024,"n":16,"a":"④","t":["해양법›EEZ"],"e":["판례: M/V Saiga호","판례: M/V Virginia G"],"p":[],"z":["판례 결론"],"d":["EEZ 충돌 관할","M/V Saiga","EEZ 경계","M/V Virginia G"]},{"g":7,"y":2024,"n":17,"a":"①","t":["국가책임›귀속"],"e":["판례: Nicaragua","판례: Tehran 인질","판례: LaGrand","판례: Barcelona Traction"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Nicaragua","Tehran 인질","LaGrand","Barcelona Traction"]},{"g":7,"y":2024,"n":18,"a":"④","t":["국가책임›법적 효과"],"e":["판례: Pulp Mills"],"p":["판례 결론 왜곡"],"z":[],"d":["원상회복 우선","완전한 배상","만족","Pulp Mills"]},{"g":7,"y":2024,"n":19,"a":"①","t":["조약법›유보"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["국제기구 설립문서 유보","허용불가 유보","해석선언"]},{"g":7,"y":2024,"n":20,"a":"②","t":["외교·영사›외교특권면제","외교·영사›영사관계"],"e":[],"p":["예외 삭제"],"z":[],"d":["외교관 개인주거 불가침","외교관 민사면제 예외","영사관사 불가침","영사관원 체포"]},{"g":7,"y":2024,"n":21,"a":"①","t":["무력사용›국제인도법"],"e":[],"p":["개념 혼동"],"z":[],"d":["제2추가의정서","구별원칙","배신행위"]},{"g":7,"y":2024,"n":22,"a":"③","t":["분쟁해결›권고적 의견"],"e":["판례: Nuclear Weapons(WHO 요청)"],"p":["정반대 진술"],"z":[],"d":["권고적의견 목적","사무국 요청권","분쟁 중 권고적의견","권고적의견 거절(WHO)"]},{"g":7,"y":2024,"n":23,"a":"②","t":["국제환경법›원칙"],"e":["판례: Trail Smelter"],"p":["정반대 진술"],"z":[],"d":["Trail Smelter","환경영향평가","사전주의","몬트리올의정서 비준수절차"]},{"g":7,"y":2024,"n":24,"a":"③","t":["국제경제법›GATT 예외"],"e":[],"p":["예외 신설"],"z":[],"d":["수량제한 금지(11조)","행정지도"]},{"g":7,"y":2024,"n":25,"a":"①","t":["국제경제법›GATT 원칙","국제경제법›GATT 예외"],"e":["판례: US-Shrimp","판례: EC-Asbestos"],"p":["정반대 진술"],"z":[],"d":["국경세 조정","GATT 20조(g) 유한천연자원","US-Shrimp","EC-Asbestos"]},{"g":9,"y":2024,"n":1,"a":"②","t":["총론›국제관습법"],"e":[],"p":["학설 혼동"],"z":[],"d":["관습법 요건","법실증주의"]},{"g":9,"y":2024,"n":2,"a":"③","t":["분쟁해결›ICJ 절차"],"e":[],"p":["절대표현"],"z":[],"d":["ICJ 판결 이행(94조)","재심"]},{"g":9,"y":2024,"n":3,"a":"②","t":["총론›국제관습법"],"e":["판례: Nuclear Weapons 권고적 의견","판례: North Sea Continental Shelf","판례: Anglo-Norwegian Fisheries","판례: Right of Passage"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Nuclear Weapons","North Sea","Anglo-Norwegian","Right of Passage"]},{"g":9,"y":2024,"n":4,"a":"③","t":["무력사용›자위권"],"e":["조약: UN헌장 51조"],"p":["주체 바꾸기"],"z":[],"d":["자위권 보고 의무","선제적 자위"]},{"g":9,"y":2024,"n":5,"a":"④","t":["조약법›무효"],"e":[],"p":["요건 삭제"],"z":[],"d":["착오"]},{"g":9,"y":2024,"n":6,"a":"③","t":["관할권·면제›관할권 원칙"],"e":["판례: Lotus호"],"p":["개념 혼동"],"z":["비교 암기"],"d":["보호주의","Lotus","능동적 속인주의","보편주의"]},{"g":9,"y":2024,"n":7,"a":"④","t":["외교·영사›영사관계"],"e":[],"p":["정반대 진술"],"z":[],"d":["영사관원 외교활동","영사 관할구역","영사 증언","영사관사 수용"]},{"g":9,"y":2024,"n":8,"a":"④","t":["영토›현상유지(uti possidetis)","영토›영역취득"],"e":["판례: Island of Palmas"],"p":["판례 결론 왜곡"],"z":[],"d":["Island of Palmas","선점","정복","uti possidetis"]},{"g":9,"y":2024,"n":9,"a":"②","t":["영토›극지"],"e":[],"p":["개념 혼동"],"z":[],"d":["북극이사회","남극조약"]},{"g":9,"y":2024,"n":10,"a":"②","t":["공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":[],"d":["우주조약","달조약","우주책임협약"]},{"g":9,"y":2024,"n":11,"a":"①","t":["국제기구·UN›UN 회원국"],"e":[],"p":["요건 추가"],"z":[],"d":["UN 제명·탈퇴"]},{"g":9,"y":2024,"n":12,"a":"④","t":["국제인권법›개별 인권조약"],"e":[],"p":["정반대 진술"],"z":[],"d":["고문방지협약","아동권리협약","이주노동자협약","CERD"]},{"g":9,"y":2024,"n":13,"a":"③","t":["개인›국적","국가책임›외교적 보호"],"e":["판례: Nottebohm"],"p":["범위 축소"],"z":[],"d":["무국적자 외교보호","세계인권선언 국적","선원 외교보호","Nottebohm"]},{"g":9,"y":2024,"n":14,"a":"①","t":["국가책임›국제기구 책임"],"e":[],"p":["요건 삭제"],"z":[],"d":["국제기구 책임초안","실효적 통제"]},{"g":9,"y":2024,"n":15,"a":"②","t":["국가책임›대응조치"],"e":[],"p":["정반대 진술"],"z":["열거 암기"],"d":["대응조치 제한 의무","긴급 대응조치"]},{"g":9,"y":2024,"n":16,"a":"①","t":["분쟁해결›ICJ 절차","해양법›분쟁해결"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["ICJ·ITLOS 비교"]},{"g":9,"y":2024,"n":17,"a":"①","t":["해양법›국제해협·군도수역"],"e":[],"p":["정반대 진술"],"z":[],"d":["통과통항","주권면제 선박 책임","통항분리방식"]},{"g":9,"y":2024,"n":18,"a":"④","t":["국제경제법›WTO 설립협정","국제경제법›WTO 분쟁해결"],"e":[],"p":["개념 혼동"],"z":[],"d":["WTO 법인격","각료회의·일반이사회","상소기구"]},{"g":9,"y":2024,"n":19,"a":"①","t":["국제경제법›GATT 예외"],"e":["조약: GATT 20조"],"p":["열거 외 항목"],"z":["열거 암기"],"d":["GATT 20조","GATT 21조 안보예외"]},{"g":9,"y":2024,"n":20,"a":"③","t":["국제환경법›원칙"],"e":["판례: EC-Biotech"],"p":["출처 혼동"],"z":[],"d":["사전주의","EC-Biotech","리우선언"]},{"g":7,"y":2025,"n":1,"a":"④","t":["국가책임›귀속"],"e":[],"p":["정반대 진술"],"z":[],"d":["반란단체 행위","사실상 지시·통제","공권력 부재시 행위","월권행위 귀속"]},{"g":7,"y":2025,"n":2,"a":"①","t":["외교·영사›영사관계"],"e":["판례: LaGrand"],"p":[],"z":[],"d":["persona non grata","LaGrand","외교관계와 영사관계","영사인가장"]},{"g":7,"y":2025,"n":3,"a":"②","t":["조약법›발효·적용","조약법›해석","조약법›제3국","조약법›유보"],"e":[],"p":["정반대 진술"],"z":[],"d":["이의 철회","발효 전 의무","보충적 수단","제3국 권리·의무"]},{"g":7,"y":2025,"n":4,"a":"④","t":["개인›국적"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["국적법 출생","국적 상실","국적이탈"]},{"g":7,"y":2025,"n":5,"a":"②","t":["국제인권법›자유권규약"],"e":[],"p":["범위 확대"],"z":[],"d":["자유권규약 개인통보"]},{"g":7,"y":2025,"n":6,"a":"①","t":["국제형사법›ICC"],"e":["조약: 국제형사재판소 관할범죄 처벌법"],"p":["범위 확대"],"z":[],"d":["ICC 이행법률","침략범죄"]},{"g":7,"y":2025,"n":7,"a":"②","t":["국가›국가승인","국가›정부승인"],"e":["판례: Tinoco 중재"],"p":[],"z":[],"d":["미승인국 법률","남북 UN 동시가입","미국 FSIA","Tinoco"]},{"g":7,"y":2025,"n":8,"a":"①","t":["관할권·면제›관할권 원칙"],"e":["판례: Jurisdictional Immunities(독일 v. 이탈리아)"],"p":["개념 혼동"],"z":[],"d":["형사사법공조","SOFA 재판권","승선협정","Jurisdictional Immunities"]},{"g":7,"y":2025,"n":9,"a":"①","t":["국가›국가승계"],"e":["판례: Gabčíkovo-Nagymaros"],"p":[],"z":[],"d":["소련 지위 승계","국적 승계","Gabčíkovo","국가재산·부채 승계협약"]},{"g":7,"y":2025,"n":10,"a":"④","t":["외교·영사›국제기구 특권면제"],"e":[],"p":["범위 축소"],"z":[],"d":["UN 특권면제협약","사무총장 면제 포기","전문가 특권면제"]},{"g":7,"y":2025,"n":11,"a":"④","t":["총론›국제법과 국내법"],"e":["판례: Paquete Habana"],"p":[],"z":[],"d":["네덜란드 조약 효력","스위스 헌법","Paquete Habana","바르샤바협약"]},{"g":7,"y":2025,"n":12,"a":"④","t":["국제경제법›GATT 원칙"],"e":["판례: Canada-Autos","판례: Dominican Republic-Cigarettes","판례: Mexico-Soft Drinks","판례: Japan-Alcoholic Beverages II"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Canada-Autos","Dominican Republic-Cigarettes","Mexico-Soft Drinks","Japan-Alcoholic Beverages II"]},{"g":7,"y":2025,"n":13,"a":"①","t":["해양법›공해"],"e":[],"p":[],"z":[],"d":["해적"]},{"g":7,"y":2025,"n":14,"a":"②","t":["총론›법의 일반원칙·형평","총론›일방행위·연성법"],"e":["판례: 부르키나파소-말리 국경분쟁"],"p":["정반대 진술"],"z":[],"d":["형평과 선","부르키나파소-말리 국경분쟁"]},{"g":7,"y":2025,"n":15,"a":"④","t":["국제환경법›기후변화"],"e":[],"p":[],"z":["숫자 암기"],"d":["파리협정","NDC","전지구적 이행점검"]},{"g":7,"y":2025,"n":16,"a":"②","t":["무력사용›국제인도법"],"e":[],"p":["정반대 진술"],"z":[],"d":["포로 지위","포로 노동","간첩"]},{"g":7,"y":2025,"n":17,"a":"①","t":["국제경제법›GATT 예외"],"e":["판례: EC-Seal Products","판례: China-Publications","판례: US-Gasoline","판례: Korea-Beef"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["EC-Seal","China-Publications","US-Gasoline","Korea-Beef"]},{"g":7,"y":2025,"n":18,"a":"①","t":["해양법›분쟁해결"],"e":[],"p":[],"z":[],"d":["297조 EEZ 분쟁","선택적 적용배제(298조)","해양분쟁 절차 선택(287조)"]},{"g":7,"y":2025,"n":19,"a":"③","t":["국제기구·UN›국제기구 일반","국제기구·UN›UN 안보리"],"e":["판례: Reparation for Injuries"],"p":["개념 혼동"],"z":[],"d":["절차사항 표결","비상임이사국 선출","ICRC","Reparation"]},{"g":7,"y":2025,"n":20,"a":"③","t":["해양법›공해"],"e":[],"p":[],"z":[],"d":["임검권","편의치적","공해상 충돌"]},{"g":7,"y":2025,"n":21,"a":"③","t":["분쟁해결›권고적 의견","국가›국가의 요건·자결권"],"e":["판례: Wall 권고적 의견","판례: Kosovo 독립선언","판례: Chagos","판례: Namibia"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Wall","Kosovo 독립선언","Chagos","Namibia"]},{"g":7,"y":2025,"n":22,"a":"②","t":["무력사용›자위권","무력사용›무력사용금지"],"e":["판례: Armed Activities(DRC v. Uganda)","판례: Hamdan"],"p":["판례 결론 왜곡"],"z":[],"d":["테러와 평화위협(1368호)","Armed Activities","Hamdan","PLO 본부 공습"]},{"g":7,"y":2025,"n":23,"a":"③","t":["영토›영역취득"],"e":["판례: Western Sahara","판례: Eastern Greenland","판례: Island of Palmas"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["Western Sahara","결정적 기일","Eastern Greenland","Island of Palmas"]},{"g":7,"y":2025,"n":24,"a":"①","t":["무력사용›집단안전보장"],"e":["판례: Certain Expenses"],"p":[],"z":[],"d":["Certain Expenses","침략행위 인정 사례","평화에 대한 위협","무력사용 허가"]},{"g":7,"y":2025,"n":25,"a":"④","t":["공역·우주›우주법"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["우주책임협약"]},{"g":9,"y":2025,"n":1,"a":"③","t":["국가›국내문제불간섭","국가›국가의 기본권리"],"e":["조약: UN헌장 2조"],"p":["예외 삭제"],"z":[],"d":["헌장 2조 원칙","헌장 2조7항"]},{"g":9,"y":2025,"n":2,"a":"④","t":["국제경제법›WTO 분쟁해결"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["역총의"]},{"g":9,"y":2025,"n":3,"a":"③","t":["해양법›기선·내수"],"e":["판례: Anglo-Norwegian Fisheries"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["직선기선","통상기선","Anglo-Norwegian"]},{"g":9,"y":2025,"n":4,"a":"①","t":["국가›국가승인"],"e":[],"p":["개념 혼동"],"z":[],"d":["묵시적 승인"]},{"g":9,"y":2025,"n":5,"a":"①","t":["조약법›종료·정지"],"e":[],"p":["예외 삭제"],"z":[],"d":["사정의 근본적 변경","신강행규범","후발적 이행불능"]},{"g":9,"y":2025,"n":6,"a":"④","t":["무력사용›PKO"],"e":[],"p":["정반대 진술"],"z":[],"d":["PKO","PKO 참여법"]},{"g":9,"y":2025,"n":7,"a":"③","t":["국제환경법›기후변화"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["기후변화협약"]},{"g":9,"y":2025,"n":8,"a":"①","t":["조약법›등록·기탁"],"e":[],"p":["범위 축소"],"z":[],"d":["조약 등록(102조)","연맹규약 등록"]},{"g":9,"y":2025,"n":9,"a":"④","t":["개인›국적"],"e":[],"p":["주체 바꾸기"],"z":[],"d":["국적 상실","세계인권선언 국적"]},{"g":9,"y":2025,"n":10,"a":"①","t":["관할권·면제›관할권 원칙"],"e":["판례: Lotus호"],"p":["절대표현"],"z":[],"d":["효과이론","관할권 경합","집행관할권","Lotus"]},{"g":9,"y":2025,"n":11,"a":"③","t":["해양법›영해·무해통항"],"e":[],"p":["범위 확대"],"z":[],"d":["무해통항","군함 무해통항","영해 수수료"]},{"g":9,"y":2025,"n":12,"a":"②","t":["개인›범죄인인도"],"e":["판례: Söring"],"p":["판례 결론 왜곡"],"z":["판례 결론"],"d":["범죄인인도 의무","특정성 원칙","쌍방가벌성","Söring"]},{"g":9,"y":2025,"n":13,"a":"③","t":["외교·영사›외교사절 파견·직무"],"e":[],"p":["열거 외 항목"],"z":["열거 암기"],"d":["외교사절 직무"]},{"g":9,"y":2025,"n":14,"a":"④","t":["총론›국제법과 국내법"],"e":["판례: LaGrand","판례: Barcelona Traction"],"p":["절대표현"],"z":[],"d":["LaGrand","조약 위헌심사","Barcelona Traction"]},{"g":9,"y":2025,"n":15,"a":"②","t":["분쟁해결›중재"],"e":[],"p":["개념 혼동"],"z":[],"d":["중재 구속력","중재 준칙"]},{"g":9,"y":2025,"n":16,"a":"④","t":["분쟁해결›ICJ 절차","분쟁해결›권고적 의견"],"e":[],"p":["정반대 진술"],"z":[],"d":["선결적 항변","소송참가","권고적의견 구속력"]},{"g":9,"y":2025,"n":17,"a":"④","t":["국제경제법›WTO 설립협정"],"e":[],"p":["예외 신설"],"z":[],"d":["WTO 일괄수락","WTO 유보 금지"]},{"g":9,"y":2025,"n":18,"a":"②","t":["해양법›EEZ"],"e":[],"p":["용어 바꿔치기"],"z":[],"d":["EEZ 범위","허용어획량","EEZ 관할권 vs 주권적 권리"]},{"g":9,"y":2025,"n":19,"a":"②","t":["조약법›발효·적용"],"e":[],"p":["정반대 진술"],"z":[],"d":["조약 발효","잠정적용","조약 불소급(28조)"]},{"g":9,"y":2025,"n":20,"a":"③","t":["개인›난민"],"e":[],"p":["범위 확대"],"z":[],"d":["난민 판정권","난민협약 ICJ 관할"]},{"g":9,"y":2026,"n":1,"a":"②","t":["총론›법원(ICJ 38조)","조약법›강행규범"],"e":[],"p":["정반대 진술"],"z":[],"d":["ICJ규정 38조 재판준칙","신강행규범","법의 일반원칙"]},{"g":9,"y":2026,"n":2,"a":"①","t":["조약법›체결"],"e":[],"p":["정반대 진술"],"z":[],"d":["전권위임장","추인"]},{"g":9,"y":2026,"n":3,"a":"②","t":["조약법›무효"],"e":[],"p":["개념 혼동"],"z":["비교 암기"],"d":["가분성"]},{"g":9,"y":2026,"n":4,"a":"④","t":["관할권·면제›국가면제"],"e":[],"p":["개념 혼동"],"z":[],"d":["UN 국가면제협약","면제 포기"]},{"g":9,"y":2026,"n":5,"a":"①","t":["외교·영사›외교특권면제"],"e":[],"p":["정반대 진술"],"z":[],"d":["외교관 반소","외교관 강제집행","공관 시설 원조","단교시 공관 보호"]},{"g":9,"y":2026,"n":6,"a":"③","t":["해양법›공해"],"e":[],"p":["범위 확대"],"z":[],"d":["군함 면제","마약 거래","기국 통제"]},{"g":9,"y":2026,"n":7,"a":"③","t":["해양법›영해·무해통항"],"e":[],"p":["정반대 진술"],"z":[],"d":["영해 민사관할","영해 형사관할권","정박지"]},{"g":9,"y":2026,"n":8,"a":"①","t":["국가›국가의 기본권리"],"e":["판례: Wimbledon호"],"p":["연혁 혼동"],"z":[],"d":["우호관계선언(1970)","자위권 보고 의무","Wimbledon"]},{"g":9,"y":2026,"n":9,"a":"④","t":["관할권·면제›관할권 원칙","해양법›공해"],"e":[],"p":["범위 확대"],"z":[],"d":["집행관할권","형법 4조 기국주의","공해상 충돌"]},{"g":9,"y":2026,"n":10,"a":"②","t":["국제기구·UN›전문기구"],"e":[],"p":["정반대 진술"],"z":[],"d":["전문기구","UPU·ITU"]},{"g":9,"y":2026,"n":11,"a":"④","t":["국제기구·UN›UN 총회"],"e":[],"p":["숫자 변경"],"z":["숫자 암기"],"d":["총회 구성","분담금 연체","중요문제 표결"]},{"g":9,"y":2026,"n":12,"a":"③","t":["개인›외국인 지위"],"e":[],"p":["정반대 진술"],"z":[],"d":["외국인 입국","칼보조항","헌법 6조2항 외국인","이중국적"]},{"g":9,"y":2026,"n":13,"a":"④","t":["개인›국적"],"e":[],"p":["요건 추가"],"z":[],"d":["세계인권선언 국적","선박 국적","CEDAW","국적 상실"]},{"g":9,"y":2026,"n":14,"a":"③","t":["무력사용›군축·핵무기"],"e":[],"p":["정반대 진술"],"z":[],"d":["NPT","CTBT","TPNW","비핵지대 조약"]},{"g":9,"y":2026,"n":15,"a":"②","t":["무력사용›무력사용금지"],"e":[],"p":["연혁 혼동"],"z":[],"d":["부전조약","연맹규약 제재","경제적 강제","Porter 협약"]},{"g":9,"y":2026,"n":16,"a":"②","t":["조약법›유보"],"e":[],"p":["요건 추가"],"z":[],"d":["유보 철회","이의 철회"]},{"g":9,"y":2026,"n":17,"a":"④","t":["영토›극지"],"e":[],"p":["정반대 진술"],"z":[],"d":["남극조약"]},{"g":9,"y":2026,"n":18,"a":"④","t":["해양법›국제해협·군도수역"],"e":[],"p":["범위 확대"],"z":[],"d":["통과통항","해협 무해통항(45조)","메시나 예외"]},{"g":9,"y":2026,"n":19,"a":"②","t":["국제환경법›기후변화","국제환경법›개별 환경조약"],"e":[],"p":["정반대 진술"],"z":[],"d":["오존층 비엔나협약","파리협정","CDM"]},{"g":9,"y":2026,"n":20,"a":"①","t":["국제경제법›기타 협정"],"e":[],"p":["범위 축소"],"z":[],"d":["특별 및 차등대우","SPS협정","TBT협정","보조금협정"]}];
+
+const KEY='intl_law_gichul_v3',BASE=2019,F=['topic','det','etc','trap','anal'];
+const FN={topic:'논점',det:'세부 논점',etc:'기타',trap:'오답유형',anal:'분석'};
+let st={ov:{},kw:{topic:[],det:[],etc:[],trap:[],anal:[]},cat:[],caseTag:{},detParent:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s){st.ov=s.ov||{};st.kw=Object.assign(st.kw,s.kw||{});st.cat=s.cat||[];st.caseTag=s.caseTag||{};st.detParent=s.detParent||{}}}catch(e){}
+const LV=['대목차','중목차'];
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};if(window.__cloud)__cloud.touched()};
+const ko=(a,b)=>a.localeCompare(b,'ko');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uniq=a=>[...new Set(a)];
+let ROWS=[],FIRST={},view='heat',closedBig=new Set(),openMid=new Set(),closedEtc=new Set(),newOnly=false,G='',open=new Set(),etcType='';
+let flt={y1:'',y2:'',big:'',q:'',kw:null};
+const navStack=[];
+function goBack(){const s=navStack.pop();if(!s)return;view=s.view;etcType=s.etcType;flt.kw=s.kw;render();requestAnimationFrame(()=>scrollTo(0,s.y))}
+addEventListener('popstate',()=>{if(navStack.length)goBack()});
+
+function build(){
+  ROWS=SEED.map(q=>{
+    const id=`${q.g}-${q.y}-${q.n}`;
+    return Object.assign({id,q,topic:q.t||[],det:q.d||[],etc:q.e||[],trap:q.p||[],anal:q.z||[],memo:q.m||''},st.ov[id]||{});
+  });
+  FIRST={};
+  ROWS.forEach(r=>['topic','det','etc'].forEach(f=>r[f].forEach(t=>{const k=f+'|'+t;if(!(k in FIRST)||r.q.y<FIRST[k])FIRST[k]=r.q.y})));
+}
+const isNew=(f,t)=>FIRST[f+'|'+t]>BASE;
+const gRows=()=>ROWS.filter(r=>!G||String(r.q.g)===G);
+const qkey=q=>`${q.g}-${q.y}-${q.n}`;
+const srcL=q=>`${q.y} · ${q.n}번${q.g===9?' (9급)':''}`;
+const big=t=>t.split('›')[0];
+function short(f,t){
+  if(f==='etc')return t.replace(/^(판례|조약|기타):\s*/,'');
+  return t;
+}
+function topicLabel(t){const p=t.split('›');return p.length>1?`${esc(p[0])} <span class="b">›</span> ${esc(p[1])}`:esc(p[0])}
+function pool(f){const s=new Set(st.kw[f]);ROWS.forEach(r=>r[f].forEach(t=>s.add(t)));return[...s].sort(ko)}
+function chip(f,t,id){
+  const n=f==='etc'&&isNew(f,t)?'<b class="new">初</b>':'';
+  const act=id?`data-act="rm" data-id="${id}"`:`data-act="kwf"`;
+  const lab=f==='topic'?topicLabel(t):esc(short(f,t));
+  return `<span class="chip c-${f}${f==='topic'?' tchip':''}" ${act} data-f="${f}" data-t="${esc(t)}" title="${esc(t)}${id?' · 클릭하면 삭제':''}">${lab}${n}</span>`;
+}
+const addBtn=(r,f)=>`<button class="add" data-act="add" data-id="${r.id}" data-f="${f}">+</button>`;
+const cell=(r,f)=>`<div class="cell">${r[f].map(t=>chip(f,t,r.id)).join('')}${addBtn(r,f)}</div>`;
+function setOv(id,f,v){st.ov[id]=st.ov[id]||{};st.ov[id][f]=v;save();build()}
+
+/* ===== 전체 표 ===== */
+function yearsAll(){return uniq(gRows().map(r=>r.q.y)).sort()}
+function bigs(){return uniq(ROWS.flatMap(r=>r.topic.map(big))).sort(ko)}
+function renderTableView(){
+  const ys=yearsAll();
+  const yo=v=>'<option value="">-</option>'+ys.map(y=>`<option ${String(y)===v?'selected':''}>${y}</option>`).join('');
+  main.innerHTML=`<div class="fbar">${navStack.length?'<button class="backbtn" data-act="back">← 뒤로</button>':''}
+    <label>연도 <select id="y1">${yo(flt.y1)}</select> ~ <select id="y2">${yo(flt.y2)}</select></label>
+    <label>대목차 <select id="bigs"><option value="">전체</option>${bigs().map(b=>`<option ${b===flt.big?'selected':''}>${esc(b)}</option>`).join('')}</select></label>
+    <input type="text" id="qs" placeholder="검색" value="${esc(flt.q)}">
+    <span class="kwsel" id="kwbox"></span>
+    <span class="stat" id="stat"></span></div><div id="tbl"></div>`;
+  const on=(id,ev,fn)=>document.getElementById(id).addEventListener(ev,fn);
+  on('y1','change',e=>{flt.y1=e.target.value;renderTable()});
+  on('y2','change',e=>{flt.y2=e.target.value;renderTable()});
+  on('bigs','change',e=>{flt.big=e.target.value;renderTable()});
+  on('qs','input',e=>{flt.q=e.target.value.trim();renderTable()});
+  renderTable();
+}
+function filtered(){
+  return gRows().filter(r=>{
+    if(flt.y1&&r.q.y<+flt.y1)return false;
+    if(flt.y2&&r.q.y>+flt.y2)return false;
+    if(flt.big&&!r.topic.some(t=>big(t)===flt.big))return false;
+    if(flt.kw){const k=flt.kw;if(k.f==='topic'?!r.topic.some(t=>t===k.t||t.startsWith(k.t+'›')):!r[k.f].includes(k.t))return false}
+    if(flt.q){const hay=[r.memo,...F.flatMap(f=>r[f])].join(' ');if(!hay.includes(flt.q))return false}
+    return true;
+  });
+}
+function renderTable(){
+  const kb=document.getElementById('kwbox');
+  kb.innerHTML=flt.kw?`<span class="chip c-${flt.kw.f}" data-act="clrkw" title="클릭하면 해제">${FN[flt.kw.f]}: ${flt.kw.f==='topic'?topicLabel(flt.kw.t):esc(short(flt.kw.f,flt.kw.t))} ✕</span>`:'';
+  const rs=filtered().sort((a,b)=>a.q.y-b.q.y||a.q.g-b.q.g||a.q.n-b.q.n);
+  document.getElementById('stat').textContent=`${rs.length}문항`;
+  if(!rs.length){tbl.innerHTML='<div class="empty">조건에 맞는 문항이 없어요</div>';return}
+  let h='<table class="db"><thead><tr><th>연도</th><th>번호</th><th>정답</th><th>논점</th><th>세부 논점</th><th>기타</th><th>오답유형</th><th>분석</th></tr></thead><tbody>';
+  rs.forEach(r=>{
+    const g9=r.q.g===9;
+    h+=`<tr><td class="yr">${r.q.y}${g9?'<span class="g9t">9급</span>':''}</td><td class="num">${r.q.n}</td>
+      <td class="ans1${g9?' g9':''}" title="${g9?'가답안 없음 — 직접 풀이':'가답안'}">${r.q.a}</td>
+      <td class="tcell">${cell(r,'topic')}</td><td>${cell(r,'det')}</td><td>${cell(r,'etc')}</td><td>${cell(r,'trap')}</td>
+      <td>${cell(r,'anal')}<div class="memo" contenteditable="true" data-id="${r.id}">${esc(r.memo)}</div></td></tr>`;
+  });
+  tbl.innerHTML=h+'</tbody></table>';
+}
+
+/* ===== 공통 ===== */
+function numCell(st,isNewYear){
+  if(!st||!st.size)return isNewYear?'<td><b class="bang">!</b></td>':'<td></td>';
+  const ks=[...st].map(k=>k.split('-')).sort((a,b)=>a[0]-b[0]||a[2]-b[2]);
+  return `<td class="hit">${ks.map(([g,,n])=>`<span class="qn${g==='9'?' g9':''}" title="${g}급 ${n}번">${n}</span>`).join('')}${isNewYear?'<b class="bang">!</b>':''}</td>`;
+}
+const blankRow=ys=>ys.map(()=>'<td class="blank"></td>').join('');
+const CASE_TAG={"조약: GATT 11조": ["국제경제법›GATT 예외"], "조약: GATT 20조": ["국제경제법›GATT 예외"], "조약: GATT 24조": ["국제경제법›GATT 예외"], "조약: ICJ규정 36조": ["분쟁해결›ICJ 관할"], "조약: ICJ규정 38조": ["총론›법원(ICJ 38조)"], "조약: UN헌장 1조": ["국제기구·UN›UN 목적·원칙"], "조약: UN헌장 2조": ["국제기구·UN›UN 목적·원칙"], "조약: UN헌장 51조": ["무력사용›자위권"], "조약: 국제형사재판소 관할범죄 처벌법": ["국제형사법›ICC"], "조약: 로마규정 13조": ["국제형사법›ICC"], "조약: 헌법 60조": ["총론›국제법과 국내법"], "조약: 헌법 6조": ["총론›국제법과 국내법"], "조약: 형법 4조": ["관할권·면제›관할권 원칙"], "조약: 형법 7조": ["관할권·면제›관할권 원칙"], "판례: Al-Adsani": ["관할권·면제›국가면제"], "판례: Alabama호 중재": ["분쟁해결›중재"], "판례: Alvarez-Machain": ["개인›범죄인인도"], "판례: Anglo-Iranian Oil": ["분쟁해결›ICJ 관할"], "판례: Anglo-Norwegian Fisheries": ["해양법›기선·내수", "총론›국제관습법"], "판례: Armed Activities(DRC v. Rwanda)": ["조약법›강행규범"], "판례: Armed Activities(DRC v. Uganda)": ["무력사용›자위권"], "판례: Arrest Warrant": ["관할권·면제›국가면제"], "판례: Asylum": ["외교·영사›외교특권면제", "총론›국제관습법"], "판례: Avena": ["국가책임"], "판례: Banković": ["국제인권법›인권조약 일반"], "판례: Barcelona Traction": ["국가책임"], "판례: Behrami & Saramati": ["국가책임"], "판례: Black Sea(루마니아 v. 우크라이나)": ["해양법›경계획정"], "판례: Bosnia Genocide": ["국제형사법›국제범죄·임시재판소"], "판례: Brazil-Tyres": ["국제경제법›GATT 예외"], "판례: Cameroon v. Nigeria 해석청구": ["분쟁해결›ICJ 절차"], "판례: Cameroon v. Nigeria(2002)": ["조약법›무효"], "판례: Canada-Autos": ["국제경제법›GATT 원칙"], "판례: Caroline호": ["무력사용›자위권"], "판례: Certain Activities(코스타리카 v. 니카라과)": ["국제환경법›원칙"], "판례: Certain Expenses": ["국제기구·UN"], "판례: Certain German Interests": ["총론›국제법과 국내법"], "판례: Chagos": ["국가›국가의 요건·자결권"], "판례: China-Publications": ["국제경제법›GATT 예외"], "판례: Chorzów Factory": ["국가책임"], "판례: Chung Chi Cheung": ["해양법›영해·무해통항"], "판례: Corfu Channel": ["해양법›영해·무해통항", "국가책임"], "판례: Dominican Republic-Cigarettes": ["국제경제법›GATT 원칙"], "판례: EC-Asbestos": ["국제경제법›GATT 예외"], "판례: EC-Biotech": ["국제환경법›원칙"], "판례: EC-Seal Products": ["국제경제법›GATT 예외"], "판례: ELSI": ["국가책임"], "판례: Eastern Greenland": ["영토›영역취득"], "판례: Effect of Awards(UN 행정재판소)": ["국제기구·UN›국제기구 일반"], "판례: Eichmann": ["관할권·면제›관할권 원칙"], "판례: Ferrini": ["관할권·면제›국가면제"], "판례: Gabčíkovo-Nagymaros": ["국제환경법›원칙", "국가책임"], "판례: Hamdan": ["무력사용›국제인도법"], "판례: Interhandel": ["국가책임"], "판례: Iron Rhine": ["국제환경법›원칙"], "판례: Island of Palmas": ["영토›영역취득"], "판례: Japan-Alcoholic Beverages II": ["국제경제법›GATT 원칙"], "판례: Jurisdictional Immunities(독일 v. 이탈리아)": ["관할권·면제›국가면제"], "판례: Korea-Beef": ["국제경제법›GATT 예외"], "판례: Kosovo 독립선언": ["국가›국가의 요건·자결권"], "판례: LaGrand": ["국가책임", "외교·영사›영사관계"], "판례: Lac Lanoux": ["국제환경법›원칙"], "판례: Ligitan & Sipadan": ["영토›영역취득"], "판례: Lockerbie": ["국제기구·UN›UN 안보리"], "판례: Lotus호": ["관할권·면제›관할권 원칙"], "판례: M/V Saiga호": ["해양법"], "판례: M/V Virginia G": ["해양법›EEZ"], "판례: MOX Plant": ["해양법›해양환경"], "판례: Medellín": ["총론›국제법과 국내법"], "판례: Meuse강": ["국제환경법›원칙"], "판례: Mexico-Soft Drinks": ["국제경제법›GATT 원칙"], "판례: Minquiers and Ecrehos": ["영토›영역취득"], "판례: Namibia": ["국가›국가의 요건·자결권"], "판례: Nicaragua": ["무력사용", "국가›국내문제불간섭", "국가책임"], "판례: North Sea Continental Shelf": ["총론›국제관습법", "해양법"], "판례: Norwegian Loans": ["분쟁해결›ICJ 관할"], "판례: Nottebohm": ["개인›국적", "국가책임"], "판례: Nuclear Tests": ["총론›일방행위·연성법"], "판례: Nuclear Weapons 권고적 의견": ["총론›국제관습법", "분쟁해결›권고적 의견"], "판례: Nuclear Weapons(WHO 요청)": ["분쟁해결›권고적 의견"], "판례: Nuhanović": ["국가책임"], "판례: Oil Platforms": ["무력사용›자위권"], "판례: Paquete Habana": ["총론›국제법과 국내법"], "판례: Pedra Branca": ["영토›영역취득"], "판례: Pulp Mills": ["국제환경법›원칙", "국가책임"], "판례: Qatar v. Bahrain": ["조약법›체결"], "판례: Reparation for Injuries": ["국제기구·UN›국제기구 일반", "국가책임"], "판례: Right of Passage": ["총론›국제관습법"], "판례: San Juan River 도로(코스타리카 v. 니카라과)": ["국제환경법›원칙"], "판례: Schooner Exchange": ["관할권·면제›국가면제"], "판례: South China Sea 중재": ["해양법›섬·간출지"], "판례: Söring": ["개인›범죄인인도"], "판례: Tehran 인질": ["국가책임"], "판례: Temple of Preah Vihear": ["총론›법의 일반원칙·형평"], "판례: Tinoco 중재": ["국가›정부승인"], "판례: Trail Smelter": ["국제환경법›원칙"], "판례: US-Gasoline": ["국제경제법›GATT 예외"], "판례: US-Shrimp": ["국제경제법›GATT 예외"], "판례: Wall 권고적 의견": ["무력사용›자위권", "국제인권법"], "판례: Western Sahara": ["영토›영역취득"], "판례: Whaling in the Antarctic": ["국제환경법›개별 환경조약"], "판례: Wimbledon호": ["국가›국가의 기본권리"], "판례: Yeager": ["국가책임"], "판례: 급식조례 사건": ["총론›국제법과 국내법"], "판례: 류창(劉强) 사건": ["개인›범죄인인도"], "판례: 부르키나파소-말리 국경분쟁": ["영토›현상유지(uti possidetis)", "총론›일방행위·연성법"], "판례: 튀니지-모로코 국적법": ["국가›국내문제불간섭"], "판례: 한국 주세 사건": ["국제경제법›GATT 원칙"]};
+function caseTagPaths(t,rs){
+  if(st.caseTag[t])return st.caseTag[t];
+  if(CASE_TAG[t])return CASE_TAG[t];
+  const m={};rs.forEach(r=>r.topic.forEach(x=>{const b=big(x);(m[b]=m[b]||new Set()).add(x)}));
+  return Object.keys(m).map(b=>m[b].size>1?b:[...m[b]][0]);
+}
+function byYear(rs){const m={};rs.forEach(r=>(m[r.q.y]=m[r.q.y]||new Set()).add(qkey(r.q)));return m}
+const yhead=ys=>ys.map(y=>`<th class="${y>BASE?'post':''}">${String(y).slice(2)}</th>`).join('');
+(function(){try{if(st.ctFix1)return;Object.keys(st.caseTag||{}).forEach(t=>{const d=CASE_TAG[t]||[];st.caseTag[t]=uniq([...d,...st.caseTag[t]])});st.ctFix1=1;save()}catch(e){}})();
+const tagName=p=>p.includes('›')?p.split('›')[1]:p;
+function mini(rs){
+  rs=[...rs].sort((a,b)=>a.q.y-b.q.y||a.q.n-b.q.n);
+  return '<table class="mini">'+rs.map(r=>`<tr><td class="s">${srcL(r.q)}</td><td><div class="cell">${r.topic.map(t=>chip('topic',t)).join('')}</div></td><td><div class="cell">${r.etc.map(t=>chip('etc',t)).join('')}</div></td></tr>`).join('')+'</table>';
+}
+function collect(f){
+  const m={};gRows().forEach(r=>r[f].forEach(t=>(m[t]=m[t]||[]).push(r)));
+  return Object.entries(m).map(([t,rs])=>({f,t,rs,qn:rs.length,yrs:rs.map(r=>r.q).sort((a,b)=>a.y-b.y).map(q=>`${String(q.y).slice(2)}-${q.n}${q.g===9?'(9)':''}`).join(' · ')}));
+}
+
+const GENERIC_ETC=['조약: 조약법'];
+/* ===== 새 논점 ===== */
+function renderNew(){
+  const ys=yearsAll().filter(y=>y>BASE),grp={};
+  const etcNames=new Set();ROWS.forEach(r=>r.etc.forEach(t=>{if(!GENERIC_ETC.includes(t))etcNames.add(short('etc',t))}));
+  const dupCase=t=>[...etcNames].some(e=>e===t||e.startsWith(t)||t.startsWith(e));
+  const bigOf=rs=>{const c={};rs.forEach(r=>r.topic.forEach(x=>{const b=big(x);c[b]=(c[b]||0)+1}));return Object.keys(c).sort((x,y)=>c[y]-c[x]||ko(x,y))[0]||'미분류'};
+  collect('det').filter(i=>isNew('det',i.t)&&!dupCase(i.t)).forEach(i=>(grp[bigOf(i.rs)]=grp[bigOf(i.rs)]||[]).push(i));
+  collect('etc').filter(i=>isNew('etc',i.t)&&!GENERIC_ETC.includes(i.t)).forEach(i=>{const b=big(caseTagPaths(i.t,i.rs)[0]||'미분류');(grp[b]=grp[b]||[]).push(i)});
+  const bs=Object.keys(grp).sort((x,y)=>grp[y].length-grp[x].length||ko(x,y));
+  if(!bs.length){main.innerHTML='<div class="empty">아직 새 논점이 없어요</div>';return}
+  let h=`<table class="heat"><thead><tr><th>새 논점 / 판례·조약</th>${yhead(ys)}<th>개수</th></tr></thead><tbody>`;
+  bs.forEach(b=>{
+    h+=`<tr class="mid"><td class="nm">${esc(b)}</td>${blankRow(ys)}<td class="cnt1">${grp[b].length}</td></tr>`;
+    grp[b].sort((x,y)=>FIRST[x.f+'|'+x.t]-FIRST[y.f+'|'+y.t]||(x.f==='det'?-1:1)-(y.f==='det'?-1:1)||ko(x.t,y.t)).forEach(i=>{
+      const m=byYear(i.rs),fy=FIRST[i.f+'|'+i.t],typ=i.f==='etc'?(i.t.match(/^(판례|조약|기타):/)||[])[1]:'논점';
+      h+=`<tr><td class="nm sub" data-f="${i.f}" data-t="${esc(i.t)}"><span class="typ">${typ}</span>${esc(short(i.f,i.t))}</td>${ys.map(y=>numCell(m[y],+y===fy)).join('')}<td class="cnt1">${i.qn}</td></tr>`;
+    });
+  });
+  main.innerHTML=h+'</tbody></table>';
+}
+/* ===== 판례·조약 빈출 (표) ===== */
+function renderEtc(){
+  const ys=yearsAll(),grp={},byT={};
+  gRows().forEach(r=>r.etc.forEach(t=>{
+    if(GENERIC_ETC.includes(t))return;
+    if(etcType&&!t.startsWith(etcType))return;
+    (byT[t]=byT[t]||[]).push(r);
+  }));
+  Object.entries(byT).forEach(([t,rs])=>{
+    const b=big((CASE_TAG[t]||caseTagPaths(t,rs))[0]||'미분류');
+    (grp[b]=grp[b]||{})[t]=rs;
+  });
+  const seg=['','판례:','조약:'].map(t=>`<button class="${etcType===t?'on':''}" data-act="etype" data-t="${t}">${t?t.slice(0,-1):'전체'}</button>`).join('');
+  const bs=sortBig(Object.keys(grp));
+  if(!bs.length){main.innerHTML=`<div class="seg">${seg}</div><div class="empty">항목이 없어요</div>`;return}
+  let h=`<table class="heat"><thead><tr><th>논점 / 판례·조약</th>${yhead(ys)}<th>개수</th></tr></thead><tbody>`;
+  bs.forEach(b=>{
+    const items=Object.entries(grp[b]).sort((x,y)=>y[1].length-x[1].length||ko(x[0],y[0]));
+    const all=uniq(items.flatMap(x=>x[1]));
+    const cb=closedEtc.has(b);
+    h+=`<tr class="mid lv1" id="big-${esc(b)}" data-act="tg-etc" data-t="${esc(b)}"><td class="nm" data-t="${esc(b)}"><span class="car">${cb?'▸':'▾'}</span>${esc(b)}</td>${blankRow(ys)}<td class="cnt1">${all.length}</td></tr>`;
+    if(cb)return;
+    items.forEach(([t,rs])=>{
+      const m=byYear(rs),typ=(t.match(/^(판례|조약|기타):/)||[])[1],fy=FIRST['etc|'+t];
+      const tags=caseTagPaths(t,rs).map(x=>`<span class="htg" data-t="${esc(t)}" data-p="${esc(x)}" title="우클릭: 삭제">#${esc(tagName(x))}</span>`).join(' ');
+      h+=`<tr><td class="nm sub" data-f="etc" data-t="${esc(t)}" title="우클릭: 키워드 추가">${typ&&!etcType?`<span class="typ">${typ}</span>`:''}${esc(short('etc',t))}<span class="htag">${tags}</span></td>${ys.map(y=>numCell(m[y],fy>BASE&&+y===fy)).join('')}<td class="cnt1">${rs.length}</td></tr>`;
+    });
+  });
+  main.innerHTML=`<div class="seg">${seg}</div>`+wrapNav(h+'</tbody></table>',bs,'etc');
+}
+/* ===== 오답패턴 (표) ===== */
+function renderTrap(){
+  const ys=yearsAll(),items=collect('trap').sort((a,b)=>b.qn-a.qn||ko(a.t,b.t));
+  if(!items.length){main.innerHTML='<div class="empty">아직 오답유형이 없어요</div>';return}
+  let h=`<table class="heat fit"><colgroup><col class="c-n"><col class="c-t">${ys.map(()=>'<col>').join('')}</colgroup><thead><tr><th>개수</th><th>오답유형</th>${yhead(ys)}</tr></thead><tbody>`;
+  items.forEach(i=>{const m=byYear(i.rs);h+=`<tr><td class="cnt1">${i.qn}</td><td class="nm sub" data-f="trap" data-t="${esc(i.t)}">${esc(i.t)}</td>${ys.map(y=>numCell(m[y])).join('')}</tr>`});
+  main.innerHTML=h+'</tbody></table>';
+}
+/* ===== 출제 지도 ===== */
+const ORDER_BIG=['총론','조약법','국가','관할권·면제','국가책임','외교·영사','국제기구·UN','영토','해양법','공역·우주','개인','국제인권법','국제형사법','국제환경법','국제경제법','분쟁해결','무력사용'];
+const ORDER_MID={'총론':['국제법 주체·역사','법원(ICJ 38조)','국제관습법','법의 일반원칙·형평','일방행위·연성법','국제법과 국내법'],'조약법':['체결','유보','발효·적용','해석','제3국','개정·변경','무효','강행규범','종료·정지','등록·기탁'],'국가':['국가의 요건·자결권','국가의 기본권리','국내문제불간섭','국가승인','정부승인','교전단체승인','국가승계'],'관할권·면제':['관할권 원칙','국가면제'],'국가책임':['귀속','위법성조각사유','법적 효과','대응조치','외교적 보호','국제기구 책임'],'외교·영사':['외교사절 파견·직무','외교특권면제','영사관계','국제기구 특권면제'],'국제기구·UN':['국제기구 일반','UN 목적·원칙','UN 회원국','UN 총회','UN 안보리','UN 사무국·기타기관','전문기구','지역기구(EU)'],'영토':['영역취득','현상유지(uti possidetis)','극지'],'해양법':['기선·내수','영해·무해통항','접속수역','국제해협·군도수역','EEZ','대륙붕','섬·간출지','경계획정','공해','심해저','해양환경','내륙국·과학조사','분쟁해결'],'공역·우주':['항공법','우주법'],'개인':['국적','외국인 지위','난민','범죄인인도'],'국제인권법':['인권조약 일반','UN 인권체제','자유권규약','사회권규약','개별 인권조약','지역인권'],'국제형사법':['국제범죄·임시재판소','ICC'],'국제환경법':['원칙','기후변화','개별 환경조약'],'국제경제법':['WTO 설립협정','GATT 원칙','GATT 예외','무역구제','기타 협정','WTO 분쟁해결','투자분쟁(ICSID)'],'분쟁해결':['평화적 해결수단','중재','ICJ 관할','ICJ 절차','권고적 의견','기타 국제재판소'],'무력사용':['무력사용금지','자위권','집단안전보장','PKO','인도적 개입·R2P','국제인도법','군축·핵무기']};
+const ordIdx=(arr,x)=>{const i=arr.indexOf(x);return i<0?999:i};
+function sortBig(a){return a.sort((x,y)=>ordIdx(ORDER_BIG,x)-ordIdx(ORDER_BIG,y)||ko(x,y))}
+function sortMid(b,a){const o=ORDER_MID[b]||[];return a.sort((x,y)=>ordIdx(o,x.split('›')[1])-ordIdx(o,y.split('›')[1])||ko(x,y))}
+function detParentOf(tag,rows){
+  if(st.detParent[tag])return st.detParent[tag];
+  const c={};
+  rows.forEach(r=>{const w=r.topic.length===1?2:1;r.topic.forEach(t=>{let sc=w;const mid=(t.split('›')[1]||'');for(let i=0;i<mid.length-1;i++){if(tag.includes(mid.slice(i,i+2))){sc+=1.5;break}}c[t]=(c[t]||0)+sc})});
+  return Object.keys(c).sort((x,y)=>c[y]-c[x]||ko(x,y))[0]||'미분류›기타';
+}
+function renderHeat(){
+  const rs=gRows(),ys=yearsAll(),tree={};
+  rs.forEach(r=>r.topic.forEach(t=>{
+    const b=big(t),node=(tree[b]=tree[b]||{})[t]=tree[b][t]||{yrs:{},det:{}};
+    (node.yrs[r.q.y]=node.yrs[r.q.y]||new Set()).add(qkey(r.q));
+  }));
+  const detRows={};rs.forEach(r=>r.det.forEach(d=>(detRows[d]=detRows[d]||[]).push(r)));
+  Object.entries(detRows).forEach(([d,drs])=>{
+    const par=detParentOf(d,drs),b=big(par);
+    const node=(tree[b]=tree[b]||{})[par]=tree[b][par]||{yrs:{},det:{}};
+    node.det[d]=drs;
+  });
+  const sum=o=>Object.values(o).reduce((a,s)=>a+s.size,0);
+  const isNewD=d=>FIRST['det|'+d]>BASE;
+  let h=`<table class="heat"><thead><tr><th>논점</th>${yhead(ys)}<th>개수</th></tr></thead><tbody>`;
+  let bigs=sortBig(Object.keys(tree));
+  if(newOnly)bigs=bigs.filter(b=>Object.values(tree[b]).some(n=>Object.keys(n.det).some(isNewD)));
+  bigs.forEach(b=>{
+    const subs=tree[b],tot={};
+    Object.values(subs).forEach(n=>Object.entries(n.yrs).forEach(([y,s])=>{(tot[y]=tot[y]||new Set());s.forEach(x=>tot[y].add(x))}));
+    const cb=!newOnly&&closedBig.has(b);
+    h+=`<tr class="mid lv1" id="big-${esc(b)}" data-act="tg-big" data-t="${esc(b)}"><td class="nm" data-t="${esc(b)}"><span class="car">${cb?'▸':'▾'}</span>${esc(b)}</td>${blankRow(ys)}<td class="cnt1">${sum(tot)}</td></tr>`;
+    if(cb)return;
+    let mids=sortMid(b,Object.keys(subs));
+    if(newOnly)mids=mids.filter(t=>Object.keys(subs[t].det).some(isNewD));
+    mids.forEach(t=>{
+      const n=subs[t],om=newOnly||openMid.has(t),dets=Object.keys(n.det),nd=dets.length;
+      const newYs=new Set(dets.filter(isNewD).map(d=>FIRST['det|'+d]));
+      h+=`<tr class="lv2" data-act="tg-mid" data-t="${esc(t)}"><td class="nm" data-mid="${esc(t)}"><span class="car">${nd?(om?'▾':'▸'):''}</span>${esc(t.split('›').pop()||t)}</td>${ys.map(y=>numCell(n.yrs[y],newYs.has(+y))).join('')}<td class="cnt1">${sum(n.yrs)}</td></tr>`;
+      if(!om)return;
+      Object.entries(n.det).filter(([d])=>!newOnly||isNewD(d)).sort((x,y)=>y[1].length-x[1].length||FIRST['det|'+x[0]]-FIRST['det|'+y[0]]||ko(x[0],y[0])).forEach(([d,drs])=>{
+        const m=byYear(drs),fy=FIRST['det|'+d];
+        h+=`<tr class="lv3"><td class="nm" data-det="${esc(d)}" data-mid="${esc(t)}" title="우클릭: 수정">${esc(d)}</td>${ys.map(y=>numCell(m[y],fy>BASE&&+y===fy)).join('')}<td class="cnt1">${drs.length}</td></tr>`;
+      });
+    });
+  });
+  main.innerHTML=wrapNav(h+'</tbody></table>',bigs,'heat');
+  window.__heatMids=Object.values(tree).flatMap(o=>Object.keys(o));
+}
+function wrapNav(tbl,bigs,mode){
+  const ctl=mode==='heat'
+    ?`<a data-nav="all-open">전체 열기</a><a data-nav="all-close">전체 닫기</a><a data-nav="mid-open">중분류 모두 열기</a><a data-nav="sub-close">소분류 닫기</a><a data-nav="new-only" class="${newOnly?'on':''}">! 새 논점만</a>`
+    :`<a data-nav="all-open">전체 열기</a><a data-nav="all-close">전체 닫기</a>`;
+  return `<div class="twrap"><div class="tbox">${tbl}</div><aside id="navr" data-mode="${mode}"><a class="edge" data-nav="top">▲ top</a>${bigs.map(b=>`<a data-nav="${esc(b)}">${esc(b)}</a>`).join('')}<a class="edge" data-nav="bottom">▼ bottom</a><div class="ctl"><span class="lbl">☰ 펼치기·접기</span><div class="more">${ctl}</div></div></aside></div>`;
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('#navr a');if(!a)return;
+  const k=a.dataset.nav,mode=a.closest('#navr').dataset.mode,closed=mode==='etc'?closedEtc:closedBig;
+  if(k==='top')return scrollTo({top:0,behavior:'smooth'});
+  if(k==='bottom')return scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  if(k==='all-open'){closed.clear();if(mode==='heat')(window.__heatMids||[]).forEach(m=>openMid.add(m));return render()}
+  if(k==='all-close'){document.querySelectorAll('#main tr.lv1 td[data-t]').forEach(td=>closed.add(td.dataset.t));if(mode==='heat')openMid.clear();return render()}
+  if(k==='mid-open'){closed.clear();openMid.clear();return render()}
+  if(k==='sub-close'){openMid.clear();return render()}
+  if(k==='new-only'){newOnly=!newOnly;return render()}
+  if(closed.has(k)){closed.delete(k);render()}
+  const el=document.getElementById('big-'+k);if(el)scrollTo({top:el.getBoundingClientRect().top+scrollY-10,behavior:'smooth'});
+});
+/* ===== 세부 논점 편집 (우클릭) ===== */
+let cm=null;
+function closeCM(){if(cm){cm.remove();cm=null}}
+function rowsWithDet(d){return ROWS.filter(r=>r.det.includes(d))}
+function setDet(r,arr){st.ov[r.id]=st.ov[r.id]||{};st.ov[r.id].det=arr}
+function openCM(x,y,items){
+  closeCM();cm=document.createElement('div');cm.className='cmenu';
+  cm.innerHTML=items.map((it,i)=>it.hd?`<div class="hd">${esc(it.hd)}</div>`:`<button data-i="${i}">${esc(it.label)}</button>`).join('');
+  document.body.appendChild(cm);
+  cm.style.top=y+'px';cm.style.left=Math.min(x,scrollX+innerWidth-cm.offsetWidth-12)+'px';
+  cm.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const it=items[+b.dataset.i];closeCM();it.fn()};
+}
+function parseQ(str){
+  return str.split(/[,\s]+/).filter(Boolean).map(tok=>{const m=tok.match(/^(7|9)급?[-.\/](\d{2,4})[-.\/](\d{1,2})$/);if(!m)return null;let y=+m[2];if(y<100)y+=2000;return `${m[1]}-${y}-${+m[3]}`}).filter(Boolean);
+}
+document.addEventListener('contextmenu',e=>{
+  if(view!=='heat')return;
+  const dt=e.target.closest('td[data-det]'),md=e.target.closest('tr.lv2 td[data-mid]');
+  if(!dt&&!md)return;
+  e.preventDefault();
+  if(dt){
+    const d=dt.dataset.det,mid=dt.dataset.mid;
+    openCM(e.pageX,e.pageY,[{hd:d},
+      {label:'이름 바꾸기',fn:()=>{const v=prompt('새 이름',d);if(!v||v===d)return;rowsWithDet(d).forEach(r=>setDet(r,uniq(r.det.map(x=>x===d?v.trim():x))));if(st.detParent[d]){st.detParent[v.trim()]=st.detParent[d];delete st.detParent[d]}save();build();render()}},
+      {label:'출제 문제 추가 (예: 7-2023-5)',fn:()=>{const v=prompt('추가할 문제 (급-연도-번호, 여러 개는 쉼표)\n예: 7-2023-5, 9-2021-3','');if(!v)return;parseQ(v).forEach(id=>{const r=ROWS.find(x=>x.id===id);if(r&&!r.det.includes(d))setDet(r,[...r.det,d])});save();build();render()}},
+      {label:'출제 문제 빼기',fn:()=>{const list=rowsWithDet(d).map(r=>r.id).join(', ');const v=prompt('뺄 문제 (현재: '+list+')','');if(!v)return;const ids=parseQ(v);rowsWithDet(d).forEach(r=>{if(ids.includes(r.id))setDet(r,r.det.filter(x=>x!==d))});save();build();render()}},
+      {label:'다른 중분류로 옮기기',fn:()=>openMidPicker(e,d)},
+      {label:'삭제',fn:()=>{if(!confirm(`'${d}' 삭제할까요?`))return;rowsWithDet(d).forEach(r=>setDet(r,r.det.filter(x=>x!==d)));save();build();render()}}]);
+  }else{
+    const mid=md.dataset.mid;
+    openCM(e.pageX,e.pageY,[{hd:mid.replace('›',' › ')},
+      {label:'세부 논점 추가',fn:()=>{const name=prompt('세부 논점 이름','');if(!name)return;const v=prompt('출제 문제 (급-연도-번호, 여러 개는 쉼표)\n예: 7-2023-5, 9-2021-3','');if(!v)return;parseQ(v).forEach(id=>{const r=ROWS.find(x=>x.id===id);if(r&&!r.det.includes(name.trim()))setDet(r,[...r.det,name.trim()])});st.detParent[name.trim()]=mid;openMid.add(mid);save();build();render()}}]);
+  }
+});
+function openMidPicker(e,d){
+  closePicker();
+  const dv=document.createElement('div');dv.className='picker';document.body.appendChild(dv);
+  pk={el:dv,mode:'detmove',t:d,path:[]};renderTopicPicker();
+  dv.style.top=(e.pageY+6)+'px';dv.style.left=Math.max(8,Math.min(e.pageX,scrollX+innerWidth-dv.offsetWidth-12))+'px';
+}
+addEventListener('click',e=>{if(cm&&!e.target.closest('.cmenu'))closeCM()});
+function render(){
+    document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  ({table:renderTableView,new:renderNew,etc:renderEtc,trap:renderTrap,heat:renderHeat})[view]();
+}
+function rerender(){view==='table'?renderTable():render()}
+
+/* ===== 키워드 피커 ===== */
+let pk=null;
+function closePicker(){if(pk){pk.el.remove();pk=null}}
+function topicTree(){
+  const paths=new Set([...st.cat,...st.kw.topic]);
+  ROWS.forEach(r=>r.topic.forEach(t=>paths.add(t)));
+  const root={};
+  [...paths].forEach(p=>{let n=root;p.split('›').slice(0,2).forEach(seg=>{n=n[seg]=n[seg]||{}})});
+  return root;
+}
+function usedPrefix(p){return ROWS.some(r=>r.topic.some(t=>t===p||t.startsWith(p+'›')))}
+function renderTopicPicker(){
+  const d=pk.el,path=pk.path,depth=path.length,cur=pk.mode==='case'?caseTagPaths(pk.t,[]):pk.mode==='detmove'?[st.detParent[pk.t]||'']:ROWS.find(x=>x.id===pk.id).topic;
+  let node=topicTree();for(const sg of path)node=node[sg]||{};
+  const kids=Object.keys(node).sort(ko),leaf=depth>=1;
+  const crumb=`<div class="crumb"><span data-act="tp-go" data-i="0" class="${depth?'':'cur'}">전체</span>${path.map((sg,i)=>`›<span data-act="tp-go" data-i="${i+1}" class="cur">${esc(sg)}</span>`).join('')}</div>`;
+  const list=kids.map(k=>{
+    const full=[...path,k].join('›'),on=cur.includes(full);
+    return `<span class="chip c-topic" data-act="tp-in" data-k="${esc(k)}" title="${leaf?'선택':'하위로'}${st.cat.includes(full)&&!usedPrefix(full)?' · 우클릭 삭제':''}" style="${on?'outline:1.5px solid #6fb0dc':''}">${esc(k)}${leaf?'':'<i class="arr">›</i>'}</span>`;
+  }).join('')||'<span style="color:#b5ada6;font-size:12.5px">아직 없음 — 아래에서 추가</span>';
+  d.innerHTML=crumb+`<div class="lvl">${LV[Math.min(depth,1)]}</div><div class="opts">${list}</div>
+    <div class="tp-foot"><input placeholder="+ 새 ${LV[Math.min(depth,1)]} 추가 후 Enter">${depth?`<button class="btn tp-sel" data-act="tp-sel">「${esc(path[0])}」만 선택</button>`:''}</div>`;
+  const inp=d.querySelector('input');inp.focus({preventScroll:true});
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closePicker();
+    if(e.key==='Enter'&&inp.value.trim()){
+      const v=inp.value.trim().replace(/›/g,''),full=[...path,v].join('›');
+      if(!st.cat.includes(full))st.cat.push(full);save();
+      if(leaf)pkSelect(full);else{pk.path.push(v);renderTopicPicker()}
+    }
+  });
+}
+function place(d,btn){
+  const b=btn.getBoundingClientRect();
+  d.style.top=(b.bottom+scrollY+4)+'px';
+  d.style.left=Math.max(8,Math.min(b.left+scrollX,scrollX+innerWidth-d.offsetWidth-12))+'px';
+}
+function openPicker(btn){
+  closePicker();
+  const id=btn.dataset.id,f=btn.dataset.f,r=ROWS.find(x=>x.id===id);
+  const d=document.createElement('div');d.className='picker';document.body.appendChild(d);
+  if(f==='topic'){pk={el:d,id,f,path:[]};renderTopicPicker();place(d,btn);return}
+  const opts=pool(f).filter(t=>!r[f].includes(t));
+  d.innerHTML=`<input placeholder="검색 또는 새 키워드 입력 후 Enter${f==='etc'?' (예: 판례: Ferrini / 조약: UN헌장 51조)':''}"><div class="opts">${opts.map(t=>`<span class="chip c-${f}" data-act="pick" data-t="${esc(t)}" title="${esc(t)}">${esc(short(f,t))}</span>`).join('')}</div>`;
+  place(d,btn);pk={el:d,id,f};
+  const inp=d.querySelector('input');inp.focus({preventScroll:true});
+  inp.addEventListener('input',()=>{const v=inp.value.trim();d.querySelectorAll('.opts .chip').forEach(c=>c.style.display=c.dataset.t.includes(v)?'':'none')});
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closePicker();
+    if(e.key==='Enter'&&inp.value.trim())addTag(id,f,inp.value.trim());
+  });
+}
+function pkSelect(full){
+  if(pk&&pk.mode==='detmove'){if(!full.includes('›'))return;st.detParent[pk.t]=full;openMid.add(full);save();closePicker();render();return}
+  if(pk&&pk.mode==='case'){
+    const t=pk.t,cur=[...caseTagPaths(t,[])];
+    if(!cur.includes(full))cur.push(full);
+    st.caseTag[t]=cur;save();closePicker();render();return;
+  }
+  addTag(pk.id,'topic',full);
+}
+function addTag(id,f,t){
+  const r=ROWS.find(x=>x.id===id);
+  if(!r[f].includes(t)){if(f!=='topic'&&!st.kw[f].includes(t))st.kw[f].push(t);setOv(id,f,[...r[f],t])}
+  closePicker();rerender();
+}
+
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');
+  if(pk&&!e.target.closest('.picker')&&!(a&&(a.dataset.act==='add'||a.dataset.act.startsWith('tp-'))))closePicker();
+  if(!a)return;
+  const act=a.dataset.act,id=a.dataset.id,f=a.dataset.f,t=a.dataset.t;
+  if(act==='tg-big'){closedBig.has(t)?closedBig.delete(t):closedBig.add(t);render();return}
+  if(act==='tg-etc'){closedEtc.has(t)?closedEtc.delete(t):closedEtc.add(t);render();return}
+  if(act==='tg-mid'){openMid.has(t)?openMid.delete(t):openMid.add(t);render();return}
+  if(act==='add')openPicker(a);
+  else if(act==='pick'&&pk)addTag(pk.id,pk.f,t);
+  else if(act==='tp-go'&&pk){pk.path=pk.path.slice(0,+a.dataset.i);renderTopicPicker()}
+  else if(act==='tp-in'&&pk){const k=a.dataset.k;if(pk.path.length>=1)pkSelect([...pk.path,k].join('›'));else{pk.path.push(k);renderTopicPicker()}}
+  else if(act==='tp-sel'&&pk)pkSelect(pk.path[0]);
+  else if(act==='ctag-rm'){const p2=a.dataset.p;st.caseTag[t]=caseTagPaths(t,[]).filter(x=>x!==p2);save();render()}
+  else if(act==='rm'){const r=ROWS.find(x=>x.id===id);setOv(id,f,r[f].filter(x=>x!==t));rerender()}
+  else if(act==='kwf'){navStack.push({view,y:scrollY,etcType,kw:flt.kw});try{history.pushState({n:navStack.length},'')}catch(e){};flt.kw={f,t};view='table';render();scrollTo(0,0)}
+  else if(act==='back'){if(history.state&&history.state.n){history.back()}else goBack()}
+  else if(act==='clrkw'){flt.kw=null;renderTable()}
+  else if(act==='tog'){const k=a.dataset.k;open.has(k)?open.delete(k):open.add(k);render()}
+  else if(act==='etype'){etcType=t;render()}
+});
+document.addEventListener('contextmenu',e=>{
+  const tg=e.target.closest('.htg');
+  if(tg&&view==='etc'){
+    e.preventDefault();const t=tg.dataset.t,p2=tg.dataset.p;
+    openCM(e.pageX,e.pageY,[{hd:'#'+tagName(p2)},{label:'이 키워드 삭제',fn:()=>{st.caseTag[t]=caseTagPaths(t,[]).filter(x=>x!==p2);save();render()}}]);
+    return;
+  }
+  const row=e.target.closest('td.nm.sub[data-f="etc"]');
+  if(row&&view==='etc'){
+    e.preventDefault();closePicker();
+    const d=document.createElement('div');d.className='picker';document.body.appendChild(d);
+    pk={el:d,mode:'case',t:row.dataset.t,path:[]};renderTopicPicker();
+    d.style.top=(e.pageY+6)+'px';d.style.left=Math.max(8,Math.min(e.pageX,scrollX+innerWidth-d.offsetWidth-12))+'px';
+    return;
+  }
+  const a=e.target.closest('[data-act="tp-in"]');if(!a||!pk)return;
+  const full=[...pk.path,a.dataset.k].join('›');
+  if(!st.cat.includes(full)||usedPrefix(full))return;
+  e.preventDefault();
+  st.cat=st.cat.filter(x=>x!==full&&!x.startsWith(full+'›'));save();renderTopicPicker();
+});
+let mt;
+document.addEventListener('input',e=>{
+  if(!e.target.classList.contains('memo'))return;
+  const id=e.target.dataset.id,v=e.target.innerText.trim();
+  clearTimeout(mt);mt=setTimeout(()=>{st.ov[id]=st.ov[id]||{};st.ov[id].memo=v;save();const r=ROWS.find(x=>x.id===id);if(r)r.memo=v},400);
+});
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){view=b.dataset.v;render()}});
+document.getElementById('gsel').addEventListener('change',e=>{G=e.target.value;render()});
+document.getElementById('exp').onclick=()=>{
+  const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'});
+  const u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download=`국제법_기출분석_백업_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);
+};
+document.getElementById('imp').onclick=()=>document.getElementById('impf').click();
+document.getElementById('impf').onchange=e=>{
+  const fl=e.target.files[0];if(!fl)return;
+  fl.text().then(s=>{try{const o=JSON.parse(s);st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};save();build();render()}catch(err){alert('파일을 읽지 못했어요')}});
+  e.target.value='';
+};
+const main=document.getElementById('main');
+build();render();
+window.__cloud=makeCloud('database_v1/intllaw_analysis',KEY,()=>st,o=>{closePicker();closeCM();st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};if(o.ctFix1)st.ctFix1=o.ctFix1;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};build();render()});
+</script>
+</body>
+</html>
