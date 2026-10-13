@@ -787,7 +787,8 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .kw{margin-top:.45em;padding-top:.35em;border-top:.75pt dotted #9a9a9a;text-align:right;font-weight:300}
 @page{size:A4;margin:0}
 @media print{
-  html,body{background:#fff}
+  html,body{background:#fff;margin:0!important;padding:0!important;height:auto!important;overflow:visible!important}
+  .pages,.main{overflow:visible!important;height:auto!important}
   .bar{display:none}
   .pages{padding:0;gap:0;display:block}
   .cats{display:none}
@@ -813,10 +814,10 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 const D=__DATA__;
 const K="ilcases_print_v2";
 const IS_SAFARI=/^((?!chrome|android|crios|fxios|edg).)*safari/i.test(navigator.userAgent);
-const DEF={pz:IS_SAFARI?88:100,ls:0,tls:0,fs:8,lh:1.45,cs:11,ts:9,tw:"400",mi:20,mo:12,mt:14,mb:14,gap:8,cg:5,keep:true,toc:true,cats:[]};
+const DEF={pz:100,ls:0,tls:0,fs:8,lh:1.45,cs:11,ts:9,tw:"400",mi:20,mo:12,mt:14,mb:14,gap:8,cg:5,keep:true,toc:true,cats:[]};
 let S=Object.assign({},DEF),LS={};try{LS=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){}
 Object.assign(S,(D.settings&&(D.settings.t||0)>(LS.t||0))?D.settings:LS);
-if(IS_SAFARI&&!(S.pz<95))S.pz=88;
+if(!S.m3){if(S.pz===88)S.pz=100;S.m3=1}
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const MK={h:"•",a:"✓",b:"-",c:"‣",d:"◦",r:"➸",p:"·"};
 const LV={h:0,a:1,r:1,p:1,b:2,c:3,d:4};
