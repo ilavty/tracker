@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PSAT PRINT</title>
+<style>
+@font-face{font-family:'Paperlogy';src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'GmarketSans';src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-weight:500;font-display:swap}
+:root{
+  --bg:#fcfbfa; --ink:#1a1a1a; --sub:#8a8580; --line:#e6e1dc; --soft:#f3f1ee;
+  --sky:#7fbbe3; --sky-l:#e8f3fb; --sky-d:#1f5d86; --brown:#7a5a43; --brown-l:#f4ede7;
+}
+*{box-sizing:border-box;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Paperlogy','GmarketSans',-apple-system,sans-serif;font-size:13px}
+button{font-family:inherit;font-size:12px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:6px 10px}
+button:hover{border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+input[type=text]{font-family:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink);width:100%}
+input[type=text]:focus{outline:none;border-color:var(--sky)}
+
+.app{display:grid;grid-template-columns:350px 260px 1fr;height:100vh}
+.panel{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.ph{padding:16px 16px 10px;display:flex;align-items:center;gap:6px}
+.ph h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.02em}
+.ph h2{margin:0;font-size:13px;font-weight:600}
+.cnt{color:var(--sub);font-size:11px;margin-left:4px;font-weight:400}
+.sp{flex:1}
+.scroll{overflow-y:auto;flex:1;min-height:0}
+
+.tabs{display:flex;gap:4px;padding:0 16px 10px}
+.tab{flex:1;text-align:center;padding:7px 0;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;user-select:none}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.kind{padding:6px 16px 2px;font-size:11px;color:var(--brown);font-weight:600}
+.exams{display:flex;flex-wrap:wrap;gap:5px;padding:2px 16px 6px}
+.ex{border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11.5px;background:#fff;cursor:pointer;user-select:none;position:relative;font-variant-numeric:tabular-nums}
+.ex.on{background:var(--sky-l);border-color:var(--sky);color:var(--sky-d)}
+.ex .dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:var(--brown)}
+.ex.noans{color:#aaa}
+
+.grid{margin:6px 12px 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.grid .gh{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.grid .gt{font-weight:600}
+.grid .gs{font-size:11px;color:var(--sub)}
+.nums{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.num{height:30px;border-radius:7px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;user-select:none;font-size:12px;font-variant-numeric:tabular-nums}
+.num:hover{border-color:var(--ink)}
+.num.on{background:var(--sky);border-color:var(--sky);color:#fff}
+.num.grp{grid-column:span 2;font-size:11px}
+.warn{font-size:11px;color:var(--brown);margin-top:8px}
+
+.sl{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;margin:0 10px 5px;cursor:grab}
+.sl .no{width:20px;color:var(--sub);font-size:11px;text-align:right}
+.sl .src{flex:1;font-size:12px;font-variant-numeric:tabular-nums}
+.sl .x{border:none;padding:2px 5px;color:var(--sub);background:none}
+.sl .x:hover{color:var(--ink)}
+.sl.drag{opacity:.4}
+.sl.over{border-color:var(--sky)}
+.empty{color:var(--sub);font-size:12px;padding:20px 8px;text-align:center;line-height:1.7}
+.settings{border-top:1px solid var(--line);padding:12px 16px 16px;display:flex;flex-direction:column;gap:9px}
+.settings label{font-size:11px;color:var(--sub);display:block;margin-bottom:3px}
+.tog{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;user-select:none}
+.tog .sw{width:28px;height:16px;border-radius:999px;background:#ddd;position:relative;flex:none;transition:.15s}
+.tog .sw::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.15s}
+.tog.on .sw{background:var(--sky)}
+.tog.on .sw::after{left:14px}
+
+.preview{overflow-y:auto;background:#efece8;min-height:0}
+.ptop{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(239,236,232,.92);backdrop-filter:blur(6px);font-size:12px;color:var(--sub)}
+.ptop button{padding:4px 9px}
+#pages{padding:10px 0 60px;display:flex;flex-direction:column;align-items:center;gap:14px;zoom:var(--z,.62)}
+#msg{margin:80px auto;max-width:420px;text-align:center;color:var(--sub);line-height:1.8;font-size:13px}
+
+#hov{position:fixed;z-index:50;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:10px;display:none;width:330px}
+#hov img{width:100%;display:block}
+#hov .hl{font-size:11px;color:var(--sub);margin-bottom:6px}
+
+/* ───── 인쇄 페이지 ───── */
+.page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);font-family:'Paperlogy','GmarketSans',sans-serif;color:#000}
+.phead{position:absolute;left:5mm;right:5mm;top:6mm;height:7mm;display:flex;align-items:center;gap:3mm;border-bottom:.6mm solid #000;padding-bottom:1.6mm}
+.phead .tbox{border:.25mm solid #000;height:5.6mm;display:flex;align-items:center;justify-content:center;font-size:9.5pt;font-weight:600;white-space:nowrap;overflow:hidden}
+.phead .t1{width:72mm}
+.phead .t2{width:30mm;font-size:8pt}
+.phead .t3{width:12mm;font-size:8pt}
+.phead .ctr{position:absolute;left:0;right:0;text-align:center;font-size:10pt;font-weight:600;pointer-events:none}
+.pbody{position:absolute;left:5mm;right:5mm;top:16mm;bottom:6mm}
+.col{position:absolute;top:0;bottom:0;width:calc((100% - 4mm)/2)}
+.col.l{left:0}
+.col.r{right:0}
+.vline{position:absolute;top:0;bottom:0;left:50%;border-left:.25mm solid #000}
+.q{margin-bottom:8mm}
+.q .lab{font-size:7.5pt;line-height:1;margin:0 0 1.4mm 1mm;font-family:-apple-system,'Paperlogy',sans-serif}
+.q img,.q .ph-img{display:block;width:100%}
+.q .ph-img{background:#f6f6f6}
+.atbl{position:absolute;top:2mm;border-collapse:collapse;font-size:8.5pt}
+.atbl th,.atbl td{border:.2mm solid #555;text-align:center;height:6.6mm;padding:0 1mm;font-weight:400;white-space:nowrap}
+.atbl th{background:#f2f2f2;font-weight:600}
+.atbl td.a{background:#f0f0f0}
+
+@page{size:A4;margin:0}
+@media print{
+  html,body{height:auto;background:#fff}
+  .app{display:block;height:auto}
+  .panel,.ptop,#hov,#msg{display:none!important}
+  .preview{overflow:visible;background:#fff}
+  #pages{zoom:1!important;padding:0;gap:0;display:block}
+  .page{box-shadow:none;break-after:page;page-break-after:always}
+  .page:last-child{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="panel">
+    <div class="ph"><h1>PSAT PRINT</h1></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="scroll" id="bank"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2><span class="sp"></span>
+      <button id="shuffle" style="padding:3px 8px">섞기</button>
+      <button id="clear" style="padding:3px 8px">비우기</button></div>
+    <div class="scroll" id="selList"></div>
+    <div class="settings">
+      <div><label>머리말 제목</label><input type="text" id="title"></div>
+      <div class="tog" id="tCompact"><span class="sw"></span>짧은 문제는 한 칸에 이어서</div>
+      <div class="tog" id="tAns"><span class="sw"></span>마지막 장에 정답지</div>
+      <button class="primary" id="print">프린트</button>
+    </div>
+  </section>
+
+  <section class="preview">
+    <div class="ptop"><span id="pinfo"></span><span class="sp"></span>
+      <button id="zo">－</button><button id="zi">＋</button></div>
+    <div id="msg"></div>
+    <div id="pages"></div>
+  </section>
+</div>
+<div id="hov"><div class="hl" id="hovL"></div><img id="hovImg" alt=""></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="psat_bank.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const EXAMS = window.PSAT_EXAMS || [];
+const EX = Object.fromEntries(EXAMS.map(e => [e.id, e]));
+const SUBS = ['언어', '자료', '상황'];
+const SUB_FULL = {언어: '언어논리영역', 자료: '자료해석영역', 상황: '상황판단영역'};
+const KINDS = ['민경채', '7급', '7급근로', '5급', '외교', '기타'];
+const KIND_NAME = {민경채: '민경채', '7급': '7급 (2022~ 민경채 동시)', '7급근로': '7급 근로감독·산업안전', '5급': '5급 · 행시', 외교: '외교관 후보자', 기타: '연도 미상'};
+const CIRC = '①②③④⑤';
+const LS = 'psat_print_v2';
+const RS = 3;                         // 인쇄용 렌더 배율
+
+let st = {sel: [], sub: '상황', open: null, title: '', compact: false, ans: true, z: .62};
+try { Object.assign(st, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) {} };
+
+/* 키: 시험id|첫번호 */
+const keyOf = (e, it) => e.id + '|' + it.n[0];
+function itemOf(key) {
+  const [id, n] = key.split('|'); const e = EX[id];
+  if (!e) return null;
+  const it = e.items.find(i => i.n[0] === +n);
+  return it ? {e, it} : null;
+}
+st.sel = st.sel.filter(itemOf);
+const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
+const srcLabel = (e, it) => (e.kind === '기타' ? ['기타', e.book || '-', numStr(it)] : [e.year, e.kind, e.book || '-', numStr(it)]).join('_');
+const yearShow = e => e.book === '모의' ? '모의' : (e.year || '?');
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ───── PDF 렌더 ───── */
+const pdfCache = {}, imgCache = {};
+function getPdf(id) {
+  if (!pdfCache[id]) pdfCache[id] = pdfjsLib.getDocument({url: 'pdf/' + id + '.pdf', disableAutoFetch: false}).promise
+    .catch(err => { delete pdfCache[id]; throw err; });
+  return pdfCache[id];
+}
+let queue = Promise.resolve();
+function renderSeg(e, seg, scale, now) {
+  const k = e.id + ':' + seg.join(',') + '@' + scale;
+  if (imgCache[k]) return imgCache[k];
+  const job = async () => {
+    const pdf = await getPdf(e.id);
+    const page = await pdf.getPage(seg[0] + 1);
+    const [, x0, y0, x1, y1] = seg;
+    const vp = page.getViewport({scale});
+    const c = document.createElement('canvas');
+    c.width = Math.ceil((x1 - x0) * scale); c.height = Math.ceil((y1 - y0) * scale);
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.translate(-x0 * scale, -y0 * scale);
+    await page.render({canvasContext: ctx, viewport: vp}).promise;
+    const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+    return URL.createObjectURL(blob);
+  };
+  imgCache[k] = (now ? job() : (queue = queue.then(job, job))).catch(err => { delete imgCache[k]; throw err; });
+  return imgCache[k];
+}
+
+/* ───── 왼쪽: 시험 고르기 ───── */
+function renderTabs() {
+  $('tabs').innerHTML = SUBS.map(s => `<div class="tab ${st.sub === s ? 'on' : ''}" data-s="${s}">${s}</div>`).join('');
+}
+function selCountIn(e) { return st.sel.filter(k => k.startsWith(e.id + '|')).length; }
+function renderBank() {
+  const list = EXAMS.filter(e => e.sub === st.sub);
+  let html = '';
+  for (const k of KINDS) {
+    const es = list.filter(e => e.kind === k).sort((a, b) => (b.year || '0').localeCompare(a.year || '0') || (a.book === '모의') - (b.book === '모의'));
+    if (!es.length) continue;
+    html += `<div class="kind">${KIND_NAME[k]}</div><div class="exams">` + es.map(e => {
+      const lab = e.kind === '기타' ? (e.book ? e.book + '책형' : '책형 없음') : yearShow(e);
+      return `<span class="ex ${st.open === e.id ? 'on' : ''} ${e.hasAns ? '' : 'noans'}" data-e="${e.id}">${esc(lab)}${selCountIn(e) ? '<i class="dot"></i>' : ''}</span>`;
+    }).join('') + '</div>';
+    const open = es.find(e => e.id === st.open);
+    if (open) html += gridHtml(open);
+  }
+  $('bank').innerHTML = html;
+}
+function gridHtml(e) {
+  const title = e.kind === '기타' ? `연도 미상 · ${e.book || ''}책형` : `${yearShow(e) === '모의' ? '2020 7급 모의평가' : e.year + ' ' + e.kind} · ${e.book || '-'}책형`;
+  const total = e.items.reduce((s, it) => s + it.n.length, 0);
+  const allOn = e.items.every(it => st.sel.includes(keyOf(e, it)));
+  return `<div class="grid"><div class="gh"><span class="gt">${esc(title)}</span><span class="gs">${total}문항</span><span class="sp"></span>
+    <button data-all="${e.id}" style="padding:3px 8px">${allOn ? '전체 빼기' : '전체 담기'}</button></div>
+    <div class="nums">${e.items.map(it => {
+      const k = keyOf(e, it);
+      return `<div class="num ${it.n.length > 1 ? 'grp' : ''} ${st.sel.includes(k) ? 'on' : ''}" data-k="${k}">${numStr(it)}</div>`;
+    }).join('')}</div>
+    ${e.hasAns ? '' : '<div class="warn">이 시험은 정답 없음 (정답지에 빈칸)</div>'}
+    ${total < (e.kind === '5급' || e.kind === '외교' || e.kind === '기타' ? 40 : 25) ? '<div class="warn">PDF에 일부 문항만 들어있어요</div>' : ''}</div>`;
+}
+
+/* ───── 가운데: 담은 목록 ───── */
+function renderSel() {
+  $('selCnt').textContent = st.sel.length ? st.sel.length + '개' : '';
+  $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
+    const {e, it} = itemOf(k);
+    return `<div class="sl" draggable="true" data-i="${i}"><span class="no">${i + 1}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="x" data-x="${i}">✕</button></div>`;
+  }).join('') : '<div class="empty">왼쪽에서 시험 → 번호를 눌러 담아줘<br>드래그로 순서 바꾸기</div>';
+}
+
+/* ───── 페이지 조립 ───── */
+const COL_W = (210 - 10 - 4) / 2, COL_H = 297 - 16 - 6, LAB_H = 4.2, GAP = 8;
+function layout() {
+  const pages = []; let cur = null, ci = 0, used = 0;
+  const newPage = () => { cur = {cols: [[], []]}; pages.push(cur); ci = 0; used = 0; };
+  const nextCol = () => { if (ci === 0) { ci = 1; used = 0; } else newPage(); };
+  for (const k of st.sel) {
+    const {e, it} = itemOf(k);
+    it.s.forEach((seg, si) => {
+      const w = seg[3] - seg[1], hpt = seg[4] - seg[2];
+      const lab = si === 0 ? LAB_H : 0;
+      let hmm = hpt * COL_W / w, wmm = COL_W;
+      if (hmm > COL_H - lab) { wmm = COL_W * (COL_H - lab) / hmm; hmm = COL_H - lab; }
+      const h = lab + hmm;
+      if (!cur) newPage();
+      const fits = st.compact ? (used === 0 || used + h <= COL_H + .1) : used === 0;
+      if (!fits) nextCol();
+      cur.cols[ci].push({e, it, seg, si, wmm, hmm});
+      used += h + GAP;
+    });
+  }
+  return pages;
+}
+function head(pno, center, area) {
+  const t = st.title || defaultTitle();
+  return `<div class="phead"><div class="tbox t1">${esc(t)}</div>${center ? `<div class="ctr">${esc(center)}</div>` : ''}<span class="sp"></span>
+    <div class="tbox t2">${esc(area)}</div><div class="tbox t3">${center ? '답지' : pno + '쪽'}</div></div>`;
+}
+function subsOfSel() { return [...new Set(st.sel.map(k => itemOf(k).e.sub))]; }
+function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]].replace('영역', '') + ' 기출모음' : 'PSAT 기출모음'; }
+function areaName() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]] : 'PSAT'; }
+
+function answerPages() {
+  const mixed = subsOfSel().length > 1;
+  const rows = [];
+  for (const k of st.sel) {
+    const {e, it} = itemOf(k);
+    it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '7급(근로)' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
+  }
+  const PER = Math.floor((COL_H - 4) / 6.6) - 1;
+  const chunks = []; for (let i = 0; i < rows.length; i += PER) chunks.push(rows.slice(i, i + PER));
+  const out = [];
+  for (let p = 0; p < chunks.length; p += 3) {
+    const tbls = chunks.slice(p, p + 3).map((rs, ci) => {
+      let body = '';
+      rs.forEach((r, i) => {
+        let kc = '';
+        if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
+        body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
+      });
+      return `<table class="atbl" style="left:${ci * 67}mm;width:62mm"><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
+    }).join('');
+    out.push(`<div class="page">${head(0, '<정답지>', 'PSAT')}<div class="pbody">${tbls}</div></div>`);
+  }
+  return out;
+}
+
+let renderToken = 0, pending = 0;
+function renderPages() {
+  const tok = ++renderToken;
+  const pages = layout();
+  const area = areaName();
+  let html = pages.map((p, i) => `<div class="page">${head(i + 1, '', area)}<div class="pbody"><div class="vline"></div>` +
+    p.cols.map((col, ci) => `<div class="col ${ci ? 'r' : 'l'}">` + col.map(b =>
+      `<div class="q">${b.si === 0 ? `<div class="lab">${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
+    ).join('') + '</div>').join('') + '</div></div>');
+  if (st.ans && st.sel.length) html = html.concat(answerPages());
+  $('pages').innerHTML = html.join('');
+  $('pages').style.setProperty('--z', st.z);
+  $('msg').innerHTML = st.sel.length ? '' : '담은 문제가 여기 미리보기로 떠요';
+  const imgs = [...document.querySelectorAll('#pages img[data-e]')];
+  pending = imgs.length; updateInfo(pages.length);
+  imgs.forEach(img => {
+    const e = EX[img.dataset.e], seg = img.dataset.seg.split(',').map(Number);
+    renderSeg(e, seg, RS).then(url => {
+      if (tok !== renderToken) return;
+      img.src = url; img.classList.remove('ph-img'); img.style.height = '';
+      pending--; updateInfo(pages.length);
+    }).catch(err => { if (tok === renderToken) loadFail(err); });
+  });
+}
+function updateInfo(n) {
+  $('pinfo').textContent = st.sel.length ? `문제 ${n}장${st.ans ? ' + 정답지' : ''}` + (pending ? ` · 불러오는 중 ${pending}` : '') : '';
+  $('print').disabled = !st.sel.length || pending > 0;
+  $('print').textContent = pending > 0 ? '불러오는 중…' : '프린트';
+  if (!pending && autoPrint && st.sel.length) { autoPrint = false; setTimeout(() => window.print(), 300); }
+}
+let failShown = false;
+function loadFail(err) {
+  if (failShown) return; failShown = true;
+  console.error(err);
+  $('msg').innerHTML = location.protocol === 'file:'
+    ? '파일로 직접 열면 브라우저가 PDF를 못 읽어요.<br>Vercel에 올린 주소로 열어줘!'
+    : 'PDF를 못 불러왔어요. <b>pdf</b> 폴더가 같이 올라가 있는지 확인해줘.';
+}
+
+function renderAll() {
+  renderTabs(); renderBank(); renderSel(); renderPages();
+  $('title').value = st.title; $('title').placeholder = defaultTitle();
+  $('tCompact').classList.toggle('on', st.compact);
+  $('tAns').classList.toggle('on', st.ans);
+  save();
+}
+
+/* ───── 이벤트 ───── */
+$('tabs').onclick = e => { const s = e.target.dataset.s; if (!s) return; st.sub = s; st.open = null; renderTabs(); renderBank(); save(); };
+$('bank').onclick = ev => {
+  const ex = ev.target.closest('.ex');
+  if (ex) { st.open = st.open === ex.dataset.e ? null : ex.dataset.e; renderBank(); save(); return; }
+  const all = ev.target.dataset.all;
+  if (all) {
+    const e = EX[all], keys = e.items.map(it => keyOf(e, it));
+    const on = keys.every(k => st.sel.includes(k));
+    st.sel = on ? st.sel.filter(k => !keys.includes(k)) : st.sel.concat(keys.filter(k => !st.sel.includes(k)));
+    renderAll(); return;
+  }
+  const n = ev.target.closest('.num');
+  if (n) { const k = n.dataset.k; st.sel = st.sel.includes(k) ? st.sel.filter(x => x !== k) : [...st.sel, k]; renderAll(); }
+};
+$('clear').onclick = () => { if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; renderAll(); } };
+$('shuffle').onclick = () => { for (let i = st.sel.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [st.sel[i], st.sel[j]] = [st.sel[j], st.sel[i]]; } renderAll(); };
+$('selList').onclick = e => { const x = e.target.dataset.x; if (x == null) return; st.sel.splice(+x, 1); renderAll(); };
+$('title').oninput = e => { st.title = e.target.value; document.querySelectorAll('.phead .t1').forEach(b => b.textContent = st.title || defaultTitle()); save(); };
+$('tCompact').onclick = () => { st.compact = !st.compact; renderAll(); };
+$('tAns').onclick = () => { st.ans = !st.ans; renderAll(); };
+$('zi').onclick = () => { st.z = Math.min(1.2, +(st.z + .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
+$('zo').onclick = () => { st.z = Math.max(.3, +(st.z - .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
+let autoPrint = new URLSearchParams(location.search).has('print');
+$('print').onclick = () => {
+  if (window.top !== window) { save(); window.open(location.href.split('?')[0] + '?print=1', '_blank'); return; }
+  window.print();
+};
+
+let dragI = null;
+$('selList').addEventListener('dragstart', e => { const el = e.target.closest('.sl'); if (!el) return; dragI = +el.dataset.i; el.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); } catch (er) {} });
+$('selList').addEventListener('dragover', e => { const el = e.target.closest('.sl'); if (!el) return; e.preventDefault(); document.querySelectorAll('.sl.over').forEach(x => x.classList.remove('over')); el.classList.add('over'); });
+$('selList').addEventListener('drop', e => { const el = e.target.closest('.sl'); if (!el || dragI == null) return; e.preventDefault(); const [m] = st.sel.splice(dragI, 1); st.sel.splice(+el.dataset.i, 0, m); dragI = null; renderAll(); });
+$('selList').addEventListener('dragend', () => { dragI = null; document.querySelectorAll('.sl').forEach(x => x.classList.remove('drag', 'over')); });
+
+// 번호 호버 → 미리보기
+const hov = $('hov'); let hovKey = null;
+$('bank').addEventListener('mousemove', ev => {
+  const n = ev.target.closest('.num');
+  if (!n) { hov.style.display = 'none'; hovKey = null; return; }
+  const k = n.dataset.k;
+  if (k !== hovKey) {
+    hovKey = k; const {e, it} = itemOf(k);
+    $('hovL').textContent = e.sub + ' ' + srcLabel(e, it) + (it.s.length > 1 ? ` (${it.s.length}칸 중 첫 칸)` : '');
+    $('hovImg').removeAttribute('src');
+    renderSeg(e, it.s[0], 1.4, true).then(u => { if (hovKey === k) $('hovImg').src = u; }).catch(loadFail);
+  }
+  hov.style.display = 'block';
+  const r = n.getBoundingClientRect();
+  hov.style.left = (r.right + 14) + 'px';
+  hov.style.top = Math.max(10, Math.min(r.top - 40, innerHeight - hov.offsetHeight - 10)) + 'px';
+});
+$('bank').addEventListener('mouseleave', () => { hov.style.display = 'none'; hovKey = null; });
+
+renderAll();
+</script>
+</body>
+</html>
