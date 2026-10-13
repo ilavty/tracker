@@ -751,11 +751,11 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .pages{padding:18px 16px 40px;overflow-x:auto;display:flex;flex-direction:column;align-items:center;gap:18px}
 .spread{display:flex;zoom:var(--z,1)}
 .spread .page{box-shadow:0 2px 14px rgba(0,0,0,.12)}
-.spread .blank{width:210mm;height:297mm;visibility:hidden}
+.spread .blank{width:var(--pw,210mm);height:var(--ph,297mm);visibility:hidden}
 .spread .page+.page{border-left:1px solid #e3e0dc}
 .pages.measure .spread{zoom:1}
-.page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden}
-.pno{position:absolute;font-size:7.5pt}
+.page{width:var(--pw,210mm);height:var(--ph,297mm);background:#fff;position:relative;overflow:hidden}
+.pno{position:absolute;font-size:calc(7.5pt * var(--f,1))}
 .cols{position:absolute;display:flex}
 .col{height:100%;overflow:hidden;font-size:var(--fs);line-height:var(--lh);letter-spacing:var(--ls)}
 .col>:first-child{margin-top:0!important}
@@ -790,11 +790,11 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
   .pages{padding:0;gap:0;display:block}
   .cats{display:none}
   .main{display:block}
-  .spread{display:block;zoom:1!important;box-shadow:none}
+  .spread{display:block;zoom:normal!important;box-shadow:none}
   .spread .blank{display:none}
   .spread .page+.page{border-left:0}
   .spread .page{box-shadow:none}
-  .page{height:296mm;zoom:var(--pz,1);break-after:page;page-break-after:always;break-inside:avoid}
+  .page{height:calc(var(--ph,297mm) - 1mm);break-after:page;page-break-after:always;break-inside:avoid}
   .spread:last-child .page:last-child{break-after:auto;page-break-after:auto}
 }
 </style></head><body>
@@ -854,10 +854,10 @@ function blocks(){
 let pages,curCol,pageNo;
 function newPage(){
   pageNo++;
-  const odd=pageNo%2===1,L=odd?S.mi:S.mo,R=odd?S.mo:S.mi;
+  const F=S.pz/100,odd=pageNo%2===1,L=(odd?S.mi:S.mo)*F,R=(odd?S.mo:S.mi)*F,MT=S.mt*F,MB=S.mb*F,GP=S.gap*F;
   const p=document.createElement("div");p.className="page";p.dataset.no=pageNo;
-  p.innerHTML='<div class="pno" style="top:'+(S.mt/2-1.5)+'mm;'+(odd?"right:"+R:"left:"+L)+'mm">'+pageNo+'</div>'+
-    '<div class="cols" style="left:'+L+'mm;right:'+R+'mm;top:'+S.mt+'mm;bottom:'+S.mb+'mm;gap:'+S.gap+'mm"><div class="col" style="flex:1"></div><div class="col" style="flex:1"></div></div>';
+  p.innerHTML='<div class="pno" style="top:'+(MT/2-1.5*F)+'mm;'+(odd?"right:"+R:"left:"+L)+'mm">'+pageNo+'</div>'+
+    '<div class="cols" style="left:'+L+'mm;right:'+R+'mm;top:'+MT+'mm;bottom:'+MB+'mm;gap:'+GP+'mm"><div class="col" style="flex:1"></div><div class="col" style="flex:1"></div></div>';
   let sp=pages.lastElementChild;
   if(pageNo===1||pageNo%2===0){sp=document.createElement("div");sp.className="spread";pages.appendChild(sp);if(pageNo===1){const bl=document.createElement("div");bl.className="blank";sp.appendChild(bl)}}
   sp.appendChild(p);return [...p.querySelectorAll(".col")];
@@ -919,12 +919,13 @@ function layout(){
   pages.classList.remove("measure");fit();
   document.getElementById("info").textContent=pageNo+"쪽 (인쇄 미리보기 쪽수가 이보다 많으면 인쇄 배율을 낮추세요) · 양면: 안쪽 = 홀수쪽 왼쪽 / 짝수쪽 오른쪽";
 }
-function fit(){const w=document.getElementById("pages").clientWidth-40,full=2*210*96/25.4+2;document.documentElement.style.setProperty("--z",Math.min(1,Math.max(.3,w/full)).toFixed(3))}
+function fit(){const w=document.getElementById("pages").clientWidth-40,full=2*210*(S.pz/100)*96/25.4+2;document.documentElement.style.setProperty("--z",Math.min(1,Math.max(.3,w/full)).toFixed(3))}
 addEventListener("resize",()=>fit());
 function css(){
   const r=document.documentElement.style;
-  r.setProperty("--fs",S.fs+"pt");r.setProperty("--lh",S.lh);r.setProperty("--cs",S.cs+"pt");r.setProperty("--ts",S.ts+"pt");
-  r.setProperty("--tw",S.tw);r.setProperty("--pz",(S.pz/100).toFixed(3));r.setProperty("--ls",(S.ls/100)+"em");r.setProperty("--tls",(S.tls/100)+"em");r.setProperty("--cg",S.cg+"mm");r.setProperty("--ind","1em");
+  const F=S.pz/100;r.setProperty("--f",F);r.setProperty("--pw",(210*F)+"mm");r.setProperty("--ph",(297*F)+"mm");
+  r.setProperty("--fs",(S.fs*F)+"pt");r.setProperty("--lh",S.lh);r.setProperty("--cs",(S.cs*F)+"pt");r.setProperty("--ts",(S.ts*F)+"pt");
+  r.setProperty("--tw",S.tw);r.setProperty("--ls",(S.ls/100)+"em");r.setProperty("--tls",(S.tls/100)+"em");r.setProperty("--cg",(S.cg*F)+"mm");r.setProperty("--ind","1em");
 }
 function cats(){
   const cnt={};D.cases.forEach(r=>(r.cats||[]).forEach(c=>cnt[c]=(cnt[c]||0)+1));
