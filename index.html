@@ -25,6 +25,9 @@
         .app-wrapper { width: 100%; max-width: 1150px; background: transparent; margin: 0 auto; position: relative;}
         
         header { display: flex; justify-content: flex-end; align-items: flex-end; margin-bottom: 25px; padding-bottom: 5px; border-bottom: 2px solid var(--primary-blue); position: relative; z-index: 50;}
+        .db-link { align-self: center; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 1.5px; color: var(--line-color); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; transition: 0.2s; white-space: nowrap; }
+        .db-link:hover { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+        @media (max-width: 850px) { .db-link { font-size: 0.65rem; letter-spacing: 0.5px; margin-right: 8px; } }
         .header-right { display: flex; align-items: center; gap: 15px; margin-bottom: 5px;}
         .nav-links { display: flex; gap: 8px; }
         .nav-links span { font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; padding: 4px 12px; border-radius: 20px;}
@@ -783,6 +786,7 @@
 
     <div class="app-wrapper">
         <header>
+            <a class="db-link" href="database.html">DATABASE</a>
             <div class="header-right" style="margin-left: auto;">
                 <div class="nav-links">
                     <span class="active" id="nav-tracker" onclick="showPage('tracker')">TRACKER</span>
