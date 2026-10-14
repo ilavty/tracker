@@ -107,9 +107,9 @@ body.noside #side{display:none}
 body.text .ov{cursor:text}
 .pno{position:absolute;right:0;bottom:-19px;font-size:11px;color:#aaa}
 .blank{position:absolute;background:var(--bcol);cursor:move}
-.blank.cell{background:#fff;box-shadow:inset 0 0 0 1px #d6cdc4}
+.blank.cell{background:#fff}
 .snapv.cellv{background:rgba(255,255,255,.85);border:1.5px dashed var(--brown)}
-.thumb .tb.cell{background:#fff;box-shadow:0 0 0 .5px #cbbfb3}
+.thumb .tb.cell{background:#fff}
 .hd{display:none;position:absolute;width:9px;height:9px;background:#fff;border:1.5px solid var(--sky);border-radius:2px;z-index:2}
 .blank.sel .hd{display:block}
 @media (pointer:coarse){.hd{width:16px;height:16px}.hd.n,.hd.s{margin-left:-8px}.hd.e,.hd.w{margin-top:-8px}.x{width:24px;height:24px;line-height:24px}}
@@ -725,29 +725,58 @@ async function lineMap(p){
     for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*30+d[j+1]*59+d[j+2]*11)/100;
     c.width=c.height=0;p.lm={k,w:Math.floor(vp.width),h:Math.floor(vp.height),g};})();
   return p.lmP;}
+function lineSegs(p){
+  if(p.segs)return p.segs;const L=p.lm;const k=L.k,W=L.w,H=L.h,g=L.g;
+  const lite=(x,y)=>g[y*W+x]<240;
+  // scan one axis; keep runs that are long, continuous (or a long dotted pattern) and clear on both sides
+  const scan=(n1,n2,at,side,minSolid,minDot)=>{const out=[];
+    for(let i=4;i<n1-4;i++){let st=-1,last=-99,on=0,sd=0;
+      const flush=()=>{if(st<0)return;const len=last-st+1,fill=on/len,clear=sd/on;
+        if((len>=minSolid&&fill>=0.9&&clear<0.25)||(len>=minDot&&fill>=0.3&&clear<0.12))out.push({c:i,a:st,b:last});st=-1;};
+      for(let j=0;j<n2;j++){if(at(i,j)){if(st>=0&&j-last>7)flush();if(st<0){st=j;on=0;sd=0;}last=j;on++;if(side(i,j))sd++;}
+        else if(st>=0&&j-last>7)flush();}
+      flush();}
+    return out;};
+  const V=scan(W,H,(x,y)=>lite(x,y),(x,y)=>lite(x-4,y)||lite(x+4,y),Math.round(12*k),Math.round(40*k));
+  const Hs=scan(H,W,(y,x)=>lite(x,y),(y,x)=>lite(x,y-4)||lite(x,y+4),Math.round(30*k),Math.round(60*k));
+  const merge=arr=>{arr.sort((u,v)=>u.c-v.c||u.a-v.a);const out=[];
+    for(const sg of arr){const m=out.find(o=>Math.abs(o.c-sg.c)<=3&&sg.a<=o.b+8&&sg.b>=o.a-8);
+      if(m){m.a=Math.min(m.a,sg.a);m.b=Math.max(m.b,sg.b);m.c=(m.c+sg.c)/2;}else out.push({...sg});}
+    return out;};
+  p.segs={V:merge(V).map(o=>({x:o.c/k,a:o.a/k,b:o.b/k})),H:merge(Hs).map(o=>({y:o.c/k,a:o.a/k,b:o.b/k}))};
+  return p.segs;}
 function cellRect(p,r){
-  const L=p.lm;if(!L)return r;const k=L.k,W=L.w,H=L.h,g=L.g;
-  const dark=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&g[y*W+x]<215;
-  const lite=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&g[y*W+x]<240;
-  const fracV=(x,y0,y1)=>{let n=0,t=0;y0=Math.max(0,y0);y1=Math.min(H-1,y1);for(let y=y0;y<=y1;y+=1){t++;if(dark(x,y)||dark(x-1,y)||dark(x+1,y))n++;}return t?n/t:0;};
-  const fracH=(y,x0,x1)=>{let n=0,t=0;x0=Math.max(0,x0);x1=Math.min(W-1,x1);for(let x=x0;x<=x1;x+=1){t++;if(lite(x,y)||lite(x,y-1)||lite(x,y+1))n++;}return t?n/t:0;};
-  const cy=(r.y+r.h/2)*k,half=Math.max(r.h/2,9.5)*k;
-  const y0=Math.round(cy-half),y1=Math.round(cy+half);
-  // solid line over the row, or dotted line that keeps going well beyond it
-  const thinV=x=>fracV(x-4,y0,y1)<0.5||fracV(x+4,y0,y1)<0.5;
-  const vAt=x=>thinV(x)&&(fracV(x,y0,y1)>=0.94||(fracV(x,y0,y1)>=0.4&&fracV(x,Math.round(cy-half*4),Math.round(cy+half*4))>=0.4));
-  let L0=null,R0=null,T0=null,B0=null;
-  for(let x=Math.round(r.x*k);x>=Math.max(0,r.x*k-260*k);x--)if(vAt(x)){L0=x;break;}
-  for(let x=Math.round((r.x+r.w)*k);x<=Math.min(W-1,(r.x+r.w)*k+260*k);x++)if(vAt(x)){R0=x;break;}
-  const xa=Math.round((L0!=null?L0+3:r.x*k)),xb=Math.round((R0!=null?R0-3:(r.x+r.w)*k));
-  const hx0=Math.round(xa+Math.max(2,(xb-xa)*0.08)),hx1=Math.round(xb-Math.max(2,(xb-xa)*0.08));
-  const thinH=y=>fracH(y-4,hx0,hx1)<0.5&&fracH(y+4,hx0,hx1)<0.5;
-  const hAt=y=>thinH(y)&&(fracH(y,hx0,hx1)>=0.94||(fracH(y,hx0,hx1)>=0.4&&fracH(y,hx0-Math.round(half*3),hx1+Math.round(half*3))>=0.4));
-  for(let y=Math.round(r.y*k);y>=Math.max(0,r.y*k-400*k);y--)if(hAt(y)){T0=y;break;}
-  for(let y=Math.round((r.y+r.h)*k);y<=Math.min(H-1,(r.y+r.h)*k+400*k);y++)if(hAt(y)){B0=y;break;}
-  const ins=1.3;
-  const x=L0!=null?L0/k+ins:r.x,xe=R0!=null?R0/k-ins:r.x+r.w,y=T0!=null?T0/k+ins:r.y,ye=B0!=null?B0/k-ins:r.y+r.h;
-  return{x,y,w:Math.max(2,xe-x),h:Math.max(2,ye-y)};}
+  if(!p.lm)return r;const S2=lineSegs(p),tol=4;
+  const x1=r.x,x2=r.x+r.w,y1=r.y,y2=r.y+r.h,cy=(y1+y2)/2,cx=(x1+x2)/2;
+  // row lines of the table under the drag -> table's left/right extent (works without side borders)
+  const rowH=S2.H.filter(h=>h.a<=cx&&h.b>=cx&&h.y>=y1-60&&h.y<=y2+60);
+  if(!rowH.length)return r;
+  const near=rowH.slice().sort((u,v)=>Math.abs(u.y-cy)-Math.abs(v.y-cy))[0];
+  const tL=Math.min(...rowH.filter(h=>Math.abs(h.a-near.a)<40).map(h=>h.a)),tR=Math.max(...rowH.filter(h=>Math.abs(h.b-near.b)<40).map(h=>h.b));
+  const cxa=Math.max(x1,tL),cxb=Math.min(x2,tR);
+  // vertical lines inside the table running through the dragged rows
+  const ya=Math.max(y1,cy-6),yb=Math.min(y2,cy+6);
+  const vs=S2.V.filter(v=>v.x>=tL-3&&v.x<=tR+3&&v.a<=ya+2&&v.b>=yb-2);
+  const lv=vs.filter(v=>v.x<=cxa+tol).sort((u,v)=>v.x-u.x)[0];
+  const rv=vs.filter(v=>v.x>=cxb-tol&&(!lv||v.x>lv.x+4)).sort((u,v)=>u.x-v.x)[0];
+  const xa=lv?lv.x:tL,xb=rv?rv.x:tR;
+  // horizontal lines spanning that column range; walk to the table's top/bottom
+  const span=Math.max(4,xb-xa);
+  const hs=S2.H.filter(h=>Math.min(h.b,xb)-Math.max(h.a,xa)>=span*0.8).sort((u,v)=>u.y-v.y);
+  if(!hs.length)return{x:xa+1.1,y:y1,w:Math.max(2,xb-xa-2.2),h:r.h};
+  let ci=0;hs.forEach((h,i)=>{if(Math.abs(h.y-cy)<Math.abs(hs[ci].y-cy))ci=i;});
+  // table's vertical extent: from its vertical lines if any, else lines close together
+  const vx=[lv,rv].filter(Boolean);const vTop=vx.length?Math.min(...vx.map(v=>v.a))-3:-1e9,vBot=vx.length?Math.max(...vx.map(v=>v.b))+3:1e9;
+  const gapMax=vx.length?400:45;
+  let ti=ci,bi=ci;
+  while(ti>0&&hs[ti].y-hs[ti-1].y<gapMax&&hs[ti-1].y>=vTop)ti--;
+  while(bi<hs.length-1&&hs[bi+1].y-hs[bi].y<gapMax&&hs[bi+1].y<=vBot)bi++;
+  const tb=hs.slice(ti,bi+1),tTop=tb[0].y,tBot=tb[tb.length-1].y;
+  const cya=Math.max(y1,tTop),cyb=Math.min(y2,tBot);
+  const th=tb.filter(h=>h.y<=cya+tol).sort((u,v)=>v.y-u.y)[0]||tb[0];
+  const bh=tb.filter(h=>h.y>=cyb-tol&&h.y>th.y+4).sort((u,v)=>u.y-v.y)[0]||tb[tb.length-1];
+  const ins=1.1;
+  return{x:xa+ins,y:th.y+ins,w:Math.max(2,xb-xa-2*ins),h:Math.max(2,bh.y-th.y-2*ins)};}
 async function makeBox(i,r,mode){
   const p=S.pages[i];
   if(mode==='cell'){await lineMap(p);const c=cellRect(p,r);snap();
