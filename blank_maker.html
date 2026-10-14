@@ -16,8 +16,14 @@
 *{box-sizing:border-box}
 button,input,select,label,.tab,.stabs button{font-family:'Paperlogy','GmarketSans',-apple-system,sans-serif}
 html,body{margin:0}
-html{scrollbar-width:none}
-::-webkit-scrollbar{display:none}
+*{scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+/* 페이지 세로 스크롤바만 보이게 */
+html{scrollbar-width:auto;scrollbar-color:#c9b8a8 transparent}
+html::-webkit-scrollbar{display:block;width:12px;height:0}
+html::-webkit-scrollbar-track{background:transparent}
+html::-webkit-scrollbar-thumb{background:#c9b8a8;border-radius:999px;border:3px solid var(--bg);min-height:48px}
+html::-webkit-scrollbar-thumb:hover{background:var(--brown)}
 body{font-family:'Paperlogy','GmarketSans',-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
 header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 20px;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .brand{font-family:'GmarketSans';font-weight:700;font-size:18px;letter-spacing:.02em;white-space:nowrap}
