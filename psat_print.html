@@ -72,6 +72,9 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .sl.div .dtag{font-size:10px;color:var(--brown);opacity:.7}
 .page .divt{position:absolute;left:0;right:0;top:120mm;text-align:center;font-size:24pt;font-weight:600}
 .page .divs{position:absolute;left:0;right:0;top:136mm;text-align:center;font-size:10pt;color:#666}
+.sl{cursor:pointer}
+.sl.cur{border-color:var(--sky)}
+#pages .q.flash,#pages .page.flash{outline:1.2mm solid rgba(90,174,224,.55);outline-offset:1mm;transition:outline-color .3s}
 .sl.drag{opacity:.4}
 .sl.over{border-color:var(--sky)}
 .empty{color:var(--sub);font-size:12px;padding:20px 8px;text-align:center;line-height:1.7}
@@ -362,8 +365,10 @@ function layout() {
   const pages = []; let cur = null, ci = 0, used = 0;
   const newPage = () => { cur = {cols: [[], []]}; pages.push(cur); ci = 0; used = 0; };
   const nextCol = () => { if (ci === 0) { ci = 1; used = 0; } else newPage(); };
-  for (const k of st.sel.filter(isOn)) {
-    if (isDiv(k)) { pages.push({div: k.slice(1)}); cur = null; continue; }
+  for (let idx = 0; idx < st.sel.length; idx++) {
+    const k = st.sel[idx];
+    if (!isOn(k)) continue;
+    if (isDiv(k)) { pages.push({div: k.slice(1), idx}); cur = null; continue; }
     const {e, it} = itemOf(k);
     it.s.forEach((seg, si) => {
       const w = seg[3] - seg[1], hpt = seg[4] - seg[2];
@@ -374,7 +379,7 @@ function layout() {
       if (!cur) newPage();
       const fits = st.compact ? (used === 0 || used + h <= COL_H + .1) : used === 0;
       if (!fits) nextCol();
-      cur.cols[ci].push({e, it, seg, si, wmm, hmm});
+      cur.cols[ci].push({e, it, seg, si, wmm, hmm, idx});
       used += h + GAP;
     });
   }
@@ -424,9 +429,9 @@ function renderPages() {
   const tok = ++renderToken;
   const pages = layout();
   const area = areaName();
-  let html = pages.map((p, i) => p.div ? `<div class="page">${head(i + 1, '', area)}<div class="divt">${esc(p.div)}</div><div class="divs">${esc(st.title || defaultTitle())}</div></div>` : `<div class="page">${head(i + 1, '', area)}<div class="pbody"><div class="vline"></div>` +
+  let html = pages.map((p, i) => p.div ? `<div class="page" data-idx="${p.idx}">${head(i + 1, '', area)}<div class="divt">${esc(p.div)}</div><div class="divs">${esc(st.title || defaultTitle())}</div></div>` : `<div class="page">${head(i + 1, '', area)}<div class="pbody"><div class="vline"></div>` +
     p.cols.map((col, ci) => `<div class="col ${ci ? 'r' : 'l'}">` + col.map(b =>
-      `<div class="q">${b.si === 0 ? `<div class="lab">${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
+      `<div class="q" ${b.si === 0 ? `data-idx="${b.idx}"` : ''}>${b.si === 0 ? `<div class="lab">${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
     ).join('') + '</div>').join('') + '</div></div>');
   if (st.ans && st.sel.length) html = html.concat(answerPages());
   $('pages').innerHTML = html.join('');
@@ -651,7 +656,17 @@ $('shuffle').onclick = () => { for (let i = st.sel.length - 1; i > 0; i--) { con
 $('selList').onclick = e => {
   const eye = e.target.closest('[data-eye]');
   if (eye) { const k = st.sel[+eye.dataset.eye]; st.hidden = st.hidden.includes(k) ? st.hidden.filter(x => x !== k) : [...st.hidden, k]; renderAll(); return; }
-  const x = e.target.closest('[data-x]'); if (!x) return;
+  const x = e.target.closest('[data-x]');
+  if (!x) {   // 줄 누르면 미리보기에서 그 문제로 이동
+    const row = e.target.closest('.sl'); if (!row) return;
+    const t = document.querySelector(`#pages [data-idx="${row.dataset.i}"]`);
+    if (!t) return;
+    t.scrollIntoView({behavior: 'smooth', block: t.classList.contains('page') ? 'start' : 'center'});
+    document.querySelectorAll('#pages .flash').forEach(f => f.classList.remove('flash'));
+    t.classList.add('flash'); setTimeout(() => t.classList.remove('flash'), 1400);
+    document.querySelectorAll('.sl.cur').forEach(r => r.classList.remove('cur')); row.classList.add('cur');
+    return;
+  }
   const [k] = st.sel.splice(+x.dataset.x, 1); st.hidden = st.hidden.filter(h => h !== k); renderAll();
 };
 $('title').oninput = e => { st.title = e.target.value; document.querySelectorAll('.phead .t1').forEach(b => b.textContent = st.title || defaultTitle()); save(); };
