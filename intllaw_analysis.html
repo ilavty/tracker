@@ -169,6 +169,25 @@ table.fit{width:100%;table-layout:fixed}
 .heat tr.lv1 td{position:sticky;top:var(--h0,27px);z-index:5;box-shadow:inset 0 -1px #e3dbd3,inset -1px 0 var(--line)}
 .heat tr.lv2.stk td{position:sticky;top:calc(var(--h0,27px) + var(--h1,27px));z-index:4;box-shadow:inset 0 -1px var(--line),inset -1px 0 var(--line)}
 .heat tr.lv2.stk td:not(.hit){background:#fff}
+
+/* 아이패드: 표가 화면 안에 다 들어오게 (글자·여백 비율 축소), 목차는 버튼으로 열기 */
+html.ipad,html.ipad body{overflow-x:hidden;touch-action:pan-y pinch-zoom}
+html.ipad .tbox{overflow:hidden}
+html.ipad .heat th,html.ipad .heat td{font-size:calc(12.5px*var(--hk,1));padding:calc(5px*var(--hk,1)) calc(6px*var(--hk,1))}
+html.ipad .heat td.cnt1{min-width:calc(34px*var(--hk,1))}
+html.ipad .heat td *:not(.bang):not(.car),html.ipad .heat th *:not(.bang):not(.car){font-size:inherit!important;letter-spacing:0}
+html.ipad .heat td,html.ipad .heat th{min-width:0!important;max-width:none}
+html.ipad .heat tr.lv2 td.nm{padding-left:calc(18px*var(--hk,1))}
+html.ipad .heat tr.lv3 td.nm{padding-left:calc(34px*var(--hk,1))}
+html.ipad .heat .bang{width:calc(14px*var(--hk,1));height:calc(14px*var(--hk,1));font-size:calc(10px*var(--hk,1));margin-left:calc(3px*var(--hk,1))}
+html.ipad .heat .car{width:calc(12px*var(--hk,1));font-size:calc(10px*var(--hk,1))}
+html.ipad .twrap{gap:0}
+html.ipad #navr{display:none}
+html.ipad.navopen #navr{display:flex;position:fixed;right:12px;top:56px;max-height:78vh;z-index:80;box-shadow:0 10px 30px rgba(60,40,20,.18);background:#fff}
+html.ipad #navr .ctl .more{max-height:180px;opacity:1;transform:none}
+#navBtn{display:none}
+html.ipad #navBtn{display:block;position:fixed;right:14px;bottom:18px;z-index:81;border:1px solid var(--line);background:#fff;color:var(--brown);font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:10px 16px;box-shadow:0 6px 18px rgba(60,40,20,.15)}
+html.ipad.navopen #navBtn{background:var(--brown);color:#fff;border-color:var(--brown)}
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -655,17 +674,29 @@ build();render();
 window.__cloud=makeCloud('database_v1/intllaw_analysis',KEY,()=>st,o=>{closePicker();closeCM();st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};if(o.ctFix1)st.ctFix1=o.ctFix1;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};build();render()});
 </script>
 <script>
-/* 화면 너비에 맞게: 넓으면 표를 꽉 채우고, 좁으면 표 영역을 비율대로 축소 */
+/* 화면 너비에 맞게: 넓으면 표를 꽉 채우고, 좁으면 축소. 아이패드는 글자 크기를 줄여서 화면 안에 다 들어오게 */
 (function(){
+  const IPAD=/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(IPAD){document.documentElement.classList.add('ipad');
+    const btn=document.createElement('button');btn.id='navBtn';btn.textContent='목차';document.body.appendChild(btn);
+    btn.addEventListener('click',()=>document.documentElement.classList.toggle('navopen'));
+    document.addEventListener('click',e=>{if(e.target.closest('#navr a[data-nav]'))document.documentElement.classList.remove('navopen');
+      else if(!e.target.closest('#navr')&&e.target!==btn)document.documentElement.classList.remove('navopen');},true);}
   let t=null;
   function fit(){
     document.querySelectorAll('.tbox').forEach(b=>{
       const tb=b.querySelector('table');if(!tb)return;
-      b.style.zoom='';const need=tb.scrollWidth,have=b.clientWidth;
-      if(need>have+1&&have>0)b.style.zoom=Math.max(.55,have/need).toFixed(3);});}
+      if(IPAD){
+        b.style.zoom='';b.style.setProperty('--hk','1');
+        const have=b.clientWidth;let k=1;
+        for(let i=0;i<5;i++){const need=tb.scrollWidth;if(need<=have+1||have<=0)break;k=Math.max(.35,k*have/need);b.style.setProperty('--hk',k.toFixed(3));}
+      }else{
+        b.style.zoom='';const need=tb.scrollWidth,have=b.clientWidth;
+        if(need>have+1&&have>0)b.style.zoom=Math.max(.55,have/need).toFixed(3);}});
+    if(typeof stickySync==='function')try{stickySync();}catch(e){}}
   const later=()=>{clearTimeout(t);t=setTimeout(fit,80);};
-  addEventListener('resize',later);
-  new MutationObserver(later).observe(document.body,{childList:true,subtree:true});
+  addEventListener('resize',later);addEventListener('orientationchange',later);
+  new MutationObserver(ms=>{if(ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches('table,.twrap,.tbox')||n.querySelector&&n.querySelector('table')))))later();}).observe(document.body,{childList:true,subtree:true});
   later();
 })();
 </script>
