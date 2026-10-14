@@ -694,7 +694,7 @@ function openPrint(){
   const json=JSON.stringify(data).replace(/</g,"\\u003c");
   closePrint();
   const ov=document.createElement("div");ov.id="ilc-print-ov";
-  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(22,19,15,.35);padding:8px clamp(36px,8vw,160px);display:flex";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(22,19,15,.35);padding:max(24px,4vh) max(28px,5.5vw);display:flex";
   ov.innerHTML='<iframe src="'+location.pathname+'?print=1" style="flex:1;border:0;border-radius:12px;background:#efede9;box-shadow:0 10px 40px rgba(0,0,0,.25)"></iframe>';
   ov.addEventListener("click",e=>{if(e.target===ov)closePrint()});
   document.body.appendChild(ov);document.documentElement.style.overflow="hidden";dbFull(true);
