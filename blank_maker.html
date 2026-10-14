@@ -734,13 +734,15 @@ function cellRect(p,r){
   const cy=(r.y+r.h/2)*k,half=Math.max(r.h/2,9.5)*k;
   const y0=Math.round(cy-half),y1=Math.round(cy+half);
   // solid line over the row, or dotted line that keeps going well beyond it
-  const vAt=x=>fracV(x,y0,y1)>=0.94||(fracV(x,y0,y1)>=0.4&&fracV(x,Math.round(cy-half*4),Math.round(cy+half*4))>=0.4);
+  const thinV=x=>fracV(x-4,y0,y1)<0.5||fracV(x+4,y0,y1)<0.5;
+  const vAt=x=>thinV(x)&&(fracV(x,y0,y1)>=0.94||(fracV(x,y0,y1)>=0.4&&fracV(x,Math.round(cy-half*4),Math.round(cy+half*4))>=0.4));
   let L0=null,R0=null,T0=null,B0=null;
   for(let x=Math.round(r.x*k);x>=Math.max(0,r.x*k-260*k);x--)if(vAt(x)){L0=x;break;}
   for(let x=Math.round((r.x+r.w)*k);x<=Math.min(W-1,(r.x+r.w)*k+260*k);x++)if(vAt(x)){R0=x;break;}
   const xa=Math.round((L0!=null?L0+3:r.x*k)),xb=Math.round((R0!=null?R0-3:(r.x+r.w)*k));
   const hx0=Math.round(xa+Math.max(2,(xb-xa)*0.08)),hx1=Math.round(xb-Math.max(2,(xb-xa)*0.08));
-  const hAt=y=>fracH(y,hx0,hx1)>=0.94||(fracH(y,hx0,hx1)>=0.4&&fracH(y,hx0-Math.round(half*3),hx1+Math.round(half*3))>=0.4);
+  const thinH=y=>fracH(y-4,hx0,hx1)<0.5&&fracH(y+4,hx0,hx1)<0.5;
+  const hAt=y=>thinH(y)&&(fracH(y,hx0,hx1)>=0.94||(fracH(y,hx0,hx1)>=0.4&&fracH(y,hx0-Math.round(half*3),hx1+Math.round(half*3))>=0.4));
   for(let y=Math.round(r.y*k);y>=Math.max(0,r.y*k-400*k);y--)if(hAt(y)){T0=y;break;}
   for(let y=Math.round((r.y+r.h)*k);y<=Math.min(H-1,(r.y+r.h)*k+400*k);y++)if(hAt(y)){B0=y;break;}
   const ins=1.3;
