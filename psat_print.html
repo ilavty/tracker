@@ -90,13 +90,13 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 
 /* ───── 인쇄 페이지 ───── */
 .page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);font-family:'Paperlogy','GmarketSans',sans-serif;color:#000}
-.phead{position:absolute;left:5mm;right:5mm;top:6mm;height:7mm;display:flex;align-items:center;gap:3mm;border-bottom:.6mm solid #000;padding-bottom:1.6mm}
+.phead{position:absolute;left:8mm;right:8mm;top:10mm;height:5.6mm;display:flex;align-items:center;gap:3mm}
 .phead .tbox{border:.25mm solid #000;height:5.6mm;display:flex;align-items:center;justify-content:center;font-size:9.5pt;font-weight:600;white-space:nowrap;overflow:hidden}
 .phead .t1{width:72mm}
 .phead .t2{width:30mm;font-size:8pt}
 .phead .t3{width:12mm;font-size:8pt}
 .phead .ctr{position:absolute;left:0;right:0;text-align:center;font-size:10pt;font-weight:600;pointer-events:none}
-.pbody{position:absolute;left:5mm;right:5mm;top:16mm;bottom:6mm}
+.pbody{position:absolute;left:8mm;right:8mm;top:20mm;bottom:10mm}
 .col{position:absolute;top:0;bottom:0;width:calc((100% - 4mm)/2)}
 .col.l{left:0}
 .col.r{right:0}
@@ -179,7 +179,7 @@ st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
 if (st.cur && !st.sets[st.cur]) st.cur = null;
 const isOn = k => !st.hidden.includes(k);
 const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
-const srcLabel = (e, it) => (e.kind === '기타' ? ['기타', e.book || '-', numStr(it)] : [e.year, e.kind, e.book || '-', numStr(it)]).join('_');
+const srcLabel = (e, it) => [e.year, e.kind + (e.book === '모의' ? '모의' : ''), numStr(it)].join('_');
 const yearShow = e => e.book === '모의' ? '모의' : (e.year || '?');
 
 const $ = id => document.getElementById(id);
@@ -268,7 +268,9 @@ function renderSel() {
 }
 
 /* ───── 페이지 조립 ───── */
-const COL_W = (210 - 10 - 4) / 2, COL_H = 297 - 16 - 6, LAB_H = 4.2, GAP = 8;
+// 프린터 여백 고려: 100%로 찍어도 안 잘리게 바깥 여백 확보
+const ML = 8, MT = 9, BT = 20, MB = 10, CW = 210 - 2 * ML;
+const COL_W = (CW - 4) / 2, COL_H = 297 - BT - MB, LAB_H = 4.2, GAP = 8;
 function layout() {
   const pages = []; let cur = null, ci = 0, used = 0;
   const newPage = () => { cur = {cols: [[], []]}; pages.push(cur); ci = 0; used = 0; };
@@ -321,7 +323,7 @@ function answerPages() {
         if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
         body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
       });
-      return `<table class="atbl" style="left:${ci * 67}mm;width:62mm"><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
+      return `<table class="atbl" style="left:${ci * 66}mm;width:62mm"><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
     }).join('');
     out.push(`<div class="page">${head(0, '<정답지>', 'PSAT')}<div class="pbody">${tbls}</div></div>`);
   }
@@ -403,14 +405,13 @@ function fitText(x, t, cx, cy, maxW) {
   else x.fillText(t, cx, cy);
 }
 // 머리말: 폭 200mm × 높이 10mm 영역 (페이지 좌표 5mm,5mm)
-function drawHead(x, title, center, area, right) {
+function drawHead(x, title, center, area, right, W = CW) {
   x.lineWidth = .25; x.textAlign = 'center';
   const box = (bx, w, t, size) => { x.strokeRect(bx, 1, w, 5.6); x.font = `600 ${size}px ${FONT}`; fitText(x, t, bx + w / 2, 3.85, w - 2); };
   box(0, 72, title, 3.35);
-  box(155, 30, area, 2.82);
-  box(188, 12, right, 2.82);
-  if (center) { x.font = `600 3.5px ${FONT}`; x.fillText(center, 100, 3.85); }
-  x.fillRect(0, 8.6, 200, .6);
+  box(W - 45, 30, area, 2.82);
+  box(W - 12, 12, right, 2.82);
+  if (center) { x.font = `600 3.5px ${FONT}`; x.fillText(center, W / 2, 3.85); }
 }
 function drawAnswers(x, rows) {
   const W = [18, 15, 14, 15], RH = 6.6, PER = Math.floor((COL_H - 4) / RH) - 1;
@@ -430,11 +431,11 @@ async function buildPdf() {
     const embedCache = {};
     for (let pi = 0; pi < pages.length; pi++) {
       const pg = out.addPage([PW, PH]);
-      const hd = await embedCanvas(out, mmCanvas(200, 10, PXMM, x => drawHead(x, title, '', area, (pi + 1) + '쪽')));
-      pg.drawImage(hd, {x: 5 * MM, y: PH - 15 * MM, width: 200 * MM, height: 10 * MM});
-      pg.drawLine({start: {x: 105 * MM, y: PH - 16 * MM}, end: {x: 105 * MM, y: PH - 291 * MM}, thickness: .25 * MM, color: rgb(0, 0, 0)});
+      const hd = await embedCanvas(out, mmCanvas(CW, 8, PXMM, x => drawHead(x, title, '', area, (pi + 1) + '쪽')));
+      pg.drawImage(hd, {x: ML * MM, y: PH - (MT + 8) * MM, width: CW * MM, height: 8 * MM});
+      pg.drawLine({start: {x: 105 * MM, y: PH - BT * MM}, end: {x: 105 * MM, y: PH - (297 - MB) * MM}, thickness: .25 * MM, color: rgb(0, 0, 0)});
       for (let ci = 0; ci < 2; ci++) {
-        let y = 16; const x0 = 5 + (ci ? COL_W + 4 : 0);
+        let y = BT; const x0 = ML + (ci ? COL_W + 4 : 0);
         for (const b of pages[pi].cols[ci]) {
           if (b.si === 0) {
             const lab = srcLabel(b.e, b.it);
@@ -458,10 +459,10 @@ async function buildPdf() {
       const chunks = drawAnswers(null, rows);
       for (let p = 0; p < chunks.length; p += 3) {
         const c = mmCanvas(210, 297, 10, x => {
-          x.save(); x.translate(5, 5); drawHead(x, title, '<정답지>', 'PSAT', '답지'); x.restore();
+          x.save(); x.translate(ML, MT); drawHead(x, title, '<정답지>', 'PSAT', '답지'); x.restore();
           const W = [18, 15, 14, 15], RH = 6.6;
           chunks.slice(p, p + 3).forEach((rs, ci) => {
-            const tx = 5 + ci * 67, ty = 18;
+            const tx = ML + ci * 66, ty = BT + 2;
             const cell = (cx, cy, w, h, t, fill, bold) => {
               if (fill) { x.fillStyle = fill; x.fillRect(cx, cy, w, h); x.fillStyle = '#000'; }
               x.strokeStyle = '#555'; x.lineWidth = .2; x.strokeRect(cx, cy, w, h);
