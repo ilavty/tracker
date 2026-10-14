@@ -28,7 +28,8 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .ph h2{margin:0;font-size:13px;font-weight:600}
 .cnt{color:var(--sub);font-size:11px;margin-left:4px;font-weight:400;white-space:nowrap}
 .ph h2{white-space:nowrap}
-.ph button{white-space:nowrap;flex:none}
+.tools{display:flex;gap:5px;padding:0 10px 8px}
+.tools button{padding:3px 8px;font-size:11px;white-space:nowrap}
 .sp{flex:1}
 .scroll{overflow-y:auto;flex:1;min-height:0}
 
@@ -130,9 +131,8 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
   <section class="panel">
     <div class="sets"><select id="setSel"></select><button id="setSave">저장</button><button id="setDel">삭제</button></div>
     <div id="linkInfo" style="display:none;padding:2px 14px 0;font-size:11px;color:var(--brown)"></div>
-    <div class="ph" style="padding-top:8px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2><span class="sp"></span>
-      <button id="shuffle" style="padding:3px 8px">섞기</button>
-      <button id="clear" style="padding:3px 8px">비우기</button></div>
+    <div class="ph" style="padding-top:8px;padding-bottom:6px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2></div>
+    <div class="tools"><button id="addDiv" title="선택한 줄 아래(없으면 맨 끝)에 구분 페이지 추가">+ 구분 페이지</button><span class="sp"></span><button id="shuffle">섞기</button><button id="clear">비우기</button></div>
     <div class="scroll" id="selList"></div>
     <div class="settings">
       <div><label>머리말 제목</label><input type="text" id="title"></div>
@@ -189,6 +189,8 @@ function itemOf(key) {
 st.link = st.link || {};
 const isDiv = k => typeof k === 'string' && k[0] === '#';
 const okKey = k => isDiv(k) || itemOf(k);
+const userDiv = k => isDiv(k) && k.startsWith('#+');
+const divName = k => userDiv(k) ? k.slice(k.indexOf('|') + 1) : k.slice(1);
 st.sel = st.sel.filter(okKey);
 st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
 
@@ -234,7 +236,7 @@ function buildLinked(box) {
 function linkedSel(id) {
   const L = LINKED[id], m = st.link[id] || {};
   if (!L) return {sel: [], hidden: [], title: id.slice(3) + '_보충학습'};
-  const order = (m.order || []).filter(k => L.keys.includes(k));
+  const order = (m.order || []).filter(k => L.keys.includes(k) || userDiv(k));
   const sel = order.concat(L.keys.filter(k => !order.includes(k)));
   return {sel, hidden: (m.hidden || []).filter(k => sel.includes(k)), title: m.title || L.name};
 }
@@ -250,7 +252,7 @@ async function loadReviewBox() {
   if (isLinked()) Object.assign(st, linkedSel(st.cur));
   renderAll();
 }
-if (st.cur && !st.sets[st.cur]) st.cur = null;
+if (st.cur && !st.sets[st.cur] && !/^(rv|th):/.test(st.cur)) st.cur = null;
 const isOn = k => !st.hidden.includes(k);
 const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
 const kindShow = e => e.kind === '7급근로' ? '근로감독' : e.kind + (e.book === '모의' ? '모의' : '');
@@ -349,7 +351,7 @@ function renderSel() {
   $('selCnt').textContent = nq ? nq + '개' + (off ? ` · 숨김 ${off}` : '') : '';
   let no = 0;
   $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
-    if (isDiv(k)) return `<div class="sl div" draggable="true" data-i="${i}"><span class="src">${esc(k.slice(1))}</span><span class="dtag">구분 페이지</span></div>`;
+    if (isDiv(k)) { const on = isOn(k); return `<div class="sl div ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="src">${esc(divName(k))}</span><span class="dtag">구분 페이지</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${userDiv(k) ? `<button class="x" data-x="${i}">✕</button>` : ''}</div>`; }
     no++;
     const {e, it} = itemOf(k);
     const on = isOn(k);
@@ -368,7 +370,7 @@ function layout() {
   for (let idx = 0; idx < st.sel.length; idx++) {
     const k = st.sel[idx];
     if (!isOn(k)) continue;
-    if (isDiv(k)) { pages.push({div: k.slice(1), idx}); cur = null; continue; }
+    if (isDiv(k)) { pages.push({div: divName(k), idx}); cur = null; continue; }
     const {e, it} = itemOf(k);
     it.s.forEach((seg, si) => {
       const w = seg[3] - seg[1], hpt = seg[4] - seg[2];
@@ -618,6 +620,13 @@ $('bank').onclick = ev => {
   const n = ev.target.closest('.num');
   if (n && lockLinked()) return;
   if (n) { const k = n.dataset.k; st.sel = st.sel.includes(k) ? st.sel.filter(x => x !== k) : [...st.sel, k]; renderAll(); }
+};
+$('addDiv').onclick = () => {
+  const name = (prompt('구분 페이지 이름 (예: 1회독 오답)') || '').trim(); if (!name) return;
+  const k = '#+' + Date.now().toString(36) + '|' + name;
+  const cur = document.querySelector('.sl.cur');
+  const at = cur ? +cur.dataset.i + 1 : st.sel.length;
+  st.sel.splice(at, 0, k); renderAll();
 };
 function lockLinked() {
   if (!isLinked()) return false;
