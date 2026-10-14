@@ -147,6 +147,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script src="psat_bank.js"></script>
+<script src="psat_sets.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -185,7 +186,8 @@ st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
 const RV_SUBJ = {언어논리: '언어', 자료해석: '자료', 상황판단: '상황'};
 const LINKED = {};          // 'rv:상황판단' → {name, keys, miss}
 let linkLoaded = false;
-function isLinked(id = st.cur) { return !!id && id.startsWith('rv:'); }
+function isLinked(id = st.cur) { return !!id && (id.startsWith('rv:') || id.startsWith('th:')); }
+(window.PSAT_SETS || []).forEach(t => { LINKED[t.id] = {name: t.name, keys: t.keys.filter(k => EX[k.split('|')[0]]), miss: 0}; });
 function findExam(level, sub, yearRaw) {
   const y = String(yearRaw || ''), yd = (y.match(/\d{4}/) || [''])[0];
   const pool = EXAMS.filter(e => e.sub === sub);
@@ -216,7 +218,7 @@ function buildLinked(box) {
     const k = keyOf(e, it);
     if (!g.keys.includes(k)) g.keys.push(k);
   });
-  Object.keys(LINKED).forEach(k => delete LINKED[k]);
+  Object.keys(LINKED).filter(k => k.startsWith('rv:')).forEach(k => delete LINKED[k]);
   Object.assign(LINKED, by);
 }
 function linkedSel(id) {
@@ -319,12 +321,16 @@ function renderSets() {
   const lids = ['rv:언어논리', 'rv:자료해석', 'rv:상황판단'].filter(id => LINKED[id] || st.cur === id);
   $('setSel').innerHTML = `<option value="">＋ 새 묶음 (저장 안 됨)</option>` +
     (ids.length ? '<optgroup label="내 묶음">' + ids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(st.sets[id].name)}</option>`).join('') + '</optgroup>' : '') +
-    (lids.length ? '<optgroup label="PSAT 보충학습 (자동)">' + lids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(id.slice(3))}_보충학습 (${LINKED[id] ? LINKED[id].keys.length : 0})</option>`).join('') + '</optgroup>' : '');
+    (lids.length ? '<optgroup label="PSAT 보충학습 (자동)">' + lids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(id.slice(3))}_보충학습 (${LINKED[id] ? LINKED[id].keys.length : 0})</option>`).join('') + '</optgroup>' : '') +
+    [['언어논리', '언어'], ['자료해석', '자료'], ['상황판단', '상황']].map(([full, short]) => {
+      const ts = Object.keys(LINKED).filter(id => id.startsWith('th:' + full));
+      return ts.length ? `<optgroup label="모음집 · ${short}">` + ts.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(LINKED[id].name.slice(full.length + 1))} (${LINKED[id].keys.length})</option>`).join('') + '</optgroup>' : '';
+    }).join('');
   $('setSave').textContent = isLinked() ? '복사' : st.cur ? '이름' : '저장';
-  $('setSave').title = isLinked() ? '이 보충학습 목록을 내 묶음으로 복사' : '';
+  $('setSave').title = isLinked() ? '이 목록을 내 묶음으로 복사' : '';
   $('setDel').style.display = st.cur && !isLinked() ? '' : 'none';
   const miss = isLinked() && LINKED[st.cur] ? LINKED[st.cur].miss : 0;
-  $('linkInfo').textContent = isLinked() ? (linkLoaded ? 'PSAT 트래커 📌 자동 연결' + (miss ? ` · 못 찾은 문제 ${miss}개` : '') : '트래커에서 불러오는 중…') : '';
+  $('linkInfo').textContent = !isLinked() ? '' : st.cur.startsWith('th:') ? '모음집 순서 그대로 (고정 묶음)' : (linkLoaded ? 'PSAT 트래커 📌 자동 연결' + (miss ? ` · 못 찾은 문제 ${miss}개` : '') : '트래커에서 불러오는 중…');
   $('linkInfo').style.display = isLinked() ? '' : 'none';
 }
 function renderSel() {
@@ -400,7 +406,7 @@ function answerPages() {
   return out;
 }
 
-let renderToken = 0, pending = 0;
+let renderToken = 0, pending = 0, io = null;
 function renderPages() {
   const tok = ++renderToken;
   const pages = layout();
@@ -414,16 +420,20 @@ function renderPages() {
   $('pages').style.setProperty('--z', st.z);
   $('msg').innerHTML = st.sel.length ? '' : '담은 문제가 여기 미리보기로 떠요';
   const imgs = [...document.querySelectorAll('#pages img[data-e]')];
-  pending = imgs.length; updateInfo(pages.length);
+  pending = 0; updateInfo(pages.length);
   if (!pages.length && st.sel.length) $('msg').innerHTML = '보이는 문제가 없어요 (전부 숨김)';
-  imgs.forEach(img => {
+  // 화면 근처에 온 문제만 그림 (모음집처럼 큰 묶음 대비)
+  if (io) io.disconnect();
+  io = new IntersectionObserver(ents => ents.forEach(en => {
+    if (!en.isIntersecting) return;
+    const img = en.target; io.unobserve(img);
     const e = EX[img.dataset.e], seg = img.dataset.seg.split(',').map(Number);
     renderSeg(e, seg, RS).then(url => {
       if (tok !== renderToken) return;
       img.src = url; img.classList.remove('ph-img'); img.style.height = '';
-      pending--; updateInfo(pages.length);
     }).catch(err => { if (tok === renderToken) loadFail(err); });
-  });
+  }), {root: document.querySelector('.preview'), rootMargin: '1200px 0px'});
+  imgs.forEach(img => io.observe(img));
 }
 function updateInfo(n) {
   $('pinfo').textContent = st.sel.length ? `문제 ${n}장${st.ans ? ' + 정답지' : ''}` + (pending ? ` · 불러오는 중 ${pending}` : '') : '';
@@ -580,7 +590,7 @@ $('bank').onclick = ev => {
 };
 function lockLinked() {
   if (!isLinked()) return false;
-  alert('보충학습 묶음은 PSAT 트래커의 📌로 관리돼요.\n여기서 바꾸려면 위에서 [복사]해서 내 묶음으로 만들어줘!');
+  alert((st.cur.startsWith('th:') ? '모음집 묶음은 고정이에요.' : '보충학습 묶음은 PSAT 트래커의 📌로 관리돼요.') + '\n여기서 바꾸려면 위에서 [복사]해서 내 묶음으로 만들어줘!');
   return true;
 }
 $('clear').onclick = () => { if (lockLinked()) return; if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; st.hidden = []; renderAll(); } };
