@@ -162,6 +162,8 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc .qbtn.no{background:var(--brown-soft);border-color:var(--danger);color:var(--danger)}
 #ilc .qbtn.dim{opacity:.35}
 #ilc .qhint{margin-top:8px}
+#ilc .qctx{margin-top:14px;font-size:13.5px;color:var(--muted);line-height:1.5}
+#ilc .qctx+.qq{margin-top:6px}
 #ilc .qsa{display:flex;gap:6px;flex-wrap:wrap}
 #ilc .qsa input{flex:1;min-width:180px}
 #ilc .qfb{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
@@ -496,6 +498,7 @@ function qYN(ans){
   if(/(^|[^가-힣])(x|n)$/.test(a)&&a.length<=6)return "X";
   return null;
 }
+const QACTOR=/^(패널|상소|상소기구|패널\s*[·∙,]?\s*상소(기구)?|1심|2심|지방법원|고등법원|대법원|항소법원|파기환송심|원심|ICJ|PCIJ|재판소|법원|위원회|중재|다수의견|반대의견|소수의견|별개의견|결론|판단|입장|주장|원고|피고|[가-힣A-Za-z]{1,6}\s*(측|입장|주장|제소|반소))$/;
 function genQuiz(cases){
   const out=[];
   const LV={h:0,a:1,r:1,p:1,b:2,c:3,d:4};
@@ -521,27 +524,41 @@ function genQuiz(cases){
     // 4) 노트에서
     for(const note of [r.note,r.note2]){
       if(!note||!note.items)continue;
-      const it=note.items;let head="";
+      const it=note.items;let head="",anc=[];
       for(let i=0;i<it.length;i++){
-        const [k,t]=it[i];if(k==="h"){head=t;continue}if(k==="p")continue;
+        const [k,t]=it[i];if(k==="h"){head=t;anc=[];continue}
+        const lvk=LV[k]??1;
+        while(anc.length&&anc[anc.length-1].lv>=lvk)anc.pop();
+        const par=anc.map(x=>x.t);anc.push({lv:lvk,t});
+        if(k==="p")continue;
         if(/사실|배경|개요/.test(head))continue;
-        const lvk=LV[k]??1,kids=[];
+        const ctx=[head,...par].filter(Boolean).map(x=>x.length>46?x.slice(0,45)+"…":x);
+        const kids=[];
         for(let j=i+1;j<it.length;j++){const l2=LV[it[j][0]]??1;if(it[j][0]==="h"||l2<=lvk)break;kids.push(it[j][1])}
-        if(k==="r"){out.push({...base,id:r.id+"|fc|"+qHash(t),type:"fc",q:"결론은?",a:t,ex:kids});continue}
-        const m=t.match(/^(.{3,80}?)\s*[:：]\s*(.{1,140})$/);
-        if(!m){if(/[?？]$/.test(t)&&kids.length&&qNorm(t).length>=5)out.push({...base,id:r.id+"|fc|"+qHash(t),type:"fc",q:t,a:kids[0],ex:kids.slice(1)});continue}
-        let lab=m[1].trim(),ans=m[2].trim();
-        if(/->|→|사실관계|^판결$|^판단$/.test(lab)||qNorm(lab).length<4)continue;
+        if(k==="r"){out.push({...base,ctx,id:r.id+"|fc|"+qHash(t),type:"fc",q:"결론은?",a:t,ex:kids});continue}
+        const m=t.match(/^(.{2,80}?)\s*[:：]\s*(.{1,140})$/);
+        const k0=kids.length&&String(kids[0]).match(/^(.{2,30}?)\s*[:：]/);
+        if(!m){if(/[?？]$/.test(t)&&kids.length&&qNorm(t).length>=5&&!(k0&&QACTOR.test(k0[1].trim())))out.push({...base,ctx,id:r.id+"|fc|"+qHash(t),type:"fc",q:t,a:kids[0],ex:kids.slice(1)});continue}
+        let lab=m[1].trim(),ans=m[2].trim(),qctx=ctx,hid=lab;
+        if(/->|→|사실관계|^판결$|^판단$/.test(lab))continue;
+        // 패널: x / 상소: o 처럼 주체만 적힌 줄 → 바로 위 항목을 문제로
+        if(QACTOR.test(lab)||qNorm(lab).length<4){
+          if(!par.length)continue;
+          const pt=par[par.length-1].replace(/\s*[:：].*$/,"").replace(/[?？]\s*$/,"").trim();
+          if(qNorm(pt).length<4)continue;
+          lab=pt+" — "+lab+" 판단은?";hid=pt+"|"+m[1];qctx=ctx.slice(0,-1);
+          if(!qYN(ans)){const tail=ans.match(/^(.*?[가-힣)])\s*([xXoO])$/);if(tail){out.push({...base,ctx:qctx,id:r.id+"|ox|"+qHash(hid),type:"ox",q:lab,a:/[xX]/.test(tail[2])?"X":"O",raw:ans,ex:kids});continue}}
+        }
         // 해설: 하위 항목
         const lv=LV[k]??1,ex=[];
         for(let j=i+1;j<it.length;j++){const l2=LV[it[j][0]]??1;if(it[j][0]==="h"||l2<=lv)break;ex.push(it[j][1])}
         const yn=qYN(ans);
         if(yn){
-          out.push({...base,id:r.id+"|ox|"+qHash(lab),type:"ox",q:lab.replace(/\?$/,"")+(lab.endsWith("?")?"?":""),a:yn,raw:ans,ex});
+          out.push({...base,ctx:qctx,id:r.id+"|ox|"+qHash(hid),type:"ox",q:lab.replace(/\?$/,"")+(lab.endsWith("?")?"?":""),a:yn,raw:ans,ex});
         }else if(ans.length<=14&&!/[?？]/.test(ans)&&lab.length<=40&&!/^\d+$/.test(ans)){
-          out.push({...base,id:r.id+"|sa|"+qHash(lab),type:"sa",q:lab.replace(/\?$/,"")+"?",a:ans,acc:[qNorm(ans)],loose:qNorm(ans),ex});
+          out.push({...base,ctx:qctx,id:r.id+"|sa|"+qHash(hid),type:"sa",q:lab.replace(/\?$/,"")+"?",a:ans,acc:[qNorm(ans)],loose:qNorm(ans),ex});
         }else if(ans.length>14&&lab.length<=60){
-          out.push({...base,id:r.id+"|fc|"+qHash(lab),type:"fc",q:lab.replace(/\?$/,"")+"?",a:ans,ex});
+          out.push({...base,ctx:qctx,id:r.id+"|fc|"+qHash(hid),type:"fc",q:lab.replace(/\?$/,"")+"?",a:ans,ex});
         }
       }
     }
@@ -633,7 +650,7 @@ function qzDraw(){
   }
   qzRoot.innerHTML=`<div class="qtop"><button type="button" class="btn" data-qa="home">← 설정</button><span class="qprog">${QZ.i+1} / ${QZ.list.length}</span><span class="qprog">맞힘 ${QZ.res.filter(x=>x).length}</span></div>
   <div class="qcard"><div class="qhead">${q.cname?`<span class="qcase">${esc(q.cname)}</span>`:""}${meta}${q.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</div>
-  <div class="qq">${esc(q.q)}</div>${body}${fb}</div>`;
+  ${q.ctx&&q.ctx.length?`<div class="qctx">${q.ctx.map(esc).join(" › ")}</div>`:""}<div class="qq">${esc(q.q)}</div>${body}${fb}</div>`;
   const inp=qzRoot.querySelector("#qz-in");if(inp&&!a)inp.focus();
   if(a){const nb=qzRoot.querySelector('[data-qa="next"]');nb&&nb.focus()}
 }
