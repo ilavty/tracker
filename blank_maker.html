@@ -6,14 +6,15 @@
 <title>BLANK MAKER</title>
 
 <style>
-@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}
-@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('fonts/Paperlogy-4Regular.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('fonts/Paperlogy-6SemiBold.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-weight:600 800;font-display:swap}
 @font-face{font-family:'KoPubDotum';src:url('https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.woff2') format('woff2');font-display:swap}
 @font-face{font-family:'KoPubBatang';src:url('https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Medium.woff2') format('woff2');font-display:swap}
 @font-face{font-family:'GmarketSans';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-weight:500;font-display:swap}
 @font-face{font-family:'GmarketSans';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');font-weight:700;font-display:swap}
 :root{--ink:#1a1a1a;--sky:#8cc8ec;--sky2:#e8f4fb;--brown:#7a5a43;--bg:#f6f4f1;--line:#e4ded7;--bcol:#ebebeb}
 *{box-sizing:border-box}
+button,input,select,label,.tab,.stabs button{font-family:'Paperlogy','GmarketSans',-apple-system,sans-serif}
 html,body{margin:0}
 html{scrollbar-width:none}
 ::-webkit-scrollbar{display:none}
@@ -45,9 +46,9 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:4px}
 #tabs{flex-basis:100%;display:flex;gap:6px;overflow-x:auto;padding-top:2px;margin-bottom:-12px}
 .tab{display:flex;align-items:center;gap:6px;max-width:220px;padding:8px 10px 8px 14px;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:#f3efea;font-size:12px;cursor:pointer;white-space:nowrap;color:#777}
 .tab .tname{overflow:hidden;text-overflow:ellipsis}
-.tab.on{background:#fff;color:var(--ink);font-weight:700;opacity:1;border-color:var(--line);box-shadow:0 -3px 10px rgba(60,40,20,.10)}
-.tab:not(.on):not(.add){opacity:.55}
-.tab:not(.on):not(.add):hover{opacity:.85}
+.tab.on{background:#fff;color:var(--ink);font-weight:700;border-color:var(--line);box-shadow:none}
+.tab:not(.on):not(.add){background:#ece7e1;color:#a39b93;box-shadow:inset 0 -6px 8px -5px rgba(60,40,20,.22),inset 0 2px 4px rgba(60,40,20,.06)}
+.tab:not(.on):not(.add):hover{color:#6f6760}
 .tab .dot{width:7px;height:7px;border-radius:50%;background:var(--brown);flex:none}
 .tab .tx{border:0;background:none;font-size:14px;line-height:1;padding:0 2px;cursor:pointer;color:#999}
 .tab .tx:hover{color:var(--ink)}
