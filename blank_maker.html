@@ -107,6 +107,9 @@ body.noside #side{display:none}
 body.text .ov{cursor:text}
 .pno{position:absolute;right:0;bottom:-19px;font-size:11px;color:#aaa}
 .blank{position:absolute;background:var(--bcol);cursor:move}
+.blank.cell{background:#fff;box-shadow:inset 0 0 0 1px #d6cdc4}
+.snapv.cellv{background:rgba(255,255,255,.85);border:1.5px dashed var(--brown)}
+.thumb .tb.cell{background:#fff;box-shadow:0 0 0 .5px #cbbfb3}
 .hd{display:none;position:absolute;width:9px;height:9px;background:#fff;border:1.5px solid var(--sky);border-radius:2px;z-index:2}
 .blank.sel .hd{display:block}
 @media (pointer:coarse){.hd{width:16px;height:16px}.hd.n,.hd.s{margin-left:-8px}.hd.e,.hd.w{margin-top:-8px}.x{width:24px;height:24px;line-height:24px}}
@@ -171,7 +174,7 @@ body.dragover #empty{background:var(--sky2)}
   </div>
   <div id="tabs" class="hidden"></div>
 </header>
-<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 자유 사각형 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
+<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
 <div id="empty"><h2>PDF를 여기로 끌어오기</h2><p>또는 눌러서 열기<br>빈칸은 자동으로 저장돼서 맥·아이패드 어디서 열어도 이어져요<br>수정한 파일을 다시 열면 빈칸 위치를 알아서 다시 잡아줘요</p></div>
 <div id="wrap">
 <aside id="side" class="hidden">
@@ -365,6 +368,12 @@ function locate(runs,home){
   for(let q=0;q<S.pages.length;q++){if(q===home)continue;idx=tryPage(q,true);if(idx)return{pi:q,idx};}
   return null;}
 function reanchor(b){
+  if(b.cell&&b.runs&&b.runs.length&&b.toff){
+    const f=locate(b.runs,b.page);
+    if(!f){b.lost=true;if(b.page>=S.pages.length)b.page=S.pages.length-1;return'lost';}
+    const p=S.pages[f.pi],tb=bbox(p,f.idx),nx=tb.x+b.toff.dx,ny=tb.y+b.toff.dy;
+    const mv=f.pi!==b.page||Math.abs(nx-b.raw.x)>.5||Math.abs(ny-b.raw.y)>.5;
+    b.page=f.pi;b.raw={...b.raw,x:nx,y:ny};b.lost=false;b.runs=mkRuns(p,f.idx);return mv?'moved':'same';}
   if(b.free||!b.runs||!b.runs.length){
     if(b.page>=S.pages.length){b.page=S.pages.length-1;b.lost=true;return'lost';}return'same';}
   const f=locate(b.runs,b.page);
@@ -440,7 +449,7 @@ async function openFile(file,quiet){
     }
     if(!S.lineH){const all=pages.map(p=>p.medFh).sort((a,b)=>a-b);S.lineH=Math.round((all[all.length>>1]||10)*1.25*2)/2;saveSettings();}
     $('#lh').value=S.lineH;$('#lhv').textContent=S.lineH;
-    if(!pages.some(p=>p.chars.length))toast('이 PDF에서 글자를 못 찾았어요 (윤곽선 처리?) — ⇧+드래그로 그려줘요',7000);
+    if(!pages.some(p=>p.chars.length))toast('이 PDF에서 글자를 못 찾았어요 (윤곽선 처리?) — ⌥+드래그로 그려줘요',7000);
     stash();let carried=null;
     const old=docs.find(d=>d.name===file.name);
     if(old){carried={boxes:old.boxes||[],texts:old.texts||[]};closeDoc(old,true,true);}
@@ -574,7 +583,7 @@ function setCur(i){if(S.cur===i)return;S.cur=i;
   let last=null;S.tocEl.querySelectorAll('.toc-i').forEach(x=>{x.classList.remove('on');if(+x.dataset.pi<=i)last=x;});if(last)last.classList.add('on');}
 function drawThumb(i){const p=S.pages[i];if(!p||!p.th)return;const tp=p.th.querySelector('.tp'),k=150/p.w;
   tp.querySelectorAll('.tb').forEach(e=>e.remove());const bs=S.boxes.filter(b=>b.page===i);
-  bs.forEach(b=>{const r=disp(b),e=document.createElement('div');e.className='tb'+(b.lost?' lost':'');
+  bs.forEach(b=>{const r=disp(b),e=document.createElement('div');e.className='tb'+(b.cell?' cell':'')+(b.lost?' lost':'');
     Object.assign(e.style,{left:r.x*k+'px',top:r.y*k+'px',width:Math.max(1,r.w*k)+'px',height:Math.max(1,r.h*k)+'px'});tp.appendChild(e);});
   p.th.querySelector('.tn b').textContent=bs.length?'· 빈칸 '+bs.length:'';}
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!S.pages||!S.pages.length)return;layout();rerenderAll();},250);});
@@ -615,8 +624,8 @@ function drawOv(i){
   ov.querySelectorAll('.blank,.note').forEach(e=>e.remove());
   S.boxes.filter(b=>b.page===i).forEach(b=>{
     const r=disp(b),d=document.createElement('div');
-    d.className='blank'+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;
-    Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px',borderRadius:Math.min(3,r.h/3,r.w/3)*s+'px'});
+    d.className='blank'+(b.cell?' cell':'')+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;
+    Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px',borderRadius:b.cell?'0':Math.min(3,r.h/3,r.w/3)*s+'px'});
     d.innerHTML='<button class="x" title="삭제">×</button>'+['n','s','e','w','ne','nw','se','sw'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
       if(e.target.classList.contains('x')){removeBox(b.id);return;}
@@ -689,20 +698,65 @@ function bindOverlay(i){
     ov.setPointerCapture(e.pointerId);let b=a;
     const R=()=>{const r={x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)};
       const H=S.lineH||12;if(r.h<H){const cy=r.y+r.h/2;r.y=cy-H/2;r.h=H;}return r;};
-    const mv=ev=>{b=pt(ev);const r=R();
+    lineMap(p);
+    const show=q=>{if(!q){sv.style.display='none';return;}Object.assign(sv.style,{display:'block',left:q.x*p.S+'px',top:q.y*p.S+'px',width:q.w*p.S+'px',height:q.h*p.S+'px'});};
+    const mv=ev=>{b=pt(ev);const r=R();const m=dragMode(ev);
       Object.assign(dr.style,{left:r.x*p.S+'px',top:r.y*p.S+'px',width:r.w*p.S+'px',height:r.h*p.S+'px'});
-      const idx=ev.shiftKey?[]:snapIdx(p,r);
-      if(idx.length){const q=dispRaw(bbox(p,idx),false);
-        Object.assign(sv.style,{display:'block',left:q.x*p.S+'px',top:q.y*p.S+'px',width:q.w*p.S+'px',height:q.h*p.S+'px'});}
-      else sv.style.display='none';};
-    const up=ev=>{ov.removeEventListener('pointermove',mv);ov.removeEventListener('pointerup',up);dr.remove();sv.remove();
-      const r=R();if(r.w*p.S<4)return;makeBox(i,r,ev.shiftKey);};
+      sv.classList.toggle('cellv',m==='cell');
+      if(m==='free'){show(null);return;}
+      if(m==='cell'){show(p.lm?cellRect(p,r):null);return;}
+      const idx=snapIdx(p,r);if(!idx.length){show(null);return;}
+      const q=dispRaw(bbox(p,idx),false);
+      if(m==='wide'){q.x=r.x;q.w=r.w;}
+      show(q);};
+    const up=async ev=>{ov.removeEventListener('pointermove',mv);ov.removeEventListener('pointerup',up);dr.remove();sv.remove();
+      const r=R();if(r.w*p.S<4)return;await makeBox(i,r,dragMode(ev));};
     ov.addEventListener('pointermove',mv);ov.addEventListener('pointerup',up);
   });
 }
-function makeBox(i,r,free){
-  const p=S.pages[i];const idx=free?[]:snapIdx(p,r);snap();
-  const box=idx.length?{id:uid(),page:i,raw:bbox(p,idx),free:false,runs:mkRuns(p,idx)}:{id:uid(),page:i,raw:r,free:true,runs:[]};
+function dragMode(ev){if(ev.altKey)return'free';if(ev.shiftKey)return'cell';if(ev.metaKey||ev.ctrlKey)return'wide';return'snap';}
+/* ---- table-cell detection from the rendered page ---- */
+async function lineMap(p){
+  if(p.lm||p.lmP)return p.lmP;
+  p.lmP=(async()=>{const k=2,vp=p.page.getViewport({scale:k});const c=document.createElement('canvas');c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);
+    const ctx=c.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+    await p.page.render({canvasContext:ctx,viewport:vp}).promise;
+    const d=ctx.getImageData(0,0,c.width,c.height).data,g=new Uint8Array(c.width*c.height);
+    for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*30+d[j+1]*59+d[j+2]*11)/100;
+    c.width=c.height=0;p.lm={k,w:Math.floor(vp.width),h:Math.floor(vp.height),g};})();
+  return p.lmP;}
+function cellRect(p,r){
+  const L=p.lm;if(!L)return r;const k=L.k,W=L.w,H=L.h,g=L.g;
+  const dark=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&g[y*W+x]<215;
+  const lite=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&g[y*W+x]<240;
+  const fracV=(x,y0,y1)=>{let n=0,t=0;y0=Math.max(0,y0);y1=Math.min(H-1,y1);for(let y=y0;y<=y1;y+=1){t++;if(dark(x,y)||dark(x-1,y)||dark(x+1,y))n++;}return t?n/t:0;};
+  const fracH=(y,x0,x1)=>{let n=0,t=0;x0=Math.max(0,x0);x1=Math.min(W-1,x1);for(let x=x0;x<=x1;x+=1){t++;if(lite(x,y)||lite(x,y-1)||lite(x,y+1))n++;}return t?n/t:0;};
+  const cy=(r.y+r.h/2)*k,half=Math.max(r.h/2,9.5)*k;
+  const y0=Math.round(cy-half),y1=Math.round(cy+half);
+  // solid line over the row, or dotted line that keeps going well beyond it
+  const vAt=x=>fracV(x,y0,y1)>=0.94||(fracV(x,y0,y1)>=0.4&&fracV(x,Math.round(cy-half*4),Math.round(cy+half*4))>=0.4);
+  let L0=null,R0=null,T0=null,B0=null;
+  for(let x=Math.round(r.x*k);x>=Math.max(0,r.x*k-260*k);x--)if(vAt(x)){L0=x;break;}
+  for(let x=Math.round((r.x+r.w)*k);x<=Math.min(W-1,(r.x+r.w)*k+260*k);x++)if(vAt(x)){R0=x;break;}
+  const xa=Math.round((L0!=null?L0+3:r.x*k)),xb=Math.round((R0!=null?R0-3:(r.x+r.w)*k));
+  const hx0=Math.round(xa+Math.max(2,(xb-xa)*0.08)),hx1=Math.round(xb-Math.max(2,(xb-xa)*0.08));
+  const hAt=y=>fracH(y,hx0,hx1)>=0.94||(fracH(y,hx0,hx1)>=0.4&&fracH(y,hx0-Math.round(half*3),hx1+Math.round(half*3))>=0.4);
+  for(let y=Math.round(r.y*k);y>=Math.max(0,r.y*k-400*k);y--)if(hAt(y)){T0=y;break;}
+  for(let y=Math.round((r.y+r.h)*k);y<=Math.min(H-1,(r.y+r.h)*k+400*k);y++)if(hAt(y)){B0=y;break;}
+  const ins=1.3;
+  const x=L0!=null?L0/k+ins:r.x,xe=R0!=null?R0/k-ins:r.x+r.w,y=T0!=null?T0/k+ins:r.y,ye=B0!=null?B0/k-ins:r.y+r.h;
+  return{x,y,w:Math.max(2,xe-x),h:Math.max(2,ye-y)};}
+async function makeBox(i,r,mode){
+  const p=S.pages[i];
+  if(mode==='cell'){await lineMap(p);const c=cellRect(p,r);snap();
+    const idx=snapIdx(p,c);const box={id:uid(),page:i,raw:c,free:true,cell:true,fill:'#ffffff',runs:idx.length?mkRuns(p,idx):[]};
+    if(idx.length){const tb=bbox(p,idx);box.toff={dx:c.x-tb.x,dy:c.y-tb.y};}
+    S.boxes.push(box);save();drawOv(i);return;}
+  const idx=mode==='free'?[]:snapIdx(p,r);snap();
+  let box;
+  if(idx.length){box={id:uid(),page:i,raw:bbox(p,idx),free:false,runs:mkRuns(p,idx)};
+    if(mode==='wide'){const q=dispRaw(box.raw,false);box.adj={dx:r.x-q.x,dy:0,dw:r.w-q.w,dh:0};}}
+  else{const H=S.lineH||12,rr=mode==='wide'?{x:r.x,y:r.y+r.h/2-H/2,w:r.w,h:H}:r;box={id:uid(),page:i,raw:rr,free:true,runs:[]};}
   S.boxes.push(box);save();drawOv(i);}
 function nudge(id,key,shift){
   const b=S.boxes.find(o=>o.id===id);if(!b)return;const p=S.pages[b.page];
@@ -780,8 +834,8 @@ async function buildPdf(){
     toast('PDF 만드는 중…',0);
     const L=PDFLib;const doc=await L.PDFDocument.load(S.bytes,{ignoreEncryption:true});const pages=doc.getPages();
     const col=hex(S.bcol);
-    for(const b of S.boxes){const pg=pages[b.page];if(!pg)continue;const q=toPdf(b.page,disp(b));const rad=Math.min(3,q.h/3,q.w/3);
-      pg.pushOperators(L.pushGraphicsState(),L.setFillingRgbColor(...col),...rrOps(L,q.x,q.y,q.w,q.h,rad),L.fill(),L.popGraphicsState());}
+    for(const b of S.boxes){const pg=pages[b.page];if(!pg)continue;const q=toPdf(b.page,disp(b));const rad=b.cell?0:Math.min(3,q.h/3,q.w/3);
+      pg.pushOperators(L.pushGraphicsState(),L.setFillingRgbColor(...(b.fill?hex(b.fill):col)),...rrOps(L,q.x,q.y,q.w,q.h,rad),L.fill(),L.popGraphicsState());}
     const emb={};
     if(S.texts.some(t=>t.text.trim())){doc.registerFontkit(fontkit);toast('글자용 폰트 넣는 중…',0);
       for(const k of new Set(S.texts.filter(t=>t.text.trim()).map(t=>t.font||'pl'))){
