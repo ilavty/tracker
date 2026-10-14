@@ -141,6 +141,7 @@ body.dragover #empty{background:var(--sky2)}
     <div class="zoom"><button id="zOut" title="축소 (⌘−)">−</button><button id="zVal" title="화면 너비에 맞추기 (⌘0)">100%</button><button id="zIn" title="확대 (⌘+)">+</button></div>
     <button class="btn" id="undo" title="되돌리기 (⌘Z)">↶</button>
     <button class="btn warn hidden" id="lostBtn"></button>
+    <button class="btn" id="share" title="공유 창에서 굿노트 선택">굿노트로 보내기</button>
     <button class="btn main" id="export">PDF 저장</button>
   </div>
   <div id="tabs" class="hidden"></div>
@@ -741,12 +742,16 @@ async function noteImg(t){
   c.width=Math.ceil(w*Z);c.height=Math.ceil(h*Z);ctx.font=f;ctx.fillStyle=t.color||S.tcol;ctx.textBaseline='middle';
   lines.forEach((l,k)=>ctx.fillText(l,0,(k+.5)*lh*Z));
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));return{bytes:new Uint8Array(await blob.arrayBuffer()),w,h};}
-$('#export').onclick=async()=>{
-  if(!S.bytes){toast('먼저 PDF를 열어줘요');return;}
+function outName(){return S.name.replace(/\.pdf$/i,'')+'_빈칸.pdf';}
+function workSig(){return JSON.stringify([S.name,S.boxes,cleanTexts(S.texts),S.bcol,S.pad,S.lineH]);}
+function preCheck(){
+  if(!S.bytes){toast('먼저 PDF를 열어줘요');return false;}
   if(document.activeElement)document.activeElement.blur();
   const lost=S.boxes.filter(b=>b.lost).length+S.texts.filter(t=>t.lost).length;
-  if(lost&&!confirm(`확인 필요 항목이 ${lost}개 있어요. 빨간 점선 자리 그대로 넣고 저장할까요?`))return;
-  try{
+  return !(lost&&!confirm(`확인 필요 항목이 ${lost}개 있어요. 빨간 점선 자리 그대로 넣을까요?`));}
+let built=null;
+async function buildPdf(){
+  const sig=workSig();if(built&&built.sig===sig)return built.bytes;
     toast('PDF 만드는 중…',0);
     const L=PDFLib;const doc=await L.PDFDocument.load(S.bytes,{ignoreEncryption:true});const pages=doc.getPages();
     const col=hex(S.bcol);
@@ -764,11 +769,26 @@ $('#export').onclick=async()=>{
       const im=await noteImg(t);if(!im)continue;
       const img=await doc.embedPng(im.bytes);const q=toPdf(t.page,{x:t.x,y:t.y,w:im.w,h:im.h});
       pg.drawImage(img,{x:q.x,y:q.y,width:q.w,height:q.h});}
-    const out=await doc.save();
+    const out=await doc.save();built={sig,bytes:out};return out;}
+$('#export').onclick=async()=>{
+  if(!preCheck())return;
+  try{const out=await buildPdf();
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/pdf'}));
-    a.download=S.name.replace(/\.pdf$/i,'')+'_빈칸.pdf';document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('저장 완료! 굿노트로 보내면 돼요 ✏️');
+    a.download=outName();document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('저장 완료! ✏️');
   }catch(e){console.error(e);toast('저장 실패: '+e.message,6000);}
+};
+$('#share').onclick=async()=>{
+  if(!preCheck())return;
+  const ready=built&&built.sig===workSig();
+  try{
+    const out=await buildPdf();const f=new File([out],outName(),{type:'application/pdf'});
+    if(!navigator.canShare||!navigator.canShare({files:[f]})){toast('이 브라우저는 공유가 안 돼서 PDF 저장으로 받을게요',3500);$('#export').click();return;}
+    try{await navigator.share({files:[f],title:outName()});toast('굿노트에서 받으면 끝! ✏️',3000);}
+    catch(e){if(e.name==='AbortError')return;
+      if(!ready&&e.name==='NotAllowedError'){toast('준비 완료! 굿노트로 보내기를 한 번 더 눌러줘요',5000);return;}
+      throw e;}
+  }catch(e){console.error(e);toast('보내기 실패: '+e.message,6000);}
 };
 restoreSession();
 </script>
