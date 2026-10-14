@@ -45,7 +45,9 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:4px}
 #tabs{flex-basis:100%;display:flex;gap:6px;overflow-x:auto;padding-top:2px;margin-bottom:-12px}
 .tab{display:flex;align-items:center;gap:6px;max-width:220px;padding:8px 10px 8px 14px;border:1px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:#f3efea;font-size:12px;cursor:pointer;white-space:nowrap;color:#777}
 .tab .tname{overflow:hidden;text-overflow:ellipsis}
-.tab.on{background:var(--bg);color:var(--ink);font-weight:700;border-color:var(--sky);box-shadow:inset 0 3px 0 var(--sky)}
+.tab.on{background:#fff;color:var(--ink);font-weight:700;opacity:1;border-color:var(--line);box-shadow:0 -3px 10px rgba(60,40,20,.10)}
+.tab:not(.on):not(.add){opacity:.55}
+.tab:not(.on):not(.add):hover{opacity:.85}
 .tab .dot{width:7px;height:7px;border-radius:50%;background:var(--brown);flex:none}
 .tab .tx{border:0;background:none;font-size:14px;line-height:1;padding:0 2px;cursor:pointer;color:#999}
 .tab .tx:hover{color:var(--ink)}
@@ -192,18 +194,18 @@ function stash(){if(!S.docId)return;const d=docs.find(x=>x.id===S.docId);if(!d)r
 function activate(d){if(!d||d.id===S.docId)return;stash();DOCF.forEach(k=>S[k]=d[k]);S.docId=d.id;
   [S.view,S.tocEl,S.thEl].forEach(e=>e&&e.classList.remove('hidden'));$('#fname').textContent=S.name;
   const was=S.avail;layout();if(was!==S.avail)S.pages.forEach(p=>{p.rendered=false;S.io.unobserve(p.el);S.io.observe(p.el);});
-  window.scrollTo(0,d.scroll||0);renderTabs();updLost();}
+  window.scrollTo(0,d.scroll||0);renderTabs();updLost();saveSession();}
 function closeDoc(d,force,noSwitch){
   const isCur=d.id===S.docId,name=isCur?S.name:d.name,dirty=isCur?S.dirty:d.dirty;
   if(!force&&dirty&&!confirm(`'${name}' 작업이 아직 클라우드에 저장 안 됐어요. 그래도 닫을까요?`))return;
   if(isCur)stash();
   [d.view,d.tocEl,d.thEl].forEach(e=>e&&e.remove());(d.pages||[]).forEach(p=>p.url&&URL.revokeObjectURL(p.url));
   if(d.io)d.io.disconnect();if(d.pio)d.pio.disconnect();
-  docs=docs.filter(x=>x!==d);
+  docs=docs.filter(x=>x!==d);if(!noSwitch&&!docs.some(x=>x.name===name))IDB.del('files',name);
   if(isCur){S.docId=null;DOCF.forEach(k=>S[k]=undefined);S.pages=[];S.boxes=[];S.texts=[];S.hist=[];
     if(!noSwitch){if(docs.length)activate(docs[docs.length-1]);
       else{$('#empty').classList.remove('hidden');$('#side').classList.add('hidden');$('#fname').textContent='';updLost();}}}
-  renderTabs();}
+  renderTabs();saveSession();}
 function renderTabs(){const T=$('#tabs');T.innerHTML='';T.classList.toggle('hidden',!docs.length);
   docs.forEach(d=>{const cur=d.id===S.docId,name=cur?S.name:d.name,dirty=cur?S.dirty:d.dirty;
     const el=document.createElement('div');el.className='tab'+(cur?' on':'');el.title=name;
@@ -213,6 +215,26 @@ function renderTabs(){const T=$('#tabs');T.innerHTML='';T.classList.toggle('hidd
     add.innerHTML='+<input type="file" accept="application/pdf,.pdf" multiple hidden>';
     add.querySelector('input').onchange=async e=>{for(const f of [...e.target.files])await openFile(f);};T.appendChild(add);}
   setHH();}
+/* ---------- open-tab memory (this device) ---------- */
+const IDB={db:null,
+  open(){if(this.db)return this.db;this.db=new Promise((res,rej)=>{try{const r=indexedDB.open('blank_maker',1);
+    r.onupgradeneeded=()=>{r.result.createObjectStore('files');r.result.createObjectStore('meta');};
+    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});return this.db;},
+  async op(store,mode,fn){try{const db=await this.open();return await new Promise((res,rej)=>{const tx=db.transaction(store,mode);const q=fn(tx.objectStore(store));
+    tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);});}catch(e){console.warn('idb',e);return null;}},
+  put(store,k,v){return this.op(store,'readwrite',s=>s.put(v,k));},
+  get(store,k){return this.op(store,'readonly',s=>s.get(k));},
+  del(store,k){return this.op(store,'readwrite',s=>s.delete(k));}};
+let restoring=false;
+function saveSession(){if(restoring)return;IDB.put('meta','session',{names:docs.map(d=>d.id===S.docId?S.name:d.name),active:S.name||null});}
+async function restoreSession(){
+  const ss=await IDB.get('meta','session');if(!ss||!ss.names||!ss.names.length)return;
+  restoring=true;toast('열려있던 PDF 불러오는 중…',0);
+  try{for(const n of ss.names){const b=await IDB.get('files',n);if(b)await openFile(new File([b],n,{type:'application/pdf'}),true);}
+    const a=docs.find(d=>(d.id===S.docId?S.name:d.name)===ss.active);if(a)activate(a);}
+  finally{restoring=false;saveSession();}
+  if(docs.length)toast(`이어서 열었어요 · ${docs.length}개`,2500);}
+
 /* ---------- cloud sync (Firebase) ---------- */
 let fdb=null;
 try{if(!firebase.apps.length)firebase.initializeApp({apiKey:"AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o",projectId:"time-8d30b",databaseURL:"https://tracker-d3a39-default-rtdb.firebaseio.com/"});fdb=firebase.database();}catch(e){console.warn(e);}
@@ -372,7 +394,7 @@ $('#workFile').onchange=e=>{if(e.target.files[0])loadWork(e.target.files[0]);e.t
 window.addEventListener('beforeunload',e=>{if(S.dirty||docs.some(d=>d.id!==S.docId&&d.dirty)){e.preventDefault();e.returnValue='';}});
 
 /* ---------- open ---------- */
-async function openFile(file){
+async function openFile(file,quiet){
   if(!file)return;
   if(!/\.pdf$/i.test(file.name)&&file.type!=='application/pdf'){toast('PDF 파일만 열 수 있어요');return;}
   try{
@@ -400,7 +422,7 @@ async function openFile(file){
     let data=carried||PEND[S.name];delete PEND[S.name];
     if(!data){toast('저장된 작업 확인 중…',0);const loc=getSaved(S.name),rem=await cloudGet(S.name);
       data=(rem&&(!loc||(rem.at||0)>=(loc.at||0)))?rem:loc;}
-    if(!data){const base=n=>n.replace(/\.pdf$/i,'').replace(/[\s_\-()]*(v\d+|수정|최종|final|copy|사본|\d+)?$/i,'').toLowerCase();
+    if(!data&&!quiet){const base=n=>n.replace(/\.pdf$/i,'').replace(/[\s_\-()]*(v\d+|수정|최종|final|copy|사본|\d+)?$/i,'').toLowerCase();
       const me=base(S.name);const others=[...new Set([...listSaved(),...await cloudNames()])].filter(n=>n!==S.name&&!docs.some(d=>d.name===n)).filter(n=>{const o=base(n);let k=0;while(k<o.length&&o[k]===me[k])k++;return k>=4||(o.length>=2&&(me.includes(o)||o.includes(me)));});
       if(others.length)data=await pickPrev(others);}
     S.boxes=(data&&data.boxes)||[];S.texts=(data&&data.texts)||[];
@@ -409,6 +431,8 @@ async function openFile(file){
       S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);}
     $('#empty').classList.add('hidden');$('#fname').textContent=S.name;
     buildPages();save();buildSide();renderTabs();
+    if(!restoring)IDB.put('files',S.name,new Blob([buf],{type:'application/pdf'}));saveSession();
+    if(quiet)return;
     if(rep)toast(`그대로 ${rep.same} · 자리 옮김 ${rep.moved} · 확인 필요 ${rep.lost}`,6000);
     else toast(`드래그해서 빈칸 뚫기 시작! (글자 ${pages.reduce((n,p)=>n+p.map.length,0)}자 인식)`,4000);
   }catch(e){console.error(e);toast('PDF를 못 읽었어요: '+e.message,6000);}
@@ -544,16 +568,19 @@ $('#zIn').onclick=()=>setZoom((S.zoom||1)*1.25);
 $('#zOut').onclick=()=>setZoom((S.zoom||1)/1.25);
 $('#zVal').onclick=()=>setZoom(1);
 $('#zVal').textContent=Math.round((S.zoom||1)*100)+'%';
+addEventListener('message',e=>{const d=e.data;if(!d||d.type!=='bmZoom')return;
+  if(d.dir>0)setZoom((S.zoom||1)*1.25);else if(d.dir<0)setZoom((S.zoom||1)/1.25);else setZoom(1);});
 // trackpad pinch (Chrome) / ⌃+wheel
-window.addEventListener('wheel',e=>{if(!e.ctrlKey||!S.pages||!S.pages.length)return;e.preventDefault();
+let inGesture=false;
+window.addEventListener('wheel',e=>{if(!e.ctrlKey||!S.pages||!S.pages.length)return;e.preventDefault();if(inGesture)return;
   const z=(S.zoom||1)*Math.exp(-e.deltaY*.01),cx=e.clientX,cy=e.clientY;
   if(zraf)cancelAnimationFrame(zraf);zraf=requestAnimationFrame(()=>{zraf=null;setZoom(z,cx,cy);});},{passive:false});
 // Safari trackpad / iPad pinch
 let gz=1;
-document.addEventListener('gesturestart',e=>{if(!S.pages||!S.pages.length)return;e.preventDefault();gz=S.zoom||1;},{passive:false});
+document.addEventListener('gesturestart',e=>{if(!S.pages||!S.pages.length)return;e.preventDefault();inGesture=true;gz=S.zoom||1;},{passive:false});
 document.addEventListener('gesturechange',e=>{if(!S.pages||!S.pages.length)return;e.preventDefault();const z=gz*e.scale,cx=e.clientX,cy=e.clientY;
   if(zraf)cancelAnimationFrame(zraf);zraf=requestAnimationFrame(()=>{zraf=null;setZoom(z,cx,cy);});},{passive:false});
-document.addEventListener('gestureend',e=>{e.preventDefault();},{passive:false});
+document.addEventListener('gestureend',e=>{e.preventDefault();inGesture=false;},{passive:false});
 
 function drawAll(){S.pages.forEach((_,i)=>drawOv(i));updLost();}
 function drawOv(i){
@@ -672,9 +699,9 @@ function setMode(m){S.mode=m;document.body.classList.toggle('text',m==='text');
   document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x.dataset.m===m));}
 window.addEventListener('keydown',e=>{
   if(e.metaKey||e.ctrlKey){
-    if(e.key==='='||e.key==='+'||e.code==='NumpadAdd'){e.preventDefault();setZoom((S.zoom||1)*1.25);return;}
-    if(e.key==='-'||e.key==='_'||e.code==='NumpadSubtract'){e.preventDefault();setZoom((S.zoom||1)/1.25);return;}
-    if(e.key==='0'){e.preventDefault();setZoom(1);return;}}
+    if(e.key==='='||e.key==='+'||e.code==='Equal'||e.code==='NumpadAdd'){e.preventDefault();setZoom((S.zoom||1)*1.25);return;}
+    if(e.key==='-'||e.key==='_'||e.key==='−'||e.code==='Minus'||e.code==='NumpadSubtract'){e.preventDefault();setZoom((S.zoom||1)/1.25);return;}
+    if(e.key==='0'||e.code==='Digit0'){e.preventDefault();setZoom(1);return;}}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(document.activeElement)document.activeElement.blur();saveWork();return;}
   const ed=document.activeElement&&(document.activeElement.isContentEditable||/INPUT|SELECT/.test(document.activeElement.tagName));
   if(ed)return;
@@ -683,7 +710,7 @@ window.addEventListener('keydown',e=>{
   else if(S.sel&&/^Arrow/.test(e.key)){e.preventDefault();nudge(S.sel,e.key,e.shiftKey);}
   else if(e.key==='Escape')select(null);
   else if(!e.metaKey&&!e.ctrlKey&&(e.key==='='||e.key==='+'))setZoom((S.zoom||1)*1.25);
-  else if(!e.metaKey&&!e.ctrlKey&&e.key==='-')setZoom((S.zoom||1)/1.25);
+  else if(!e.metaKey&&!e.ctrlKey&&(e.key==='-'||e.code==='Minus'))setZoom((S.zoom||1)/1.25);
   else if(!e.metaKey&&!e.ctrlKey&&e.key==='0')setZoom(1);
   else if(e.key==='b'||e.key==='B')setMode('box');
   else if(e.key==='t'||e.key==='T')setMode('text');});
@@ -742,6 +769,7 @@ $('#export').onclick=async()=>{
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('저장 완료! 굿노트로 보내면 돼요 ✏️');
   }catch(e){console.error(e);toast('저장 실패: '+e.message,6000);}
 };
+restoreSession();
 </script>
 </body>
 </html>
