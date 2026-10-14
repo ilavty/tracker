@@ -44,6 +44,7 @@ body.full .stage{position:fixed;inset:0;height:auto;z-index:50}
     <button class="tab" data-k="il">국제법</button>
     <button class="tab" data-k="case">판례</button>
     <button class="tab" data-k="psat">PSAT</button>
+    <button class="tab" data-k="blank">빈칸</button>
   </nav>
   <div class="spacer"></div>
 </div>
@@ -52,6 +53,7 @@ body.full .stage{position:fixed;inset:0;height:auto;z-index:50}
   <iframe data-k="il" data-src="intllaw_analysis.html" title="국제법"></iframe>
   <iframe data-k="case" data-src="intllaw_cases.html" title="판례"></iframe>
   <iframe data-k="psat" data-src="psat_print.html" title="PSAT"></iframe>
+  <iframe data-k="blank" data-src="blank_maker.html" title="빈칸"></iframe>
 </div>
 <script>
 addEventListener("message",e=>{if(e.data&&e.data.type==="dbFull")document.body.classList.toggle("full",!!e.data.on)});
@@ -67,7 +69,7 @@ function show(k){
 }
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.k)});
 let last='ip';try{last=localStorage.getItem(KEY)||'ip'}catch(e){}
-show(['ip','il','case','psat'].includes(last)?last:'ip');
+show(['ip','il','case','psat','blank'].includes(last)?last:'ip');
 </script>
 </body>
 </html>
