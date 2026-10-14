@@ -67,6 +67,7 @@ window.addEventListener("keydown",e=>{
   else if(e.key==='0'||e.code==='Digit0')dir=0;
   if(dir===null){
     if(!e.shiftKey&&(e.key.toLowerCase()==='z'||e.code==='KeyZ')){e.preventDefault();f.contentWindow.postMessage({type:'bmUndo'},'*');}
+    else if(!e.altKey&&(e.code==='BracketRight'||e.code==='BracketLeft'||'[]{}'.includes(e.key))){e.preventDefault();f.contentWindow.postMessage({type:'bmLayer',dir:(e.code==='BracketRight'||e.key===']'||e.key==='}')?1:-1},'*');}
     return;}
   e.preventDefault();f.contentWindow.postMessage({type:'bmZoom',dir},'*');},true);
 const KEY='db_last_tab';

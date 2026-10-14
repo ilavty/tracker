@@ -110,7 +110,9 @@ body.text .ov{cursor:text}
 .pno{position:absolute;right:0;bottom:-19px;font-size:11px;color:#aaa}
 .blank{position:absolute;background:var(--bcol);cursor:move}
 .blank.cell{background:#fff}
-.pimg{position:absolute;cursor:move;z-index:1}
+.pimg{position:absolute;cursor:move}
+.pimg:not(.sel){pointer-events:none}
+.blank.sel,.pimg.sel{z-index:9000!important}
 .pimg img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
 .pimg .ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:11px;color:#999;background:#f5f2ee}
 .pimg.sel{outline:2px solid var(--sky);outline-offset:1px}
@@ -136,8 +138,8 @@ body.text .ov{cursor:text}
 .x{display:none;position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:12px;line-height:18px;padding:0;cursor:pointer;z-index:3;font-family:sans-serif}
 .blank.sel .x,.note:hover .x{display:block}
 .blank.sel .x{top:-22px;right:-4px}
-.drag{position:absolute;border:1.5px dashed var(--sky);background:rgba(140,200,236,.10);pointer-events:none}
-.snapv{position:absolute;background:rgba(140,200,236,.38);border-radius:3px;pointer-events:none}
+.drag{position:absolute;z-index:9999;border:1.5px dashed var(--sky);background:rgba(140,200,236,.10);pointer-events:none}
+.snapv{position:absolute;z-index:9998;background:rgba(140,200,236,.38);border-radius:3px;pointer-events:none}
 .note{position:absolute;line-height:1.3;white-space:pre}
 .ctl select{font:inherit;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:4px 6px;background:#fff;color:var(--ink)}
 .note.lost{outline:1.5px dashed #d9534f;outline-offset:2px}
@@ -180,7 +182,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-5</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-6</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -188,7 +190,7 @@ body.dragover #empty{background:var(--sky2)}
   </div>
   <div id="tabs" class="hidden"></div>
 </header>
-<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸을 <b>⌥+끌기</b> 복제 · <b>⌘V</b> 이미지 붙여넣기 (파일 끌어놓기도 돼요) · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
+<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸을 <b>⌥+끌기</b> 복제 · <b>⌘V</b> 이미지 붙여넣기 (파일 끌어놓기도 돼요) · 이미지는 <b>클릭</b>해서 선택, 그 위에 드래그하면 빈칸 · <b>⌘]</b> 맨 앞 / <b>⌘[</b> 맨 뒤 · <b>⇧+끌기</b> 수평·수직 이동 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
 <div id="empty"><h2>PDF를 여기로 끌어오기</h2><p>또는 눌러서 열기<br>빈칸은 자동으로 저장돼서 맥·아이패드 어디서 열어도 이어져요<br>수정한 파일을 다시 열면 빈칸 위치를 알아서 다시 잡아줘요</p></div>
 <div id="wrap">
 <aside id="side" class="hidden">
@@ -307,6 +309,7 @@ function cloudPush(name,boxes,texts,imgs){
         renderTabs();setSync('☁ 저장됨','ok');})
       .catch(e=>{console.warn(e);setSync('저장 실패 · 이 기기에만 저장','off');});},800);}
 const uid=()=>Math.random().toString(36).slice(2,10);
+const ZDEF={img:0,box:1,note:2};const zOf=(o,k)=>o.z!=null?o.z:ZDEF[k];
 /* ---------- images ---------- */
 const IMGSRC={};
 async function loadImgSrcs(imgs){
@@ -682,7 +685,7 @@ function drawOv(i){
   ov.querySelectorAll('.blank,.note,.pimg').forEach(e=>e.remove());
   (S.imgs||[]).filter(m=>m.page===i).forEach(m=>{
     const d=document.createElement('div');d.className='pimg'+(m.lost?' lost':'')+(S.selImg===m.id?' sel':'');d.dataset.id=m.id;
-    Object.assign(d.style,{left:m.x*s+'px',top:m.y*s+'px',width:m.w*s+'px',height:m.h*s+'px'});
+    Object.assign(d.style,{left:m.x*s+'px',top:m.y*s+'px',width:m.w*s+'px',height:m.h*s+'px',zIndex:100+zOf(m,'img')});
     d.innerHTML=(IMGSRC[m.id]?`<img src="${IMGSRC[m.id]}" draggable="false">`:'<span class="ph">이미지 불러오는 중…</span>')+'<button class="x" title="삭제">×</button>'+['nw','ne','sw','se'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
       if(e.target.classList.contains('x')){removeImg(m.id);return;}
@@ -690,7 +693,8 @@ function drawOv(i){
       const hd=e.target.dataset.h||'m';let tm=m,el=d;const dup=e.altKey&&hd==='m';
       select(null);if(!dup)selectImg(m.id);
       const sx=e.clientX,sy=e.clientY,ar=m.h/m.w;let o=null,mvd=false;
-      const mv=ev=>{const dx=(ev.clientX-sx)/s,dy=(ev.clientY-sy)/s;
+      const mv=ev=>{let dx=(ev.clientX-sx)/s,dy=(ev.clientY-sy)/s;
+        if(hd==='m'&&ev.shiftKey){if(Math.abs(dx)>Math.abs(dy))dy=0;else dx=0;}
         if(!mvd){if(Math.hypot(dx*s,dy*s)<3)return;snap();mvd=true;
           if(dup){tm={...m,id:uid()};IMGSRC[tm.id]=IMGSRC[m.id];IDB.put('meta','img:'+tm.id,IMGSRC[m.id]);S.imgs.push(tm);drawOv(i);el=ov.querySelector(`.pimg[data-id="${tm.id}"]`);selectImg(tm.id);}
           o={x:tm.x,y:tm.y,w:tm.w,h:tm.h};}
@@ -704,7 +708,7 @@ function drawOv(i){
     ov.appendChild(d);});
   S.boxes.filter(b=>b.page===i).forEach(b=>{
     const r=disp(b),d=document.createElement('div');
-    d.className='blank'+(b.cell?' cell':'')+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;
+    d.className='blank'+(b.cell?' cell':'')+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;d.style.zIndex=100+zOf(b,'box');
     Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px',borderRadius:b.cell?'0':Math.min(3,r.h/3,r.w/3)*s+'px'});
     d.innerHTML='<button class="x" title="삭제">×</button>'+['n','s','e','w','ne','nw','se','sw'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
@@ -714,7 +718,8 @@ function drawOv(i){
       let tb=b,el=d;const dup=e.altKey&&hd==='m';
       if(!dup){select(b.id);}
       const sx=e.clientX,sy=e.clientY;let o=null,mvd=false;
-      const mv=ev=>{const dx=(ev.clientX-sx)/s,dy=(ev.clientY-sy)/s;
+      const mv=ev=>{let dx=(ev.clientX-sx)/s,dy=(ev.clientY-sy)/s;
+        if(hd==='m'&&ev.shiftKey){if(Math.abs(dx)>Math.abs(dy))dy=0;else dx=0;}
         if(!mvd){if(Math.hypot(dx*s,dy*s)<3)return;snap();mvd=true;
           if(dup){// ⌥+drag: leave the original, move a copy
             const r0=disp(b);tb={id:uid(),page:b.page,raw:{x:r0.x,y:r0.y,w:r0.w,h:r0.h},free:true,runs:[]};
@@ -732,7 +737,7 @@ function drawOv(i){
       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);});
     ov.appendChild(d);});
   S.texts.filter(t=>t.page===i).forEach(t=>{
-    const d=document.createElement('div');d.className='note'+(t.lost?' lost':'');
+    const d=document.createElement('div');d.className='note'+(t.lost?' lost':'');d.style.zIndex=100+zOf(t,'note');
     Object.assign(d.style,{left:t.x*s+'px',top:t.y*s+'px',fontSize:t.size*s+'px',color:t.color||S.tcol,fontFamily:fcss(t.font||'pl')});
     const h=document.createElement('span');h.className='nh';h.textContent='⠿';h.title='끌어서 옮기기';
     const x=document.createElement('button');x.className='x';x.textContent='×';
@@ -798,7 +803,10 @@ function bindOverlay(i){
       if(m==='wide'){q.x=r.x;q.w=r.w;}
       show(q);};
     const up=async ev=>{ov.removeEventListener('pointermove',mv);ov.removeEventListener('pointerup',up);dr.remove();sv.remove();
-      const r=R();if(r.w*p.S<4)return;await makeBox(i,r,dragMode(ev));};
+      const r=R();
+      if(r.w*p.S<4){const hit=(S.imgs||[]).filter(m=>m.page===i&&a.x>=m.x&&a.x<=m.x+m.w&&a.y>=m.y&&a.y<=m.y+m.h).sort((u,v)=>zOf(v,'img')-zOf(u,'img'))[0];
+        if(hit){selectImg(hit.id);}return;}
+      await makeBox(i,r,dragMode(ev));};
     ov.addEventListener('pointermove',mv);ov.addEventListener('pointerup',up);
   });
 }
@@ -957,17 +965,20 @@ async function buildPdf(){
     toast('PDF 만드는 중…',0);
     const L=PDFLib;const doc=await L.PDFDocument.load(S.bytes,{ignoreEncryption:true});const pages=doc.getPages();
     const col=hex(S.bcol);
-    for(const b of S.boxes){const pg=pages[b.page];if(!pg)continue;const q=toPdf(b.page,disp(b));const rad=b.cell?0:Math.min(3,q.h/3,q.w/3);
-      pg.pushOperators(L.pushGraphicsState(),L.setFillingRgbColor(...(b.fill?hex(b.fill):col)),...rrOps(L,q.x,q.y,q.w,q.h,rad),L.fill(),L.popGraphicsState());}
     const emb={};
     if(S.texts.some(t=>t.text.trim())){doc.registerFontkit(fontkit);toast('글자용 폰트 넣는 중…',0);
       for(const k of new Set(S.texts.filter(t=>t.text.trim()).map(t=>t.font||'pl'))){
         try{emb[k]=await doc.embedFont(await fontBytes(k),{subset:false});}catch(e){console.warn(e);}}}
-    for(const m of S.imgs||[]){const pg=pages[m.page];const src=IMGSRC[m.id];if(!pg||!src)continue;
-      const bytes=Uint8Array.from(atob(src.split(',')[1]),c=>c.charCodeAt(0));
-      const img=/^data:image\/png/.test(src)?await doc.embedPng(bytes):await doc.embedJpg(bytes);
-      const q=toPdf(m.page,{x:m.x,y:m.y,w:m.w,h:m.h});pg.drawImage(img,{x:q.x,y:q.y,width:q.w,height:q.h});}
-    for(const t of S.texts){const pg=pages[t.page];if(!pg||!t.text.trim())continue;const kf=emb[t.font||'pl'];
+    const items=[...S.boxes.map(o=>({k:'box',o,z:zOf(o,'box')})),...(S.imgs||[]).map(o=>({k:'img',o,z:zOf(o,'img')})),...S.texts.map(o=>({k:'note',o,z:zOf(o,'note')}))]
+      .map((it,i)=>({...it,i})).sort((a,b)=>a.z-b.z||a.i-b.i);
+    for(const it of items){const o=it.o,pg=pages[o.page];if(!pg)continue;
+      if(it.k==='box'){const b=o,q=toPdf(b.page,disp(b));const rad=b.cell?0:Math.min(3,q.h/3,q.w/3);
+        pg.pushOperators(L.pushGraphicsState(),L.setFillingRgbColor(...(b.fill?hex(b.fill):col)),...rrOps(L,q.x,q.y,q.w,q.h,rad),L.fill(),L.popGraphicsState());continue;}
+      if(it.k==='img'){const m=o,src=IMGSRC[m.id];if(!src)continue;
+        const bytes=Uint8Array.from(atob(src.split(',')[1]),c=>c.charCodeAt(0));
+        const img=/^data:image\/png/.test(src)?await doc.embedPng(bytes):await doc.embedJpg(bytes);
+        const q=toPdf(m.page,{x:m.x,y:m.y,w:m.w,h:m.h});pg.drawImage(img,{x:q.x,y:q.y,width:q.w,height:q.h});continue;}
+      const t=o;if(!t.text.trim())continue;const kf=emb[t.font||'pl'];
       if(kf){const lh=t.size*1.3,[r,g,bl]=hex(t.color||S.tcol),vp=S.pages[t.page].vp;
         t.text.split('\n').forEach((line,k)=>{if(!line)return;const by=t.y+lh*k+(lh-t.size)/2+t.size*.86;
           const[px,py]=vp.convertToPdfPoint(t.x,by);pg.drawText(line,{x:px,y:py,size:t.size,font:kf,color:L.rgb(r,g,bl)});});
@@ -1018,6 +1029,21 @@ window.addEventListener('keydown',e=>{
   if(ed||e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==='f'||e.key==='F'||e.key==='ㄹ'){e.preventDefault();$('#fsBtn').click();}
   else if(e.key==='Escape'&&document.body.classList.contains('full')&&!fsEl())setFull(false);});
+function layer(dir){
+  let o=null,k=null;
+  if(S.selImg){o=(S.imgs||[]).find(m=>m.id===S.selImg);k='img';}
+  else if(S.sel){o=S.boxes.find(b=>b.id===S.sel);k='box';}
+  if(!o){toast('먼저 빈칸이나 이미지를 클릭해서 골라줘요');return;}
+  const pg=o.page,all=[...S.boxes.filter(b=>b.page===pg).map(b=>zOf(b,'box')),...(S.imgs||[]).filter(m=>m.page===pg).map(m=>zOf(m,'img')),...S.texts.filter(t=>t.page===pg).map(t=>zOf(t,'note'))];
+  snap();o.z=dir>0?Math.max(...all)+1:Math.min(...all)-1;save();drawOv(pg);
+  if(k==='img')selectImg(o.id);else select(o.id);
+  toast(dir>0?'맨 앞으로':'맨 뒤로',1200);}
+addEventListener('message',e=>{const d=e.data;if(d&&d.type==='bmLayer')layer(d.dir);});
+window.addEventListener('keydown',e=>{
+  if(!(e.metaKey||e.ctrlKey)||e.altKey)return;
+  const dir=(e.code==='BracketRight'||e.key===']'||e.key==='}')?1:(e.code==='BracketLeft'||e.key==='['||e.key==='{')?-1:0;if(!dir)return;
+  const ae=document.activeElement;if(ae&&(ae.isContentEditable||/INPUT|TEXTAREA/.test(ae.tagName)&&/^(text|number|search)$/.test(ae.type||'text')))return;
+  e.preventDefault();e.stopImmediatePropagation();layer(dir);},true);
 // ⌘Z: catch as early as possible (capture phase) so Safari never sees it
 window.addEventListener('keydown',e=>{
   if(!(e.metaKey||e.ctrlKey)||e.shiftKey||e.altKey)return;
