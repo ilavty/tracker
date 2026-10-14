@@ -90,13 +90,13 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 
 /* ───── 인쇄 페이지 ───── */
 .page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);font-family:'Paperlogy','GmarketSans',sans-serif;color:#000}
-.phead{position:absolute;left:8mm;right:8mm;top:10mm;height:6.8mm;display:flex;align-items:flex-start;gap:3mm;border-bottom:.6mm solid #000}
+.phead{position:absolute;left:8mm;right:8mm;top:10mm;height:7.2mm;display:flex;align-items:flex-start;gap:3mm;border-bottom:.35mm solid #000}
 .phead .tbox{border:.25mm solid #000;height:5.6mm;display:flex;align-items:center;justify-content:center;font-size:9.5pt;font-weight:600;white-space:nowrap;overflow:hidden}
 .phead .t1{width:72mm}
 .phead .t2{width:30mm;font-size:8pt}
 .phead .t3{width:12mm;font-size:8pt}
 .phead .ctr{position:absolute;left:0;right:0;top:0;line-height:5.6mm;text-align:center;font-size:10pt;font-weight:600;pointer-events:none}
-.pbody{position:absolute;left:8mm;right:8mm;top:20mm;bottom:10mm}
+.pbody{position:absolute;left:8mm;right:8mm;top:22mm;bottom:10mm}
 .col{position:absolute;top:0;bottom:0;width:calc((100% - 4mm)/2)}
 .col.l{left:0}
 .col.r{right:0}
@@ -270,7 +270,7 @@ function renderSel() {
 
 /* ───── 페이지 조립 ───── */
 // 프린터 여백 고려: 100%로 찍어도 안 잘리게 바깥 여백 확보
-const ML = 8, MT = 9, BT = 20, MB = 10, CW = 210 - 2 * ML;
+const ML = 8, MT = 9, BT = 22, MB = 10, CW = 210 - 2 * ML;
 const COL_W = (CW - 4) / 2, COL_H = 297 - BT - MB, LAB_H = 4.2, GAP = 8;
 function layout() {
   const pages = []; let cur = null, ci = 0, used = 0;
@@ -417,7 +417,7 @@ function drawHead(pg, F, title, center, area, right) {
   box(CW - 45, 30, area, 2.82);
   box(CW - 12, 12, right, 2.82);
   if (center) txt(pg, center, F.b, 3.5, 105, y + 2.8);
-  rect(pg, ML, MT + 7.2, CW, .6, {fill: [0, 0, 0], stroke: false});
+  rect(pg, ML, MT + 8.2, CW, .35, {fill: [0, 0, 0], stroke: false});
 }
 async function buildPdf() {
   if (!st.sel.length || building) return;
