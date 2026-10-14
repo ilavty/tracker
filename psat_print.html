@@ -62,7 +62,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .sl .eye{border:none;background:none;padding:2px 3px;color:var(--ink);display:grid;place-items:center}
 .sl .eye svg{width:15px;height:15px}
 .sl.off{background:var(--soft)}
-.sl.off .src,.sl.off .no{color:#b9b3ad;text-decoration:line-through}
+.sl.off .src,.sl.off .no{color:#b9b3ad}
 .sl.off .eye{color:#b9b3ad}
 .sets{display:flex;gap:6px;padding:16px 10px 4px}
 .sets select{flex:1;min-width:0;font-family:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--sub) 50%),linear-gradient(135deg,var(--sub) 50%,transparent 50%);background-position:calc(100% - 13px) 50%,calc(100% - 9px) 50%;background-size:4px 4px;background-repeat:no-repeat}
@@ -102,7 +102,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .col.r{right:0}
 .vline{position:absolute;top:0;bottom:0;left:50%;border-left:.25mm solid #000}
 .q{margin-bottom:8mm}
-.q .lab{font-size:7.5pt;line-height:1;margin:0 0 1.4mm 1mm;font-family:-apple-system,'Paperlogy',sans-serif}
+.q .lab{font-size:7.5pt;line-height:1;margin:0 0 1.4mm 1mm;font-family:-apple-system,'Paperlogy',sans-serif;text-decoration:underline;text-decoration-thickness:.2mm;text-underline-offset:.6mm}
 .q img,.q .ph-img{display:block;width:100%}
 .q .ph-img{background:#f6f6f6}
 .atbl{position:absolute;top:2mm;border-collapse:collapse;font-size:8.5pt}
@@ -439,7 +439,7 @@ async function buildPdf() {
         for (const b of pages[pi].cols[ci]) {
           if (b.si === 0) {
             const lab = srcLabel(b.e, b.it);
-            const li = await embedCanvas(out, mmCanvas(COL_W, LAB_H, PXMM, x => { x.font = `2.65px ${FONT}`; x.textAlign = 'left'; x.fillText(lab, 1, 1.5); }));
+            const li = await embedCanvas(out, mmCanvas(COL_W, LAB_H, PXMM, x => { x.font = `2.65px ${FONT}`; x.textAlign = 'left'; x.fillText(lab, 1, 1.5); x.fillRect(1, 2.85, x.measureText(lab).width, .2); }));
             pg.drawImage(li, {x: x0 * MM, y: PH - (y + LAB_H) * MM, width: COL_W * MM, height: LAB_H * MM});
             y += LAB_H;
           }
