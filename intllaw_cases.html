@@ -692,9 +692,15 @@ document.addEventListener("keydown",e=>{
 function openPrint(){
   const data={C,settings:store.print||null,cases:all().map(r=>({id:r.id,name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2}))};
   const json=JSON.stringify(data).replace(/</g,"\\u003c");
-  const w=window.open(location.pathname+"?print=1","ilc_print");
-  if(!w)alert("팝업이 차단됐어요. 이 사이트 팝업을 허용해주세요.");
+  closePrint();
+  const ov=document.createElement("div");ov.id="ilc-print-ov";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(22,19,15,.35);padding:14px;display:flex";
+  ov.innerHTML='<iframe src="'+location.pathname+'?print=1" style="flex:1;border:0;border-radius:12px;background:#efede9;box-shadow:0 10px 40px rgba(0,0,0,.25)"></iframe>';
+  ov.addEventListener("click",e=>{if(e.target===ov)closePrint()});
+  document.body.appendChild(ov);document.documentElement.style.overflow="hidden";
 }
+function closePrint(){const o=document.getElementById("ilc-print-ov");if(o){o.remove();document.documentElement.style.overflow=""}}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("ilc-print-ov"))closePrint()});
 function printPageHTML(){
   const data={C,settings:store.print||null,cases:all().map(r=>({id:r.id,name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2}))};
   return PRINT_PAGE.replace("__DATA__",JSON.stringify(data).replace(/</g,"\\u003c"));
@@ -714,7 +720,7 @@ if(PRINT_MODE){
   };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();
 }
-window.addEventListener("message",e=>{if(e.data&&e.data.type==="ilcPrint"&&e.data.S){store.print=e.data.S;save()}});
+window.addEventListener("message",e=>{if(!e.data)return;if(e.data.type==="ilcPrintClose"){closePrint();return}if(e.data.type==="ilcPrint"&&e.data.S){store.print=e.data.S;save()}});
 const PRINT_PAGE=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>판례 프린트</title>
 <style>
 @font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');font-weight:300}
@@ -725,7 +731,7 @@ const PRINT_PAGE=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><me
 @font-face{font-family:'KoPub';src:local('KoPubDotum Light'),local('KoPubWorldDotum-Light'),url('https://cdn.jsdelivr.net/gh/fonts-archive/KoPubWorldDotum@main/KoPubDotum-Light.woff2') format('woff2'),url('https://cdn.jsdelivr.net/gh/fonts-archive/KoPubWorldDotum@main/KoPubDotum-Light.woff') format('woff');font-weight:300}
 @font-face{font-family:'KoPub';src:local('KoPubDotum Medium'),local('KoPubWorldDotum-Medium'),url('https://cdn.jsdelivr.net/gh/fonts-archive/KoPubWorldDotum@main/KoPubDotum-Medium.woff2') format('woff2'),url('https://cdn.jsdelivr.net/gh/fonts-archive/KoPubWorldDotum@main/KoPubDotum-Medium.woff') format('woff');font-weight:400}
 @font-face{font-family:'KoPub';src:local('KoPubDotum Bold'),local('KoPubWorldDotum-Bold'),url('https://cdn.jsdelivr.net/gh/fonts-archive/KoPubWorldDotum@main/KoPubDotum-Bold.woff2') format('woff2'),url('https://cdn.jsdelivr.net/gh/fonts-archive/KoPubWorldDotum@main/KoPubDotum-Bold.woff') format('woff');font-weight:700}
-*{box-sizing:border-box;scrollbar-width:none}*::-webkit-scrollbar{display:none}
+*{box-sizing:border-box}.cats{scrollbar-width:none}.cats::-webkit-scrollbar{display:none}html{scrollbar-color:#bfa993 #efede9}html::-webkit-scrollbar{width:14px;height:14px}html::-webkit-scrollbar-track{background:#efede9}html::-webkit-scrollbar-thumb{background:#c4ad97;border-radius:8px;border:3px solid #efede9;min-height:60px}html::-webkit-scrollbar-thumb:hover{background:#8a6a4f}
 html,body{margin:0;background:#efede9;color:#000}
 body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .bar{position:sticky;top:0;z-index:5;background:#fbfaf7;border-bottom:1px solid #e6e0d6;padding:10px 16px;font-family:'Paperlogy',sans-serif;font-size:12.5px;color:#16130f;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end}
@@ -808,7 +814,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
   <div class="grp"><b>타이틀</b><label>목차 pt<input type="number" id="cs" step="0.5" min="6" max="24"></label><label>판례명 pt<input type="number" id="ts" step="0.5" min="6" max="20"></label><label>자간 %<input type="number" id="tls" step="0.5" min="-10" max="20"></label><label>굵기<select id="tw"><option value="300">얇게</option><option value="400">보통</option><option value="500">중간</option><option value="600">굵게</option></select></label></div>
   <div class="grp"><b>여백 mm</b><label>안쪽<input type="number" id="mi" step="1" min="0" max="40"></label><label>바깥쪽<input type="number" id="mo" step="1" min="0" max="40"></label><label>위<input type="number" id="mt" step="1" min="0" max="40"></label><label>아래<input type="number" id="mb" step="1" min="0" max="40"></label><label>인쇄 배율 %<input type="number" id="pz" step="1" min="80" max="100"></label><label title="인쇄할 때 내용을 아래로 내림 (사파리는 위가 잘려서 13 정도)">위치 보정<input type="number" id="so" step="1" min="-20" max="30"></label></div>
   <div class="grp"><b>간격 mm</b><label>단 사이<input type="number" id="gap" step="1" min="2" max="30"></label><label>판례 사이<input type="number" id="cg" step="0.5" min="0" max="20"></label><label style="flex-direction:row;align-items:center;gap:5px;color:#16130f;align-self:center"><input type="checkbox" id="keep">판례 안 끊기</label><label style="flex-direction:row;align-items:center;gap:5px;color:#16130f;align-self:center"><input type="checkbox" id="toc">목차 페이지</label></div>
-  <div class="spacer"><span class="hint" id="info"></span><button class="pri" id="go">프린트</button></div>
+  <div class="spacer"><span class="hint" id="info"></span><button class="pri" id="go">프린트</button><button id="cls">닫기</button></div>
 </div>
 <div class="main"><div class="cats" id="cats"></div><div class="pages" id="pages"></div></div>
 <script>
@@ -941,7 +947,11 @@ function cats(){
   const on=new Set(S.cats);
   document.getElementById("cats").innerHTML='<span class="hint">목차 · 안 고르면 전체</span>'+Object.entries(D.C).filter(([k])=>cnt[k]).map(([k,v])=>'<button data-c="'+k+'" aria-pressed="'+on.has(+k)+'">'+esc(v)+'<span>'+cnt[k]+'</span></button>').join("")+(on.size?'<button class="clr" data-clr="1">선택 해제</button>':"");
 }
-function save(){S.t=Date.now();try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}try{window.opener&&window.opener.postMessage({type:"ilcPrint",S},"*")}catch(e){}}
+const HOST=window.parent!==window?window.parent:window.opener;
+function save(){S.t=Date.now();try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}try{HOST&&HOST.postMessage({type:"ilcPrint",S},"*")}catch(e){}}
+const doClose=()=>{if(window.parent!==window)window.parent.postMessage({type:"ilcPrintClose"},"*");else window.close()};
+document.getElementById("cls").addEventListener("click",doClose);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")doClose()});
 let tm;function redo(){clearTimeout(tm);tm=setTimeout(()=>{css();layout()},150)}
 ["fs","lh","ls","cs","ts","tls","mi","mo","mt","mb","pz","so","gap","cg"].forEach(id=>{const el=document.getElementById(id);el.value=S[id];el.addEventListener("input",()=>{const v=parseFloat(el.value);if(!isNaN(v)){S[id]=v;save();redo()}})});
 const tw=document.getElementById("tw");tw.value=String(S.tw);tw.addEventListener("change",()=>{S.tw=tw.value;save();redo()});
