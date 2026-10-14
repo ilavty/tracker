@@ -174,7 +174,7 @@ body.dragover #empty{background:var(--sky2)}
   </div>
   <div id="tabs" class="hidden"></div>
 </header>
-<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
+<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸을 <b>⌥+끌기</b> 복제 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
 <div id="empty"><h2>PDF를 여기로 끌어오기</h2><p>또는 눌러서 열기<br>빈칸은 자동으로 저장돼서 맥·아이패드 어디서 열어도 이어져요<br>수정한 파일을 다시 열면 빈칸 위치를 알아서 다시 잡아줘요</p></div>
 <div id="wrap">
 <aside id="side" class="hidden">
@@ -630,18 +630,26 @@ function drawOv(i){
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
       if(e.target.classList.contains('x')){removeBox(b.id);return;}
       if(e.pointerType==='touch'&&!e.target.dataset.h){fingerScroll(e,()=>select(b.id));return;}
-      select(b.id);const hd=e.target.dataset.h||'m';d.setPointerCapture(e.pointerId);
-      const sx=e.clientX,sy=e.clientY,o={...(b.adj||{dx:0,dy:0,dw:0,dh:0})};let mvd=false;
+      const hd=e.target.dataset.h||'m';
+      let tb=b,el=d;const dup=e.altKey&&hd==='m';
+      if(!dup){select(b.id);}
+      const sx=e.clientX,sy=e.clientY;let o=null,mvd=false;
       const mv=ev=>{const dx=(ev.clientX-sx)/s,dy=(ev.clientY-sy)/s;
-        if(!mvd){if(Math.hypot(dx*s,dy*s)<3)return;snap();mvd=true;}
+        if(!mvd){if(Math.hypot(dx*s,dy*s)<3)return;snap();mvd=true;
+          if(dup){// ⌥+drag: leave the original, move a copy
+            const r0=disp(b);tb={id:uid(),page:b.page,raw:{x:r0.x,y:r0.y,w:r0.w,h:r0.h},free:true,runs:[]};
+            if(b.cell){tb.cell=true;tb.fill=b.fill;}
+            S.boxes.push(tb);drawOv(i);el=ov.querySelector(`.blank[data-id="${tb.id}"]`);select(tb.id);}
+          o={...(tb.adj||{dx:0,dy:0,dw:0,dh:0})};}
         const a={...o};
         if(hd==='m'){a.dx+=dx;a.dy+=dy;}
         if(hd.includes('e'))a.dw+=dx;if(hd.includes('w')){a.dx+=dx;a.dw-=dx;}
         if(hd.includes('s'))a.dh+=dy;if(hd.includes('n')){a.dy+=dy;a.dh-=dy;}
-        const old=b.adj;b.adj=a;const r=disp(b);if(r.w<2||r.h<2){b.adj=old;return;}
-        Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px'});};
-      const up=()=>{d.removeEventListener('pointermove',mv);d.removeEventListener('pointerup',up);if(mvd){save();drawThumb(i);}};
-      d.addEventListener('pointermove',mv);d.addEventListener('pointerup',up);});
+        const old=tb.adj;tb.adj=a;const r=disp(tb);if(r.w<2||r.h<2){tb.adj=old;return;}
+        if(el)Object.assign(el.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px'});};
+      const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);
+        if(mvd){save();drawThumb(i);}else if(dup)select(b.id);};
+      window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);});
     ov.appendChild(d);});
   S.texts.filter(t=>t.page===i).forEach(t=>{
     const d=document.createElement('div');d.className='note'+(t.lost?' lost':'');
