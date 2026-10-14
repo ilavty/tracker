@@ -694,12 +694,13 @@ function openPrint(){
   const json=JSON.stringify(data).replace(/</g,"\\u003c");
   closePrint();
   const ov=document.createElement("div");ov.id="ilc-print-ov";
-  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(22,19,15,.35);padding:14px;display:flex";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(22,19,15,.35);padding:8px clamp(36px,8vw,160px);display:flex";
   ov.innerHTML='<iframe src="'+location.pathname+'?print=1" style="flex:1;border:0;border-radius:12px;background:#efede9;box-shadow:0 10px 40px rgba(0,0,0,.25)"></iframe>';
   ov.addEventListener("click",e=>{if(e.target===ov)closePrint()});
-  document.body.appendChild(ov);document.documentElement.style.overflow="hidden";
+  document.body.appendChild(ov);document.documentElement.style.overflow="hidden";dbFull(true);
 }
-function closePrint(){const o=document.getElementById("ilc-print-ov");if(o){o.remove();document.documentElement.style.overflow=""}}
+function dbFull(on){try{if(window.parent!==window)window.parent.postMessage({type:"dbFull",on},"*")}catch(e){}}
+function closePrint(){const o=document.getElementById("ilc-print-ov");if(o){o.remove();document.documentElement.style.overflow="";dbFull(false)}}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("ilc-print-ov"))closePrint()});
 function printPageHTML(){
   const data={C,settings:store.print||null,cases:all().map(r=>({id:r.id,name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2}))};
