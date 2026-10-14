@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PSAT PRINT</title>
+<title>PSAT</title>
 <link href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/fonts-archive/GmarketSans/GmarketSans.css" rel="stylesheet">
 <style>
@@ -25,13 +25,14 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .app{display:grid;grid-template-columns:350px 260px 1fr;height:100vh}
 .panel{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
 .ph{padding:16px 16px 10px;display:flex;align-items:center;gap:6px}
-.ph h1{margin:0;font-size:17px;font-weight:600;letter-spacing:.02em}
 .ph h2{margin:0;font-size:13px;font-weight:600}
-.cnt{color:var(--sub);font-size:11px;margin-left:4px;font-weight:400}
+.cnt{color:var(--sub);font-size:11px;margin-left:4px;font-weight:400;white-space:nowrap}
+.ph h2{white-space:nowrap}
+.ph button{white-space:nowrap;flex:none}
 .sp{flex:1}
 .scroll{overflow-y:auto;flex:1;min-height:0}
 
-.tabs{display:flex;gap:4px;padding:0 16px 10px}
+.tabs{display:flex;gap:4px;padding:16px 16px 10px}
 .tab{flex:1;text-align:center;padding:7px 0;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;user-select:none}
 .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 
@@ -58,6 +59,14 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .sl .src{flex:1;font-size:12px;font-variant-numeric:tabular-nums}
 .sl .x{border:none;padding:2px 5px;color:var(--sub);background:none}
 .sl .x:hover{color:var(--ink)}
+.sl .eye{border:none;background:none;padding:2px 3px;color:var(--ink);display:grid;place-items:center}
+.sl .eye svg{width:15px;height:15px}
+.sl.off{background:var(--soft)}
+.sl.off .src,.sl.off .no{color:#b9b3ad;text-decoration:line-through}
+.sl.off .eye{color:#b9b3ad}
+.sets{display:flex;gap:6px;padding:16px 10px 4px}
+.sets select{flex:1;min-width:0;font-family:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--sub) 50%),linear-gradient(135deg,var(--sub) 50%,transparent 50%);background-position:calc(100% - 13px) 50%,calc(100% - 9px) 50%;background-size:4px 4px;background-repeat:no-repeat}
+.sets button{padding:4px 9px;white-space:nowrap}
 .sl.drag{opacity:.4}
 .sl.over{border-color:var(--sky)}
 .empty{color:var(--sub);font-size:12px;padding:20px 8px;text-align:center;line-height:1.7}
@@ -101,29 +110,18 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .atbl th{background:#f2f2f2;font-weight:600}
 .atbl td.a{background:#f0f0f0}
 
-@page{size:A4;margin:0}
-@media print{
-  html,body{height:auto;background:#fff}
-  .app{display:block;height:auto}
-  .panel,.ptop,#hov,#msg{display:none!important}
-  .preview{overflow:visible;background:#fff}
-  #pages{zoom:1!important;padding:0;gap:0;display:block}
-  .page{box-shadow:none;break-after:page;page-break-after:always}
-  .page:last-child{break-after:auto;page-break-after:auto}
-  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-}
 </style>
 </head>
 <body>
 <div class="app">
   <section class="panel">
-    <div class="ph"><h1>PSAT PRINT</h1></div>
     <div class="tabs" id="tabs"></div>
     <div class="scroll" id="bank"></div>
   </section>
 
   <section class="panel">
-    <div class="ph"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2><span class="sp"></span>
+    <div class="sets"><select id="setSel"></select><button id="setSave">저장</button><button id="setDel">삭제</button></div>
+    <div class="ph" style="padding-top:8px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2><span class="sp"></span>
       <button id="shuffle" style="padding:3px 8px">섞기</button>
       <button id="clear" style="padding:3px 8px">비우기</button></div>
     <div class="scroll" id="selList"></div>
@@ -145,6 +143,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 <div id="hov"><div class="hl" id="hovL"></div><img id="hovImg" alt=""></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="psat_bank.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -157,11 +156,15 @@ const KINDS = ['민경채', '7급', '7급근로', '5급', '외교', '기타'];
 const KIND_NAME = {민경채: '민경채', '7급': '7급 (2022~ 민경채 동시)', '7급근로': '7급 근로감독·산업안전', '5급': '5급 · 행시', 외교: '외교관 후보자', 기타: '연도 미상'};
 const CIRC = '①②③④⑤';
 const LS = 'psat_print_v2';
-const RS = 3;                         // 인쇄용 렌더 배율
+const RS = 2;                         // 미리보기 렌더 배율
 
-let st = {sel: [], sub: '상황', open: null, title: '', compact: false, ans: true, z: .62};
+let st = {sel: [], hidden: [], sub: '상황', open: null, title: '', compact: false, ans: true, z: .62, sets: {}, cur: null};
 try { Object.assign(st, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
-const save = () => { try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) {} };
+const save = () => {
+  st.hidden = st.hidden.filter(k => st.sel.includes(k));
+  if (st.cur && st.sets[st.cur]) Object.assign(st.sets[st.cur], {sel: [...st.sel], hidden: [...st.hidden], title: st.title});
+  try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) {}
+};
 
 /* 키: 시험id|첫번호 */
 const keyOf = (e, it) => e.id + '|' + it.n[0];
@@ -172,6 +175,9 @@ function itemOf(key) {
   return it ? {e, it} : null;
 }
 st.sel = st.sel.filter(itemOf);
+st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
+if (st.cur && !st.sets[st.cur]) st.cur = null;
+const isOn = k => !st.hidden.includes(k);
 const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
 const srcLabel = (e, it) => (e.kind === '기타' ? ['기타', e.book || '-', numStr(it)] : [e.year, e.kind, e.book || '-', numStr(it)]).join('_');
 const yearShow = e => e.book === '모의' ? '모의' : (e.year || '?');
@@ -243,11 +249,21 @@ function gridHtml(e) {
 }
 
 /* ───── 가운데: 담은 목록 ───── */
+const EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.2 4.1M6.6 6.6A17.4 17.4 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function renderSets() {
+  const ids = Object.keys(st.sets).sort((a, b) => st.sets[a].name.localeCompare(st.sets[b].name, 'ko'));
+  $('setSel').innerHTML = `<option value="">＋ 새 묶음 (저장 안 됨)</option>` + ids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(st.sets[id].name)}</option>`).join('');
+  $('setSave').textContent = st.cur ? '이름' : '저장';
+  $('setDel').style.display = st.cur ? '' : 'none';
+}
 function renderSel() {
-  $('selCnt').textContent = st.sel.length ? st.sel.length + '개' : '';
+  const off = st.hidden.length;
+  $('selCnt').textContent = st.sel.length ? st.sel.length + '개' + (off ? ` · 숨김 ${off}` : '') : '';
   $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
     const {e, it} = itemOf(k);
-    return `<div class="sl" draggable="true" data-i="${i}"><span class="no">${i + 1}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="x" data-x="${i}">✕</button></div>`;
+    const on = isOn(k);
+    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${i + 1}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button><button class="x" data-x="${i}">✕</button></div>`;
   }).join('') : '<div class="empty">왼쪽에서 시험 → 번호를 눌러 담아줘<br>드래그로 순서 바꾸기</div>';
 }
 
@@ -257,7 +273,7 @@ function layout() {
   const pages = []; let cur = null, ci = 0, used = 0;
   const newPage = () => { cur = {cols: [[], []]}; pages.push(cur); ci = 0; used = 0; };
   const nextCol = () => { if (ci === 0) { ci = 1; used = 0; } else newPage(); };
-  for (const k of st.sel) {
+  for (const k of st.sel.filter(isOn)) {
     const {e, it} = itemOf(k);
     it.s.forEach((seg, si) => {
       const w = seg[3] - seg[1], hpt = seg[4] - seg[2];
@@ -283,13 +299,17 @@ function subsOfSel() { return [...new Set(st.sel.map(k => itemOf(k).e.sub))]; }
 function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]].replace('영역', '') + ' 기출모음' : 'PSAT 기출모음'; }
 function areaName() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]] : 'PSAT'; }
 
-function answerPages() {
+function answerRows() {
   const mixed = subsOfSel().length > 1;
   const rows = [];
   for (const k of st.sel) {
     const {e, it} = itemOf(k);
     it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '7급(근로)' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
   }
+  return rows;
+}
+function answerPages() {
+  const rows = answerRows();
   const PER = Math.floor((COL_H - 4) / 6.6) - 1;
   const chunks = []; for (let i = 0; i < rows.length; i += PER) chunks.push(rows.slice(i, i + PER));
   const out = [];
@@ -323,6 +343,7 @@ function renderPages() {
   $('msg').innerHTML = st.sel.length ? '' : '담은 문제가 여기 미리보기로 떠요';
   const imgs = [...document.querySelectorAll('#pages img[data-e]')];
   pending = imgs.length; updateInfo(pages.length);
+  if (!pages.length && st.sel.length) $('msg').innerHTML = '보이는 문제가 없어요 (전부 숨김)';
   imgs.forEach(img => {
     const e = EX[img.dataset.e], seg = img.dataset.seg.split(',').map(Number);
     renderSeg(e, seg, RS).then(url => {
@@ -334,9 +355,7 @@ function renderPages() {
 }
 function updateInfo(n) {
   $('pinfo').textContent = st.sel.length ? `문제 ${n}장${st.ans ? ' + 정답지' : ''}` + (pending ? ` · 불러오는 중 ${pending}` : '') : '';
-  $('print').disabled = !st.sel.length || pending > 0;
-  $('print').textContent = pending > 0 ? '불러오는 중…' : '프린트';
-  if (!pending && autoPrint && st.sel.length) { autoPrint = false; setTimeout(() => window.print(), 300); }
+  if (!building) { $('print').disabled = !st.sel.length; $('print').textContent = '프린트 (PDF)'; }
 }
 let failShown = false;
 function loadFail(err) {
@@ -348,11 +367,131 @@ function loadFail(err) {
 }
 
 function renderAll() {
-  renderTabs(); renderBank(); renderSel(); renderPages();
+  renderSets(); renderTabs(); renderBank(); renderSel(); renderPages();
   $('title').value = st.title; $('title').placeholder = defaultTitle();
   $('tCompact').classList.toggle('on', st.compact);
   $('tAns').classList.toggle('on', st.ans);
   save();
+}
+
+/* ───── 인쇄용 PDF 만들기 (원본 PDF에서 벡터 그대로 잘라 붙임) ───── */
+const MM = 72 / 25.4, PW = 595.28, PH = 841.89, PXMM = 12;
+const srcDocs = {};
+let building = false;
+function srcDoc(id) {
+  if (!srcDocs[id]) srcDocs[id] = fetch('pdf/' + id + '.pdf')
+    .then(r => { if (!r.ok) throw new Error('pdf ' + r.status); return r.arrayBuffer(); })
+    .then(b => PDFLib.PDFDocument.load(b))
+    .catch(err => { delete srcDocs[id]; throw err; });
+  return srcDocs[id];
+}
+function mmCanvas(wmm, hmm, pxmm, draw) {
+  const c = document.createElement('canvas');
+  c.width = Math.round(wmm * pxmm); c.height = Math.round(hmm * pxmm);
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  x.scale(pxmm, pxmm); x.fillStyle = '#000'; x.strokeStyle = '#000'; x.textBaseline = 'middle';
+  draw(x); return c;
+}
+async function embedCanvas(out, c) {
+  const b = await new Promise(r => c.toBlob(r, 'image/png'));
+  return out.embedPng(await b.arrayBuffer());
+}
+const FONT = "'Paperlogy','GmarketSans',-apple-system,sans-serif";
+function fitText(x, t, cx, cy, maxW) {
+  let w = x.measureText(t).width; if (w > maxW) { x.save(); x.translate(cx, cy); x.scale(maxW / w, 1); x.fillText(t, 0, 0); x.restore(); }
+  else x.fillText(t, cx, cy);
+}
+// 머리말: 폭 200mm × 높이 10mm 영역 (페이지 좌표 5mm,5mm)
+function drawHead(x, title, center, area, right) {
+  x.lineWidth = .25; x.textAlign = 'center';
+  const box = (bx, w, t, size) => { x.strokeRect(bx, 1, w, 5.6); x.font = `600 ${size}px ${FONT}`; fitText(x, t, bx + w / 2, 3.85, w - 2); };
+  box(0, 72, title, 3.35);
+  box(155, 30, area, 2.82);
+  box(188, 12, right, 2.82);
+  if (center) { x.font = `600 3.5px ${FONT}`; x.fillText(center, 100, 3.85); }
+  x.fillRect(0, 8.6, 200, .6);
+}
+function drawAnswers(x, rows) {
+  const W = [18, 15, 14, 15], RH = 6.6, PER = Math.floor((COL_H - 4) / RH) - 1;
+  const chunks = []; for (let i = 0; i < rows.length; i += PER) chunks.push(rows.slice(i, i + PER));
+  return chunks;
+}
+async function buildPdf() {
+  if (!st.sel.length || building) return;
+  building = true; $('print').disabled = true; $('print').textContent = 'PDF 만드는 중…';
+  const win = window.open('', '_blank');
+  try { if (win) win.document.write('<p style="font-family:-apple-system,sans-serif;padding:40px;color:#888">PDF 만드는 중…</p>'); } catch (e) {}
+  try {
+    await document.fonts.load(`600 20px Paperlogy`).catch(() => {});
+    const {PDFDocument, rgb} = PDFLib;
+    const out = await PDFDocument.create();
+    const pages = layout(), area = areaName(), title = st.title || defaultTitle();
+    const embedCache = {};
+    for (let pi = 0; pi < pages.length; pi++) {
+      const pg = out.addPage([PW, PH]);
+      const hd = await embedCanvas(out, mmCanvas(200, 10, PXMM, x => drawHead(x, title, '', area, (pi + 1) + '쪽')));
+      pg.drawImage(hd, {x: 5 * MM, y: PH - 15 * MM, width: 200 * MM, height: 10 * MM});
+      pg.drawLine({start: {x: 105 * MM, y: PH - 16 * MM}, end: {x: 105 * MM, y: PH - 291 * MM}, thickness: .25 * MM, color: rgb(0, 0, 0)});
+      for (let ci = 0; ci < 2; ci++) {
+        let y = 16; const x0 = 5 + (ci ? COL_W + 4 : 0);
+        for (const b of pages[pi].cols[ci]) {
+          if (b.si === 0) {
+            const lab = srcLabel(b.e, b.it);
+            const li = await embedCanvas(out, mmCanvas(COL_W, LAB_H, PXMM, x => { x.font = `2.65px ${FONT}`; x.textAlign = 'left'; x.fillText(lab, 1, 1.5); }));
+            pg.drawImage(li, {x: x0 * MM, y: PH - (y + LAB_H) * MM, width: COL_W * MM, height: LAB_H * MM});
+            y += LAB_H;
+          }
+          const [p, sx0, sy0, sx1, sy1] = b.seg;
+          const ek = b.e.id + ':' + b.seg.join(',');
+          if (!embedCache[ek]) {
+            const doc = await srcDoc(b.e.id), sp = doc.getPage(p), H = sp.getHeight();
+            embedCache[ek] = await out.embedPage(sp, {left: sx0, bottom: H - sy1, right: sx1, top: H - sy0});
+          }
+          pg.drawPage(embedCache[ek], {x: x0 * MM, y: PH - (y + b.hmm) * MM, width: b.wmm * MM, height: b.hmm * MM});
+          y += b.hmm + GAP;
+        }
+      }
+    }
+    if (st.ans) {
+      const rows = answerRows();
+      const chunks = drawAnswers(null, rows);
+      for (let p = 0; p < chunks.length; p += 3) {
+        const c = mmCanvas(210, 297, 10, x => {
+          x.save(); x.translate(5, 5); drawHead(x, title, '<정답지>', 'PSAT', '답지'); x.restore();
+          const W = [18, 15, 14, 15], RH = 6.6;
+          chunks.slice(p, p + 3).forEach((rs, ci) => {
+            const tx = 5 + ci * 67, ty = 18;
+            const cell = (cx, cy, w, h, t, fill, bold) => {
+              if (fill) { x.fillStyle = fill; x.fillRect(cx, cy, w, h); x.fillStyle = '#000'; }
+              x.strokeStyle = '#555'; x.lineWidth = .2; x.strokeRect(cx, cy, w, h);
+              x.font = `${bold ? 600 : 400} 3px ${FONT}`; x.textAlign = 'center'; fitText(x, String(t), cx + w / 2, cy + h / 2 + .1, w - 1);
+            };
+            let cx = tx; ['구분', '연도', '문번', '정답'].forEach((h, i) => { cell(cx, ty, W[i], RH, h, '#f2f2f2', true); cx += W[i]; });
+            rs.forEach((r, i) => {
+              const cy = ty + RH * (i + 1);
+              if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; cell(tx, cy, W[0], RH * sp, r.k); }
+              cell(tx + W[0], cy, W[1], RH, r.y);
+              cell(tx + W[0] + W[1], cy, W[2], RH, r.n);
+              cell(tx + W[0] + W[1] + W[2], cy, W[3], RH, r.a, '#f0f0f0');
+            });
+          });
+        });
+        const img = await embedCanvas(out, c);
+        out.addPage([PW, PH]).drawImage(img, {x: 0, y: 0, width: PW, height: PH});
+      }
+    }
+    const bytes = await out.save();
+    const url = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
+    if (win && !win.closed) win.location.href = url;
+    else { const a = document.createElement('a'); a.href = url; a.download = (title || 'PSAT') + '.pdf'; document.body.appendChild(a); a.click(); a.remove(); }
+  } catch (err) {
+    console.error(err);
+    try { if (win) win.close(); } catch (e) {}
+    alert('PDF 만들기 실패: ' + err.message);
+  } finally {
+    building = false; $('print').disabled = !st.sel.length; $('print').textContent = '프린트 (PDF)';
+  }
 }
 
 /* ───── 이벤트 ───── */
@@ -370,19 +509,40 @@ $('bank').onclick = ev => {
   const n = ev.target.closest('.num');
   if (n) { const k = n.dataset.k; st.sel = st.sel.includes(k) ? st.sel.filter(x => x !== k) : [...st.sel, k]; renderAll(); }
 };
-$('clear').onclick = () => { if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; renderAll(); } };
+$('clear').onclick = () => { if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; st.hidden = []; renderAll(); } };
+$('setSel').onchange = e => {
+  save();
+  const id = e.target.value;
+  if (!id) { st.cur = null; st.sel = []; st.hidden = []; st.title = ''; }
+  else { const s = st.sets[id]; st.cur = id; st.sel = s.sel.filter(itemOf); st.hidden = (s.hidden || []).filter(k => st.sel.includes(k)); st.title = s.title || ''; }
+  renderAll();
+};
+$('setSave').onclick = () => {
+  const old = st.cur ? st.sets[st.cur].name : '';
+  const name = (prompt(st.cur ? '묶음 이름 바꾸기' : '이 묶음 이름 (예: 논리 퀴즈)', old || st.title || '') || '').trim();
+  if (!name) return;
+  if (st.cur) st.sets[st.cur].name = name;
+  else { const id = 's' + Date.now().toString(36); st.sets[id] = {name, sel: [], hidden: [], title: st.title}; st.cur = id; }
+  renderAll();
+};
+$('setDel').onclick = () => {
+  if (!st.cur || !confirm(`'${st.sets[st.cur].name}' 묶음을 지울까?`)) return;
+  delete st.sets[st.cur]; st.cur = null; st.sel = []; st.hidden = []; st.title = '';
+  renderAll();
+};
 $('shuffle').onclick = () => { for (let i = st.sel.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [st.sel[i], st.sel[j]] = [st.sel[j], st.sel[i]]; } renderAll(); };
-$('selList').onclick = e => { const x = e.target.dataset.x; if (x == null) return; st.sel.splice(+x, 1); renderAll(); };
+$('selList').onclick = e => {
+  const eye = e.target.closest('[data-eye]');
+  if (eye) { const k = st.sel[+eye.dataset.eye]; st.hidden = st.hidden.includes(k) ? st.hidden.filter(x => x !== k) : [...st.hidden, k]; renderAll(); return; }
+  const x = e.target.closest('[data-x]'); if (!x) return;
+  const [k] = st.sel.splice(+x.dataset.x, 1); st.hidden = st.hidden.filter(h => h !== k); renderAll();
+};
 $('title').oninput = e => { st.title = e.target.value; document.querySelectorAll('.phead .t1').forEach(b => b.textContent = st.title || defaultTitle()); save(); };
 $('tCompact').onclick = () => { st.compact = !st.compact; renderAll(); };
 $('tAns').onclick = () => { st.ans = !st.ans; renderAll(); };
 $('zi').onclick = () => { st.z = Math.min(1.2, +(st.z + .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
 $('zo').onclick = () => { st.z = Math.max(.3, +(st.z - .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
-let autoPrint = new URLSearchParams(location.search).has('print');
-$('print').onclick = () => {
-  if (window.top !== window) { save(); window.open(location.href.split('?')[0] + '?print=1', '_blank'); return; }
-  window.print();
-};
+$('print').onclick = buildPdf;
 
 let dragI = null;
 $('selList').addEventListener('dragstart', e => { const el = e.target.closest('.sl'); if (!el) return; dragI = +el.dataset.i; el.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); } catch (er) {} });
