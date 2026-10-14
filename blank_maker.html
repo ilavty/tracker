@@ -112,7 +112,8 @@ body.text .ov{cursor:text}
 .blank.cell{background:#fff}
 .pimg{position:absolute;cursor:move}
 .pimg:not(.sel){pointer-events:none}
-.blank.sel,.pimg.sel{z-index:9000!important}
+.blank.sel{z-index:9000!important}
+.pimg.sel .hd,.pimg.sel .x{z-index:9001}
 .pimg img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
 .pimg .ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:11px;color:#999;background:#f5f2ee}
 .pimg.sel{outline:2px solid var(--sky);outline-offset:1px}
@@ -182,7 +183,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-6</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-7</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
