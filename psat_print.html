@@ -155,7 +155,7 @@ const EX = Object.fromEntries(EXAMS.map(e => [e.id, e]));
 const SUBS = ['언어', '자료', '상황'];
 const SUB_FULL = {언어: '언어논리영역', 자료: '자료해석영역', 상황: '상황판단영역'};
 const KINDS = ['민경채', '7급', '7급근로', '5급', '외교', '기타'];
-const KIND_NAME = {민경채: '민경채', '7급': '7급 (2022~ 민경채 동시)', '7급근로': '7급 근로감독·산업안전', '5급': '5급 · 행시', 외교: '외교관 후보자', 기타: '연도 미상'};
+const KIND_NAME = {민경채: '민경채', '7급': '7급 (2022~ 민경채 동시)', '7급근로': '근로감독 (근로감독·산업안전 분야)', '5급': '5급 · 행시', 외교: '외교관 후보자', 기타: '연도 미상'};
 const CIRC = '①②③④⑤';
 const LS = 'psat_print_v2';
 const RS = 2;                         // 미리보기 렌더 배율
@@ -191,6 +191,8 @@ function findExam(level, sub, yearRaw) {
   const pool = EXAMS.filter(e => e.sub === sub);
   const pick = (kind, year, book) => pool.find(e => e.kind === kind && e.year === year && (book === undefined || (e.book === '모의') === (book === '모의')));
   if (/모의/.test(y) || (level === '7급' && yd === '2020')) return pick('7급', '2020', '모의');
+  if (yd === '2025' && /근로|산업|\(\s*2\s*\)/.test(y)) return pick('7급근로', yd);   // 2025(2) = 근로감독
+  if (yd === '2025' && /\(\s*1\s*\)/.test(y)) return pick('7급', yd, '');           // 2025(1) = 7급
   if (level === '민경채') return pick('민경채', yd) || pick('7급', yd, '');
   if (level === '7급') {
     if (/근로|산업|\(2\)/.test(y) && yd === '2025') return pick('7급근로', yd);
@@ -239,7 +241,8 @@ async function loadReviewBox() {
 if (st.cur && !st.sets[st.cur]) st.cur = null;
 const isOn = k => !st.hidden.includes(k);
 const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
-const srcLabel = (e, it) => [e.year, e.kind + (e.book === '모의' ? '모의' : ''), numStr(it)].join('_');
+const kindShow = e => e.kind === '7급근로' ? '근로감독' : e.kind + (e.book === '모의' ? '모의' : '');
+const srcLabel = (e, it) => [e.year, kindShow(e), numStr(it)].join('_');
 const yearShow = e => e.book === '모의' ? '모의' : (e.year || '?');
 
 const $ = id => document.getElementById(id);
@@ -373,7 +376,7 @@ function answerRows() {
   const rows = [];
   for (const k of st.sel) {
     const {e, it} = itemOf(k);
-    it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '7급(근로)' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
+    it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '근로감독' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
   }
   return rows;
 }
