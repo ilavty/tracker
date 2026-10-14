@@ -108,6 +108,17 @@ body.text .ov{cursor:text}
 .pno{position:absolute;right:0;bottom:-19px;font-size:11px;color:#aaa}
 .blank{position:absolute;background:var(--bcol);cursor:move}
 .blank.cell{background:#fff}
+.pimg{position:absolute;cursor:move;z-index:1}
+.pimg img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
+.pimg .ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:11px;color:#999;background:#f5f2ee}
+.pimg.sel{outline:2px solid var(--sky);outline-offset:1px}
+.pimg.lost{outline:1.5px dashed #d9534f}
+.pimg .hd{display:none;position:absolute;width:10px;height:10px;background:#fff;border:1.5px solid var(--sky);border-radius:2px;z-index:2}
+.pimg.sel .hd{display:block}
+.pimg .hd.nw{top:-6px;left:-6px;cursor:nwse-resize}.pimg .hd.se{bottom:-6px;right:-6px;cursor:nwse-resize}
+.pimg .hd.ne{top:-6px;right:-6px;cursor:nesw-resize}.pimg .hd.sw{bottom:-6px;left:-6px;cursor:nesw-resize}
+.pimg .x{display:none}.pimg.sel .x{display:block;top:-22px;right:-4px}
+.thumb .tb.timg{background:#eee center/cover no-repeat;border-radius:0}
 .snapv.cellv{background:rgba(255,255,255,.85);border:1.5px dashed var(--brown)}
 .thumb .tb.cell{background:#fff}
 .hd{display:none;position:absolute;width:9px;height:9px;background:#fff;border:1.5px solid var(--sky);border-radius:2px;z-index:2}
@@ -167,7 +178,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-3</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-4</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -175,7 +186,7 @@ body.dragover #empty{background:var(--sky2)}
   </div>
   <div id="tabs" class="hidden"></div>
 </header>
-<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸을 <b>⌥+끌기</b> 복제 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
+<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 표 칸에 맞춰 흰 박스 · <b>⌘+드래그</b> 높이는 줄에 맞추고 너비는 자유 · <b>⌥+드래그</b> 완전 자유 사각형 · 빈칸을 <b>⌥+끌기</b> 복제 · <b>⌘V</b> 이미지 붙여넣기 (파일 끌어놓기도 돼요) · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
 <div id="empty"><h2>PDF를 여기로 끌어오기</h2><p>또는 눌러서 열기<br>빈칸은 자동으로 저장돼서 맥·아이패드 어디서 열어도 이어져요<br>수정한 파일을 다시 열면 빈칸 위치를 알아서 다시 잡아줘요</p></div>
 <div id="wrap">
 <aside id="side" class="hidden">
@@ -219,7 +230,7 @@ async function fontBytes(k){if(fontCache[k])return fontCache[k];const F=FONTS[k]
   if(!buf)throw new Error('폰트를 못 받았어요');return fontCache[k]=buf;}
 const fcss=k=>(FONTS[k]||FONTS.pl).css+', sans-serif';
 let docs=[];const PEND={};
-const DOCF=['name','bytes','pdf','pages','boxes','texts','hist','sel','selNote','libDoc','dirty','cur','io','pio','view','tocEl','thEl','avail'];
+const DOCF=['name','bytes','pdf','pages','boxes','texts','imgs','selImg','hist','sel','selNote','libDoc','dirty','cur','io','pio','view','tocEl','thEl','avail'];
 function stash(){if(!S.docId)return;const d=docs.find(x=>x.id===S.docId);if(!d)return;
   DOCF.forEach(k=>d[k]=S[k]);d.scroll=window.scrollY;[d.view,d.tocEl,d.thEl].forEach(e=>e&&e.classList.add('hidden'));}
 function activate(d){if(!d||d.id===S.docId)return;stash();DOCF.forEach(k=>S[k]=d[k]);S.docId=d.id;
@@ -281,10 +292,12 @@ async function cloudNames(){if(!fdb)return[];
     return Object.values(v).sort((a,b)=>(b.t||0)-(a.t||0)).map(o=>o.name).filter(Boolean);}catch(e){return[];}}
 const pushT={},pushV={};
 function setSync(t,c){const el=$('#sync');if(!el)return;el.textContent=c==='ok'?'☁':c==='ing'?'☁…':'⚠';el.title=t;el.className=c||'';}
-function cloudPush(name,boxes,texts){
+const pushedImg=new Set();
+function cloudPush(name,boxes,texts,imgs){
   if(!fdb){setSync('오프라인 · 이 기기에만 저장','off');return;}
   const v=(pushV[name]||0)+1;pushV[name]=v;clearTimeout(pushT[name]);setSync('저장 중…','ing');
-  const payload={t:Date.now(),name,d:JSON.stringify({boxes,texts:cleanTexts(texts)})};
+  const payload={t:Date.now(),name,d:JSON.stringify({boxes,texts:cleanTexts(texts),imgs:imgs||[]})};
+  (imgs||[]).forEach(im=>{if(!pushedImg.has(im.id)&&IMGSRC[im.id]){pushedImg.add(im.id);fdb.ref(`${FB}/imgs/${im.id}`).set({src:IMGSRC[im.id]}).catch(()=>pushedImg.delete(im.id));}});
   pushT[name]=setTimeout(()=>{
     Promise.all([fdb.ref(`${FB}/works/${fkey(name)}`).set(payload),fdb.ref(`${FB}/index/${fkey(name)}`).set({name,t:payload.t})])
       .then(()=>{if(pushV[name]!==v)return;
@@ -292,6 +305,39 @@ function cloudPush(name,boxes,texts){
         renderTabs();setSync('☁ 저장됨','ok');})
       .catch(e=>{console.warn(e);setSync('저장 실패 · 이 기기에만 저장','off');});},800);}
 const uid=()=>Math.random().toString(36).slice(2,10);
+/* ---------- images ---------- */
+const IMGSRC={};
+async function loadImgSrcs(imgs){
+  for(const m of imgs||[]){if(IMGSRC[m.id])continue;
+    let src=await IDB.get('meta','img:'+m.id);
+    if(!src&&fdb){try{const sn=await withTO(fdb.ref(`${FB}/imgs/${m.id}`).once('value'),6000);const v=sn&&sn.val();if(v&&v.src){src=v.src;IDB.put('meta','img:'+m.id,src);}}catch(e){}}
+    if(src){IMGSRC[m.id]=src;pushedImg.add(m.id);}}}
+function shrinkImage(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(url);const MAX=1600;const k=Math.min(1,MAX/Math.max(im.naturalWidth,im.naturalHeight));
+    const w=Math.max(1,Math.round(im.naturalWidth*k)),h=Math.max(1,Math.round(im.naturalHeight*k));
+    const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(im,0,0,w,h);
+    let alpha=false;if(/png|gif|webp/i.test(file.type)){const d=ctx.getImageData(0,0,w,h).data;for(let i=3;i<d.length;i+=4*7)if(d[i]<250){alpha=true;break;}}
+    const src=alpha?c.toDataURL('image/png'):c.toDataURL('image/jpeg',0.88);c.width=c.height=0;res({src,w,h});};
+  im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('이미지를 못 읽었어요'));};im.src=url;});}
+function viewCenterPage(){
+  let best=0,bd=1e9;const cy=innerHeight/2;
+  (S.pages||[]).forEach((p,i)=>{const r=p.el.getBoundingClientRect();const d=r.top<=cy&&r.bottom>=cy?0:Math.min(Math.abs(r.top-cy),Math.abs(r.bottom-cy));if(d<bd){bd=d;best=i;}});
+  return best;}
+async function addImage(file,pi,cx,cy){
+  if(!S.pages||!S.pages.length){toast('먼저 PDF를 열어줘요');return;}
+  let r;try{r=await shrinkImage(file);}catch(e){toast(e.message);return;}
+  if(pi==null){pi=viewCenterPage();const p=S.pages[pi],rc=p.el.getBoundingClientRect();
+    cx=((innerWidth/2)-rc.left)/p.S;cy=((innerHeight/2)-rc.top)/p.S;cx=Math.min(Math.max(cx,40),p.w-40);cy=Math.min(Math.max(cy,40),p.h-40);}
+  const p=S.pages[pi];let w=Math.min(p.w*0.45,r.w*0.5);const h=w*r.h/r.w;
+  const m={id:uid(),page:pi,x:cx-w/2,y:cy-h/2,w,h};
+  IMGSRC[m.id]=r.src;IDB.put('meta','img:'+m.id,r.src);
+  snap();if(!S.imgs)S.imgs=[];noteAnchor(m);S.imgs.push(m);S.selImg=m.id;select(null);save();drawOv(pi);toast('이미지 넣었어요 · 끌어서 이동, 모서리로 크기조정',2500);}
+document.addEventListener('paste',e=>{
+  const ae=document.activeElement;if(ae&&(ae.isContentEditable||/INPUT|TEXTAREA/.test(ae.tagName)))return;
+  const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.kind==='file'&&x.type.startsWith('image/'));
+  if(!it)return;e.preventDefault();addImage(it.getAsFile());});
+function removeImg(id){const m=(S.imgs||[]).find(x=>x.id===id);if(!m)return;snap();S.imgs=S.imgs.filter(x=>x!==m);if(S.selImg===id)S.selImg=null;save();drawOv(m.page);}
+function selectImg(id){S.selImg=id;(S.view||document).querySelectorAll('.pimg').forEach(e=>e.classList.toggle('sel',e.dataset.id===id));}
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------- settings ---------- */
@@ -397,11 +443,11 @@ function reanchorNote(t){
 
 /* ---------- storage / history ---------- */
 const KEY=n=>'bm:f:'+n;
-function save(){if(!S.name)return;const wasDirty=S.dirty;S.dirty=true;if(!wasDirty)renderTabs();cloudPush(S.name,S.boxes,S.texts);try{localStorage.setItem(KEY(S.name),JSON.stringify({boxes:S.boxes,texts:cleanTexts(S.texts),at:Date.now()}));}catch(e){toast('저장 공간이 부족해요');}updLost();}
+function save(){if(!S.name)return;const wasDirty=S.dirty;S.dirty=true;if(!wasDirty)renderTabs();cloudPush(S.name,S.boxes,S.texts,S.imgs||[]);try{localStorage.setItem(KEY(S.name),JSON.stringify({boxes:S.boxes,texts:cleanTexts(S.texts),imgs:S.imgs||[],at:Date.now()}));}catch(e){toast('저장 공간이 부족해요');}updLost();}
 function getSaved(n){try{return JSON.parse(localStorage.getItem(KEY(n)));}catch(e){return null;}}
 function listSaved(){return Object.keys(localStorage).filter(k=>k.startsWith('bm:f:')).map(k=>({n:k.slice(5),at:(getSaved(k.slice(5))||{}).at||0})).sort((a,b)=>b.at-a.at).map(o=>o.n);}
-function snap(){S.hist.push(JSON.stringify({b:S.boxes,t:S.texts}));if(S.hist.length>150)S.hist.shift();}
-function undo(){const s=S.hist.pop();if(!s){toast('더 되돌릴 게 없어요');return;}const o=JSON.parse(s);S.boxes=o.b;S.texts=o.t;S.sel=null;save();drawAll();}
+function snap(){S.hist.push(JSON.stringify({b:S.boxes,t:cleanTexts(S.texts),m:S.imgs||[]}));if(S.hist.length>150)S.hist.shift();}
+function undo(){const s=S.hist.pop();if(!s){toast('더 되돌릴 게 없어요');return;}const o=JSON.parse(s);S.boxes=o.b;S.texts=o.t;S.imgs=o.m||[];S.sel=null;S.selImg=null;save();drawAll();}
 $('#undo').onclick=undo;
 function pickPrev(names){return new Promise(res=>{const m=$('#modal');
   m.querySelector('select').innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');m.classList.add('on');
@@ -411,20 +457,22 @@ function pickPrev(names){return new Promise(res=>{const m=$('#modal');
 /* ---------- work file ---------- */
 function saveWork(){
   if(!S.name){toast('먼저 PDF를 열어줘요');return;}
-  const data={v:1,pdf:S.name,boxes:S.boxes,texts:S.texts.map(({_el,...t})=>t),lineH:S.lineH,pad:S.pad,at:Date.now()};
+  const imgs=S.imgs||[];const imgSrc={};imgs.forEach(m=>{if(IMGSRC[m.id])imgSrc[m.id]=IMGSRC[m.id];});
+  const data={v:1,pdf:S.name,boxes:S.boxes,texts:S.texts.map(({_el,...t})=>t),imgs,imgSrc,lineH:S.lineH,pad:S.pad,at:Date.now()};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
   a.download=S.name.replace(/\.pdf$/i,'')+'_작업.json';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);renderTabs();toast('백업 파일 저장!',3000);}
 async function loadWork(file,viaDrop){
   let data;try{data=JSON.parse(await file.text());}catch(e){toast('작업 파일을 못 읽었어요');return;}
   if(!data||!Array.isArray(data.boxes)){toast('빈칸 작업 파일이 아니에요');return;}
+  if(data.imgSrc)for(const id in data.imgSrc){IMGSRC[id]=data.imgSrc[id];IDB.put('meta','img:'+id,data.imgSrc[id]);}
   if(data.lineH){S.lineH=data.lineH;$('#lh').value=S.lineH;$('#lhv').textContent=S.lineH;}
   if(data.pad!=null){S.pad=data.pad;$('#pad').value=S.pad;}
   const tgt=docs.find(d=>(d.id===S.docId?S.name:d.name)===data.pdf);
   if(tgt)activate(tgt);
   else if(viaDrop||!S.pages||!S.pages.length){PEND[data.pdf]=data;toast(`작업 불러옴! '${data.pdf}' PDF를 열면 이어서 돼요`,4500);return;}
-  snap();S.boxes=data.boxes;S.texts=data.texts||[];
-  const rep={same:0,moved:0,lost:0};S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);
+  snap();S.boxes=data.boxes;S.texts=data.texts||[];S.imgs=data.imgs||[];
+  const rep={same:0,moved:0,lost:0};S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);S.imgs.forEach(m=>rep[reanchorNote(m)]++);
   save();drawAll();S.dirty=false;renderTabs();toast(`작업 불러옴 · 그대로 ${rep.same} · 자리 옮김 ${rep.moved} · 확인 필요 ${rep.lost}`,6000);}
 $('#saveWork').onclick=saveWork;
 $('#workFile').onchange=e=>{if(e.target.files[0])loadWork(e.target.files[0]);e.target.value='';};
@@ -453,7 +501,7 @@ async function openFile(file,quiet){
     if(!pages.some(p=>p.chars.length))toast('이 PDF에서 글자를 못 찾았어요 (윤곽선 처리?) — ⌥+드래그로 그려줘요',7000);
     stash();let carried=null;
     const old=docs.find(d=>d.name===file.name);
-    if(old){carried={boxes:old.boxes||[],texts:old.texts||[]};closeDoc(old,true,true);}
+    if(old){carried={boxes:old.boxes||[],texts:old.texts||[],imgs:old.imgs||[]};closeDoc(old,true,true);}
     DOCF.forEach(k=>S[k]=undefined);const doc={id:uid(),name:file.name};docs.push(doc);S.docId=doc.id;
     S.name=file.name;S.bytes=buf;S.pages=pages;S.pdf=pdf;S.libDoc=null;S.sel=null;S.selNote=null;S.hist=[];
     let data=carried||PEND[S.name];delete PEND[S.name];
@@ -462,10 +510,11 @@ async function openFile(file,quiet){
     if(!data&&!quiet){const base=n=>n.replace(/\.pdf$/i,'').replace(/[\s_\-()]*(v\d+|수정|최종|final|copy|사본|\d+)?$/i,'').toLowerCase();
       const me=base(S.name);const others=[...new Set([...listSaved(),...await cloudNames()])].filter(n=>n!==S.name&&!docs.some(d=>d.name===n)).filter(n=>{const o=base(n);let k=0;while(k<o.length&&o[k]===me[k])k++;return k>=4||(o.length>=2&&(me.includes(o)||o.includes(me)));});
       if(others.length)data=await pickPrev(others);}
-    S.boxes=(data&&data.boxes)||[];S.texts=(data&&data.texts)||[];
+    S.boxes=(data&&data.boxes)||[];S.texts=(data&&data.texts)||[];S.imgs=(data&&data.imgs)||[];S.selImg=null;
+    await loadImgSrcs(S.imgs);
     let rep=null;
-    if(S.boxes.length||S.texts.length){rep={same:0,moved:0,lost:0};
-      S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);}
+    if(S.boxes.length||S.texts.length||S.imgs.length){rep={same:0,moved:0,lost:0};
+      S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);S.imgs.forEach(m=>rep[reanchorNote(m)]++);}
     $('#empty').classList.add('hidden');$('#fname').textContent=S.name;
     buildPages();save();buildSide();renderTabs();
     if(!restoring)IDB.put('files',S.name,new Blob([buf],{type:'application/pdf'}));saveSession();
@@ -479,7 +528,12 @@ $('#empty').onclick=()=>$('#file').click();
 window.addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('dragover');});
 window.addEventListener('dragleave',()=>document.body.classList.remove('dragover'));
 window.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragover');const fs=[...e.dataTransfer.files];const j=fs.find(f=>/\.json$/i.test(f.name)),pf=fs.find(f=>/\.pdf$/i.test(f.name));
-  (async()=>{for(const f of fs.filter(f=>/\.json$/i.test(f.name)))await loadWork(f,true);for(const f of fs.filter(f=>!/\.json$/i.test(f.name)))await openFile(f);})();});
+  const imgs=fs.filter(f=>/^image\//.test(f.type));
+  if(imgs.length&&S.pages&&S.pages.length){
+    const pg=e.target.closest&&e.target.closest('.page');let pi=null,cx,cy;
+    if(pg){pi=+pg.dataset.i;const p=S.pages[pi],rc=p.el.getBoundingClientRect();cx=(e.clientX-rc.left)/p.S;cy=(e.clientY-rc.top)/p.S;}
+    (async()=>{for(const f of imgs)await addImage(f,pi,cx,cy);})();return;}
+  (async()=>{for(const f of fs.filter(f=>/\.json$/i.test(f.name)))await loadWork(f,true);for(const f of fs.filter(f=>!/\.json$/i.test(f.name)&&!/^image\//.test(f.type)))await openFile(f);})();});
 
 /* ---------- pages ---------- */
 function buildPages(){
@@ -586,6 +640,7 @@ function drawThumb(i){const p=S.pages[i];if(!p||!p.th)return;const tp=p.th.query
   tp.querySelectorAll('.tb').forEach(e=>e.remove());const bs=S.boxes.filter(b=>b.page===i);
   bs.forEach(b=>{const r=disp(b),e=document.createElement('div');e.className='tb'+(b.cell?' cell':'')+(b.lost?' lost':'');
     Object.assign(e.style,{left:r.x*k+'px',top:r.y*k+'px',width:Math.max(1,r.w*k)+'px',height:Math.max(1,r.h*k)+'px'});tp.appendChild(e);});
+  (S.imgs||[]).filter(m=>m.page===i).forEach(m=>{const e=document.createElement('div');e.className='tb timg';Object.assign(e.style,{left:m.x*k+'px',top:m.y*k+'px',width:m.w*k+'px',height:m.h*k+'px'});if(IMGSRC[m.id])e.style.backgroundImage=`url(${IMGSRC[m.id]})`;tp.appendChild(e);});
   p.th.querySelector('.tn b').textContent=bs.length?'· 빈칸 '+bs.length:'';}
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!S.pages||!S.pages.length)return;layout();rerenderAll();},250);});
 /* ---------- zoom ---------- */
@@ -622,7 +677,29 @@ document.addEventListener('gestureend',e=>{e.preventDefault();inGesture=false;},
 function drawAll(){S.pages.forEach((_,i)=>drawOv(i));updLost();}
 function drawOv(i){
   const p=S.pages[i];if(!p||!p.ov)return;const s=p.S,ov=p.ov;drawThumb(i);
-  ov.querySelectorAll('.blank,.note').forEach(e=>e.remove());
+  ov.querySelectorAll('.blank,.note,.pimg').forEach(e=>e.remove());
+  (S.imgs||[]).filter(m=>m.page===i).forEach(m=>{
+    const d=document.createElement('div');d.className='pimg'+(m.lost?' lost':'')+(S.selImg===m.id?' sel':'');d.dataset.id=m.id;
+    Object.assign(d.style,{left:m.x*s+'px',top:m.y*s+'px',width:m.w*s+'px',height:m.h*s+'px'});
+    d.innerHTML=(IMGSRC[m.id]?`<img src="${IMGSRC[m.id]}" draggable="false">`:'<span class="ph">이미지 불러오는 중…</span>')+'<button class="x" title="삭제">×</button>'+['nw','ne','sw','se'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
+    d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
+      if(e.target.classList.contains('x')){removeImg(m.id);return;}
+      if(e.pointerType==='touch'&&!e.target.dataset.h){fingerScroll(e,()=>selectImg(m.id));return;}
+      const hd=e.target.dataset.h||'m';let tm=m,el=d;const dup=e.altKey&&hd==='m';
+      select(null);if(!dup)selectImg(m.id);
+      const sx=e.clientX,sy=e.clientY,ar=m.h/m.w;let o=null,mvd=false;
+      const mv=ev=>{const dx=(ev.clientX-sx)/s,dy=(ev.clientY-sy)/s;
+        if(!mvd){if(Math.hypot(dx*s,dy*s)<3)return;snap();mvd=true;
+          if(dup){tm={...m,id:uid()};IMGSRC[tm.id]=IMGSRC[m.id];IDB.put('meta','img:'+tm.id,IMGSRC[m.id]);S.imgs.push(tm);drawOv(i);el=ov.querySelector(`.pimg[data-id="${tm.id}"]`);selectImg(tm.id);}
+          o={x:tm.x,y:tm.y,w:tm.w,h:tm.h};}
+        if(hd==='m'){tm.x=o.x+dx;tm.y=o.y+dy;}
+        else{let w=o.w+(hd.includes('e')?dx:-dx);w=Math.max(12,w);const h=w*ar;
+          tm.w=w;tm.h=h;tm.x=hd.includes('w')?o.x+o.w-w:o.x;tm.y=hd.includes('n')?o.y+o.h-h:o.y;}
+        if(el)Object.assign(el.style,{left:tm.x*s+'px',top:tm.y*s+'px',width:tm.w*s+'px',height:tm.h*s+'px'});};
+      const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);
+        if(mvd){noteAnchor(tm);tm.lost=false;save();drawThumb(i);}else if(dup)selectImg(m.id);};
+      window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);});
+    ov.appendChild(d);});
   S.boxes.filter(b=>b.page===i).forEach(b=>{
     const r=disp(b),d=document.createElement('div');
     d.className='blank'+(b.cell?' cell':'')+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;
@@ -701,7 +778,7 @@ function bindOverlay(i){
     const rc=ov.getBoundingClientRect();const pt=ev=>({x:(ev.clientX-rc.left)/p.S,y:(ev.clientY-rc.top)/p.S});
     const a=pt(e);
     if(S.mode==='text'){e.preventDefault();addNote(i,a);return;}
-    select(null);S.selNote=null;
+    select(null);selectImg(null);S.selNote=null;
     const dr=document.createElement('div');dr.className='drag';ov.appendChild(dr);
     const sv=document.createElement('div');sv.className='snapv';ov.appendChild(sv);
     ov.setPointerCapture(e.pointerId);let b=a;
@@ -830,6 +907,7 @@ window.addEventListener('keydown',e=>{
   const ed=document.activeElement&&(document.activeElement.isContentEditable||/INPUT|SELECT/.test(document.activeElement.tagName));
   if(ed)return;
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();}
+  else if((e.key==='Backspace'||e.key==='Delete')&&S.selImg){e.preventDefault();removeImg(S.selImg);}
   else if((e.key==='Backspace'||e.key==='Delete')&&S.sel){e.preventDefault();removeBox(S.sel);}
   else if(S.sel&&/^Arrow/.test(e.key)){e.preventDefault();nudge(S.sel,e.key,e.shiftKey);}
   else if(e.key==='Escape')select(null);
@@ -865,7 +943,7 @@ async function noteImg(t){
   lines.forEach((l,k)=>ctx.fillText(l,0,(k+.5)*lh*Z));
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));return{bytes:new Uint8Array(await blob.arrayBuffer()),w,h};}
 function outName(){return S.name.replace(/\.pdf$/i,'')+'_빈칸.pdf';}
-function workSig(){return JSON.stringify([S.name,S.boxes,cleanTexts(S.texts),S.bcol,S.pad,S.lineH]);}
+function workSig(){return JSON.stringify([S.name,S.boxes,cleanTexts(S.texts),S.imgs||[],S.bcol,S.pad,S.lineH]);}
 function preCheck(){
   if(!S.bytes){toast('먼저 PDF를 열어줘요');return false;}
   if(document.activeElement)document.activeElement.blur();
@@ -883,6 +961,10 @@ async function buildPdf(){
     if(S.texts.some(t=>t.text.trim())){doc.registerFontkit(fontkit);toast('글자용 폰트 넣는 중…',0);
       for(const k of new Set(S.texts.filter(t=>t.text.trim()).map(t=>t.font||'pl'))){
         try{emb[k]=await doc.embedFont(await fontBytes(k),{subset:false});}catch(e){console.warn(e);}}}
+    for(const m of S.imgs||[]){const pg=pages[m.page];const src=IMGSRC[m.id];if(!pg||!src)continue;
+      const bytes=Uint8Array.from(atob(src.split(',')[1]),c=>c.charCodeAt(0));
+      const img=/^data:image\/png/.test(src)?await doc.embedPng(bytes):await doc.embedJpg(bytes);
+      const q=toPdf(m.page,{x:m.x,y:m.y,w:m.w,h:m.h});pg.drawImage(img,{x:q.x,y:q.y,width:q.w,height:q.h});}
     for(const t of S.texts){const pg=pages[t.page];if(!pg||!t.text.trim())continue;const kf=emb[t.font||'pl'];
       if(kf){const lh=t.size*1.3,[r,g,bl]=hex(t.color||S.tcol),vp=S.pages[t.page].vp;
         t.text.split('\n').forEach((line,k)=>{if(!line)return;const by=t.y+lh*k+(lh-t.size)/2+t.size*.86;
