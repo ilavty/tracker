@@ -153,7 +153,8 @@ table.fit{width:100%;table-layout:fixed}
 .cmenu button:hover{background:var(--sky-l)}
 .cmenu .hd{font-size:11.5px;color:var(--sub);padding:4px 10px}
 .twrap{display:flex;align-items:flex-start;gap:18px}
-.tbox{flex:0 1 auto;min-width:0}
+.tbox{flex:1 1 auto;min-width:0}
+.tbox>table.heat{width:100%}
 #navr .ctl{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
 #navr .ctl a{color:var(--brown)}
 #navr .ctl a.on{background:#fbe3ea;color:#b34a66;font-weight:600}
@@ -654,6 +655,21 @@ addEventListener('resize',()=>requestAnimationFrame(stickySync));
 const main=document.getElementById('main');
 build();render();
 window.__cloud=makeCloud('database_v1/intlpol_analysis',KEY,()=>st,o=>{closePicker();closeCM();st.ov=o.ov||{};st.kw=Object.assign({topic:[],det:[],etc:[],trap:[],anal:[]},o.kw||{});st.cat=o.cat||[];st.caseTag=o.caseTag||{};st.detParent=o.detParent||{};if(o.ctFix1)st.ctFix1=o.ctFix1;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};build();render()});
+</script>
+<script>
+/* 화면 너비에 맞게: 넓으면 표를 꽉 채우고, 좁으면 표 영역을 비율대로 축소 */
+(function(){
+  let t=null;
+  function fit(){
+    document.querySelectorAll('.tbox').forEach(b=>{
+      const tb=b.querySelector('table');if(!tb)return;
+      b.style.zoom='';const need=tb.scrollWidth,have=b.clientWidth;
+      if(need>have+1&&have>0)b.style.zoom=Math.max(.55,have/need).toFixed(3);});}
+  const later=()=>{clearTimeout(t);t=setTimeout(fit,80);};
+  addEventListener('resize',later);
+  new MutationObserver(later).observe(document.body,{childList:true,subtree:true});
+  later();
+})();
 </script>
 </body>
 </html>

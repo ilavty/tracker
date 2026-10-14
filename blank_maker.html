@@ -25,13 +25,13 @@ html::-webkit-scrollbar-track{background:transparent}
 html::-webkit-scrollbar-thumb{background:#c9b8a8;border-radius:999px;border:3px solid var(--bg);min-height:48px}
 html::-webkit-scrollbar-thumb:hover{background:var(--brown)}
 body{font-family:'Paperlogy','GmarketSans',-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 20px;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.brand{font-family:'GmarketSans';font-weight:700;font-size:18px;letter-spacing:.02em;white-space:nowrap}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{font-family:'GmarketSans';font-weight:700;font-size:15px;letter-spacing:.02em;white-space:nowrap}
 .brand span{color:var(--brown);margin-left:4px}
 #sync{font-size:11px;color:#9a948e;white-space:nowrap}#sync.ok{color:#5aaee0}#sync.ing{color:#9a948e}#sync.off{color:#d9534f}
 #fname{font-size:12px;color:#888;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
-.btn{font:inherit;font-size:13px;border-radius:999px;padding:8px 14px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
+.tools{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;margin-left:auto;min-width:0}
+.btn{font:inherit;font-size:12.5px;border-radius:999px;padding:7px 12px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
 .btn:hover{border-color:var(--sky)}
 .btn.main{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
 .btn.main:hover{background:var(--brown);border-color:var(--brown)}
@@ -41,12 +41,26 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px
 .seg button{font:inherit;font-size:13px;border:0;background:none;padding:8px 13px;cursor:pointer;color:var(--ink)}
 .seg button.on{background:var(--sky);font-weight:700}
 .ctl{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
-.ctl input[type=range]{width:70px;accent-color:var(--brown)}
-.ctl input[type=number]{width:54px;font:inherit;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:4px 6px}
+.ctl input[type=range]{width:54px;accent-color:var(--brown)}
+.ctl input[type=number]{width:46px;font:inherit;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:4px 6px}
 input[type=color]{width:24px;height:24px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer}
 input[type=color]::-webkit-color-swatch-wrapper{padding:2px}
 input[type=color]::-webkit-color-swatch{border:0;border-radius:4px}
 .hint{font-size:12px;color:#8a817a;padding:10px 20px 0;text-align:center}
+.btn.ic{width:34px;height:34px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.btn.g{font-family:'GmarketSans',sans-serif;font-weight:700;font-size:14px;color:var(--brown)}
+.btn.main svg{display:block}
+.more{position:relative}
+.menu{position:absolute;right:0;top:40px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(60,40,20,.12);padding:6px;min-width:170px;z-index:40;display:flex;flex-direction:column}
+.menu.hidden{display:none}
+.menu button,.menu label{font:inherit;font-size:13px;text-align:left;border:0;background:none;padding:9px 12px;border-radius:9px;cursor:pointer;color:var(--ink);display:flex;justify-content:space-between;gap:10px}
+.menu button:hover,.menu label:hover{background:var(--sky2)}
+.menu small{color:#aaa}
+#sync{max-width:90px;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+body.full .hint{display:none}
+@media (max-width:1500px){.brand{display:none}}
+@media (max-width:1180px){.tools{gap:5px}.btn{padding:7px 10px}.ctl input[type=range]{width:44px}#size{width:44px;padding:4px 3px;text-align:center}}
+@media (max-width:1040px){.ctl{font-size:0;gap:3px}.ctl input[type=range]{width:46px}}
 .hint b{color:var(--brown);font-weight:700}
 #wrap{display:flex;align-items:flex-start}
 #tabs{flex-basis:100%;display:flex;gap:6px;overflow-x:auto;padding-top:2px;margin-bottom:-12px}
@@ -84,7 +98,7 @@ body.noside #side{display:none}
 .thumb .tb.lost{background:#f3c7c5}
 .thumb .tn{display:flex;justify-content:center;gap:6px;font-size:11px;color:#999;margin-top:5px}
 .thumb .tn b{color:var(--brown);font-weight:700}
-#pages{flex:1;min-width:0;overflow-x:auto;padding:16px 16px 100px}
+#pages{flex:1;min-width:0;overflow-x:auto;padding:12px 12px 100px}
 .page{position:relative;background:#fff;box-shadow:0 2px 14px rgba(60,40,20,.08)}
 .page .pv{position:absolute;inset:0;width:100%;height:100%}
 .strips canvas{position:absolute;left:0;width:100%;display:block}
@@ -134,25 +148,30 @@ body.dragover #empty{background:var(--sky2)}
 <header>
   <button class="btn" id="sideBtn" title="목차/페이지 열고 닫기">☰</button>
   <div class="brand">BLANK<span>MAKER</span></div>
-  <div id="fname"></div><div id="sync"></div>
+  <div id="fname" class="hidden"></div><div id="sync" title="저장 상태"></div>
   <div class="tools">
-    <label class="btn">PDF 열기<input type="file" accept="application/pdf,.pdf" id="file" multiple hidden></label>
+    <label class="btn">열기<input type="file" accept="application/pdf,.pdf" id="file" multiple hidden></label>
     <div class="seg"><button data-m="box" class="on">▢ 빈칸</button><button data-m="text">T 글자</button></div>
-    <label class="ctl">높이<input type="range" id="lh" min="4" max="30" step="0.5"><span id="lhv"></span></label>
-    <label class="ctl">옆여백<input type="range" id="pad" min="0" max="5" step="0.5"></label>
-    <label class="ctl">빈칸색<input type="color" id="bcol"></label>
+    <label class="ctl">높이<input type="range" id="lh" title="빈칸 높이" min="4" max="30" step="0.5"><span id="lhv"></span></label>
+    <label class="ctl">여백<input type="range" id="pad" title="빈칸 옆여백" min="0" max="5" step="0.5"></label>
+    <label class="ctl">빈칸색<input type="color" id="bcol" title="빈칸 색"></label>
     <label class="ctl">글자<select id="font"><option value="pl">페이퍼로지</option><option value="kd">코펍돋움</option><option value="kb">코펍바탕</option></select><input type="number" id="size" min="4" max="48" step="0.5"><input type="color" id="tcol"></label>
-    <button class="btn" id="saveWork" title="백업 파일로 저장 (⌘S) — 평소엔 자동 저장돼요">백업</button>
-    <label class="btn" title="백업 파일(.json) 열기">백업 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
     <div class="zoom"><button id="zOut" title="축소 (⌘−)">−</button><button id="zVal" title="화면 너비에 맞추기 (⌘0)">100%</button><button id="zIn" title="확대 (⌘+)">+</button></div>
     <button class="btn" id="undo" title="되돌리기 (⌘Z)">↶</button>
     <button class="btn warn hidden" id="lostBtn"></button>
-    <button class="btn" id="share" title="공유 창에서 굿노트 선택">굿노트로 보내기</button>
-    <button class="btn main" id="export">PDF 저장</button>
+    <div class="more"><button class="btn ic" id="moreBtn" title="더보기">⋯</button>
+      <div class="menu hidden" id="moreMenu">
+        <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
+        <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
+        <button id="hintBtn">사용법 보기</button>
+      </div></div>
+    <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
+    <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
+    <button class="btn ic" id="fsBtn" title="전체화면 (F)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
   </div>
   <div id="tabs" class="hidden"></div>
 </header>
-<div class="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 자유 사각형 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
+<div class="hint hidden" id="hint"><b>드래그</b> 글자에 딱 맞춰 빈칸 (여러 줄은 한 덩어리) · <b>⇧+드래그</b> 자유 사각형 · 빈칸 <b>끌기</b> 이동 · 모서리 <b>끌기</b> 크기조정 · 빈칸 클릭 후 <b>→/←</b> 한 글자씩 늘이기·줄이기 (<b>⇧</b> 붙이면 앞쪽) · <b>⌫</b> 삭제 · <b>T 글자</b> 모드에서 클릭해서 글자 추가 · <b>⌘+ / ⌘−</b> 확대·축소 (<b>⌘0</b> 맞춤, 핀치도 돼요) · <b>⌘Z</b> 되돌리기</div>
 <div id="empty"><h2>PDF를 여기로 끌어오기</h2><p>또는 눌러서 열기<br>빈칸은 자동으로 저장돼서 맥·아이패드 어디서 열어도 이어져요<br>수정한 파일을 다시 열면 빈칸 위치를 알아서 다시 잡아줘요</p></div>
 <div id="wrap">
 <aside id="side" class="hidden">
@@ -257,7 +276,7 @@ async function cloudNames(){if(!fdb)return[];
   try{const sn=await withTO(fdb.ref(`${FB}/index`).once('value'),4000);const v=(sn&&sn.val())||{};
     return Object.values(v).sort((a,b)=>(b.t||0)-(a.t||0)).map(o=>o.name).filter(Boolean);}catch(e){return[];}}
 const pushT={},pushV={};
-function setSync(t,c){const el=$('#sync');if(!el)return;el.textContent=t;el.className=c||'';}
+function setSync(t,c){const el=$('#sync');if(!el)return;el.textContent=c==='ok'?'☁':c==='ing'?'☁…':'⚠';el.title=t;el.className=c||'';}
 function cloudPush(name,boxes,texts){
   if(!fdb){setSync('오프라인 · 이 기기에만 저장','off');return;}
   const v=(pushV[name]||0)+1;pushV[name]=v;clearTimeout(pushT[name]);setSync('저장 중…','ing');
@@ -796,6 +815,28 @@ $('#share').onclick=async()=>{
       throw e;}
   }catch(e){console.error(e);toast('보내기 실패: '+e.message,6000);}
 };
+/* ---------- menu / hint / fullscreen ---------- */
+$('#moreBtn').onclick=e=>{e.stopPropagation();$('#moreMenu').classList.toggle('hidden');};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.more'))$('#moreMenu').classList.add('hidden');});
+$('#moreMenu').addEventListener('click',e=>{if(e.target.closest('button'))$('#moreMenu').classList.add('hidden');});
+$('#workFile').addEventListener('change',()=>$('#moreMenu').classList.add('hidden'));
+$('#hintBtn').onclick=()=>{$('#hint').classList.toggle('hidden');setHH();};
+const inFrame=window.parent!==window;
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+function setFull(on){
+  document.body.classList.toggle('full',on);
+  if(inFrame)try{parent.postMessage({type:'dbFull',on},'*');}catch(e){}
+  const el=document.documentElement;
+  if(on&&!fsEl()){const rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq)try{const r=rq.call(el);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
+  if(!on&&fsEl()){const ex=document.exitFullscreen||document.webkitExitFullscreen;if(ex)try{const r=ex.call(document);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
+  setTimeout(()=>{setHH();if(S.pages&&S.pages.length){layout();rerenderAll();}},250);}
+$('#fsBtn').onclick=()=>setFull(!document.body.classList.contains('full'));
+['fullscreenchange','webkitfullscreenchange'].forEach(t=>document.addEventListener(t,()=>{if(!fsEl()&&document.body.classList.contains('full'))setFull(false);}));
+window.addEventListener('keydown',e=>{
+  const ed=document.activeElement&&(document.activeElement.isContentEditable||/INPUT|SELECT/.test(document.activeElement.tagName));
+  if(ed||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.key==='f'||e.key==='F'||e.key==='ㄹ'){e.preventDefault();$('#fsBtn').click();}
+  else if(e.key==='Escape'&&document.body.classList.contains('full')&&!fsEl())setFull(false);});
 restoreSession();
 </script>
 </body>
