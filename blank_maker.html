@@ -604,7 +604,7 @@ $('#zIn').onclick=()=>setZoom((S.zoom||1)*1.25);
 $('#zOut').onclick=()=>setZoom((S.zoom||1)/1.25);
 $('#zVal').onclick=()=>setZoom(1);
 $('#zVal').textContent=Math.round((S.zoom||1)*100)+'%';
-addEventListener('message',e=>{const d=e.data;if(!d||d.type!=='bmZoom')return;
+addEventListener('message',e=>{const d=e.data;if(d&&d.type==='bmUndo'){undo();return;}if(d&&d.type==='bmSave'){saveWork();return;}if(!d||d.type!=='bmZoom')return;
   if(d.dir>0)setZoom((S.zoom||1)*1.25);else if(d.dir<0)setZoom((S.zoom||1)/1.25);else setZoom(1);});
 // trackpad pinch (Chrome) / ⌃+wheel
 let inGesture=false;
@@ -822,6 +822,9 @@ window.addEventListener('keydown',e=>{
     if(e.key==='='||e.key==='+'||e.code==='Equal'||e.code==='NumpadAdd'){e.preventDefault();setZoom((S.zoom||1)*1.25);return;}
     if(e.key==='-'||e.key==='_'||e.key==='−'||e.code==='Minus'||e.code==='NumpadSubtract'){e.preventDefault();setZoom((S.zoom||1)/1.25);return;}
     if(e.key==='0'||e.code==='Digit0'){e.preventDefault();setZoom(1);return;}}
+  if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&(e.key.toLowerCase()==='z'||e.code==='KeyZ')){
+    const ae=document.activeElement;const typing=ae&&(ae.isContentEditable||(ae.tagName==='INPUT'&&/^(text|number|search)$/.test(ae.type)));
+    if(!typing){e.preventDefault();if(ae&&ae!==document.body)ae.blur();undo();return;}}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(document.activeElement)document.activeElement.blur();saveWork();return;}
   const ed=document.activeElement&&(document.activeElement.isContentEditable||/INPUT|SELECT/.test(document.activeElement.tagName));
   if(ed)return;
