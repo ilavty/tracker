@@ -67,6 +67,11 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .sets{display:flex;gap:6px;padding:16px 10px 4px}
 .sets select{flex:1;min-width:0;font-family:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--sub) 50%),linear-gradient(135deg,var(--sub) 50%,transparent 50%);background-position:calc(100% - 13px) 50%,calc(100% - 9px) 50%;background-size:4px 4px;background-repeat:no-repeat}
 .sets button{padding:4px 9px;white-space:nowrap}
+.sl.div{background:var(--brown-l);border-color:transparent;margin-top:10px}
+.sl.div .src{font-weight:600;color:var(--brown)}
+.sl.div .dtag{font-size:10px;color:var(--brown);opacity:.7}
+.page .divt{position:absolute;left:0;right:0;top:120mm;text-align:center;font-size:24pt;font-weight:600}
+.page .divs{position:absolute;left:0;right:0;top:136mm;text-align:center;font-size:10pt;color:#666}
 .sl.drag{opacity:.4}
 .sl.over{border-color:var(--sky)}
 .empty{color:var(--sub);font-size:12px;padding:20px 8px;text-align:center;line-height:1.7}
@@ -179,7 +184,9 @@ function itemOf(key) {
   return it ? {e, it} : null;
 }
 st.link = st.link || {};
-st.sel = st.sel.filter(itemOf);
+const isDiv = k => typeof k === 'string' && k[0] === '#';
+const okKey = k => isDiv(k) || itemOf(k);
+st.sel = st.sel.filter(okKey);
 st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
 
 /* ───── PSAT 트래커 보충학습(📌) 자동 연결 (읽기만 함) ───── */
@@ -187,7 +194,7 @@ const RV_SUBJ = {언어논리: '언어', 자료해석: '자료', 상황판단: '
 const LINKED = {};          // 'rv:상황판단' → {name, keys, miss}
 let linkLoaded = false;
 function isLinked(id = st.cur) { return !!id && (id.startsWith('rv:') || id.startsWith('th:')); }
-(window.PSAT_SETS || []).forEach(t => { LINKED[t.id] = {name: t.name, keys: t.keys.filter(k => EX[k.split('|')[0]]), miss: 0}; });
+(window.PSAT_SETS || []).forEach(t => { LINKED[t.id] = {name: t.name, keys: t.keys.filter(k => isDiv(k) || EX[k.split('|')[0]]), miss: 0}; });
 function findExam(level, sub, yearRaw) {
   const y = String(yearRaw || ''), yd = (y.match(/\d{4}/) || [''])[0];
   const pool = EXAMS.filter(e => e.sub === sub);
@@ -335,11 +342,15 @@ function renderSets() {
 }
 function renderSel() {
   const off = st.hidden.length;
-  $('selCnt').textContent = st.sel.length ? st.sel.length + '개' + (off ? ` · 숨김 ${off}` : '') : '';
+  const nq = st.sel.filter(k => !isDiv(k)).length;
+  $('selCnt').textContent = nq ? nq + '개' + (off ? ` · 숨김 ${off}` : '') : '';
+  let no = 0;
   $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
+    if (isDiv(k)) return `<div class="sl div" draggable="true" data-i="${i}"><span class="src">${esc(k.slice(1))}</span><span class="dtag">구분 페이지</span></div>`;
+    no++;
     const {e, it} = itemOf(k);
     const on = isOn(k);
-    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${i + 1}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
+    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${no}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
   }).join('') : '<div class="empty">왼쪽에서 시험 → 번호를 눌러 담아줘<br>드래그로 순서 바꾸기</div>';
 }
 
@@ -352,6 +363,7 @@ function layout() {
   const newPage = () => { cur = {cols: [[], []]}; pages.push(cur); ci = 0; used = 0; };
   const nextCol = () => { if (ci === 0) { ci = 1; used = 0; } else newPage(); };
   for (const k of st.sel.filter(isOn)) {
+    if (isDiv(k)) { pages.push({div: k.slice(1)}); cur = null; continue; }
     const {e, it} = itemOf(k);
     it.s.forEach((seg, si) => {
       const w = seg[3] - seg[1], hpt = seg[4] - seg[2];
@@ -373,7 +385,7 @@ function head(pno, center, area) {
   return `<div class="phead"><div class="tbox t1">${esc(t)}</div>${center ? `<div class="ctr">${esc(center)}</div>` : ''}<span class="sp"></span>
     <div class="tbox t2">${esc(area)}</div><div class="tbox t3">${center ? '답지' : pno + '쪽'}</div></div>`;
 }
-function subsOfSel() { return [...new Set(st.sel.map(k => itemOf(k).e.sub))]; }
+function subsOfSel() { return [...new Set(st.sel.filter(k => !isDiv(k)).map(k => itemOf(k).e.sub))]; }
 function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]].replace('영역', '') + ' 기출모음' : 'PSAT 기출모음'; }
 function areaName() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]] : 'PSAT'; }
 
@@ -381,6 +393,7 @@ function answerRows() {
   const mixed = subsOfSel().length > 1;
   const rows = [];
   for (const k of st.sel) {
+    if (isDiv(k)) continue;
     const {e, it} = itemOf(k);
     it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '근로감독' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
   }
@@ -411,7 +424,7 @@ function renderPages() {
   const tok = ++renderToken;
   const pages = layout();
   const area = areaName();
-  let html = pages.map((p, i) => `<div class="page">${head(i + 1, '', area)}<div class="pbody"><div class="vline"></div>` +
+  let html = pages.map((p, i) => p.div ? `<div class="page">${head(i + 1, '', area)}<div class="divt">${esc(p.div)}</div><div class="divs">${esc(st.title || defaultTitle())}</div></div>` : `<div class="page">${head(i + 1, '', area)}<div class="pbody"><div class="vline"></div>` +
     p.cols.map((col, ci) => `<div class="col ${ci ? 'r' : 'l'}">` + col.map(b =>
       `<div class="q">${b.si === 0 ? `<div class="lab">${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
     ).join('') + '</div>').join('') + '</div></div>');
@@ -510,10 +523,22 @@ async function buildPdf() {
     const [rb, bb] = await getFonts();
     const F = {r: await out.embedFont(rb, {subset: true}), b: await out.embedFont(bb, {subset: true})};
     const pages = layout(), area = areaName(), title = st.title || defaultTitle();
-    const embedCache = {};
+    // 시험(원본 PDF)별로 필요한 페이지를 한 번에 넣어서 글꼴 중복 없이
+    const embedCache = {}, need = {};
+    pages.forEach(pp => (pp.cols || []).flat().forEach(b => { (need[b.e.id] = need[b.e.id] || new Set()).add(b.seg[0]); }));
+    for (const id of Object.keys(need)) {
+      const doc = await srcDoc(id), idx = [...need[id]];
+      const eps = await out.embedPdf(doc, idx);
+      idx.forEach((p, i) => { embedCache[id + ':' + p] = {ep: eps[i], H: doc.getPage(p).getHeight()}; });
+    }
     for (let pi = 0; pi < pages.length; pi++) {
       const pg = out.addPage([PW, PH]);
       drawHead(pg, F, title, '', area, (pi + 1) + '쪽');
+      if (pages[pi].div) {
+        txt(pg, pages[pi].div, F.b, 8.5, 105, 125);
+        pg.drawText(title, {x: 105 * MM - F.r.widthOfTextAtSize(title, 10) / 2, y: Y(138) - 3.5, size: 10, font: F.r, color: rgb(.4, .4, .4)});
+        continue;
+      }
       pg.drawLine({start: {x: 105 * MM, y: Y(BT)}, end: {x: 105 * MM, y: Y(297 - MB)}, thickness: .25 * MM, color: rgb(0, 0, 0)});
       for (let ci = 0; ci < 2; ci++) {
         let y = BT; const x0 = ML + (ci ? COL_W + 4 : 0);
@@ -523,13 +548,14 @@ async function buildPdf() {
             pg.drawLine({start: {x: (x0 + 1) * MM, y: Y(y + 2.95)}, end: {x: (x0 + 1 + w) * MM, y: Y(y + 2.95)}, thickness: .2 * MM, color: rgb(0, 0, 0)});
             y += LAB_H;
           }
+          // 원본 페이지는 한 번만 넣고, 필요한 영역만 잘라서(clip) 보여줌 → 파일 크기 작게
           const [p, sx0, sy0, sx1, sy1] = b.seg;
-          const ek = b.e.id + ':' + b.seg.join(',');
-          if (!embedCache[ek]) {
-            const doc = await srcDoc(b.e.id), sp = doc.getPage(p), H = sp.getHeight();
-            embedCache[ek] = await out.embedPage(sp, {left: sx0, bottom: H - sy1, right: sx1, top: H - sy0});
-          }
-          pg.drawPage(embedCache[ek], {x: x0 * MM, y: Y(y + b.hmm), width: b.wmm * MM, height: b.hmm * MM});
+          const {ep, H} = embedCache[b.e.id + ':' + p];
+          const k = b.wmm * MM / (sx1 - sx0), tx = x0 * MM, ty = Y(y + b.hmm);
+          const O = PDFLib;
+          pg.pushOperators(O.pushGraphicsState(), O.rectangle(tx, ty, b.wmm * MM, b.hmm * MM), O.clip(), O.endPath());
+          pg.drawPage(ep, {x: tx - sx0 * k, y: ty - (H - sy1) * k, xScale: k, yScale: k});
+          pg.pushOperators(O.popGraphicsState());
           y += b.hmm + GAP;
         }
       }
@@ -599,7 +625,7 @@ $('setSel').onchange = e => {
   const id = e.target.value;
   if (!id) { st.cur = null; st.sel = []; st.hidden = []; st.title = ''; }
   else if (isLinked(id)) { st.cur = id; Object.assign(st, linkedSel(id)); }
-  else { const s = st.sets[id]; st.cur = id; st.sel = s.sel.filter(itemOf); st.hidden = (s.hidden || []).filter(k => st.sel.includes(k)); st.title = s.title || ''; }
+  else { const s = st.sets[id]; st.cur = id; st.sel = s.sel.filter(okKey); st.hidden = (s.hidden || []).filter(k => st.sel.includes(k)); st.title = s.title || ''; }
   renderAll();
 };
 $('setSave').onclick = () => {
