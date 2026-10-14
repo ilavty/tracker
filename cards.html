@@ -568,6 +568,7 @@ function visibleTop() {
   try { const r = window.frameElement.getBoundingClientRect(); return Math.max(0, -r.top); } catch (e) { return 0; }
 }
 function scrollToTopOfApp(smooth) {
+  scrollRestoreTok++;
   const behavior = smooth ? 'smooth' : 'auto';
   if (IN_FRAME) { try { const r = window.frameElement.getBoundingClientRect(); if (r.top < 0) window.parent.scrollBy({ top: r.top - 10, behavior }); } catch (e) { } }
   else window.scrollTo({ top: 0, behavior });
@@ -586,7 +587,7 @@ try { if (IN_FRAME) { window.parent.addEventListener('scroll', placeTopBtn, { pa
 /* ---------------- modal system ---------------- */
 let modalStack = [];
 function openModal(html, cls = '') {
-  const ov = document.createElement('div');
+  const ov = document.createElement('div'); ov._scroll = getPageScroll();
   ov.className = 'ov' + (IN_FRAME ? ' inframe' : '');
   ov.innerHTML = `<div class="modal ${cls}">${html}</div>`;
   if (IN_FRAME) ov.style.paddingTop = (visibleTop() + 30) + 'px';
@@ -596,7 +597,12 @@ function openModal(html, cls = '') {
   setTimeout(reportHeight, 0); new ResizeObserver(reportHeight).observe(ov);
   return ov.querySelector('.modal');
 }
-function closeModal() { closePop(); const ov = modalStack.pop(); if (ov) ov.remove(); reportHeight(); }
+/* 모달 닫을 때 열기 전 스크롤 위치로 되돌리기 (iframe이면 부모 페이지 스크롤) */
+function getPageScroll() { if (IN_FRAME) { try { return window.parent.scrollY; } catch (e) { } } return window.scrollY; }
+function setPageScroll(y) { const w = IN_FRAME ? window.parent : window; try { if (Math.abs(w.scrollY - y) > 1) w.scrollTo({ top: y, behavior: 'instant' }); } catch (e) { } }
+var scrollRestoreTok = 0;
+function restorePageScroll(y) { if (y == null) return; const tok = ++scrollRestoreTok; const go = () => { if (tok === scrollRestoreTok) setPageScroll(y); }; go(); requestAnimationFrame(go); [60, 180, 400].forEach(t => setTimeout(go, t)); }
+function closeModal() { closePop(); const ov = modalStack.pop(); if (ov) { ov.remove(); restorePageScroll(ov._scroll); } reportHeight(); }
 function closeAllModals() { while (modalStack.length) closeModal(); }
 function inputModal(title, value, onOk, placeholder = '') {
   const m = openModal(`<h3>${esc(title)}</h3><input class="inp" id="im" value="${esc(value || '')}">
@@ -1122,7 +1128,7 @@ function edSave(again) {
   const now = Date.now(); ED.u = now; const isNew = ED._new; delete ED._new;
   if (isNew) S.cards.push(ED); else { const i = S.cards.findIndex(c => c.id === ED.id); if (i >= 0) S.cards[i] = ED; else S.cards.push(ED); }
   const keepFolder = ED.folderId, keepDate = ED.dateId, keepTags = ED.tags.slice();
-  save(); closeModal(); renderAll(); if (studyActive) { studyRefresh(); return; } if (!again) scrollToTopOfApp();
+  save(); closeModal(); renderAll(); if (studyActive) { studyRefresh(); return; }
   if (again) { openCardEditor(); ED.folderId = keepFolder; ED.dateId = keepDate; ED.tags.push(...keepTags); $('#edFolder').value = keepFolder || ''; $('#edDate').value = keepDate || ''; tagPicker($('#edCardTags'), ED.tags, null, 'card-t'); }
 }
 function edDelete() {
