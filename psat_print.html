@@ -121,6 +121,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 
   <section class="panel">
     <div class="sets"><select id="setSel"></select><button id="setSave">저장</button><button id="setDel">삭제</button></div>
+    <div id="linkInfo" style="display:none;padding:2px 14px 0;font-size:11px;color:var(--brown)"></div>
     <div class="ph" style="padding-top:8px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2><span class="sp"></span>
       <button id="shuffle" style="padding:3px 8px">섞기</button>
       <button id="clear" style="padding:3px 8px">비우기</button></div>
@@ -159,11 +160,12 @@ const CIRC = '①②③④⑤';
 const LS = 'psat_print_v2';
 const RS = 2;                         // 미리보기 렌더 배율
 
-let st = {sel: [], hidden: [], sub: '상황', open: null, title: '', compact: false, ans: true, z: .62, sets: {}, cur: null};
+let st = {sel: [], hidden: [], sub: '상황', open: null, title: '', compact: false, ans: true, z: .62, sets: {}, cur: null, link: {}};
 try { Object.assign(st, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
 const save = () => {
   st.hidden = st.hidden.filter(k => st.sel.includes(k));
   if (st.cur && st.sets[st.cur]) Object.assign(st.sets[st.cur], {sel: [...st.sel], hidden: [...st.hidden], title: st.title});
+  if (isLinked()) st.link[st.cur] = {order: [...st.sel], hidden: [...st.hidden], title: st.title};
   try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) {}
 };
 
@@ -175,8 +177,65 @@ function itemOf(key) {
   const it = e.items.find(i => i.n[0] === +n);
   return it ? {e, it} : null;
 }
+st.link = st.link || {};
 st.sel = st.sel.filter(itemOf);
 st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
+
+/* ───── PSAT 트래커 보충학습(📌) 자동 연결 (읽기만 함) ───── */
+const RV_SUBJ = {언어논리: '언어', 자료해석: '자료', 상황판단: '상황'};
+const LINKED = {};          // 'rv:상황판단' → {name, keys, miss}
+let linkLoaded = false;
+function isLinked(id = st.cur) { return !!id && id.startsWith('rv:'); }
+function findExam(level, sub, yearRaw) {
+  const y = String(yearRaw || ''), yd = (y.match(/\d{4}/) || [''])[0];
+  const pool = EXAMS.filter(e => e.sub === sub);
+  const pick = (kind, year, book) => pool.find(e => e.kind === kind && e.year === year && (book === undefined || (e.book === '모의') === (book === '모의')));
+  if (/모의/.test(y) || (level === '7급' && yd === '2020')) return pick('7급', '2020', '모의');
+  if (level === '민경채') return pick('민경채', yd) || pick('7급', yd, '');
+  if (level === '7급') {
+    if (/근로|산업|\(2\)/.test(y) && yd === '2025') return pick('7급근로', yd);
+    return pick('7급', yd, '') || pick('민경채', yd);
+  }
+  if (/외교/.test(y)) return pick('외교', yd);
+  return pick('5급', yd);
+}
+function buildLinked(box) {
+  const by = {};
+  (box || []).slice().sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0)).forEach(en => {
+    const parts = String(en.idKeyStr || '').split('|');
+    if (parts[0] && parts[0] !== '기출') return;          // 유형모음 등은 제외
+    const level = en.level || parts[1], subj = en.subject || parts[2], year = parts[3] || en.label;
+    const sub = RV_SUBJ[subj]; if (!sub) return;
+    const id = 'rv:' + subj;
+    const g = by[id] || (by[id] = {name: subj + '_보충학습', keys: [], miss: 0});
+    const e = findExam(level, sub, year);
+    const it = e && e.items.find(i => i.n.includes(+en.num));
+    if (!it) { g.miss++; return; }
+    const k = keyOf(e, it);
+    if (!g.keys.includes(k)) g.keys.push(k);
+  });
+  Object.keys(LINKED).forEach(k => delete LINKED[k]);
+  Object.assign(LINKED, by);
+}
+function linkedSel(id) {
+  const L = LINKED[id], m = st.link[id] || {};
+  if (!L) return {sel: [], hidden: [], title: id.slice(3) + '_보충학습'};
+  const order = (m.order || []).filter(k => L.keys.includes(k));
+  const sel = order.concat(L.keys.filter(k => !order.includes(k)));
+  return {sel, hidden: (m.hidden || []).filter(k => sel.includes(k)), title: m.title || L.name};
+}
+async function loadReviewBox() {
+  let box = null;
+  try {
+    const r = await fetch('https://tracker-d3a39-default-rtdb.firebaseio.com/psat_tracker_data/psat_tracker_data_v1/reviewBox.json', {cache: 'no-store'});
+    if (r.ok) box = await r.json();
+  } catch (e) {}
+  if (!Array.isArray(box)) { try { box = JSON.parse(localStorage.getItem('psatTrackerReviewBox_v1') || '[]'); } catch (e) { box = []; } }
+  buildLinked(box);
+  linkLoaded = true;
+  if (isLinked()) Object.assign(st, linkedSel(st.cur));
+  renderAll();
+}
 if (st.cur && !st.sets[st.cur]) st.cur = null;
 const isOn = k => !st.hidden.includes(k);
 const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
@@ -254,9 +313,16 @@ const EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.2 4.1M6.6 6.6A17.4 17.4 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
 function renderSets() {
   const ids = Object.keys(st.sets).sort((a, b) => st.sets[a].name.localeCompare(st.sets[b].name, 'ko'));
-  $('setSel').innerHTML = `<option value="">＋ 새 묶음 (저장 안 됨)</option>` + ids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(st.sets[id].name)}</option>`).join('');
-  $('setSave').textContent = st.cur ? '이름' : '저장';
-  $('setDel').style.display = st.cur ? '' : 'none';
+  const lids = ['rv:언어논리', 'rv:자료해석', 'rv:상황판단'].filter(id => LINKED[id] || st.cur === id);
+  $('setSel').innerHTML = `<option value="">＋ 새 묶음 (저장 안 됨)</option>` +
+    (ids.length ? '<optgroup label="내 묶음">' + ids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(st.sets[id].name)}</option>`).join('') + '</optgroup>' : '') +
+    (lids.length ? '<optgroup label="PSAT 보충학습 (자동)">' + lids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(id.slice(3))}_보충학습 (${LINKED[id] ? LINKED[id].keys.length : 0})</option>`).join('') + '</optgroup>' : '');
+  $('setSave').textContent = isLinked() ? '복사' : st.cur ? '이름' : '저장';
+  $('setSave').title = isLinked() ? '이 보충학습 목록을 내 묶음으로 복사' : '';
+  $('setDel').style.display = st.cur && !isLinked() ? '' : 'none';
+  const miss = isLinked() && LINKED[st.cur] ? LINKED[st.cur].miss : 0;
+  $('linkInfo').textContent = isLinked() ? (linkLoaded ? 'PSAT 트래커 📌 자동 연결' + (miss ? ` · 못 찾은 문제 ${miss}개` : '') : '트래커에서 불러오는 중…') : '';
+  $('linkInfo').style.display = isLinked() ? '' : 'none';
 }
 function renderSel() {
   const off = st.hidden.length;
@@ -264,7 +330,7 @@ function renderSel() {
   $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
     const {e, it} = itemOf(k);
     const on = isOn(k);
-    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${i + 1}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button><button class="x" data-x="${i}">✕</button></div>`;
+    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${i + 1}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
   }).join('') : '<div class="empty">왼쪽에서 시험 → 번호를 눌러 담아줘<br>드래그로 순서 바꾸기</div>';
 }
 
@@ -498,6 +564,7 @@ $('bank').onclick = ev => {
   const ex = ev.target.closest('.ex');
   if (ex) { st.open = st.open === ex.dataset.e ? null : ex.dataset.e; renderBank(); save(); return; }
   const all = ev.target.dataset.all;
+  if (all && lockLinked()) return;
   if (all) {
     const e = EX[all], keys = e.items.map(it => keyOf(e, it));
     const on = keys.every(k => st.sel.includes(k));
@@ -505,17 +572,30 @@ $('bank').onclick = ev => {
     renderAll(); return;
   }
   const n = ev.target.closest('.num');
+  if (n && lockLinked()) return;
   if (n) { const k = n.dataset.k; st.sel = st.sel.includes(k) ? st.sel.filter(x => x !== k) : [...st.sel, k]; renderAll(); }
 };
-$('clear').onclick = () => { if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; st.hidden = []; renderAll(); } };
+function lockLinked() {
+  if (!isLinked()) return false;
+  alert('보충학습 묶음은 PSAT 트래커의 📌로 관리돼요.\n여기서 바꾸려면 위에서 [복사]해서 내 묶음으로 만들어줘!');
+  return true;
+}
+$('clear').onclick = () => { if (lockLinked()) return; if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; st.hidden = []; renderAll(); } };
 $('setSel').onchange = e => {
   save();
   const id = e.target.value;
   if (!id) { st.cur = null; st.sel = []; st.hidden = []; st.title = ''; }
+  else if (isLinked(id)) { st.cur = id; Object.assign(st, linkedSel(id)); }
   else { const s = st.sets[id]; st.cur = id; st.sel = s.sel.filter(itemOf); st.hidden = (s.hidden || []).filter(k => st.sel.includes(k)); st.title = s.title || ''; }
   renderAll();
 };
 $('setSave').onclick = () => {
+  if (isLinked()) {
+    const name = (prompt('내 묶음으로 복사할 이름', st.title) || '').trim(); if (!name) return;
+    const id = 's' + Date.now().toString(36);
+    st.sets[id] = {name, sel: [...st.sel], hidden: [...st.hidden], title: st.title};
+    st.cur = id; renderAll(); return;
+  }
   const old = st.cur ? st.sets[st.cur].name : '';
   const name = (prompt(st.cur ? '묶음 이름 바꾸기' : '이 묶음 이름 (예: 논리 퀴즈)', old || st.title || '') || '').trim();
   if (!name) return;
@@ -568,6 +648,7 @@ $('bank').addEventListener('mousemove', ev => {
 $('bank').addEventListener('mouseleave', () => { hov.style.display = 'none'; hovKey = null; });
 
 renderAll();
+loadReviewBox();
 </script>
 </body>
 </html>
