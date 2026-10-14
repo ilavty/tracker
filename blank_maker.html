@@ -25,7 +25,7 @@ html::-webkit-scrollbar-track{background:transparent}
 html::-webkit-scrollbar-thumb{background:#c9b8a8;border-radius:999px;border:3px solid var(--bg);min-height:48px}
 html::-webkit-scrollbar-thumb:hover{background:var(--brown)}
 body{font-family:'Paperlogy','GmarketSans',-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .brand{font-family:'GmarketSans';font-weight:700;font-size:15px;letter-spacing:.02em;white-space:nowrap}
 .brand span{color:var(--brown);margin-left:4px}
 #sync{font-size:11px;color:#9a948e;white-space:nowrap}#sync.ok{color:#5aaee0}#sync.ing{color:#9a948e}#sync.off{color:#d9534f}
@@ -101,7 +101,7 @@ body.noside #side{display:none}
 .thumb .tn{display:flex;justify-content:center;gap:6px;font-size:11px;color:#999;margin-top:5px}
 .thumb .tn b{color:var(--brown);font-weight:700}
 #pages{flex:1;min-width:0;overflow-x:auto;padding:12px 12px 100px}
-.page{position:relative;background:#fff;box-shadow:0 2px 14px rgba(60,40,20,.08)}
+.page{position:relative;background:#fff;box-shadow:0 2px 14px rgba(60,40,20,.08);isolation:isolate}
 .page .pv{position:absolute;inset:0;width:100%;height:100%}
 .strips canvas{position:absolute;left:0;width:100%;display:block}
 #side{user-select:none;-webkit-user-select:none}
@@ -183,7 +183,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-7</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-8</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
