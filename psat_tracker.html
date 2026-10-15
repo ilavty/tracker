@@ -2571,18 +2571,19 @@ function renderReview(){
   const lvlF = document.getElementById('reviewFilterLevel').value;
   const subjF = document.getElementById('reviewFilterSubject').value;
   const enriched = reviewBox.map(entry=>{
-    let reasonText='', reasonKeywords=[], typeKw=[], mine='', mineOk=null;
-    records.filter(r=>idKey(r)===entry.idKeyStr && entry.num<=r.total).forEach(r=>{
+    let reasonText='', reasonKeywords=[], typeKw=[], tries=[];
+    const ak0 = answerKeyStore[entry.idKeyStr] && answerKeyStore[entry.idKeyStr][entry.num];
+    records.filter(r=>idKey(r)===entry.idKeyStr && entry.num<=r.total).sort((a,b)=>(a.round||1)-(b.round||1)).forEach(r=>{
+      if(r.wrongs[entry.num]) tries.push({v:r.wrongs[entry.num].selectedChoice||'?', ok:false});
+      else tries.push({v:(r.correctChoices&&r.correctChoices[entry.num])||(ak0!==undefined?String(ak0):''), ok:true});
       if(r.wrongs[entry.num]){
-        if(r.wrongs[entry.num].selectedChoice){ mine = r.wrongs[entry.num].selectedChoice; mineOk=false; }
         if(r.wrongs[entry.num].reasonText) reasonText = r.wrongs[entry.num].reasonText;
         reasonKeywords = [...new Set([...reasonKeywords, ...(r.wrongs[entry.num].reasonKeywords||[])])];
       }
-      else if(r.correctChoices && r.correctChoices[entry.num]){ mine = r.correctChoices[entry.num]; mineOk=true; }
       if(r.problemTypeKeywords[entry.num]) typeKw = [...new Set([...typeKw, ...r.problemTypeKeywords[entry.num]])];
     });
     const ak = answerKeyStore[entry.idKeyStr] && answerKeyStore[entry.idKeyStr][entry.num];
-    return { entry, reasonText, reasonKeywords, typeKw, ans: ak!==undefined?String(ak):(mineOk?String(mine):''), mine: String(mine), mineOk };
+    return { entry, reasonText, reasonKeywords, typeKw, ans: ak!==undefined?String(ak):'', tries };
   }).filter(x=>{
     if(lvlF!=='all' && x.entry.level!==lvlF) return false;
     if(subjF!=='all' && x.entry.subject!==subjF) return false;
@@ -2592,14 +2593,14 @@ function renderReview(){
   });
   document.getElementById('reviewEmpty').style.display = enriched.length ? 'none':'block';
   const sorted = enriched.sort((a,b)=>b.entry.addedAt-a.entry.addedAt);
-  document.getElementById('reviewTbody').innerHTML = sorted.map(({entry, reasonText, reasonKeywords, typeKw, ans, mine, mineOk})=>{
+  document.getElementById('reviewTbody').innerHTML = sorted.map(({entry, reasonText, reasonKeywords, typeKw, ans, tries})=>{
     const marks = entry.marks || [false,false,false];
     const marksHtml = marks.map(m=>`<span class="review-mark ${m?'filled':''}"></span>`).join('');
     return `<tr>
       <td class="col-tight"><span class="chip-static ${levelChipClass(entry.level)}">${entry.level}</span></td>
       <td class="col-tight"><span class="chip-static c-subj-${entry.subject}">${entry.subject}</span></td>
       <td class="col-tight">${entry.label}</td>
-      <td class="col-tight" style="font-weight:800;cursor:pointer;color:#2A558C;" data-opendetail="${encodeURIComponent(entry.idKeyStr)}::${entry.num}::${encodeURIComponent(entry.level)}::${encodeURIComponent(entry.subject)}::${encodeURIComponent(String(entry.label))}">#${entry.num}${ans?` <span style="color:#111;font-weight:700;">${toCircled(ans)}</span>`:''}${mine?` <span style="color:${mineOk?'#2A6FD6':'#D23B3B'};font-weight:700;">${toCircled(mine)}</span>`:''}</td>
+      <td class="col-tight" style="font-weight:800;cursor:pointer;color:#2A558C;" data-opendetail="${encodeURIComponent(entry.idKeyStr)}::${entry.num}::${encodeURIComponent(entry.level)}::${encodeURIComponent(entry.subject)}::${encodeURIComponent(String(entry.label))}">#${entry.num}${ans?` <span style="color:#111;font-weight:700;">${toCircled(ans)}</span>`:''}${tries.map(t=>t.v?` <span style="color:${t.ok?'#2A6FD6':'#D23B3B'};font-weight:700;">${toCircled(t.v)}</span>`:'').join('')}</td>
       <td>${reasonText || '-'}${reasonKeywords.length?'<br>'+reasonKeywords.map(k=>`<span class="kw-tag">${k}</span>`).join(''):''}</td>
       <td>${typeKw.length?typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join(''):'-'}</td>
       <td><span class="review-marks-area" data-rid="${entry.id}">${marksHtml}</span></td>
