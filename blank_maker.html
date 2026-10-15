@@ -183,7 +183,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.14-8</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.15-1</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -1020,7 +1020,9 @@ function setFull(on){
   document.body.classList.toggle('full',on);
   if(inFrame)try{parent.postMessage({type:'dbFull',on},'*');}catch(e){}
   const el=document.documentElement;
-  if(on&&!fsEl()){const rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq)try{const r=rq.call(el);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
+  // 아이패드: 진짜 전체화면은 아래로 쓸면 꺼져버려서, 앱 안에서만 화면을 넓힘(DATABASE 메뉴·툴바 정리)
+  const TOUCHDEV=/iPad|iPhone/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(on&&!fsEl()&&!TOUCHDEV){const rq=el.requestFullscreen||el.webkitRequestFullscreen;if(rq)try{const r=rq.call(el);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
   if(!on&&fsEl()){const ex=document.exitFullscreen||document.webkitExitFullscreen;if(ex)try{const r=ex.call(document);if(r&&r.catch)r.catch(()=>{});}catch(e){}}
   setTimeout(()=>{setHH();if(S.pages&&S.pages.length){layout();rerenderAll();}},250);}
 $('#fsBtn').onclick=()=>setFull(!document.body.classList.contains('full'));
