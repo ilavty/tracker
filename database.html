@@ -85,5 +85,17 @@ document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.cl
 let last='ip';try{last=localStorage.getItem(KEY)||'ip'}catch(e){}
 show(['ip','il','case','psat','blank'].includes(last)?last:'ip');
 </script>
+<script>
+/* 빈칸 탭이 예전에 localStorage(사이트 전체 공용 5MB)에 넣던 작업 사본을 IndexedDB로 옮기고 비워서 다른 앱 저장 공간 확보 */
+(function(){try{const ks=Object.keys(localStorage).filter(k=>k.startsWith('bm:f:'));if(!ks.length)return;
+  const r=indexedDB.open('blank_maker',1);
+  r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('files'))d.createObjectStore('files');if(!d.objectStoreNames.contains('meta'))d.createObjectStore('meta');};
+  r.onsuccess=()=>{const db=r.result;const tx=db.transaction('meta','readwrite');const st=tx.objectStore('meta');
+    ks.forEach(k=>{let v=null;try{v=JSON.parse(localStorage.getItem(k));}catch(e){}
+      if(!v){localStorage.removeItem(k);return;}
+      const key='work:'+k.slice(5);const g=st.get(key);g.onsuccess=()=>{const cur=g.result;if(!cur||(cur.at||0)<(v.at||0))st.put(v,key);};});
+    tx.oncomplete=()=>{ks.forEach(k=>localStorage.removeItem(k));};};
+}catch(e){}})();
+</script>
 </body>
 </html>

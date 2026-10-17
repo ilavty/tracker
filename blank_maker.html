@@ -183,7 +183,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.15-1</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.18-1</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -271,7 +271,8 @@ const IDB={db:null,
     tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);});}catch(e){console.warn('idb',e);return null;}},
   put(store,k,v){return this.op(store,'readwrite',s=>s.put(v,k));},
   get(store,k){return this.op(store,'readonly',s=>s.get(k));},
-  del(store,k){return this.op(store,'readwrite',s=>s.delete(k));}};
+  del(store,k){return this.op(store,'readwrite',s=>s.delete(k));},
+  keys(store){return this.op(store,'readonly',s=>s.getAllKeys());}};
 let restoring=false;
 function saveSession(){if(restoring)return;IDB.put('meta','session',{names:docs.map(d=>d.id===S.docId?S.name:d.name),active:S.name||null});}
 async function restoreSession(){
@@ -449,15 +450,21 @@ function reanchorNote(t){
 
 /* ---------- storage / history ---------- */
 const KEY=n=>'bm:f:'+n;
-function save(){if(!S.name)return;const wasDirty=S.dirty;S.dirty=true;if(!wasDirty)renderTabs();cloudPush(S.name,S.boxes,S.texts,S.imgs||[]);try{localStorage.setItem(KEY(S.name),JSON.stringify({boxes:S.boxes,texts:cleanTexts(S.texts),imgs:S.imgs||[],at:Date.now()}));}catch(e){toast('저장 공간이 부족해요');}updLost();}
-function getSaved(n){try{return JSON.parse(localStorage.getItem(KEY(n)));}catch(e){return null;}}
-function listSaved(){return Object.keys(localStorage).filter(k=>k.startsWith('bm:f:')).map(k=>({n:k.slice(5),at:(getSaved(k.slice(5))||{}).at||0})).sort((a,b)=>b.at-a.at).map(o=>o.n);}
+function save(){if(!S.name)return;const wasDirty=S.dirty;S.dirty=true;if(!wasDirty)renderTabs();cloudPush(S.name,S.boxes,S.texts,S.imgs||[]);IDB.put('meta','work:'+S.name,JSON.parse(JSON.stringify({boxes:S.boxes,texts:cleanTexts(S.texts),imgs:S.imgs||[],at:Date.now()})));updLost();}
+async function getSaved(n){const v=await IDB.get('meta','work:'+n);if(v)return v;try{return JSON.parse(localStorage.getItem(KEY(n)));}catch(e){return null;}}
+// one-time move: old work copies in localStorage (shared 5MB with the other apps) -> IndexedDB
+(async()=>{try{const ks=Object.keys(localStorage).filter(k=>k.startsWith('bm:f:'));
+  for(const k of ks){let v=null;try{v=JSON.parse(localStorage.getItem(k));}catch(e){}
+    if(v){const n=k.slice(5);const cur=await IDB.get('meta','work:'+n);if(!cur||(cur.at||0)<(v.at||0))await IDB.put('meta','work:'+n,v);}
+    localStorage.removeItem(k);}
+  if(ks.length)console.log('moved',ks.length,'work copies to IndexedDB');}catch(e){console.warn(e);}})();
+async function listSaved(){const ks=(await IDB.keys('meta'))||[];return ks.filter(k=>typeof k==='string'&&k.startsWith('work:')).map(k=>k.slice(5));}
 function snap(){S.hist.push(JSON.stringify({b:S.boxes,t:cleanTexts(S.texts),m:S.imgs||[]}));if(S.hist.length>150)S.hist.shift();}
 function undo(){const s=S.hist.pop();if(!s){toast('더 되돌릴 게 없어요');return;}const o=JSON.parse(s);S.boxes=o.b;S.texts=o.t;S.imgs=o.m||[];S.sel=null;S.selImg=null;save();drawAll();}
 $('#undo').onclick=undo;
 function pickPrev(names){return new Promise(res=>{const m=$('#modal');
   m.querySelector('select').innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');m.classList.add('on');
-  $('#mYes').onclick=async()=>{m.classList.remove('on');const n=m.querySelector('select').value,loc=getSaved(n),rem=await cloudGet(n);res((rem&&(!loc||(rem.at||0)>=(loc.at||0)))?rem:loc);};
+  $('#mYes').onclick=async()=>{m.classList.remove('on');const n=m.querySelector('select').value,loc=await getSaved(n),rem=await cloudGet(n);res((rem&&(!loc||(rem.at||0)>=(loc.at||0)))?rem:loc);};
   $('#mNo').onclick=()=>{m.classList.remove('on');res(null);};});}
 
 /* ---------- work file ---------- */
@@ -511,10 +518,10 @@ async function openFile(file,quiet){
     DOCF.forEach(k=>S[k]=undefined);const doc={id:uid(),name:file.name};docs.push(doc);S.docId=doc.id;
     S.name=file.name;S.bytes=buf;S.pages=pages;S.pdf=pdf;S.libDoc=null;S.sel=null;S.selNote=null;S.hist=[];
     let data=carried||PEND[S.name];delete PEND[S.name];
-    if(!data){toast('저장된 작업 확인 중…',0);const loc=getSaved(S.name),rem=await cloudGet(S.name);
+    if(!data){toast('저장된 작업 확인 중…',0);const loc=await getSaved(S.name),rem=await cloudGet(S.name);
       data=(rem&&(!loc||(rem.at||0)>=(loc.at||0)))?rem:loc;}
     if(!data&&!quiet){const base=n=>n.replace(/\.pdf$/i,'').replace(/[\s_\-()]*(v\d+|수정|최종|final|copy|사본|\d+)?$/i,'').toLowerCase();
-      const me=base(S.name);const others=[...new Set([...listSaved(),...await cloudNames()])].filter(n=>n!==S.name&&!docs.some(d=>d.name===n)).filter(n=>{const o=base(n);let k=0;while(k<o.length&&o[k]===me[k])k++;return k>=4||(o.length>=2&&(me.includes(o)||o.includes(me)));});
+      const me=base(S.name);const others=[...new Set([...(await listSaved()),...await cloudNames()])].filter(n=>n!==S.name&&!docs.some(d=>d.name===n)).filter(n=>{const o=base(n);let k=0;while(k<o.length&&o[k]===me[k])k++;return k>=4||(o.length>=2&&(me.includes(o)||o.includes(me)));});
       if(others.length)data=await pickPrev(others);}
     S.boxes=(data&&data.boxes)||[];S.texts=(data&&data.texts)||[];S.imgs=(data&&data.imgs)||[];S.selImg=null;
     await loadImgSrcs(S.imgs);
