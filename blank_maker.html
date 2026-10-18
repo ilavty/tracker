@@ -183,7 +183,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.18-1</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.19</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -414,13 +414,15 @@ function disp(b){const r=dispRaw(b.raw,b.free),a=b.adj;if(a){r.x+=a.dx;r.y+=a.dy
 
 /* ---------- re-anchoring ---------- */
 function locate(runs,home){
-  const tryPage=(pi,strict)=>{const p=S.pages[pi];if(!p)return null;const idx=[];
+  const tryPage=(pi,strict)=>{const p=S.pages[pi];if(!p)return null;const idx=[];let sc=0;
     for(const r of runs){const f=findRun(p,r);if(!f)return null;if(strict&&r.text.length<3&&f.score<3)return null;
-      for(let k=f.a;k<=f.b;k++)idx.push(p.map[k]);}
-    return idx;};
-  let idx=tryPage(home,false);if(idx)return{pi:home,idx};
-  for(let q=0;q<S.pages.length;q++){if(q===home)continue;idx=tryPage(q,true);if(idx)return{pi:q,idx};}
-  return null;}
+      sc+=f.score;for(let k=f.a;k<=f.b;k++)idx.push(p.map[k]);}
+    return{idx,sc};};
+  // 모든 쪽에서 앞뒤 글자가 가장 잘 맞는 곳을 고름(같으면 원래 쪽에 가까운 곳) → 쪽이 밀려도 따라감
+  let best=null;
+  for(let q=0;q<S.pages.length;q++){const r=tryPage(q,q!==home);if(!r)continue;
+    const v=r.sc*1000-Math.abs(q-home);if(!best||v>best.v)best={pi:q,idx:r.idx,v};}
+  return best;}
 function reanchor(b){
   if(b.cell&&b.runs&&b.runs.length&&b.toff){
     const f=locate(b.runs,b.page);
@@ -435,6 +437,16 @@ function reanchor(b){
   const p=S.pages[f.pi],nr=bbox(p,f.idx);
   const mv=f.pi!==b.page||['x','y','w','h'].some(k=>Math.abs(nr[k]-b.raw[k])>.5);
   b.page=f.pi;b.raw=nr;b.lost=false;b.runs=mkRuns(p,f.idx);return mv?'moved':'same';}
+/* 글자에 안 붙은 것(⌥자유박스·빈 곳 텍스트/이미지)은 같은 쪽 빈칸들이 옮겨간 만큼 같이 이동 */
+function reanchorAll(){const rep={same:0,moved:0,lost:0},shift={},fixed=[];
+  const anch=(it,isBox)=>isBox?((it.cell&&it.runs&&it.runs.length&&it.toff)||!(it.free||!it.runs||!it.runs.length)):!!it.anchor;
+  const go=(it,isBox)=>{if(!anch(it,isBox)){fixed.push(it);return;}const o=it.page,r=isBox?reanchor(it):reanchorNote(it);rep[r]++;
+    if(r!=='lost'){const v=shift[o]||(shift[o]={});v[it.page-o]=(v[it.page-o]||0)+1;}};
+  S.boxes.forEach(b=>go(b,true));S.texts.forEach(t=>go(t,false));S.imgs.forEach(m=>go(m,false));
+  const offAt=pg=>{for(let d=0;d<=S.pages.length+50;d++)for(const q of[pg-d,pg+d]){const v=shift[q];if(v){let bk=0,bn=-1;for(const k in v)if(v[k]>bn){bn=v[k];bk=+k;}return bk;}}return 0;};
+  fixed.forEach(it=>{const o=it.page;let np=o+offAt(o);const out=np<0||np>=S.pages.length;np=Math.max(0,Math.min(S.pages.length-1,np));
+    it.page=np;if(out){it.lost=true;rep.lost++;}else if(np!==o){it.lost=false;rep.moved++;}else rep.same++;});
+  return rep;}
 function noteAnchor(t){
   const p=S.pages[t.page];let best=-1,bd=1e9;
   p.map.forEach((j,k)=>{const c=p.chars[j];const d=Math.hypot(c.x0-t.x,c.top-t.y);if(d<bd){bd=d;best=k;}});
@@ -485,7 +497,7 @@ async function loadWork(file,viaDrop){
   if(tgt)activate(tgt);
   else if(viaDrop||!S.pages||!S.pages.length){PEND[data.pdf]=data;toast(`작업 불러옴! '${data.pdf}' PDF를 열면 이어서 돼요`,4500);return;}
   snap();S.boxes=data.boxes;S.texts=data.texts||[];S.imgs=data.imgs||[];
-  const rep={same:0,moved:0,lost:0};S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);S.imgs.forEach(m=>rep[reanchorNote(m)]++);
+  const rep=reanchorAll();
   save();drawAll();S.dirty=false;renderTabs();toast(`작업 불러옴 · 그대로 ${rep.same} · 자리 옮김 ${rep.moved} · 확인 필요 ${rep.lost}`,6000);}
 $('#saveWork').onclick=saveWork;
 $('#workFile').onchange=e=>{if(e.target.files[0])loadWork(e.target.files[0]);e.target.value='';};
@@ -526,8 +538,7 @@ async function openFile(file,quiet){
     S.boxes=(data&&data.boxes)||[];S.texts=(data&&data.texts)||[];S.imgs=(data&&data.imgs)||[];S.selImg=null;
     await loadImgSrcs(S.imgs);
     let rep=null;
-    if(S.boxes.length||S.texts.length||S.imgs.length){rep={same:0,moved:0,lost:0};
-      S.boxes.forEach(b=>rep[reanchor(b)]++);S.texts.forEach(t=>rep[reanchorNote(t)]++);S.imgs.forEach(m=>rep[reanchorNote(m)]++);}
+    if(S.boxes.length||S.texts.length||S.imgs.length){rep=reanchorAll();}
     $('#empty').classList.add('hidden');$('#fname').textContent=S.name;
     buildPages();save();buildSide();renderTabs();
     if(!restoring)IDB.put('files',S.name,new Blob([buf],{type:'application/pdf'}));saveSession();
