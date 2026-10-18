@@ -78,6 +78,11 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 #pages .q.flash,#pages .page.flash{outline:1.2mm solid rgba(90,174,224,.55);outline-offset:1mm;transition:outline-color .3s}
 .sl.drag{opacity:.4}
 .sl.over{border-color:var(--sky)}
+.sl{position:relative}
+.sl.insT::before,.sl.insB::after{content:'';position:absolute;left:-4px;right:-4px;height:3px;border-radius:3px;background:var(--brown);pointer-events:none}
+.sl.insT::before{top:-5px}
+.sl.insB::after{bottom:-5px}
+.sl.drag{opacity:.35}
 .empty{color:var(--sub);font-size:12px;padding:20px 8px;text-align:center;line-height:1.7}
 .settings{border-top:1px solid var(--line);padding:12px 16px 16px;display:flex;flex-direction:column;gap:9px}
 .settings label{font-size:11px;color:var(--sub);display:block;margin-bottom:3px}
@@ -99,13 +104,13 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 
 /* ───── 인쇄 페이지 ───── */
 .page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);font-family:'Paperlogy','GmarketSans',sans-serif;color:#000}
-.phead{position:absolute;left:8mm;right:8mm;top:10mm;height:7.2mm;display:flex;align-items:flex-start;gap:3mm;border-bottom:.35mm solid #000}
-.phead .tbox{border:.25mm solid #000;height:5.6mm;display:flex;align-items:center;justify-content:center;font-size:9.5pt;font-weight:600;white-space:nowrap;overflow:hidden}
-.phead .t1{width:72mm}
+.phead{position:absolute;left:8mm;right:8mm;top:6mm;height:5.9mm;display:flex;align-items:flex-start;gap:3mm;border-bottom:.2mm solid #000}
+.phead .tbox{border:.25mm solid #000;height:4.6mm;display:flex;align-items:center;justify-content:center;font-size:8pt;font-weight:600;white-space:nowrap;overflow:hidden}
+.phead .t1{width:60mm}
 .phead .t2{width:30mm;font-size:8pt}
-.phead .t3{width:12mm;font-size:8pt}
-.phead .ctr{position:absolute;left:0;right:0;top:0;line-height:5.6mm;text-align:center;font-size:10pt;font-weight:600;pointer-events:none}
-.pbody{position:absolute;left:8mm;right:8mm;top:22mm;bottom:10mm}
+.phead .t3{width:9mm;font-size:6.5pt;font-weight:400}
+.phead .ctr{position:absolute;left:0;right:0;top:0;line-height:4.6mm;text-align:center;font-size:10pt;font-weight:600;pointer-events:none}
+.pbody{position:absolute;left:8mm;right:8mm;top:14mm;bottom:10mm}
 .col{position:absolute;top:0;bottom:0;width:calc((100% - 4mm)/2)}
 .col.l{left:0}
 .col.r{right:0}
@@ -132,7 +137,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
     <div class="sets"><select id="setSel"></select><button id="setSave">저장</button><button id="setDel">삭제</button></div>
     <div id="linkInfo" style="display:none;padding:2px 14px 0;font-size:11px;color:var(--brown)"></div>
     <div class="ph" style="padding-top:8px;padding-bottom:6px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2></div>
-    <div class="tools"><button id="addDiv" title="선택한 줄 아래(없으면 맨 끝)에 구분 페이지 추가">+ 구분 페이지</button><span class="sp"></span><button id="shuffle">섞기</button><button id="clear">비우기</button></div>
+    <div class="tools"><button id="addDiv" title="선택한 줄 아래(없으면 맨 끝)에 구분 페이지 추가">+ 구분 페이지</button><span class="sp"></span><button id="sortNo" title="구분 페이지 사이에서 문제 번호순(같은 번호는 오래된 시험부터)">번호순</button><button id="shuffle">섞기</button><button id="clear">비우기</button></div>
     <div class="scroll" id="selList"></div>
     <div class="settings">
       <div><label>머리말 제목</label><input type="text" id="title"></div>
@@ -361,7 +366,7 @@ function renderSel() {
 
 /* ───── 페이지 조립 ───── */
 // 프린터 여백 고려: 100%로 찍어도 안 잘리게 바깥 여백 확보
-const ML = 8, MT = 9, BT = 22, MB = 10, CW = 210 - 2 * ML;
+const ML = 8, MT = 5, BT = 14, MB = 10, CW = 210 - 2 * ML;
 const COL_W = (CW - 4) / 2, COL_H = 297 - BT - MB, LAB_H = 4.2, GAP = 8;
 function layout() {
   const pages = []; let cur = null, ci = 0, used = 0;
@@ -390,7 +395,7 @@ function layout() {
 function head(pno, center, area) {
   const t = st.title || defaultTitle();
   return `<div class="phead"><div class="tbox t1">${esc(t)}</div>${center ? `<div class="ctr">${esc(center)}</div>` : ''}<span class="sp"></span>
-    <div class="tbox t2">${esc(area)}</div><div class="tbox t3">${center ? '답지' : pno + '쪽'}</div></div>`;
+    <div class="tbox t3">${center ? '답지' : pno + '쪽'}</div></div>`;
 }
 function subsOfSel() { return [...new Set(st.sel.filter(k => !isDiv(k)).map(k => itemOf(k).e.sub))]; }
 function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]].replace('영역', '') + ' 기출모음' : 'PSAT 기출모음'; }
@@ -511,12 +516,11 @@ function rect(pg, x, y, w, h, opt = {}) {
 // 머리말: 페이지 (ML, MT) 기준, 폭 CW
 function drawHead(pg, F, title, center, area, right) {
   const y = MT + 1;
-  const box = (bx, w, t, size) => { rect(pg, ML + bx, y, w, 5.6); txt(pg, t, F.b, size, ML + bx + w / 2, y + 2.8, 'center', w - 2); };
-  box(0, 72, title, 3.35);
-  box(CW - 45, 30, area, 2.82);
-  box(CW - 12, 12, right, 2.82);
-  if (center) txt(pg, center, F.b, 3.5, 105, y + 2.8);
-  rect(pg, ML, MT + 8.2, CW, .35, {fill: [0, 0, 0], stroke: false});
+  const box = (bx, w, t, size, f) => { rect(pg, ML + bx, y, w, 4.6); txt(pg, t, f || F.b, size, ML + bx + w / 2, y + 2.3, 'center', w - 2); };
+  box(0, 60, title, 2.82);
+  box(CW - 9, 9, right, 2.3, F.r);
+  if (center) txt(pg, center, F.b, 3.5, 105, y + 2.3);
+  rect(pg, ML, MT + 5.9, CW, .2, {fill: [0, 0, 0], stroke: false});
 }
 async function buildPdf() {
   if (!st.sel.length || building) return;
@@ -661,6 +665,13 @@ $('setDel').onclick = () => {
   delete st.sets[st.cur]; st.cur = null; st.sel = []; st.hidden = []; st.title = '';
   renderAll();
 };
+$('sortNo').onclick = () => {
+  const yr = e => e.book === '모의' ? 2020.5 : (+e.year || 0);
+  const out = []; let seg = [];
+  const flush = () => { seg.sort((a, b) => { const A = itemOf(a), B = itemOf(b); return A.it.n[0] - B.it.n[0] || yr(A.e) - yr(B.e) || String(A.e.kind).localeCompare(String(B.e.kind)); }); out.push(...seg); seg = []; };
+  st.sel.forEach(k => { if (isDiv(k)) { flush(); out.push(k); } else seg.push(k); }); flush();
+  st.sel = out; renderAll();
+};
 $('shuffle').onclick = () => { for (let i = st.sel.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [st.sel[i], st.sel[j]] = [st.sel[j], st.sel[i]]; } renderAll(); };
 $('selList').onclick = e => {
   const eye = e.target.closest('[data-eye]');
@@ -687,9 +698,16 @@ $('print').onclick = buildPdf;
 
 let dragI = null;
 $('selList').addEventListener('dragstart', e => { const el = e.target.closest('.sl'); if (!el) return; dragI = +el.dataset.i; el.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); } catch (er) {} });
-$('selList').addEventListener('dragover', e => { const el = e.target.closest('.sl'); if (!el) return; e.preventDefault(); document.querySelectorAll('.sl.over').forEach(x => x.classList.remove('over')); el.classList.add('over'); });
-$('selList').addEventListener('drop', e => { const el = e.target.closest('.sl'); if (!el || dragI == null) return; e.preventDefault(); const [m] = st.sel.splice(dragI, 1); st.sel.splice(+el.dataset.i, 0, m); dragI = null; renderAll(); });
-$('selList').addEventListener('dragend', () => { dragI = null; document.querySelectorAll('.sl').forEach(x => x.classList.remove('drag', 'over')); });
+let dropAt = null;
+$('selList').addEventListener('dragover', e => {
+  const el = e.target.closest('.sl'); if (!el || dragI == null) return; e.preventDefault();
+  const r = el.getBoundingClientRect(), before = e.clientY < r.top + r.height / 2, i = +el.dataset.i;
+  dropAt = before ? i : i + 1;
+  document.querySelectorAll('.sl.insT,.sl.insB').forEach(x => x.classList.remove('insT', 'insB'));
+  if (dropAt !== dragI && dropAt !== dragI + 1) el.classList.add(before ? 'insT' : 'insB');
+});
+$('selList').addEventListener('drop', e => { if (dragI == null || dropAt == null) return; e.preventDefault(); let to = dropAt; if (to > dragI) to--; const [m] = st.sel.splice(dragI, 1); st.sel.splice(to, 0, m); dragI = null; dropAt = null; renderAll(); });
+$('selList').addEventListener('dragend', () => { dragI = null; dropAt = null; document.querySelectorAll('.sl').forEach(x => x.classList.remove('drag', 'over', 'insT', 'insB')); });
 
 // 번호 호버 → 미리보기
 const hov = $('hov'); let hovKey = null;
