@@ -377,17 +377,22 @@ function layout() {
     if (!isOn(k)) continue;
     if (isDiv(k)) { pages.push({div: divName(k), idx}); cur = null; continue; }
     const {e, it} = itemOf(k);
-    it.s.forEach((seg, si) => {
+    const parts = it.s.map((seg, si) => {
       const w = seg[3] - seg[1], hpt = seg[4] - seg[2];
       const lab = si === 0 ? LAB_H : 0;
       let hmm = hpt * COL_W / w, wmm = COL_W;
       if (hmm > COL_H - lab) { wmm = COL_W * (COL_H - lab) / hmm; hmm = COL_H - lab; }
-      const h = lab + hmm;
+      return {seg, si, wmm, hmm, h: lab + hmm};
+    });
+    const fitsAt = (u, h) => st.compact ? (u === 0 || u + h <= COL_H + .1) : u === 0;
+    // 지문+문제 묶음이 다음 쪽으로 넘어가 잘리면 → 새 쪽에서 시작 (한 쪽에 다 들어갈 때만)
+    const splits = (c, u) => { let br = 0; parts.forEach((p, i) => { if (!fitsAt(u, p.h)) { if (c === 0) { c = 1; u = 0; } else { if (i > 0) br++; c = 0; u = 0; } } u += p.h + GAP; }); return br; };
+    if (cur && parts.length > 1 && splits(ci, used) && !splits(0, 0)) newPage();
+    parts.forEach(p => {
       if (!cur) newPage();
-      const fits = st.compact ? (used === 0 || used + h <= COL_H + .1) : used === 0;
-      if (!fits) nextCol();
-      cur.cols[ci].push({e, it, seg, si, wmm, hmm, idx});
-      used += h + GAP;
+      if (!fitsAt(used, p.h)) nextCol();
+      cur.cols[ci].push({e, it, seg: p.seg, si: p.si, wmm: p.wmm, hmm: p.hmm, idx});
+      used += p.h + GAP;
     });
   }
   return pages;
