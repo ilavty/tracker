@@ -137,7 +137,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
     <div class="sets"><select id="setSel"></select><button id="setSave">저장</button><button id="setDel">삭제</button></div>
     <div id="linkInfo" style="display:none;padding:2px 14px 0;font-size:11px;color:var(--brown)"></div>
     <div class="ph" style="padding-top:8px;padding-bottom:6px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2></div>
-    <div class="tools"><button id="addDiv" title="선택한 줄 아래(없으면 맨 끝)에 구분 페이지 추가">+ 구분 페이지</button><span class="sp"></span><button id="sortNo" title="구분 페이지 사이에서 문제 번호순(같은 번호는 오래된 시험부터)">번호순</button><button id="shuffle">섞기</button><button id="clear">비우기</button></div>
+    <div class="tools"><button id="addDiv" title="선택한 줄 아래(없으면 맨 끝)에 구분 페이지 추가">+ 구분 페이지</button><span class="sp"></span><button id="sortNo" title="구분 페이지 사이에서 시험별(오래된 시험부터)로 묶고 그 안에서 번호순">번호순</button><button id="shuffle">섞기</button><button id="clear">비우기</button></div>
     <div class="scroll" id="selList"></div>
     <div class="settings">
       <div><label>머리말 제목</label><input type="text" id="title"></div>
@@ -668,7 +668,7 @@ $('setDel').onclick = () => {
 $('sortNo').onclick = () => {
   const yr = e => e.book === '모의' ? 2020.5 : (+e.year || 0);
   const out = []; let seg = [];
-  const flush = () => { seg.sort((a, b) => { const A = itemOf(a), B = itemOf(b); return A.it.n[0] - B.it.n[0] || yr(A.e) - yr(B.e) || String(A.e.kind).localeCompare(String(B.e.kind)); }); out.push(...seg); seg = []; };
+  const flush = () => { seg.sort((a, b) => { const A = itemOf(a), B = itemOf(b); return yr(A.e) - yr(B.e) || String(A.e.book).localeCompare(String(B.e.book)) || String(A.e.kind).localeCompare(String(B.e.kind)) || A.it.n[0] - B.it.n[0]; }); out.push(...seg); seg = []; };
   st.sel.forEach(k => { if (isDiv(k)) { flush(); out.push(k); } else seg.push(k); }); flush();
   st.sel = out; renderAll();
 };
