@@ -906,7 +906,7 @@
             <div id="content-dt" class="chrono-tab-content">
                 <div style="background:rgba(0,0,0,0.02); padding:20px; border-radius:8px; margin-bottom:20px; border:1px dashed #ccc;">
                     <h3 style="font-weight:700; margin-bottom:10px;">CSV 대량 업로드</h3>
-                    <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">이름, 연도, 월.일, 발효, 한국발효, 과목, 키워드, 중요도, 암기대상 자동인식 (엑셀 파일 100% 호환 및 최신 덮어쓰기 지원)</p>
+                    <p style="font-size:0.85rem; color:#666; margin-bottom:15px;">이름, 연도, 월.일, 발효, 한국발효, 과목, 키워드, 중요도, 암기대상 자동인식 · 올리기 전에 미리보기에서 과목·키워드·암기대상 수정 가능<br>암기대상 칸: 비우거나 O → 암기대상 / No·X·0 → 제외 (칸이 없으면 전부 암기대상)</p>
                     <input type="file" id="csv-upload" accept=".csv" style="font-size:0.9rem;">
                 </div>
                 
@@ -1055,22 +1055,37 @@
         </div>
     </div>
     
-    <div id="csv-conflict-modal" class="modal-overlay" style="display:none;" onclick="closeAllModals()">
-        <div class="chrono-modal-content" style="width: 500px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
-            <h3 style="font-weight:800; margin-bottom:15px; text-align:center; color:var(--primary-blue);">중복된 항목 발견</h3>
-            <p style="font-size:0.85rem; color:#666; margin-bottom:10px; text-align:center;">아래 항목들은 이미 존재합니다. 덮어쓸 항목을 선택하세요.</p>
-            <div style="display:flex; justify-content:flex-end; margin-bottom:5px; padding-right:5px;">
-                <label style="font-size:0.8rem; font-weight:700; color:var(--primary-blue); cursor:pointer;">
-                    <input type="checkbox" id="csv-check-all" checked onchange="toggleAllCsvCheckboxes(this)" style="margin-right:4px;">전체 선택/해제
-                </label>
+    <div id="csv-conflict-modal" class="modal-overlay" style="display:none;" onclick="cancelCSVUpload()">
+        <div class="chrono-modal-content" style="width: 760px; max-width: 95vw; max-height: 88vh; display: flex; flex-direction: column; padding:20px;" onclick="event.stopPropagation()">
+            <h3 style="font-weight:800; margin-bottom:4px; text-align:center; color:var(--primary-blue);">CSV 미리보기</h3>
+            <p id="csv-pv-info" style="font-size:0.82rem; color:#666; margin-bottom:12px; text-align:center;"></p>
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:8px; font-size:0.8rem;">
+                <span style="font-weight:700;">한 번에</span>
+                <input type="text" id="csv-bulk-sub" placeholder="과목" style="width:110px; border:1px solid #ccc; border-radius:4px; padding:5px 7px; font:inherit;">
+                <button class="chrono-btn" style="padding:4px 10px; font-size:0.78rem;" onclick="csvBulkSub()">과목 모두 적용</button>
+                <span style="flex:1"></span>
+                <label style="font-weight:700; cursor:pointer;"><input type="checkbox" id="csv-tg-all" onchange="csvAllCol('tg',this.checked)" style="margin-right:4px;">암기대상 전체</label>
+                <label style="font-weight:700; cursor:pointer;"><input type="checkbox" id="csv-check-all" checked onchange="csvAllCol('on',this.checked)" style="margin-right:4px;">넣기 전체</label>
             </div>
-            <div id="csv-conflict-list" style="overflow-y:auto; flex:1; border:1px solid #ddd; padding:10px; border-radius:4px; margin-bottom:15px;"></div>
+            <div id="csv-conflict-list" style="overflow:auto; flex:1; border:1px solid #ddd; border-radius:4px; margin-bottom:14px;"></div>
             <div style="display:flex; justify-content:space-between; gap:10px;">
-                <button class="chrono-btn" style="flex:1; border-color:#d32f2f; color:#d32f2f;" onclick="cancelCSVUpload()">전체 업로드 취소</button>
-                <button class="chrono-btn primary" style="flex:1;" onclick="confirmCSVUpload()">선택 항목 덮어쓰기</button>
+                <button class="chrono-btn" style="flex:1; border-color:#d32f2f; color:#d32f2f;" onclick="cancelCSVUpload()">취소</button>
+                <button class="chrono-btn primary" style="flex:1;" onclick="confirmCSVUpload()">업로드</button>
             </div>
         </div>
     </div>
+    <style>
+        .csv-pv{width:100%; border-collapse:collapse; font-size:0.8rem;}
+        .csv-pv th{position:sticky; top:0; background:#f6f3f0; font-weight:700; padding:6px 5px; text-align:left; white-space:nowrap; z-index:1;}
+        .csv-pv td{padding:4px 5px; border-top:1px dashed #eee; vertical-align:middle;}
+        .csv-pv td.c, .csv-pv th.c{text-align:center;}
+        .csv-pv input[type=text]{width:100%; min-width:70px; border:1px solid #ddd; border-radius:4px; padding:4px 6px; font:inherit; background:#fff;}
+        .csv-pv input[type=checkbox]{width:15px; height:15px;}
+        .csv-pv .tag{font-size:0.7rem; padding:1px 6px; border-radius:10px; white-space:nowrap;}
+        .csv-pv .tag.new{background:#e3f2fb; color:#2b7fb8;}
+        .csv-pv .tag.old{background:#f3ebe3; color:#8a6a4f;}
+        .csv-pv tr.off td{opacity:.4;}
+    </style>
 
    <!-- ★ 절대 부서지지 않는 플로팅 네비게이터 ★ -->
     <div class="floating-nav" id="floating-nav" style="display:none; flex-direction: column !important; align-items: flex-end !important; gap: 8px;">
@@ -2005,7 +2020,7 @@
                     date: m.dt!==-1 ? c[m.dt] : "", effect: m.ef!==-1 ? c[m.ef] : "", 
                     korEffect: m.kf!==-1 ? c[m.kf] : "", subject: m.sb!==-1 ? c[m.sb] : "", 
                     keywords: m.kw!==-1 ? c[m.kw] : "", importance: m.im!==-1 ? Math.min(3, parseInt(c[m.im])||1) : 1, 
-                    target: (m.tg!==-1 && c[m.tg]==='No') ? false : true, correctCount: 0 
+                    target: m.tg!==-1 ? csvTagOn(c[m.tg]) : true, correctCount: 0 
                 };
 
                 if(existing) {
@@ -2017,20 +2032,32 @@
                 }
             }
             
-            if (pendingCSVData.conflictItems.length > 0) {
-                let listHtml = pendingCSVData.conflictItems.map((item, idx) => `
-                    <label style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px dashed #eee; cursor:pointer;">
-                        <input type="checkbox" id="csv-chk-${idx}" checked style="width:16px; height:16px;">
-                        <span style="font-weight:600; font-size:0.9rem;">${item.name}</span>
-                        <span style="color:#888; font-size:0.8rem;">(${item.year})</span>
-                    </label>
-                `).join('');
-                document.getElementById('csv-conflict-list').innerHTML = listHtml;
-                document.getElementById('csv-conflict-modal').style.display = 'flex';
-            } else {
-                confirmCSVUpload(true);
-            }
+            openCSVPreview();
         }
+
+        // 암기대상 칸: 비워두거나 O/Yes/1 등 → 암기대상, No/X/0/아니오 → 제외
+        function csvTagOn(v) { v = String(v||'').trim().toLowerCase(); return !['no','n','x','×','✕','false','0','아니오','아니요','아니','제외','미대상'].includes(v); }
+        function csvRows() { return [...pendingCSVData.newItems.map(it=>({it,isNew:true})), ...pendingCSVData.conflictItems.map(it=>({it,isNew:false}))]; }
+        function csvEsc(v) { return String(v==null?'':v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+        function openCSVPreview() {
+            let rows = csvRows();
+            if (!rows.length) { alert('읽을 수 있는 줄이 없어요. (이름·연도 칸 확인)'); document.getElementById('csv-upload').value=''; return; }
+            let nNew = pendingCSVData.newItems.length, nOld = pendingCSVData.conflictItems.length;
+            document.getElementById('csv-pv-info').textContent = `총 ${rows.length}개 · 새로 ${nNew}개` + (nOld ? ` · 이미 있음 ${nOld}개 (체크하면 덮어쓰기)` : '');
+            document.getElementById('csv-bulk-sub').value = '';
+            document.getElementById('csv-check-all').checked = true;
+            document.getElementById('csv-tg-all').checked = rows.every(r=>r.it.target);
+            document.getElementById('csv-conflict-list').innerHTML = `<table class="csv-pv"><tr><th class="c">넣기</th><th>이름</th><th class="c">연도</th><th>과목</th><th>키워드</th><th class="c">암기대상</th><th class="c"></th></tr>` +
+                rows.map((r,i) => `<tr data-i="${i}"><td class="c"><input type="checkbox" data-f="on" checked onchange="this.closest('tr').classList.toggle('off',!this.checked)"></td>
+                    <td style="font-weight:600;">${csvEsc(r.it.name)}</td><td class="c">${r.it.year}</td>
+                    <td><input type="text" data-f="sb" value="${csvEsc(r.it.subject)}"></td>
+                    <td style="min-width:180px;"><input type="text" data-f="kw" value="${csvEsc(r.it.keywords)}"></td>
+                    <td class="c"><input type="checkbox" data-f="tg" ${r.it.target?'checked':''}></td>
+                    <td class="c"><span class="tag ${r.isNew?'new':'old'}">${r.isNew?'새로':'덮어쓰기'}</span></td></tr>`).join('') + '</table>';
+            document.getElementById('csv-conflict-modal').style.display = 'flex';
+        }
+        function csvAllCol(f, on) { document.querySelectorAll(`#csv-conflict-list input[data-f="${f}"]`).forEach(x => { x.checked = on; if (f==='on') x.closest('tr').classList.toggle('off', !on); }); }
+        function csvBulkSub() { let v = document.getElementById('csv-bulk-sub').value.trim(); document.querySelectorAll('#csv-conflict-list input[data-f="sb"]').forEach(x => x.value = v); }
 
         function cancelCSVUpload() {
             pendingCSVData = { newItems: [], conflictItems: [] };
@@ -2038,42 +2065,33 @@
             closeAllModals();
         }
 
-        function toggleAllCsvCheckboxes(mainCheckbox) {
-            let isChecked = mainCheckbox.checked;
-            pendingCSVData.conflictItems.forEach((_, idx) => {
-                let chk = document.getElementById(`csv-chk-${idx}`);
-                if (chk) chk.checked = isChecked;
+        function confirmCSVUpload() {
+            let rows = csvRows(), picked = [];
+            document.querySelectorAll('#csv-conflict-list tr[data-i]').forEach(tr => {
+                let r = rows[+tr.dataset.i]; if (!r || !tr.querySelector('[data-f="on"]').checked) return;
+                r.it.subject = tr.querySelector('[data-f="sb"]').value.trim();
+                r.it.keywords = tr.querySelector('[data-f="kw"]').value.trim();
+                r.it.target = tr.querySelector('[data-f="tg"]').checked;
+                picked.push(r);
             });
-        }
-
-        function confirmCSVUpload(noConflicts = false) {
-            pushUndoState(); 
-            let added = 0; let updated = 0;
-            
-            pendingCSVData.newItems.forEach(item => { chronoEvents.push(item); added++; });
-            
-            if (!noConflicts) {
-                pendingCSVData.conflictItems.forEach((item, idx) => {
-                    let chk = document.getElementById(`csv-chk-${idx}`);
-                    if (chk && chk.checked) {
-                        let existing = chronoEvents.find(x => x.id === item.existingId);
-                        if (existing) {
-                            existing.year = item.year;
-                            if (item.date) existing.date = item.date;
-                            if (item.effect) existing.effect = item.effect;
-                            if (item.korEffect) existing.korEffect = item.korEffect;
-                            if (item.subject) existing.subject = item.subject;
-                            if (item.keywords) existing.keywords = item.keywords;
-                            existing.importance = item.importance; existing.target = item.target;
-                            updated++;
-                        }
-                    }
-                });
-            }
-            
+            if (!picked.length) { cancelCSVUpload(); return; }
+            pushUndoState();
+            let added = 0, updated = 0;
+            picked.forEach(({it, isNew}) => {
+                if (isNew) { chronoEvents.push(it); added++; return; }
+                let existing = chronoEvents.find(x => x.id === it.existingId); if (!existing) return;
+                existing.year = it.year;
+                if (it.date) existing.date = it.date;
+                if (it.effect) existing.effect = it.effect;
+                if (it.korEffect) existing.korEffect = it.korEffect;
+                existing.subject = it.subject; existing.keywords = it.keywords;
+                existing.importance = it.importance; existing.target = it.target;
+                updated++;
+            });
             saveDataToFirebase();
-            if(!noConflicts) alert(`${added}개 추가, ${updated}개 덮어쓰기 완료!`);
-            document.getElementById('csv-upload').value=''; 
+            alert(`${added}개 추가` + (updated ? `, ${updated}개 덮어쓰기` : '') + ' 완료!');
+            pendingCSVData = { newItems: [], conflictItems: [] };
+            document.getElementById('csv-upload').value='';
             closeAllModals();
             renderTimeline(); renderGraduatedList();
         }
