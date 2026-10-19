@@ -206,7 +206,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.23</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.24</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -595,7 +595,7 @@ function buildPages(){
   layout();S.pages.forEach(p=>S.io.observe(p.el));
 }
 function layout(){
-  setHH();const base=Math.max(280,Math.min($('#pages').clientWidth-40,940));const avail=S.avail=Math.round(base*(S.zoom||1));
+  setHH();lastPW=$('#pages').clientWidth;const base=Math.max(280,Math.min($('#pages').clientWidth-40,940));const avail=S.avail=Math.round(base*(S.zoom||1));
   S.pages.forEach(p=>{p.S=avail/p.w;p.el.style.width=avail+'px';p.el.style.height=p.h*p.S+'px';});
   drawAll();}
 const NATIVE=false;
@@ -691,7 +691,7 @@ async function buildSide(){
   S.pages.forEach(p=>S.pio.observe(p.el));}
 function setCur(i){if(S.cur===i)return;S.cur=i;
   if(!S.thEl)return;S.thEl.querySelectorAll('.thumb').forEach(t=>t.classList.toggle('on',+t.dataset.i===i));
-  const t=S.pages[i]&&S.pages[i].th;if(t&&!$('#thumbs').classList.contains('hidden'))t.scrollIntoView({block:'nearest'});
+  const t=S.pages[i]&&S.pages[i].th;if(t&&!$('#thumbs').classList.contains('hidden')){const sd=$('#side'),tr=t.getBoundingClientRect(),sr=sd.getBoundingClientRect();if(tr.top<sr.top)sd.scrollTop+=tr.top-sr.top-8;else if(tr.bottom>sr.bottom)sd.scrollTop+=tr.bottom-sr.bottom+8;}
   let last=null;S.tocEl.querySelectorAll('.toc-i').forEach(x=>{x.classList.remove('on');if(+x.dataset.pi<=i)last=x;});if(last)last.classList.add('on');}
 function drawThumb(i){const p=S.pages[i];if(!p||!p.th)return;const tp=p.th.querySelector('.tp'),k=150/p.w;
   tp.querySelectorAll('.tb').forEach(e=>e.remove());const bs=S.boxes.filter(b=>b.page===i);
@@ -699,7 +699,9 @@ function drawThumb(i){const p=S.pages[i];if(!p||!p.th)return;const tp=p.th.query
     Object.assign(e.style,{left:r.x*k+'px',top:r.y*k+'px',width:Math.max(1,r.w*k)+'px',height:Math.max(1,r.h*k)+'px'});tp.appendChild(e);});
   (S.imgs||[]).filter(m=>m.page===i).forEach(m=>{const e=document.createElement('div');e.className='tb timg';Object.assign(e.style,{left:m.x*k+'px',top:m.y*k+'px',width:m.w*k+'px',height:m.h*k+'px'});if(IMGSRC[m.id])e.style.backgroundImage=`url(${IMGSRC[m.id]})`;tp.appendChild(e);});
   p.th.querySelector('.tn b').textContent=bs.length?'· 빈칸 '+bs.length:'';}
-let rt,rsA=null;window.addEventListener('resize',()=>{if(!S.pages||!S.pages.length)return;if(!rsA&&!pinch)rsA=viewAnchor();clearTimeout(rt);rt=setTimeout(()=>{const a=rsA;rsA=null;relayoutKeep(a);rerenderAll();},250);});
+// 아이패드는 스크롤할 때 주소창이 줄면서 resize가 와요 → 폭이 진짜 바뀔 때만 다시 배치(안 그러면 보던 자리로 되감기며 튐)
+var lastPW=0;let rt;window.addEventListener('resize',()=>{if(!S.pages||!S.pages.length)return;clearTimeout(rt);rt=setTimeout(()=>{
+  if(pinch)return;const w=$('#pages').clientWidth;if(w===lastPW)return;lastPW=w;relayoutKeep();rerenderAll();},250);});
 /* ---------- zoom ---------- */
 const ZMIN=.5,ZMAX=4;let zrt,zraf=null;
 function anchorAt(cx,cy){if(!S.pages||!S.pages.length)return null;
@@ -841,18 +843,18 @@ function drawOv(i){
 function select(id){S.sel=id;(S.view||document).querySelectorAll('.blank').forEach(e=>e.classList.toggle('sel',e.dataset.id===id));}
 function removeBox(id){const b=S.boxes.find(b=>b.id===id);if(!b)return;snap();S.boxes=S.boxes.filter(o=>o!==b);if(S.sel===id)S.sel=null;save();drawOv(b.page);}
 
-let touchN=0;
-window.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')touchN++;},true);
+let touchN=0,flingTok=0;
+window.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){touchN++;flingTok++;}},true);
 ['pointerup','pointercancel'].forEach(t=>window.addEventListener(t,e=>{if(e.pointerType==='touch')touchN=Math.max(0,touchN-1);},true));
 function fingerScroll(e,onTap){
   const el=e.currentTarget;try{el.setPointerCapture(e.pointerId);}catch(_){}
   let ly=e.clientY,lx=e.clientX,sy=e.clientY,sx=e.clientX,lt=performance.now(),vy=0,moved=false;
   const mv=ev=>{const dy=ly-ev.clientY,now=performance.now();if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>6)moved=true;
-    if(touchN>1){moved=true;vy=0;ly=ev.clientY;return;}
+    if(touchN>1||pinch){moved=true;vy=0;ly=ev.clientY;lx=ev.clientX;return;}
     if(moved){window.scrollBy(0,dy);$('#pages').scrollLeft+=lx-ev.clientX;vy=dy/Math.max(1,now-lt);}ly=ev.clientY;lx=ev.clientX;lt=now;};
   const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
     if(!moved){onTap&&onTap(ev);return;}
-    let v=vy*16;const step=()=>{if(Math.abs(v)<.5)return;window.scrollBy(0,v);v*=.94;requestAnimationFrame(step);};requestAnimationFrame(step);};
+    let v=touchN>0?0:vy*16;const tok=++flingTok;const step=()=>{if(tok!==flingTok||Math.abs(v)<.5)return;window.scrollBy(0,v);v*=.94;requestAnimationFrame(step);};requestAnimationFrame(step);};
   el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);}
 function bindOverlay(i){
   const p=S.pages[i],ov=p.ov;
