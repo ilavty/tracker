@@ -315,7 +315,7 @@ body.punch .pbed mark.bk{background:var(--sky2);color:var(--ans);font-weight:500
 body.punch .pbed mark.bk:hover{background:#f3e3d6;border-bottom-color:var(--brown);text-decoration:line-through}
 body.punch tr.it:hover{background:#fafcfe}
 .pox{color:var(--brown);font-size:.92em}
-.ftools,.hlbar{zoom:.9}
+.ftools{zoom:.9}
 body.hideans .paper td.a{cursor:pointer;color:transparent!important;background:#e9e9eb!important;user-select:none;-webkit-user-select:none}
 body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!important}
 @media print{body.hideans .paper td.a{color:inherit!important;background:none!important}}
@@ -338,8 +338,11 @@ body.hlon.hlerase .hbed mark.hl{cursor:pointer}
 body.hlon.hlerase .hbed mark.hl:hover{text-decoration:line-through;text-decoration-color:#b33}
 body.hlon .hbed::selection,body.hlon .hbed *::selection{background:rgba(255,226,80,.55)}
 body.hlon.hlerase .hbed::selection,body.hlon.hlerase .hbed *::selection{background:rgba(200,200,200,.6)}
-.hlbar{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:61;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:0 4px 16px rgba(0,0,0,.14);padding:7px 10px;align-items:center;gap:7px;font-family:var(--tf)}
+.hlbar{display:none;position:fixed;left:50%;transform:translateX(-50%) scale(.9);transform-origin:center bottom;bottom:22px;z-index:61;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:0 4px 16px rgba(0,0,0,.14);padding:7px 10px;align-items:center;gap:7px;font-family:var(--tf)}
 body.hlon .hlbar{display:flex}
+.hlbar.moved{transform:scale(.9);transform-origin:top left}
+.hlgrip{width:10px;height:22px;margin-right:2px;cursor:grab;touch-action:none;background:radial-gradient(circle,#b8b8bd 1.2px,transparent 1.4px) 0 0/5px 5px;opacity:.9}
+.hlgrip:active{cursor:grabbing}
 .hlbar button{border:0;cursor:pointer;font-family:var(--tf)}
 .hlc{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .hlc.hy{background:#fff1a1}.hlc.hb{background:#cfe7f9}.hlc.hp{background:#fbd5de}.hlc.ho{background:#ecd9c6}
@@ -586,15 +589,21 @@ let HL = { c: 'y', erase: false };
 let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
 const dispOf = t => t.replace(/\[\[(.+?)\]\]/g, '$1');
 function hlHtml(it, blankFn) {
-  const hl = it.hl || []; let o = 0, h = '';
-  const wrap = (r, x) => `<mark class="hl h${r[2] || 'y'}">${x}</mark>`;
+  const hl = it.hl || []; let o = 0; const P = [];
   for (const tok of it.t.split(/(\[\[.+?\]\])/)) {
     if (!tok) continue;
     const m = tok.match(/^\[\[(.+?)\]\]$/), txt = m ? m[1] : tok, s = o, e = o + txt.length; o = e;
-    if (m) { const b = blankFn(esc(txt)); const r = hl.find(r => r[0] < e && r[1] > s); h += r ? wrap(r, b) : b; continue; }
+    if (m) { P.push([hl.find(r => r[0] < e && r[1] > s) || null, blankFn(esc(txt))]); continue; }
     const cuts = new Set([s, e]); hl.forEach(r => { if (r[0] > s && r[0] < e) cuts.add(r[0]); if (r[1] > s && r[1] < e) cuts.add(r[1]); });
     const cs = [...cuts].sort((a, b) => a - b);
-    for (let i = 0; i < cs.length - 1; i++) { const pc = esc(txt.slice(cs[i] - s, cs[i + 1] - s)); const r = hl.find(r => r[0] <= cs[i] && r[1] >= cs[i + 1]); h += r ? wrap(r, pc) : pc; }
+    for (let i = 0; i < cs.length - 1; i++) P.push([hl.find(r => r[0] <= cs[i] && r[1] >= cs[i + 1]) || null, esc(txt.slice(cs[i] - s, cs[i + 1] - s))]);
+  }
+  // 같은 형광펜 구간은 빈칸을 사이에 두어도 한 덩어리로 (중간에 끊겨 보이지 않게)
+  let h = '';
+  for (let i = 0; i < P.length;) {
+    const r = P[i][0]; let x = ''; let k = i;
+    while (k < P.length && P[k][0] === r) x += P[k++][1];
+    h += r ? `<mark class="hl h${r[2] || 'y'}">${x}</mark>` : x; i = k;
   }
   return h;
 }
@@ -786,7 +795,7 @@ function hlEdit(it, s, e, c) {
   const M = []; for (const r of L) { const p = M[M.length - 1]; if (p && p[2] === r[2] && p[1] >= r[0]) p[1] = Math.max(p[1], r[1]); else M.push(r.slice()); }
   if (M.length) it.hl = M; else delete it.hl;
 }
-function hlApply(range) {
+function hlApply(range, forceErase) {
   const sel = getSelection();
   const r = range || (sel.rangeCount && !sel.isCollapsed ? sel.getRangeAt(0) : null); if (!r || r.collapsed) return false;
   const eds = [...document.querySelectorAll('.hbed')].filter(ed => r.intersectsNode(ed)); if (!eds.length) return false;
@@ -799,7 +808,7 @@ function hlApply(range) {
     // 앞뒤 공백은 칠하지 않음
     const tx = ed.textContent; let a = s, b = e; while (a < b && /\s/.test(tx[a])) a++; while (b > a && /\s/.test(tx[b - 1])) b--;
     if (b <= a) continue;
-    hlEdit(L.obj, a, b, HL.erase ? null : HL.c); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); n++;
+    hlEdit(L.obj, a, b, (HL.erase || forceErase) ? null : HL.c); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); n++;
   }
   sel.removeAllRanges(); hlJust = Date.now();
   if (n) save();
@@ -813,10 +822,13 @@ function caretAt(x, y) {
 function hlEraseAt(ed, x, y) {
   const c = caretAt(x, y); const L = locate(ed.dataset.hid); if (!c || !L || !ed.contains(c.startContainer)) return;
   const o = offIn(ed, c.startContainer, c.startOffset);
-  const hit = (L.obj.hl || []).find(r => r[0] <= o && r[1] >= o); if (!hit) return;
+  let hit = (L.obj.hl || []).find(r => r[0] <= o && r[1] >= o);
+  if (!hit) { const mk = c.startContainer.parentNode && c.startContainer.parentNode.closest && c.startContainer.parentNode.closest('mark.hl'); if (mk) { const ms = offIn(ed, mk, 0), me = offIn(ed, mk, mk.childNodes.length); hit = (L.obj.hl || []).find(r => r[0] < me && r[1] > ms); } }
+  if (!hit) return;
   hlEdit(L.obj, hit[0], hit[1], null); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); save();
 }
-document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.closest && e.target.closest('#paper')) setTimeout(() => hlApply(), 0); });
+document.addEventListener('mousedown', e => { if (hlMode && !editing && e.shiftKey && e.target.closest && e.target.closest('#paper')) getSelection().removeAllRanges(); }, true);
+document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.closest && e.target.closest('#paper')) { const sh = e.shiftKey; setTimeout(() => hlApply(null, sh), 0); } });
 // 애플펜슬: 스타일러스로 그으면 스크롤 대신 바로 칠하기 (손가락은 그대로 스크롤)
 (() => {
   let st = null;
@@ -844,10 +856,22 @@ function hlBar() {
   let b = $('#hlbar');
   if (!b) { b = document.createElement('div'); b.id = 'hlbar'; b.className = 'hlbar'; document.body.appendChild(b);
     b.addEventListener('mousedown', e => e.preventDefault());
+    // 손잡이로 끌어서 위치 이동 (위치 기억)
+    const place = p => { if (p) { b.style.left = p.x + 'px'; b.style.top = p.y + 'px'; b.style.bottom = 'auto'; b.classList.add('moved'); } else { b.style.left = b.style.top = b.style.bottom = ''; b.classList.remove('moved'); } };
+    try { const p = JSON.parse(localStorage.getItem(KEY + ':hlpos') || 'null'); if (p) place(p); } catch (e) {}
+    b.addEventListener('pointerdown', e => {
+      if (!e.target.closest('.hlgrip')) return; e.preventDefault();
+      const r = b.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top; let p = null;
+      const mv = ev => { p = { x: Math.max(4, Math.min(innerWidth - r.width - 4, ev.clientX - dx)), y: Math.max(4, Math.min(innerHeight - r.height - 4, ev.clientY - dy)) }; place(p); };
+      const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); if (p) try { localStorage.setItem(KEY + ':hlpos', JSON.stringify(p)); } catch (x) {} };
+      addEventListener('pointermove', mv); addEventListener('pointerup', up);
+    });
+    b.addEventListener('dblclick', e => { if (!e.target.closest('.hlgrip')) return; place(null); try { localStorage.removeItem(KEY + ':hlpos'); } catch (x) {} });
+    addEventListener('resize', () => { if (!b.classList.contains('moved')) return; const r = b.getBoundingClientRect(); place({ x: Math.max(4, Math.min(innerWidth - r.width - 4, r.left)), y: Math.max(4, Math.min(innerHeight - r.height - 4, r.top)) }); });
     b.addEventListener('touchstart', e => { const go = e.target.closest('[data-hlgo]'); if (go) { e.preventDefault(); if (!hlApply()) toast('Select some text first'); } }, { passive: false });
     b.addEventListener('click', e => { if (e.target.closest('[data-hlgo]') && !hlApply()) toast('Select some text first'); });
   }
-  b.innerHTML = HLC.map(([v, l]) => `<button class="hlc h${v}${!HL.erase && HL.c === v ? ' on' : ''}" data-hlc="${v}" title="${l}"></button>`).join('') +
+  b.innerHTML = `<span class="hlgrip" title="Drag to move · double-click to reset"></span>` + HLC.map(([v, l]) => `<button class="hlc h${v}${!HL.erase && HL.c === v ? ' on' : ''}" data-hlc="${v}" title="${l}"></button>`).join('') +
     `<button class="hle${HL.erase ? ' on' : ''}" data-hlc="erase">Eraser</button>`;
 }
 hlBar();
@@ -1261,7 +1285,7 @@ document.addEventListener('click', e => {
   const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
   if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; renderKeep(); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
-  if (hlMode && !editing && HL.erase && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
+  if (hlMode && !editing && (HL.erase || e.shiftKey) && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
   if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; renderKeep(); return; }
   const pm = punch && !editing && t.closest('.pbed mark');
   if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }
