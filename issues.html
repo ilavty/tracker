@@ -534,6 +534,7 @@ body.hlon .hlbar{display:flex}
         <button data-m="print">Print PDF</button>
         <button data-m="export">Save backup</button>
         <button data-m="import">Load backup</button>
+        <button data-m="sync">Sync now</button>
         <button data-m="reset">Reset to original</button>
       </div>
     </div>
@@ -621,7 +622,7 @@ function mergeInto(R, Lc) {
   // 이 버전 처음 열 때 한 번은 무조건 합치기 (예전 버전에서 못 올라간 문항 살리기)
   let firstV2 = false; try { firstV2 = !localStorage.getItem(KEY + '_v2') && !!localStorage.getItem(KEY); localStorage.setItem(KEY + '_v2', '1'); } catch (e) {}
   try { if (window.firebase) { if (!firebase.apps.length) firebase.initializeApp({ apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" }); db = firebase.database(); } } catch (e) {}
-  const send = () => { if (!db) return; const t = lt; db.ref(path).set({ t, d: JSON.stringify(DB) }).then(() => { if (lt === t) pending(false); flashSaved('Saved · synced'); }).catch(() => flashSaved('Sync failed · saved on this device')); };
+  const send = () => { if (!db) return; const t = lt; db.ref(path).set({ t, d: JSON.stringify(DB) }).then(() => { if (lt === t) pending(false); flashSaved('Saved · synced'); }).catch(e => { flashSaved('Sync failed · saved on this device'); toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')); }); };
   const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(send, 600); };
   // 앱을 닫거나 다른 데로 갈 때 남은 변경 바로 올리기 (아이패드에서 금방 나가도 안 날아가게)
   const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; send(); } };
@@ -641,7 +642,19 @@ function mergeInto(R, Lc) {
     else if (r.t === lt) pending(false);
     ready = true;
   });
-  CLOUD = { db, isPending, touched() { if (!db) return; fresh = false; setT(Date.now()); pending(true); if (ready) push(); else { clearTimeout(timer); timer = setTimeout(send, 6000); } } };
+  const nItems = D => D.docs.reduce((n, d) => n + d.parts.reduce((m, p) => m + p.chapters.reduce((k, c) => k + c.secs.reduce((j, x) => j + x.items.length, 0), 0), 0), 0);
+  const syncNow = () => {
+    if (!db) return toast('Sync is not connected on this device (Firebase did not load)');
+    toast('Syncing…');
+    db.ref(path).once('value').then(sn => {
+      const r = sn.val(); let R = null; try { R = r && r.d ? JSON.parse(r.d) : null; } catch (e) {}
+      const before = nItems(DB), cloud = R ? nItems(R) : 0;
+      const M = R ? mergeInto(R, DB) : DB;
+      applyRemote(M); setT(Date.now()); clearTimeout(timer); timer = null;
+      return db.ref(path).set({ t: lt, d: JSON.stringify(DB) }).then(() => { pending(false); flashSaved('Saved · synced'); toast(`Synced · cloud had ${cloud}, this device ${before} → now ${nItems(DB)} items`); });
+    }).catch(e => toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')));
+  };
+  CLOUD = { db, isPending, syncNow, touched() { if (!db) return; fresh = false; setT(Date.now()); pending(true); if (ready) push(); else { clearTimeout(timer); timer = setTimeout(send, 6000); } } };
 })();
 let st; function flashSaved(t) { const el = $('#saved'); el.textContent = t; clearTimeout(st); st = setTimeout(() => el.textContent = '', 1600); }
 let tt; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 2200); }
@@ -1486,6 +1499,7 @@ $('#menuPop').onclick = e => {
     toast('Backup saved');
   }
   if (m === 'import') $('#file').click();
+  if (m === 'sync') { CLOUD && CLOUD.syncNow ? CLOUD.syncNow() : toast('Sync is not connected on this device'); }
   if (m === 'reset') { if (confirm('All your additions and edits will be lost and the original restored. Continue?\n(saving a backup first is recommended)')) { DB = clone(ORIG); migrate(); cur = DB.docs[0].id; commit(); toast('Reset done'); } }
 };
 $('#file').onchange = async e => {
