@@ -652,7 +652,7 @@ function mergeInto(B, O) {
   // 올리기 전에 클라우드를 한 번 읽어서, 다른 기기가 넣은 걸 내 쪽에 먼저 합친 뒤 올림 (절대 덮어써서 지우지 않게)
   const send = () => { if (!db) return; db.ref(path).once('value').then(sn => { const r = sn.val(); if (r && r.d && r.t !== lt) { try { const n0 = JSON.stringify(DB).length; mergeInto(DB, JSON.parse(r.d)); saveLocal(); if (JSON.stringify(DB).length !== n0 && !$('#quiz').classList.contains('open') && !$('#ov').classList.contains('open')) renderKeep(); } catch (e) {} } setT(Math.max(Date.now(), (r && r.t || 0) + 1)); return sendRaw(); }).catch(e => { flashSaved('Sync failed · saved on this device'); toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')); }); };
   const sendRaw = () => { const t = lt; return db.ref(path).set({ t, d: JSON.stringify(DB) }).then(() => { if (lt === t) pending(false); flashSaved('Saved · synced'); }).catch(e => { flashSaved('Sync failed · saved on this device'); toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')); }); };
-  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(send, 600); };
+  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(() => { timer = null; send(); }, 600); };
   // 앱을 닫거나 다른 데로 갈 때 남은 변경 바로 올리기 (아이패드에서 금방 나가도 안 날아가게)
   const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; setT(Date.now()); sendRaw(); } }; // 나갈 땐 기다릴 시간이 없어서 바로 올림 (열려 있는 동안은 실시간으로 받아둔 상태)
   addEventListener('pagehide', flush); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
@@ -668,7 +668,11 @@ function mergeInto(B, O) {
       fresh = false;
     }
     else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; firstV2 = false; push(); } // push()가 클라우드를 먼저 합침
-    else if (r.t === lt) pending(false);
+    else if (r.t === lt) {
+      pending(false);
+      // 같은 버전이라는데 기기 쪽이 모자라면(저장 실패 등) 클라우드 것으로 채우기
+      try { if (r.d && r.d.length !== JSON.stringify(DB).length) { const before = JSON.stringify(DB); const M = mergeInto(JSON.parse(before), JSON.parse(r.d)); if (JSON.stringify(M) !== before) applyRemote(M); } } catch (e) {}
+    }
     ready = true;
   }));
   const nItems = D => D.docs.reduce((n, d) => n + d.parts.reduce((m, p) => m + p.chapters.reduce((k, c) => k + c.secs.reduce((j, x) => j + x.items.length, 0), 0), 0), 0);
@@ -683,7 +687,7 @@ function mergeInto(B, O) {
       return sendRaw().then(() => toast(`Synced · cloud had ${cloud}, this device ${before} → now ${nItems(DB)} items`));
     }).catch(e => toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')));
   };
-  CLOUD = { db, isPending, syncNow, touched() { if (!db) return; fresh = false; setT(Date.now()); pending(true); if (ready) push(); else { clearTimeout(timer); timer = setTimeout(send, 6000); } } };
+  CLOUD = { db, isPending, syncNow, touched() { if (!db) return; fresh = false; setT(Date.now()); pending(true); if (ready) push(); else { clearTimeout(timer); timer = setTimeout(() => { timer = null; send(); }, 6000); } } };
 })();
 let st; function flashSaved(t) { const el = $('#saved'); el.textContent = t; clearTimeout(st); st = setTimeout(() => el.textContent = '', 1600); }
 let tt; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 2200); }
