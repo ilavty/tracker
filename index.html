@@ -3733,9 +3733,6 @@ function pl_unmergeItem() {
 </script>
 
 <!-- ========== PSAT(피셋) 연동 — CHRONO와 D-day 사이에 탭 추가, 기존 앱은 iframe으로 그대로 삽입 ========== -->
-<div id="map-view" style="display:none; width:100%;">
-    <iframe id="map-iframe" data-src="world_map.html" style="width:100%; height:calc(100vh - 64px); min-height:560px; border:none; display:block; background:transparent;" allowtransparency="true"></iframe>
-</div>
 <div id="psat-view" style="display:none; width: 100%; height: auto; min-height: 600px;">
     <iframe id="psat-iframe" src="psat_tracker.html" style="width:100%; height:600px; min-height:600px; border:none; display:block; background:#fcfbfa;" scrolling="no"></iframe>
 </div>
@@ -3755,9 +3752,7 @@ function pl_unmergeItem() {
         const psatView = document.getElementById('psat-view');
         const navLinks = document.querySelector('.nav-links');
 
-        const mapView = document.getElementById('map-view');
         if (appWrapper && psatView) appWrapper.appendChild(psatView);
-        if (appWrapper && mapView) appWrapper.appendChild(mapView);
 
         if (navLinks && !document.getElementById('nav-psat')) {
             const btn = document.createElement('span');
@@ -3769,14 +3764,6 @@ function pl_unmergeItem() {
             const chronoBtn = document.getElementById('nav-chrono');
             navLinks.insertBefore(btn, chronoBtn);
         }
-        if (navLinks && !document.getElementById('nav-map')) {
-            const mbtn = document.createElement('span');
-            mbtn.id = 'nav-map';
-            mbtn.className = 'inactive';
-            mbtn.innerText = 'MAP';
-            mbtn.onclick = () => showPage('map');
-            navLinks.appendChild(mbtn);
-        }
 
         const __prevShowPage2 = window.showPage || function(){};
         window.showPage = function(p) {
@@ -3784,21 +3771,16 @@ function pl_unmergeItem() {
             if(psatView) psatView.style.display = (p === 'psat') ? 'block' : 'none';
             const navPsat = document.getElementById('nav-psat');
             if(navPsat) navPsat.className = (p === 'psat') ? 'active' : 'inactive';
-            if(mapView){
-                mapView.style.display = (p === 'map') ? 'block' : 'none';
-                const f = document.getElementById('map-iframe');
-                if(p === 'map' && f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // 처음 열 때만 로드
-            }
-            const navMap = document.getElementById('nav-map');
-            if(navMap) navMap.className = (p === 'map') ? 'active' : 'inactive';
         };
 
         const __lp = localStorage.getItem('lastPage');
-        if(__lp === 'psat' || __lp === 'map') {
+        if(__lp === 'psat') {
             showPage(__lp);
+        } else if(__lp === 'map') { // MAP은 DATABASE로 이동함
+            showPage('tracker');
         }
-        // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · MAP (다른 블록이 나중에 끼워넣어도 마지막에 정렬)
-        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-map','nav-cards'];
+        // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · CARDS (MAP은 DATABASE로 이동)
+        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
