@@ -296,6 +296,22 @@ td.n.wr{color:var(--brown);font-weight:700}
 .paper .fill{color:var(--acc);font-weight:500;border-bottom:1.5px solid var(--acc);padding:0 1px}
 .paper .fill.ox{border-bottom:0}
 @media print{.paper .fill{color:#000;font-weight:700;border-bottom:1px solid #000}.paper .fill.ox{border-bottom:0}}
+.qfront{font-family:var(--tf);font-size:12px;color:var(--acc);margin-bottom:2px}
+@media print{.qfront{display:none}}
+.qz-front{font-family:var(--tf);font-weight:600;font-size:1.05em;margin-bottom:10px}
+.qz-back{border-top:1px dashed var(--line);padding-top:10px}
+.qz-back.hid{color:#bbb;font-family:var(--tf);font-size:13px}
+.qz-read{font-family:var(--tf);font-size:11px;color:var(--brown);border:1px solid #e3cdb9;border-radius:10px;padding:0 6px;vertical-align:2px}
+.qz-q .fill{color:var(--acc);font-weight:500;border-bottom:1.5px solid var(--acc)}
+body.punch .pbed{cursor:text}
+body.punch .pbed mark.bk{background:var(--sky2);color:var(--ans);font-weight:500;border-radius:3px;padding:0 2px;border-bottom:2px solid var(--acc);cursor:pointer}
+body.punch .pbed mark.bk:hover{background:#f3e3d6;border-bottom-color:var(--brown);text-decoration:line-through}
+body.punch tr.it:hover{background:#fafcfe}
+.pox{color:var(--brown);font-size:.92em}
+.punchb.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.punchfab{display:none;position:fixed;right:18px;bottom:84px;z-index:60;font-family:var(--tf);font-size:14px;padding:10px 16px;border-radius:22px;border:0;background:var(--acc);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+body.punch .punchfab{display:block}
+@media print{.punchfab{display:none!important}}
 /* edit mode */
 .ec{display:none;gap:3px;margin-left:auto}
 .edit .ec{display:inline-flex}
@@ -527,9 +543,10 @@ function locate(id) {
 /* text helpers */
 const blanks = t => (t.match(/\[\[(.+?)\]\]/g) || []).map(x => x.slice(2, -2));
 const B = '<span class="bl">【</span><span class="sp"></span><span class="bl">】</span>';
+let punch = false;
 let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
-function qHtml(it, fill) {
-  const tag = it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '';
+function qHtml(it, fill, noFront) {
+  const tag = (!noFront && it.q ? `<div class="qfront">Q. ${esc(it.q)}</div>` : '') + (it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '');
   if (fill) {
     let h = esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, a) => `<span class="fill">${a}</span>`);
     if (it.a && !blanks(it.t).length) h += ` <span class="fill ox">→ ${esc(it.a)}</span>`;
@@ -571,7 +588,7 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} 논점 정리</div><div class="cs">챕터별 통합본${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">빈칸</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">채움</button></span><span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
+  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">빈칸</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">채움</button></span>${editing ? '' : `<span class="yrs fillsw"><button class="yr punchb ${punch ? 'on' : ''}" data-punch title="본문에서 바로 드래그해 빈칸 만들기">✂ 빈칸 뚫기</button></span>`}<span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>파트</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ 챕터</button></div>`;
     if (!p.chapters.length && editing) h += `<div class="empty">챕터가 없어요. ‘+ 챕터’로 추가하세요.</div>`;
@@ -590,6 +607,7 @@ function renderMain() {
             const a = ansOf(it);
             const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
             const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
+            if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
             h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? '틀린 횟수 ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
           });
           h += `</table>`;
@@ -604,6 +622,7 @@ function renderMain() {
   const paper = $('#paper');
   paper.innerHTML = h;
   document.body.classList.toggle('edit', editing);
+  document.body.classList.toggle('punch', punch && !editing);
   observe();
 }
 
@@ -658,6 +677,36 @@ function openModal({ title, fields, onSave, onDelete, again }) {
 function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; applyRemote(st); } }
 $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ov').classList.contains('open')) closeModal(); });
+
+/* 빈칸 뚫기 (본문에서 바로) */
+let punchJust = 0;
+function punchSave(ed) {
+  const L = locate(ed.dataset.pid); if (!L) return;
+  const t = serBed(ed); if (t === L.obj.t) return;
+  L.obj.t = t; save();
+}
+function punchWrap() {
+  const sel = getSelection(); if (!sel.rangeCount || sel.isCollapsed) return false;
+  const r = sel.getRangeAt(0);
+  const el = n => (n.nodeType === 3 ? n.parentNode : n);
+  const ed = el(r.startContainer).closest('.pbed');
+  if (!ed || ed !== el(r.endContainer).closest('.pbed')) { if (ed || el(r.endContainer).closest('.pbed')) toast('한 문항 안에서만 선택하세요'); return false; }
+  if (el(r.commonAncestorContainer).closest('mark') || r.cloneContents().querySelector('mark')) { sel.removeAllRanges(); toast('이미 있는 빈칸과 겹쳐요'); return false; }
+  const txt = r.toString(); if (!txt.trim()) return false;
+  const lead = /^\s/.test(txt), trail = /\s$/.test(txt);
+  r.deleteContents();
+  const mk = document.createElement('mark'); mk.className = 'bk'; mk.textContent = txt.trim();
+  const f = document.createDocumentFragment(); if (lead) f.append(' '); f.append(mk); if (trail) f.append(' ');
+  r.insertNode(f); sel.removeAllRanges(); ed.normalize(); punchJust = Date.now(); punchSave(ed); return true;
+}
+document.addEventListener('mouseup', e => { if (punch && !editing && e.target.closest && e.target.closest('#paper')) setTimeout(punchWrap, 0); });
+(() => {
+  const b = document.createElement('button'); b.className = 'punchfab'; b.type = 'button'; b.textContent = '선택 → 빈칸';
+  b.addEventListener('mousedown', e => e.preventDefault());
+  b.addEventListener('touchstart', e => { e.preventDefault(); if (!punchWrap()) toast('먼저 문장에서 단어를 선택하세요'); }, { passive: false });
+  b.addEventListener('click', () => { if (!punchWrap()) toast('먼저 문장에서 단어를 선택하세요'); });
+  document.body.appendChild(b);
+})();
 
 /* blank editor */
 function setBed(ed, t) {
@@ -976,12 +1025,14 @@ const itemFields = it => [
   yearField(it ? it.y : defYear()),
   { key: 't', label: '문장', type: 'blank', value: it ? it.t : '', ph: '여기에 문장을 붙여넣으세요' },
   { key: 'a', label: '정답 직접 입력 (선택 · OX 문제 등 — 비우면 빈칸 단어가 정답)', value: it ? it.a || '' : '', ph: '예: X (승인 불요)' },
+  { key: 'q', label: '퀴즐렛 앞면 (선택 · 쓰면 이 질문이 앞면, 위 문장이 뒷면인 카드로 출제)', type: 'textarea', value: it ? it.q || '' : '', ph: '예: Lotus 사건의 핵심 판시사항은?' },
   { key: 'tag', label: '머리표 (선택)', value: it ? it.tag || '' : '', ph: '예: 기출, 기사, 판례' }
 ];
 function itemObj(v, base) {
   if (!v.t) { toast('문장을 입력하세요'); return null; }
   const o = base || { id: nid() }; o.t = v.t; o.y = v.y || defYear();
   if (v.a) o.a = v.a; else delete o.a;
+  if (v.q) o.q = v.q.trim(); else delete o.q;
   if (v.tag) o.tag = v.tag.replace(/^[\[(]|[\])]$/g, ''); else delete o.tag;
   return o;
 }
@@ -1051,6 +1102,9 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
+  if (t.closest('[data-punch]')) { punch = !punch; const y = scrollY; render(); scrollTo(0, y); if (punch) toast('문장에서 단어를 드래그하면 빈칸 · 빈칸을 누르면 해제'); return; }
+  const pm = punch && !editing && t.closest('.pbed mark');
+  if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }
   const fb = t.closest('[data-fill]');
   if (fb) { filled = fb.dataset.fill === '1'; try { localStorage.setItem(KEY + ':filled', filled ? '1' : '0'); } catch (x) {} const y = scrollY; render(); scrollTo(0, y); return; }
   const yb = t.closest('[data-yr]');
@@ -1095,7 +1149,7 @@ $('#file').onchange = async e => {
     DB = d; migrate(); if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all'; cur = DB.docs[0].id; commit(); toast('불러왔어요');
   } catch (x) { toast('올바른 백업 파일이 아니에요'); }
 };
-window.addEventListener('beforeprint', () => { if (editing) { editing = false; $('#editBtn').classList.remove('on'); $('#editBtn').textContent = '편집'; render(); } });
+window.addEventListener('beforeprint', () => { if (punch) { punch = false; render(); } if (editing) { editing = false; $('#editBtn').classList.remove('on'); $('#editBtn').textContent = '편집'; render(); } });
 
 /* 본문 서체·크기 */
 const FONTS = [
@@ -1144,13 +1198,16 @@ applyFS();
 
 
 /* ===================== 퀴즈 ===================== */
-const QS0 = { mode: 'type', view: 'list', n: 10, scope: 'random', chs: [], shuffle: true, wrongOnly: false, y: null };
+const QS0 = { mode: 'type', view: 'list', n: 10, scope: 'random', chs: [], shuffle: true, wrongOnly: false, y: null, kinds: { blank: true, card: true, read: false } };
 let QS = { ...QS0 };
 try { Object.assign(QS, JSON.parse(localStorage.getItem(KEY + ':qs') || '{}')); } catch (e) {}
+QS.kinds = Object.assign({ blank: true, card: true, read: false }, QS.kinds || {});
 const saveQS = () => { try { localStorage.setItem(KEY + ':qs', JSON.stringify(QS)); } catch (e) {} };
 const stat = id => (DB.stats ||= {})[id] ||= { c: 0, w: 0 };
 const qAnswers = it => { const b = blanks(it.t); return b.length ? b : (it.a ? [it.a] : []); };
-const quizzable = it => qAnswers(it).length > 0;
+const kindOf = it => it.q ? 'card' : qAnswers(it).length ? 'blank' : 'read';
+const quizzable = it => !!QS.kinds[kindOf(it)];
+const effMode = q => kindOf(q.it) === 'blank' ? QS.mode : 'self';
 function norm(s) { return String(s || '').toLowerCase().replace(/[\s·.,'"‘’“”「」『』()\[\]{}<>\-–—_:;!?]/g, ''); }
 function variants(ans) {
   const out = new Set([ans]);
@@ -1196,6 +1253,10 @@ function quizSetup() {
     <div class="qz-row"><span class="qz-l">연도</span>${seg('y', [['all', '전체'], ...DB.years.map(v => [v, v])].map(([v, l]) => [v, l]))}</div>
     <div class="qz-row"><span class="qz-l">범위</span>${seg('scope', [['random', '전체에서 랜덤'], ['topic', '주제(챕터)별']])}</div>
     <div class="qz-chs"${QS.scope === 'topic' ? '' : ' hidden'}><div class="qz-chtools"><button class="btn" data-chall="1">전체 선택</button><button class="btn" data-chall="0">전체 해제</button></div><div class="qz-chgrid">${chList}</div></div>
+    <div class="qz-row"><span class="qz-l">문제 종류</span>
+      <label class="qz-ck"><input type="checkbox" class="qzKind" value="blank"${QS.kinds.blank ? ' checked' : ''}> 빈칸 문제</label>
+      <label class="qz-ck"><input type="checkbox" class="qzKind" value="card"${QS.kinds.card ? ' checked' : ''}> 퀴즐렛 카드 <small class="qz-s">(앞면 적은 문항)</small></label>
+      <label class="qz-ck"><input type="checkbox" class="qzKind" value="read"${QS.kinds.read ? ' checked' : ''}> 읽기 카드 <small class="qz-s">(서술형)</small></label></div>
     <div class="qz-row"><span class="qz-l">옵션</span>
       <label class="qz-ck"${QS.scope === 'topic' ? '' : ' hidden'} id="qzShufW"><input type="checkbox" id="qzShuf"${QS.shuffle ? ' checked' : ''}> 순서 섞기</label>
       <label class="qz-ck"><input type="checkbox" id="qzWrong"${QS.wrongOnly ? ' checked' : ''}> 틀린 적 있는 문제만</label></div>
@@ -1212,6 +1273,7 @@ function readSetup() {
   QS.chs = [...b.querySelectorAll('.qz-ch input:checked')].map(x => x.value);
   QS.shuffle = $('#qzShuf')?.checked ?? true;
   QS.wrongOnly = $('#qzWrong')?.checked ?? false;
+  if (b.querySelector('.qzKind')) b.querySelectorAll('.qzKind').forEach(x => QS.kinds[x.value] = x.checked);
 }
 function updCount() { readSetup(); const n = quizPool().length; $('#qzCount').innerHTML = n ? `풀 수 있는 문제 <b>${n}</b>개` : '<span class="w">조건에 맞는 문제가 없어요</span>'; }
 function startQuiz() {
@@ -1232,6 +1294,9 @@ function nextRound(list) {
 function qText(q, mode, revealed) {
   const it = q.it; const ans = qAnswers(it); let k = 0;
   const tag = it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '';
+  const kd = kindOf(it);
+  if (kd === 'card') return `<div class="qz-front">${esc(it.q)}</div>` + (revealed ? `<div class="qz-back">${qHtml(it, true, true)}</div>` : `<div class="qz-back hid">뒷면 가려짐</div>`);
+  if (kd === 'read') return `<span class="qz-read">읽기</span> ` + qHtml(it, true, true);
   let body = esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, a) => {
     const i = k++;
     if (mode === 'type') return `<input class="qz-in" data-i="${i}" autocomplete="off" autocapitalize="off" spellcheck="false" style="width:${Math.max(4, Math.min(16, [...a].length * 1.15 + 1.5))}em">`;
@@ -1259,14 +1324,16 @@ function showList() {
   const r = QZ.round, total = QZ.pool.length;
   $('#qzBody').innerHTML = `
   <div class="qz-top"><button class="btn" data-q="setup">← 설정</button><div class="qz-prog">${QZ.pos - r.length + 1}–${QZ.pos} / ${total}</div><button class="btn" data-q="close">닫기</button></div>
-  <div class="qz-list">${r.map((q, i) => `<div class="qz-item" data-i="${i}"><div class="qz-num">${i + 1}</div><div class="qz-main">${meta(q)}<div class="qz-q">${qText(q, QS.mode, false)}</div>
-    ${QS.mode === 'reveal' ? `<div class="qz-btns"><button class="btn" data-rv="${i}">정답 보기</button><button class="qz-o" data-mk="${i}:1" hidden>○ 맞음</button><button class="qz-x" data-mk="${i}:0" hidden>✕ 틀림</button></div>` : `<div class="qz-btns" hidden><button class="qz-o" data-ov="${i}">맞게 처리</button></div>`}</div></div>`).join('')}</div>
+  <div class="qz-list">${r.map((q, i) => { const em = effMode(q), kd = kindOf(q.it); return `<div class="qz-item" data-i="${i}"><div class="qz-num">${i + 1}</div><div class="qz-main">${meta(q)}<div class="qz-q">${qText(q, em === 'type' ? 'type' : 'reveal', false)}</div>
+    ${em === 'type' ? `<div class="qz-btns" hidden><button class="qz-o" data-ov="${i}">맞게 처리</button></div>` : `<div class="qz-btns">${kd === 'read' ? '' : `<button class="btn" data-rv="${i}">${kd === 'card' ? '뒷면 보기' : '정답 보기'}</button>`}<button class="qz-o" data-mk="${i}:1"${kd === 'read' ? '' : ' hidden'}>○ ${kd === 'read' ? '알았음' : '맞음'}</button><button class="qz-x" data-mk="${i}:0"${kd === 'read' ? '' : ' hidden'}>✕ ${kd === 'read' ? '몰랐음' : '틀림'}</button></div>`}</div></div>`; }).join('')}</div>
   <div class="qz-foot">${QS.mode === 'type' ? '<span class="qz-s">Enter = 다음 칸</span>' : '<button class="btn" data-q="revealall">전체 정답 보기</button>'}<span class="sp2"></span><button class="btn qz-go" data-q="${QS.mode === 'type' ? 'grade' : 'finish'}">${QS.mode === 'type' ? '채점하기' : '결과 보기'}</button></div>`;
   const first = $('#qzBody .qz-in'); if (first) first.focus();
   $('#qzBody').scrollTop = 0;
 }
 function gradeList() {
-  QZ.round.forEach((q, i) => { const box = $(`#qzBody .qz-item[data-i="${i}"]`); const ok = gradeQ(box, q); QZ.res[q.it.id] = ok; box.classList.add(ok ? 'ok' : 'ng'); if (!ok) box.querySelector('.qz-btns').hidden = false; });
+  const unm = QZ.round.filter(q => effMode(q) !== 'type' && QZ.res[q.it.id] === undefined);
+  if (unm.length) return toast(`카드·읽기 문제 ${unm.length}개는 ○/✕를 눌러주세요`);
+  QZ.round.forEach((q, i) => { if (effMode(q) !== 'type') return; const box = $(`#qzBody .qz-item[data-i="${i}"]`); const ok = gradeQ(box, q); QZ.res[q.it.id] = ok; box.classList.add(ok ? 'ok' : 'ng'); if (!ok) box.querySelector('.qz-btns').hidden = false; });
   QZ.checked = true; finishRound(true);
 }
 /* 카드형 */
@@ -1275,9 +1342,12 @@ function showCard() {
   if (!q) return finishRound();
   $('#qzBody').innerHTML = `
   <div class="qz-top"><button class="btn" data-q="setup">← 설정</button><div class="qz-prog">${QZ.idx + 1} / ${r.length}<div class="qz-bar"><i style="width:${QZ.idx / r.length * 100}%"></i></div></div><button class="btn" data-q="close">닫기</button></div>
-  <div class="qz-card${QS.mode === 'reveal' ? ' flip' : ''}" id="qzCard">${meta(q)}<div class="qz-q big">${qText(q, QS.mode, false)}</div>
-    <div class="qz-hint">${QS.mode === 'type' ? 'Enter로 확인' : '카드 클릭 또는 Space로 정답 보기'}</div></div>
-  <div class="qz-cbtns" id="qzCB">${QS.mode === 'type' ? '<button class="btn qz-go" data-q="ccheck">확인</button>' : '<button class="btn qz-go" data-q="cflip">정답 보기</button>'}</div>`;
+  ${(() => { const em = effMode(q), kd = kindOf(q.it);
+    if (kd === 'read') return `<div class="qz-card shown" id="qzCard">${meta(q)}<div class="qz-q big">${qText(q, 'reveal', true)}</div><div class="qz-hint">읽고 체크 · 1 또는 ← = 몰랐음 · 2 또는 → = 알았음</div></div>
+  <div class="qz-cbtns" id="qzCB"><button class="qz-x big" data-q="cno">✕ 몰랐음</button><button class="qz-o big" data-q="cyes">○ 알았음</button></div>`;
+    return `<div class="qz-card${em !== 'type' ? ' flip' : ''}" id="qzCard">${meta(q)}<div class="qz-q big">${qText(q, em === 'type' ? 'type' : 'reveal', false)}</div>
+    <div class="qz-hint">${em === 'type' ? 'Enter로 확인' : `카드 클릭 또는 Space로 ${kd === 'card' ? '뒷면' : '정답'} 보기`}</div></div>
+  <div class="qz-cbtns" id="qzCB">${em === 'type' ? '<button class="btn qz-go" data-q="ccheck">확인</button>' : `<button class="btn qz-go" data-q="cflip">${kd === 'card' ? '뒷면 보기' : '정답 보기'}</button>`}</div>`; })()}`;
   const inp = $('#qzBody .qz-in'); if (inp) inp.focus();
 }
 function cardCheck() {
@@ -1301,7 +1371,7 @@ function cardNext() { QZ.idx++; showCard(); }
 /* 결과 */
 function finishRound(inline) {
   const r = QZ.round;
-  if (QS.view === 'list' && QS.mode === 'reveal') {
+  if (QS.view === 'list') {
     const unm = r.filter(q => QZ.res[q.it.id] === undefined);
     if (unm.length) return toast(`○/✕ 안 누른 문제 ${unm.length}개`);
   }
@@ -1347,7 +1417,7 @@ $('#quiz').addEventListener('click', e => {
   if (a === 'cyes') cardMark(true);
   if (a === 'cno') cardMark(false);
 });
-$('#quiz').addEventListener('change', e => { if (e.target.closest('.qz-ch') || e.target.id === 'qzWrong' || e.target.id === 'qzShuf') updCount(); });
+$('#quiz').addEventListener('change', e => { if (e.target.classList.contains('qzKind')) { readSetup(); saveQS(); quizSetup(); return; } if (e.target.closest('.qz-ch') || e.target.id === 'qzWrong' || e.target.id === 'qzShuf') updCount(); });
 $('#quiz').addEventListener('input', e => { if (e.target.id === 'qzN') readSetup(); });
 document.addEventListener('keydown', e => {
   if (!$('#quiz').classList.contains('open') || !QZ) return;
@@ -1355,14 +1425,14 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     const inp = e.target.closest && e.target.closest('.qz-in');
     if (QS.view === 'list' && inp && !QZ.checked) { e.preventDefault(); const all = [...$('#qzBody').querySelectorAll('.qz-in')]; const nx = all[all.indexOf(inp) + 1]; nx ? nx.focus() : gradeList(); return; }
-    if (card && QS.mode === 'type') {
+    if (card && QZ.round[QZ.idx] && effMode(QZ.round[QZ.idx]) === 'type') {
       e.preventDefault();
       const ins = [...card.querySelectorAll('.qz-in')], i = ins.indexOf(e.target);
       if (i >= 0 && i < ins.length - 1 && !ins[i + 1].readOnly) { ins[i + 1].focus(); return; }
       cardCheck(); return;
     }
   }
-  if (card && QS.mode === 'reveal' && e.target.tagName !== 'INPUT') {
+  if (card && QZ.round[QZ.idx] && effMode(QZ.round[QZ.idx]) !== 'type' && e.target.tagName !== 'INPUT') {
     if (e.key === ' ') { e.preventDefault(); cardFlip(); }
     if (card.classList.contains('shown')) { if (e.key === '1' || e.key === 'ArrowLeft') cardMark(false); if (e.key === '2' || e.key === 'ArrowRight') cardMark(true); }
   }
