@@ -3780,7 +3780,7 @@ function pl_unmergeItem() {
             showPage('tracker');
         }
         // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · CARDS (MAP은 DATABASE로 이동)
-        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards'];
+        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
@@ -3825,6 +3825,37 @@ function pl_unmergeItem() {
         };
         if (localStorage.getItem('lastPage') === 'cards') showPage('cards');
     }, 470);
+</script>
+
+<!-- ========== ISSUES(논점 정리 노트) — CARDS 뒤에 탭 추가, issues.html을 iframe으로 삽입 ========== -->
+<div id="issues-view" style="display:none; width:100%;">
+    <iframe id="issues-iframe" data-src="issues.html" title="ISSUES" style="width:100%; height:calc(100vh - 64px); height:calc(100dvh - 64px); min-height:560px; border:none; display:block; background:#fff;"></iframe>
+</div>
+<script>
+    setTimeout(() => {
+        const appWrapper = document.querySelector('.app-wrapper');
+        const navLinks = document.querySelector('.nav-links');
+        const issuesView = document.getElementById('issues-view');
+        if (appWrapper && issuesView) appWrapper.appendChild(issuesView);
+        if (navLinks && !document.getElementById('nav-issues')) {
+            const b = document.createElement('span');
+            b.id = 'nav-issues'; b.className = 'inactive'; b.innerText = 'ISSUES';
+            b.onclick = () => showPage('issues');
+            navLinks.appendChild(b);
+        }
+        const __prevShowPage4 = window.showPage || function(){};
+        window.showPage = function(p) {
+            __prevShowPage4(p);
+            if (issuesView) {
+                issuesView.style.display = (p === 'issues') ? 'block' : 'none';
+                const f = document.getElementById('issues-iframe');
+                if (p === 'issues' && f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // 처음 열 때만 로드
+            }
+            const nb = document.getElementById('nav-issues');
+            if (nb) nb.className = (p === 'issues') ? 'active' : 'inactive';
+        };
+        if (localStorage.getItem('lastPage') === 'issues') showPage('issues');
+    }, 480);
 </script>
 
 <!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->

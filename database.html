@@ -43,7 +43,6 @@ body.full .stage{position:fixed;inset:0;height:auto;z-index:50}
     <button class="tab" data-k="ip">국제정치학</button>
     <button class="tab" data-k="il">국제법</button>
     <button class="tab" data-k="case">판례</button>
-    <button class="tab" data-k="issues">ISSUES</button>
     <button class="tab" data-k="psat">PSAT</button>
     <button class="tab" data-k="blank">빈칸</button>
     <button class="tab" data-k="map">MAP</button>
@@ -54,7 +53,6 @@ body.full .stage{position:fixed;inset:0;height:auto;z-index:50}
   <iframe data-k="ip" data-src="intlpol_analysis.html" title="국제정치학"></iframe>
   <iframe data-k="il" data-src="intllaw_analysis.html" title="국제법"></iframe>
   <iframe data-k="case" data-src="intllaw_cases.html" title="판례"></iframe>
-  <iframe data-k="issues" data-src="issues.html" title="ISSUES"></iframe>
   <iframe data-k="psat" data-src="psat_print.html" title="PSAT"></iframe>
   <iframe data-k="blank" data-src="blank_maker.html" aria-label="빈칸" allow="web-share; clipboard-write; fullscreen" allowfullscreen></iframe>
   <iframe data-k="map" data-src="world_map.html" title="MAP"></iframe>
@@ -87,7 +85,7 @@ function show(k){
 }
 document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)show(b.dataset.k)});
 let last='ip';try{last=localStorage.getItem(KEY)||'ip'}catch(e){}
-show(['ip','il','case','issues','psat','blank','map'].includes(last)?last:'ip');
+show(['ip','il','case','psat','blank','map'].includes(last)?last:'ip');
 </script>
 <script>
 /* 빈칸 탭이 예전에 localStorage(사이트 전체 공용 5MB)에 넣던 작업 사본을 IndexedDB로 옮기고 비워서 다른 앱 저장 공간 확보 */
