@@ -157,6 +157,7 @@ body.text .ov{cursor:text}
 .blank.sel .x{top:-22px;right:-4px}
 .ok{display:none;position:absolute;top:-22px;right:20px;height:18px;padding:0 7px;border-radius:9px;border:0;background:#d9534f;color:#fff;font-size:11px;line-height:18px;cursor:pointer;z-index:3;font-family:sans-serif}
 .blank.sel .ok{display:block}
+html,body,#pages,.docview{overflow-anchor:none}
 #pnoPill{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;background:rgba(27,27,27,.82);color:#fff;font:600 13px 'Paperlogy',sans-serif;padding:6px 14px;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .25s}
 #pnoPill.on{opacity:1}
 .pgok{position:absolute;top:6px;right:6px;z-index:999;height:22px;padding:0 10px;border-radius:11px;border:0;background:#d9534f;color:#fff;font-size:11.5px;cursor:pointer;font-family:'Paperlogy',sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.2)}
@@ -206,7 +207,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.24</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.25</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -638,12 +639,19 @@ function setHH(){document.body.style.setProperty('--hh',document.querySelector('
 (()=>{let v=null;try{v=localStorage.getItem('bm:noside');}catch(e){}
   const def=matchMedia('(pointer:coarse)').matches&&innerWidth<1200;
   if(v==='1'||(v===null&&def))document.body.classList.add('noside');})();
+/* 배치가 바뀐 뒤 '그 쪽의 그 지점'을 화면의 (cx,cy)에 오게 절대 위치로 맞추고, 사파리가 뒤에서 스크롤을 건드려도 몇 번 다시 맞춤 */
+let keepTok=0;
+function keepAt(a,cx,cy){const p=S.pages[a.i];if(!p)return;const pg=$('#pages'),se=document.scrollingElement||document.documentElement;
+  const r=p.el.getBoundingClientRect();const top=Math.max(0,se.scrollTop+r.top+a.fy*r.height-cy),left=Math.max(0,pg.scrollLeft+r.left+a.fx*r.width-cx);
+  const tok=++keepTok,ft=flingTok;
+  const put=()=>{if(tok!==keepTok||ft!==flingTok)return;if(Math.abs(se.scrollTop-top)>1)window.scrollTo(0,top);if(Math.abs(pg.scrollLeft-left)>1)pg.scrollLeft=left;};
+  put();requestAnimationFrame(()=>{put();requestAnimationFrame(put);});setTimeout(put,120);setTimeout(put,350);}
 /* 화면 폭이 바뀌어도(목차 열고 닫기·회전) 보던 자리 그대로 */
 function viewAnchor(){const pg=$('#pages');if(!pg||!S.pages||!S.pages.length)return null;const r=pg.getBoundingClientRect();
   const cx=r.left+r.width/2,cy=Math.max(r.top,0)+(innerHeight-Math.max(r.top,0))/3;return anchorAt(cx,cy);}
 function relayoutKeep(a){a=a===undefined?viewAnchor():a;layout();
   if(a){const pg=$('#pages'),r0=pg.getBoundingClientRect(),cx=r0.left+r0.width/2,r=S.pages[a.i].el.getBoundingClientRect();
-    window.scrollBy(0,r.top+a.fy*r.height-a.cy);pg.scrollLeft+=r.left+a.fx*r.width-cx;}}
+    keepAt(a,cx,a.cy);}}
 $('#sideBtn').onclick=()=>{const a=viewAnchor();document.body.classList.toggle('noside');try{localStorage.setItem('bm:noside',document.body.classList.contains('noside')?'1':'0');}catch(e){}if(S.pages.length){relayoutKeep(a);rerenderAll();}};
 document.querySelectorAll('.stabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.stabs button').forEach(x=>x.classList.toggle('on',x===b));
@@ -713,7 +721,7 @@ function setZoom(z,cx,cy){
   const a=anchorAt(cx,cy);S.zoom=z;$('#zVal').textContent=Math.round(z*100)+'%';saveSettings();
   if(!S.pages||!S.pages.length)return;
   layout();
-  if(a){const r=S.pages[a.i].el.getBoundingClientRect();window.scrollBy(0,r.top+a.fy*r.height-a.cy);pg.scrollLeft+=r.left+a.fx*r.width-a.cx;}
+  if(a)keepAt(a,a.cx,a.cy);
   clearTimeout(zrt);zrt=setTimeout(rerenderAll,250);showPno();}
 $('#zIn').onclick=()=>setZoom((S.zoom||1)*1.25);
 $('#zOut').onclick=()=>setZoom((S.zoom||1)/1.25);
@@ -747,7 +755,7 @@ document.addEventListener('touchmove',e=>{if(!pinch)return;e.preventDefault();if
 const pinchEnd=e=>{if(!pinch||(e.touches&&e.touches.length>=2))return;const P=pinch;pinch=null;
   S.view.style.transform='';S.view.style.transformOrigin='';S.view.style.willChange='';
   const z=Math.min(ZMAX,Math.max(ZMIN,Math.round(P.z0*P.s*100)/100));S.zoom=z;$('#zVal').textContent=Math.round(z*100)+'%';saveSettings();
-  layout();const a=P.a;if(a){const pg=$('#pages'),r=S.pages[a.i].el.getBoundingClientRect();window.scrollBy(0,r.top+a.fy*r.height-P.m.y);pg.scrollLeft+=r.left+a.fx*r.width-P.m.x;}
+  layout();if(P.a)keepAt(P.a,P.m.x,P.m.y);
   clearTimeout(zrt);zrt=setTimeout(rerenderAll,120);showPno();};
 document.addEventListener('touchend',pinchEnd,{capture:true});document.addEventListener('touchcancel',pinchEnd,{capture:true});
 /* 지금 몇 쪽인지 잠깐 표시 (스크롤·확대할 때) */
@@ -851,7 +859,7 @@ function fingerScroll(e,onTap){
   let ly=e.clientY,lx=e.clientX,sy=e.clientY,sx=e.clientX,lt=performance.now(),vy=0,moved=false;
   const mv=ev=>{const dy=ly-ev.clientY,now=performance.now();if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>6)moved=true;
     if(touchN>1||pinch){moved=true;vy=0;ly=ev.clientY;lx=ev.clientX;return;}
-    if(moved){window.scrollBy(0,dy);$('#pages').scrollLeft+=lx-ev.clientX;vy=dy/Math.max(1,now-lt);}ly=ev.clientY;lx=ev.clientX;lt=now;};
+    if(moved){keepTok++;window.scrollBy(0,dy);$('#pages').scrollLeft+=lx-ev.clientX;vy=dy/Math.max(1,now-lt);}ly=ev.clientY;lx=ev.clientX;lt=now;};
   const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);
     if(!moved){onTap&&onTap(ev);return;}
     let v=touchN>0?0:vy*16;const tok=++flingTok;const step=()=>{if(tok!==flingTok||Math.abs(v)<.5)return;window.scrollBy(0,v);v*=.94;requestAnimationFrame(step);};requestAnimationFrame(step);};
