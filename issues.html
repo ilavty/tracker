@@ -649,11 +649,11 @@ function renderMain() {
     for (const c of p.chapters) {
       if (!showCh(c)) continue;
       n++;
-      h += `<section class="ch" id="ch-${c.id}"><div class="chh"><span class="chp">${esc(p.title)}</span><span class="chn">${String(n).padStart(2, '0')}</span><span class="cht">${esc(c.title)}</span>${ec(c.id)}</div>`;
+      h += `<section class="ch" id="ch-${c.id}"><div class="chh" data-anc="c-${c.id}"><span class="chp">${esc(p.title)}</span><span class="chn">${String(n).padStart(2, '0')}</span><span class="cht">${esc(c.title)}</span>${ec(c.id)}</div>`;
       for (const s of c.secs) {
         if (!showSec(s)) continue;
         const its = visItems(s);
-        h += `<div class="sec"><div class="sh"><span>${esc(s.title)}</span>${ec(s.id)}</div>`;
+        h += `<div class="sec"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span>${ec(s.id)}</div>`;
         if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
         if (its.length) {
           h += `<table><colgroup><col class="cn"><col class="cq"><col class="ca">${editing ? '<col class="cc">' : ''}</colgroup>`;
@@ -1244,7 +1244,7 @@ function renderKeep() {
   const top = ($('.top') ? $('.top').getBoundingClientRect().bottom : 0) + 4;
   const row = [...document.querySelectorAll('#paper tr.it, #paper .sh, #paper .chh')].find(el => el.getBoundingClientRect().bottom > top);
   if (!row) { const y = scrollY; render(); scrollTo(0, y); return; }
-  const key = row.dataset.item ? `tr.it[data-item="${row.dataset.item}"]` : null;
+  const key = row.dataset.item ? `tr.it[data-item="${row.dataset.item}"]` : row.dataset.anc ? `[data-anc="${row.dataset.anc}"]` : null;
   const off = row.getBoundingClientRect().top, y0 = scrollY;
   render();
   const el = key && document.querySelector('#paper ' + key);
