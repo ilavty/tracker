@@ -173,6 +173,7 @@ table.fit{width:100%;table-layout:fixed}
 /* 아이패드: 표가 화면 안에 다 들어오게 (글자·여백 비율 축소), 목차는 버튼으로 열기 */
 html.ipad,html.ipad body{overflow-x:hidden;touch-action:pan-y pinch-zoom}
 html.ipad .tbox{overflow:hidden}
+html.ipad:not(.fitted) .tbox{visibility:hidden}
 html.ipad .heat th,html.ipad .heat td{font-size:calc(12.5px*var(--hk,1));padding:calc(5px*var(--hk,1)) calc(6px*var(--hk,1))}
 html.ipad .heat td.cnt1{min-width:calc(34px*var(--hk,1))}
 html.ipad .heat td *:not(.bang):not(.car),html.ipad .heat th *:not(.bang):not(.car){font-size:inherit!important;letter-spacing:0}
@@ -689,8 +690,8 @@ window.__cloud=makeCloud('database_v1/intlpol_analysis',KEY,()=>st,o=>{closePick
     document.querySelectorAll('.tbox').forEach(b=>{
       const tb=b.querySelector('table');if(!tb)return;
       if(IPAD){
-        b.style.zoom='';b.style.setProperty('--hk','1');
-        const have=b.clientWidth;let k=1;
+        b.style.zoom='';
+        const have=b.clientWidth;let k=1;b.style.setProperty('--hk','1');
         for(let i=0;i<5;i++){const need=tb.scrollWidth;if(need<=have+1||have<=0)break;k=Math.max(.35,k*have/need);b.style.setProperty('--hk',k.toFixed(3));}
       }else{
         b.style.zoom='';const need=tb.scrollWidth,have=b.clientWidth;
@@ -698,8 +699,11 @@ window.__cloud=makeCloud('database_v1/intlpol_analysis',KEY,()=>st,o=>{closePick
     if(typeof stickySync==='function')try{stickySync();}catch(e){}}
   const later=()=>{clearTimeout(t);t=setTimeout(fit,80);};
   addEventListener('resize',later);addEventListener('orientationchange',later);
-  new MutationObserver(ms=>{if(ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches('table,.twrap,.tbox')||n.querySelector&&n.querySelector('table')))))later();}).observe(document.body,{childList:true,subtree:true});
-  later();
+  new MutationObserver(ms=>{if(ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches('table,.twrap,.tbox')||n.querySelector&&n.querySelector('table')))))fit();}).observe(document.body,{childList:true,subtree:true});
+  fit();
+  /* 아이패드: 웹폰트까지 다 불러온 뒤 크기를 맞추고 나서 보여줌 (줄어드는 과정이 안 보이게) */
+  const reveal=()=>{fit();document.documentElement.classList.add('fitted');};
+  if(IPAD&&document.fonts&&document.fonts.ready){document.fonts.ready.then(reveal);setTimeout(reveal,1200);}else reveal();
 })();
 </script>
 </body>
