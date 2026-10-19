@@ -591,20 +591,57 @@ function applyRemote(st) {
   if (!$('#quiz').classList.contains('open')) { const y = scrollY; render(); scrollTo(0, y); }
   flashSaved('Synced');
 }
+/* 안 올라간 내 변경이 있는데 다른 기기 데이터가 오면: 덮어쓰지 않고 합치기 (내가 추가한 문항·챕터 보존) */
+function mergeInto(R, Lc) {
+  const ids = new Set(); R.docs.forEach(d => d.parts.forEach(p => { ids.add(p.id); p.chapters.forEach(c => { ids.add(c.id); c.secs.forEach(s => { ids.add(s.id); s.items.forEach(it => ids.add(it.id)); }); }); }));
+  const find = (id) => { for (const d of R.docs) for (const p of d.parts) { if (p.id === id) return p; for (const c of p.chapters) { if (c.id === id) return c; for (const s of c.secs) if (s.id === id) return s; } } return null; };
+  for (const d of Lc.docs) {
+    let rd = R.docs.find(x => x.id === d.id); if (!rd) { R.docs.push(JSON.parse(JSON.stringify(d))); continue; }
+    for (const p of d.parts) {
+      let rp = rd.parts.find(x => x.id === p.id); if (!rp) { rd.parts.push(JSON.parse(JSON.stringify(p))); continue; }
+      for (const c of p.chapters) {
+        let rc = find(c.id); if (!rc) { rp.chapters.push(JSON.parse(JSON.stringify(c))); continue; }
+        for (const s of c.secs) {
+          let rs = find(s.id); if (!rs) { rc.secs.push(JSON.parse(JSON.stringify(s))); continue; }
+          for (const it of s.items) if (!ids.has(it.id)) rs.items.push(JSON.parse(JSON.stringify(it)));
+        }
+      }
+    }
+  }
+  R.stats = R.stats || {}; for (const [k, v] of Object.entries(Lc.stats || {})) { const r = R.stats[k]; if (!r || (v.t || 0) > (r.t || 0)) R.stats[k] = v; }
+  (Lc.years || []).forEach(y => { if (!R.years.includes(y)) R.years.push(y); }); R.years.sort();
+  return R;
+}
 (function () {
-  const path = 'database_v1/issues', TK = KEY + '_cloud_t';
+  const path = 'database_v1/issues', TK = KEY + '_cloud_t', PK = KEY + '_pending';
   let lt = +(localStorage.getItem(TK) || 0), fresh = !lt, ready = false, db = null, timer = null;
   const setT = t => { lt = t; try { localStorage.setItem(TK, t); } catch (e) {} };
+  const pending = v => { try { v ? localStorage.setItem(PK, '1') : localStorage.removeItem(PK); } catch (e) {} };
+  const isPending = () => { try { return localStorage.getItem(PK) === '1'; } catch (e) { return false; } };
+  // 이 버전 처음 열 때 한 번은 무조건 합치기 (예전 버전에서 못 올라간 문항 살리기)
+  let firstV2 = false; try { firstV2 = !localStorage.getItem(KEY + '_v2') && !!localStorage.getItem(KEY); localStorage.setItem(KEY + '_v2', '1'); } catch (e) {}
   try { if (window.firebase) { if (!firebase.apps.length) firebase.initializeApp({ apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" }); db = firebase.database(); } } catch (e) {}
-  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(() => { db.ref(path).set({ t: lt, d: JSON.stringify(DB) }).then(() => flashSaved('Saved · synced')).catch(() => flashSaved('Sync failed · saved on this device')); }, 800); };
+  const send = () => { if (!db) return; const t = lt; db.ref(path).set({ t, d: JSON.stringify(DB) }).then(() => { if (lt === t) pending(false); flashSaved('Saved · synced'); }).catch(() => flashSaved('Sync failed · saved on this device')); };
+  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(send, 600); };
+  // 앱을 닫거나 다른 데로 갈 때 남은 변경 바로 올리기 (아이패드에서 금방 나가도 안 날아가게)
+  const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; send(); } };
+  addEventListener('pagehide', flush); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
   setTimeout(() => { ready = true; }, 6000);
   if (db) db.ref(path).on('value', sn => {
     const r = sn.val();
-    if (r && r.t && r.d && (fresh || r.t > lt)) { try { applyRemote(JSON.parse(r.d)); } catch (e) {} setT(r.t); fresh = false; }
-    else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; push(); }
+    if (r && r.t && r.d && (fresh || r.t > lt)) {
+      try {
+        const R = JSON.parse(r.d);
+        if ((isPending() || firstV2) && !fresh) { firstV2 = false; if ($('#ov').classList.contains('open')) { pendingRemote = R; return; } applyRemote(mergeInto(R, DB)); setT(Date.now()); push(); }
+        else { applyRemote(R); setT(r.t); }
+      } catch (e) {}
+      fresh = false;
+    }
+    else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; firstV2 = false; push(); }
+    else if (r.t === lt) pending(false);
     ready = true;
   });
-  CLOUD = { db, touched() { if (!db) return; fresh = false; setT(Date.now()); if (ready) push(); else setTimeout(push, 6000); } };
+  CLOUD = { db, isPending, touched() { if (!db) return; fresh = false; setT(Date.now()); pending(true); if (ready) push(); else { clearTimeout(timer); timer = setTimeout(send, 6000); } } };
 })();
 let st; function flashSaved(t) { const el = $('#saved'); el.textContent = t; clearTimeout(st); st = setTimeout(() => el.textContent = '', 1600); }
 let tt; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 2200); }
@@ -823,7 +860,7 @@ function openModal({ title, fields, onSave, onDelete, again }) {
     }
   };
 }
-function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; applyRemote(st); } }
+function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; const pd = CLOUD && CLOUD.isPending && CLOUD.isPending(); applyRemote(pd ? mergeInto(st, DB) : st); if (pd) CLOUD.touched(); } }
 $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ov').classList.contains('open')) closeModal(); });
 
