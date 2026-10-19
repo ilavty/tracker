@@ -150,6 +150,9 @@ body.text .ov{cursor:text}
 .x{display:none;position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:12px;line-height:18px;padding:0;cursor:pointer;z-index:3;font-family:sans-serif}
 .blank.sel .x,.note:hover .x{display:block}
 .blank.sel .x{top:-22px;right:-4px}
+.ok{display:none;position:absolute;top:-22px;right:20px;height:18px;padding:0 7px;border-radius:9px;border:0;background:#d9534f;color:#fff;font-size:11px;line-height:18px;cursor:pointer;z-index:3;font-family:sans-serif}
+.blank.sel .ok{display:block}
+@media (pointer:coarse){.ok{height:24px;line-height:24px;top:-28px;right:26px}}
 .drag{position:absolute;z-index:9999;border:1.5px dashed var(--sky);background:rgba(140,200,236,.10);pointer-events:none}
 .snapv{position:absolute;z-index:9998;background:rgba(140,200,236,.38);border-radius:3px;pointer-events:none}
 .note{position:absolute;line-height:1.3;white-space:pre}
@@ -744,9 +747,10 @@ function drawOv(i){
     const r=disp(b),d=document.createElement('div');
     d.className='blank'+(b.cell?' cell':'')+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;d.style.zIndex=100+zOf(b,'box');
     Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px',borderRadius:b.cell?'0':Math.min(3,r.h/3,r.w/3)*s+'px'});
-    d.innerHTML='<button class="x" title="삭제">×</button>'+['n','s','e','w','ne','nw','se','sw'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
+    d.innerHTML='<button class="x" title="삭제">×</button>'+(b.lost?'<button class="ok" title="이 자리 맞음 (확인 완료)">✓</button>':'')+['n','s','e','w','ne','nw','se','sw'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
       if(e.target.classList.contains('x')){removeBox(b.id);return;}
+      if(e.target.classList.contains('ok')){b.lost=false;save();drawOv(i);drawThumb(i);return;}
       if(e.pointerType==='touch'&&!e.target.dataset.h){fingerScroll(e,()=>select(b.id));return;}
       const hd=e.target.dataset.h||'m';
       let tb=b,el=d;const dup=e.altKey&&hd==='m';
@@ -767,7 +771,7 @@ function drawOv(i){
         const old=tb.adj;tb.adj=a;const r=disp(tb);if(r.w<2||r.h<2){tb.adj=old;return;}
         if(el)Object.assign(el.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px'});};
       const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);
-        if(mvd){save();drawThumb(i);}else if(dup)select(b.id);};
+        if(mvd){const wl=tb.lost;tb.lost=false;save();if(wl)drawOv(i);drawThumb(i);}else if(dup)select(b.id);};
       window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);});
     ov.appendChild(d);});
   S.texts.filter(t=>t.page===i).forEach(t=>{
