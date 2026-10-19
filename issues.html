@@ -291,6 +291,11 @@ td.n.wr{color:var(--brown);font-weight:700}
   .wn-print .sp{display:inline-block;width:calc(2.6em*var(--bw))}
 }
 
+.fillsw{margin-left:10px}
+.dochead .yrs:not(.fillsw){margin-left:auto}
+.paper .fill{color:var(--acc);font-weight:500;border-bottom:1.5px solid var(--acc);padding:0 1px}
+.paper .fill.ox{border-bottom:0}
+@media print{.paper .fill{color:#000;font-weight:700;border-bottom:1px solid #000}.paper .fill.ox{border-bottom:0}}
 /* edit mode */
 .ec{display:none;gap:3px;margin-left:auto}
 .edit .ec{display:inline-flex}
@@ -522,8 +527,15 @@ function locate(id) {
 /* text helpers */
 const blanks = t => (t.match(/\[\[(.+?)\]\]/g) || []).map(x => x.slice(2, -2));
 const B = '<span class="bl">【</span><span class="sp"></span><span class="bl">】</span>';
-function qHtml(it) {
+let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
+function qHtml(it, fill) {
   const tag = it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '';
+  if (fill) {
+    let h = esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, a) => `<span class="fill">${a}</span>`);
+    if (it.a && !blanks(it.t).length) h += ` <span class="fill ox">→ ${esc(it.a)}</span>`;
+    else if (it.a) h += ` <span class="fill ox">(${esc(it.a)})</span>`;
+    return tag + h;
+  }
   return tag + esc(it.t).replace(/\[\[(.+?)\]\]/g, B);
 }
 const ansOf = it => it.a || blanks(it.t).join(' / ');
@@ -559,7 +571,7 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} 논점 정리</div><div class="cs">챕터별 통합본${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
+  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">빈칸</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">채움</button></span><span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>파트</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ 챕터</button></div>`;
     if (!p.chapters.length && editing) h += `<div class="empty">챕터가 없어요. ‘+ 챕터’로 추가하세요.</div>`;
@@ -578,7 +590,7 @@ function renderMain() {
             const a = ansOf(it);
             const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
             const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
-            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? '틀린 횟수 ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it)}</td>`) + ctl + `</tr>`;
+            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? '틀린 횟수 ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
           });
           h += `</table>`;
         }
@@ -1039,6 +1051,8 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
+  const fb = t.closest('[data-fill]');
+  if (fb) { filled = fb.dataset.fill === '1'; try { localStorage.setItem(KEY + ':filled', filled ? '1' : '0'); } catch (x) {} const y = scrollY; render(); scrollTo(0, y); return; }
   const yb = t.closest('[data-yr]');
   if (yb) { yr = yb.dataset.yr; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} render(); scrollTo(0, 0); return; }
   const go = t.closest('[data-go]');
