@@ -268,9 +268,11 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ───── PDF 렌더 ───── */
+/* 문제 PDF는 배포에 안 넣고(Vercel 저장공간 절약) GitHub에서 바로 읽어옴 */
+const PDF_BASE = (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) ? 'pdf/' : 'https://raw.githubusercontent.com/ilavty/tracker/main/pdf/';
 const pdfCache = {}, imgCache = {};
 function getPdf(id) {
-  if (!pdfCache[id]) pdfCache[id] = pdfjsLib.getDocument({url: 'pdf/' + id + '.pdf', disableAutoFetch: false}).promise
+  if (!pdfCache[id]) pdfCache[id] = pdfjsLib.getDocument({url: PDF_BASE + id + '.pdf', disableAutoFetch: false}).promise
     .catch(err => { delete pdfCache[id]; throw err; });
   return pdfCache[id];
 }
@@ -491,7 +493,7 @@ const MM = 72 / 25.4, PW = 595.28, PH = 841.89;
 const srcDocs = {};
 let building = false, fontBytes = null;
 function srcDoc(id) {
-  if (!srcDocs[id]) srcDocs[id] = fetch('pdf/' + id + '.pdf')
+  if (!srcDocs[id]) srcDocs[id] = fetch(PDF_BASE + id + '.pdf')
     .then(r => { if (!r.ok) throw new Error('pdf ' + r.status); return r.arrayBuffer(); })
     .then(b => PDFLib.PDFDocument.load(b))
     .catch(err => { delete srcDocs[id]; throw err; });
