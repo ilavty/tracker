@@ -35,6 +35,12 @@ button{font-family:inherit;cursor:pointer}
 .tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;color:var(--sub);white-space:nowrap}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .tab.add{border-style:dashed}
+.tyrs{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line);flex:none}
+.tyr{font-family:var(--tf);border:0;background:none;border-radius:14px;padding:5px 11px;font-size:12.5px;color:#9a9a9f;white-space:nowrap;cursor:pointer}
+.tyr:hover{color:#55555a}
+.tyr.on{background:#ececee;color:#3a3a3c}
+.tyr.add{color:#b0b0b5}
+.dochead.ed{justify-content:flex-end;border-bottom:0;padding-bottom:4px}
 .tools{display:flex;gap:6px;flex-shrink:0;align-items:center}
 .top .btn{height:33px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
 .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
@@ -608,6 +614,7 @@ function render() { renderTabs(); renderSide(); renderMain(); }
 function renderTabs() {
   let h = DB.docs.map(d => `<button class="tab ${d.id === doc().id ? 'on' : ''}" data-doc="${d.id}">${esc(d.name)}</button>`).join('');
   if (editing) h += `<button class="tab add" data-act="addDoc">+ Subject</button>`;
+  h += `<span class="tyrs">${['all', ...DB.years].map(y => `<button class="tyr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="tyr add" data-act="addYear" title="Add year">+</button>' : ''}</span>`;
   $('#tabs').innerHTML = h;
 }
 function tocHtml(d, cls) {
@@ -622,7 +629,7 @@ function tocHtml(d, cls) {
 }
 function renderSide() {
   const d = doc();
-  $('#side').innerHTML = `<div class="yrs side-yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}</div><h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)} chapters · ${docCnt(d)} items</div>` + tocHtml(d);
+  $('#side').innerHTML = `<h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)} chapters · ${docCnt(d)} items</div>` + tocHtml(d);
 }
 function ec(id, rename = true) {
   return `<span class="ec">${rename ? `<button class="ib" data-act="rename" data-id="${id}" title="Rename">✎</button>` : ''}<button class="ib" data-act="up" data-id="${id}" title="Up">↑</button><button class="ib" data-act="down" data-id="${id}" title="Down">↓</button><button class="ib x" data-act="del" data-id="${id}" title="Delete">✕</button></span>`;
@@ -630,7 +637,7 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="Add year">+</button>' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  if (editing) h += `<div class="dochead ed"><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>Part</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ Chapter</button></div>`;
     if (!p.chapters.length && editing) h += `<div class="empty">No chapters yet. Add one with ‘+ Chapter’.</div>`;
@@ -755,7 +762,7 @@ function toolsBar() {
     b.addEventListener('click', e => { if (e.target.closest('[data-pgo]') && !punchWrap()) toast('Select a word in the text first'); });
   }
   b.hidden = editing;
-  b.innerHTML = `<div class="tlseg"><button class="${filled ? '' : 'on'}" data-fill="0">Blank</button><button class="${filled ? 'on' : ''}" data-fill="1">Filled</button></div>` + (punch ? '<button class="tl go" data-pgo>Selection → Blank</button>' : '') +
+  b.innerHTML = `<div class="tlseg"><button class="${filled ? '' : 'on'}" data-fill="0">Blank</button><button class="${filled ? 'on' : ''}" data-fill="1">Filled</button></div>` + 
     `<button class="tl${punch ? ' on' : ''}" data-punch>Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode>Highlight</button>`;
 }
 
@@ -835,7 +842,7 @@ function hlBar() {
     b.addEventListener('click', e => { if (e.target.closest('[data-hlgo]') && !hlApply()) toast('Select some text first'); });
   }
   b.innerHTML = HLC.map(([v, l]) => `<button class="hlc h${v}${!HL.erase && HL.c === v ? ' on' : ''}" data-hlc="${v}" title="${l}"></button>`).join('') +
-    `<button class="hle${HL.erase ? ' on' : ''}" data-hlc="erase">Eraser</button><span class="hlsep"></span><button class="hlgo" data-hlgo>Selection → ${HL.erase ? 'Erase' : 'Highlight'}</button>`;
+    `<button class="hle${HL.erase ? ' on' : ''}" data-hlc="erase">Eraser</button>`;
 }
 hlBar();
 
@@ -1233,10 +1240,10 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
-  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); if (hlMode) toast('Drag (or draw with Apple Pencil) to highlight · use Eraser to remove'); return; }
+  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
   if (hlMode && !editing && HL.erase && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
-  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; const y = scrollY; render(); scrollTo(0, y); if (punch) toast('Drag over words to blank them · tap a blank to undo'); return; }
+  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; const y = scrollY; render(); scrollTo(0, y); return; }
   const pm = punch && !editing && t.closest('.pbed mark');
   if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }
   const fb = t.closest('[data-fill]');
