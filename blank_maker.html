@@ -61,6 +61,17 @@ body.full .hint{display:none}
 @media (max-width:1500px){.brand{display:none}}
 @media (max-width:1180px){.tools{gap:5px}.btn{padding:7px 10px}.ctl input[type=range]{width:44px}#size{width:44px;padding:4px 3px;text-align:center}}
 @media (max-width:1040px){.ctl{font-size:0;gap:3px}.ctl input[type=range]{width:46px}}
+/* 좁은 화면(아이패드 세로): 버튼이 찌그러지거나 두 줄 되지 않게 */
+.seg,.zoom,.ctl,.tools>.btn,.more{flex:none}
+.seg button,.zoom button{white-space:nowrap}
+@media (max-width:1180px){
+  .seg button{font-size:12px;padding:7px 10px}
+  .zoom button{padding:7px 8px;font-size:12px}
+  .zoom #zVal{min-width:38px;padding:7px 2px;font-size:11px}
+  .ctl input[type=range]{width:38px}
+  #font{max-width:84px}
+}
+@media (max-width:900px){.tools{gap:4px}.seg button{padding:7px 8px}.zoom button{padding:7px 6px}.ctl input[type=range]{width:32px}#font{max-width:72px}}
 .hint b{color:var(--brown);font-weight:700}
 #wrap{display:flex;align-items:flex-start}
 #tabs{flex-basis:100%;display:flex;align-items:flex-end;gap:4px;overflow-x:auto;margin:2px -14px -1px;padding:0 14px;position:relative;z-index:1}
@@ -611,7 +622,11 @@ function rerenderAll(){if(!S.pages||!S.pages.length)return;S.pages.forEach(p=>{p
 function setHH(){document.body.style.setProperty('--hh',document.querySelector('header').offsetHeight+'px');}
 
 /* ---------- sidebar: toc + thumbnails ---------- */
-$('#sideBtn').onclick=()=>{document.body.classList.toggle('noside');if(S.pages.length){layout();S.pages.forEach(p=>{p.rendered=false;S.io.unobserve(p.el);S.io.observe(p.el);});}};
+/* 목차 열림/닫힘 기억 (아이패드 세로처럼 좁은 터치 화면은 기본 닫힘) */
+(()=>{let v=null;try{v=localStorage.getItem('bm:noside');}catch(e){}
+  const def=matchMedia('(pointer:coarse)').matches&&innerWidth<1200;
+  if(v==='1'||(v===null&&def))document.body.classList.add('noside');})();
+$('#sideBtn').onclick=()=>{document.body.classList.toggle('noside');try{localStorage.setItem('bm:noside',document.body.classList.contains('noside')?'1':'0');}catch(e){}if(S.pages.length){layout();S.pages.forEach(p=>{p.rendered=false;S.io.unobserve(p.el);S.io.observe(p.el);});}};
 document.querySelectorAll('.stabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.stabs button').forEach(x=>x.classList.toggle('on',x===b));
   $('#toc').classList.toggle('hidden',b.dataset.t!=='toc');$('#thumbs').classList.toggle('hidden',b.dataset.t!=='thumbs');});
