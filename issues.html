@@ -31,7 +31,10 @@ button{font-family:inherit;cursor:pointer}
 
 /* top bar */
 .top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:10px 16px}
-.tabs{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0}
+.tabs{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+/* 좁은 화면(아이패드): 과목·연도·북마크 줄을 아래로 내려서 안 잘리게 */
+@media (max-width:1180px){.top{flex-wrap:wrap;row-gap:8px}.top .tools{margin-left:auto}.tabs{order:3;flex:1 1 100%}}
 .tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;color:var(--sub);white-space:nowrap}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .tab.add{border-style:dashed}
@@ -39,18 +42,23 @@ button{font-family:inherit;cursor:pointer}
 .tmkb{border:0;background:none;border-radius:14px;padding:5px 7px;cursor:pointer;display:flex;align-items:center}
 .tmkb .mki{width:15px;height:15px;fill:none;stroke:#a8a8ad;stroke-width:1.6}
 .tmkb.on{background:#ececee}
-.tmkb.on .mki{stroke:none}.tmkb.on .mk-b{fill:var(--acc)}.tmkb.on .mk-s{fill:var(--brown)}.tmkb.on .mk-c{fill:none;stroke:#555}
+.tmkb.on .mki{stroke:none}.tmkb.on .mk-b{fill:var(--acc)}.tmkb.on .mk-s{fill:var(--brown)}.tmkb.on .mk-c{fill:none;stroke:#e8862a}
 .mkm{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:3px}
 .mkm .mki{width:11px;height:11px}
-.mki.mk-b{fill:var(--acc)}.mki.mk-s{fill:var(--brown)}.mki.mk-c{fill:none;stroke:#666}
+.mki.mk-b{fill:var(--acc)}.mki.mk-s{fill:var(--brown)}.mki.mk-c{fill:none;stroke:#e8862a}
 body:not(.edit) .paper tr.it td.n{cursor:pointer}
 body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .tmkb:not(.on) .mki,.mkpop button:not(.on) .mki{fill:none!important;stroke:#a8a8ad!important;stroke-width:1.6}
+.shmk{border:0;background:none;padding:2px 4px;margin-left:2px;display:inline-flex;gap:3px;align-items:center;cursor:pointer;border-radius:8px}
+.shmk .mki{width:14px;height:14px}
+.shmk .mki.ghost{fill:none!important;stroke:#c8c8cc;stroke-width:1.6;opacity:.7}
+.shmk:hover .mki.ghost{stroke:#888;opacity:1}
+@media print{.shmk{display:none!important}}
 .mkpop{position:absolute;z-index:70;display:flex;gap:2px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.12);padding:3px}
 .mkpop[hidden]{display:none}
 .mkpop button{border:0;background:none;border-radius:12px;padding:5px 6px;cursor:pointer;display:flex}
 .mkpop .mki{width:17px;height:17px;fill:none;stroke:#b0b0b5;stroke-width:1.6}
-.mkpop button.on .mki{stroke:none}.mkpop button.on .mk-b{fill:var(--acc)}.mkpop button.on .mk-s{fill:var(--brown)}.mkpop button.on .mk-c{fill:none;stroke:#555}
+.mkpop button.on .mki{stroke:none}.mkpop button.on .mk-b{fill:var(--acc)}.mkpop button.on .mk-s{fill:var(--brown)}.mkpop button.on .mk-c{fill:none;stroke:#e8862a}
 .mkpop button:hover{background:#f3f3f5}
 @media print{.mkm,.mkpop{display:none!important}}
 .tyrs{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line);flex:none}
@@ -58,7 +66,20 @@ body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .tyr:hover{color:#55555a}
 .tyr.on{background:#ececee;color:#3a3a3c}
 .tyr.add{color:#b0b0b5}
-.dochead.ed{justify-content:flex-end;border-bottom:0;padding-bottom:4px}
+.dochead.ed{justify-content:flex-end;align-items:center;border-bottom:0;padding-bottom:4px}
+.olsw{display:flex;background:#f2f2f4;border-radius:16px;padding:2px;margin-right:auto}
+.olsw button{font-family:var(--tf);font-size:12px;border:0;background:none;border-radius:14px;padding:5px 12px;color:var(--sub);cursor:pointer}
+.olsw button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.olhint{font-size:11.5px;color:#a0a0a5;margin-right:10px}
+.ch.olc{margin-top:10px}.ch.olo{margin-top:22px}
+.ch.olc .chh{margin-bottom:4px;border-bottom-width:1px}
+.ch.olc .cht{font-size:16px}
+.ch.olc .chh,.ch.olo .chh{cursor:pointer}
+.ch.olc .chh::before,.ch.olo .chh::before{content:'▸';color:#b0b0b5;font-size:11px;margin-right:4px;align-self:center}
+.ch.olo .chh::before{content:'▾'}
+.sec.ols{margin:0 0 2px 18px}
+.sec.ols .sh{padding:3px 8px;font-size:13px;border-left-width:2px;margin:0}
+.olcnt{color:#a8a8ad;font-size:11px;margin-left:6px}
 .tools{display:flex;gap:6px;flex-shrink:0;align-items:center}
 .top .btn{height:33px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
 .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
@@ -542,8 +563,8 @@ function migrate() { if (!Array.isArray(DB.years) || !DB.years.length) DB.years 
 migrate();
 let yr = (() => { try { return localStorage.getItem(KEY + ':yr'); } catch (e) { return null; } })() || 'all';
 if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all';
-const vis = it => (yr === 'all' || it.y === yr) && (!mkF || (it.mk || '').includes(mkF));
-const visItems = s => s.items.filter(vis);
+const vis = (it, s) => (yr === 'all' || it.y === yr) && (!mkF || (it.mk || '').includes(mkF) || (s && (s.mk || '').includes(mkF)));
+const visItems = s => s.items.filter(it => vis(it, s));
 const defYear = () => yr !== 'all' ? yr : DB.years[DB.years.length - 1];
 const yrLabel = y => y === 'all' ? 'All' : (y.length === 2 ? '20' + y : y);
 
@@ -605,12 +626,14 @@ function locate(id) {
 const blanks = t => (t.match(/\[\[(.+?)\]\]/g) || []).map(x => x.slice(2, -2));
 const B = '<span class="bl">【</span><span class="sp"></span><span class="bl">】</span>';
 let punch = false, hlMode = false, mkF = null;
+let outline = (() => { try { return localStorage.getItem(KEY + ':outline') !== '0'; } catch (e) { return true; } })();
+const openCh = new Set();
 const MKS = [['b', 'Bookmark', '<path d="M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z"/>'], ['s', 'Star', '<path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/>'], ['c', 'Clip', '<path d="M8.5 12.5l6-6a3 3 0 0 1 4.2 4.2l-7.6 7.6a5 5 0 0 1-7.1-7.1l6.9-6.9" fill="none" stroke-width="1.8" stroke-linecap="round"/>']];
 const mkIcon = (k, cls = '') => { const m = MKS.find(x => x[0] === k); return `<svg class="mki mk-${k} ${cls}" viewBox="0 0 24 24" aria-label="${m[1]}">${m[2]}</svg>`; };
 const mkMini = it => it.mk ? `<span class="mkm">${MKS.filter(m => it.mk.includes(m[0])).map(m => mkIcon(m[0])).join('')}</span>` : '';
-function mkPop(td) {
+function mkPop(td, sid) {
   let p = $('#mkpop'); if (!p) { p = document.createElement('div'); p.id = 'mkpop'; p.className = 'mkpop'; document.body.appendChild(p); }
-  const id = td.closest('tr.it').dataset.item, L = locate(id); if (!L) return;
+  const id = sid || td.closest('tr.it').dataset.item, L = locate(id); if (!L) return;
   if (p.dataset.id === id && !p.hidden) { p.hidden = true; return; }
   p.dataset.id = id; p.hidden = false;
   p.innerHTML = MKS.map(([k, l]) => `<button class="${(L.obj.mk || '').includes(k) ? 'on' : ''}" data-mkt="${k}" title="${l}">${mkIcon(k)}</button>`).join('');
@@ -619,8 +642,11 @@ function mkPop(td) {
 document.addEventListener('click', e => {
   const p = $('#mkpop'); if (!p || p.hidden) return;
   const b = e.target.closest('[data-mkt]');
-  if (b) { const L = locate(p.dataset.id); if (!L) return; const k = b.dataset.mkt; let m = L.obj.mk || ''; m = m.includes(k) ? m.replace(k, '') : MKS.map(x => x[0]).filter(x => x === k || m.includes(x)).join(''); if (m) L.obj.mk = m; else delete L.obj.mk; save(); b.classList.toggle('on'); const td = document.querySelector(`#paper tr.it[data-item="${p.dataset.id}"] td.n`); if (td) { const old = td.querySelector('.mkm'); if (old) old.remove(); td.insertAdjacentHTML('beforeend', mkMini(L.obj)); } renderSide(); return; }
-  if (!e.target.closest('#mkpop') && !e.target.closest('#paper td.n')) p.hidden = true;
+  if (b) { const L = locate(p.dataset.id); if (!L) return; const k = b.dataset.mkt; let m = L.obj.mk || ''; m = m.includes(k) ? m.replace(k, '') : MKS.map(x => x[0]).filter(x => x === k || m.includes(x)).join(''); if (m) L.obj.mk = m; else delete L.obj.mk; save(); b.classList.toggle('on');
+    if (L.kind === 'sec') { const sb = document.querySelector(`#paper [data-shmk="${p.dataset.id}"]`); if (sb) { sb.classList.toggle('has', !!L.obj.mk); sb.innerHTML = L.obj.mk ? MKS.filter(x => L.obj.mk.includes(x[0])).map(x => mkIcon(x[0])).join('') : mkIcon('b', 'ghost'); } }
+    else { const td = document.querySelector(`#paper tr.it[data-item="${p.dataset.id}"] td.n`); if (td) { const old = td.querySelector('.mkm'); if (old) old.remove(); td.insertAdjacentHTML('beforeend', mkMini(L.obj)); } }
+    renderSide(); return; }
+  if (!e.target.closest('#mkpop') && !e.target.closest('#paper td.n') && !e.target.closest('[data-shmk]')) p.hidden = true;
 });
 let hideAns = (() => { try { return localStorage.getItem(KEY + ':hideans') === '1'; } catch (e) { return false; } })();
 let HL = { c: 'y', erase: false };
@@ -660,8 +686,8 @@ function qHtml(it, fill, noFront) {
 }
 const ansOf = it => it.a || blanks(it.t).join(' / ');
 const cnt = c => c.secs.reduce((n, s) => n + visItems(s).length, 0);
-const showCh = c => editing || (yr === 'all' && !mkF) || cnt(c) > 0;
-const showSec = s => editing || (yr === 'all' && !mkF) || visItems(s).length > 0 || (s.note && !s.items.length && !mkF);
+const showCh = c => editing || (yr === 'all' && !mkF) || cnt(c) > 0 || (mkF && c.secs.some(showSec));
+const showSec = s => editing || (yr === 'all' && !mkF) || visItems(s).length > 0 || (s.note && !s.items.length && (!mkF || (s.mk || '').includes(mkF)));
 const docCnt = d => d.parts.reduce((n, p) => n + p.chapters.reduce((m, c) => m + cnt(c), 0), 0);
 
 /* render */
@@ -693,18 +719,20 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  if (editing) h += `<div class="dochead ed"><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Titles only · click a chapter to open its items' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>Part</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ Chapter</button></div>`;
     if (!p.chapters.length && editing) h += `<div class="empty">No chapters yet. Add one with ‘+ Chapter’.</div>`;
     for (const c of p.chapters) {
       if (!showCh(c)) continue;
       n++;
-      h += `<section class="ch" id="ch-${c.id}"><div class="chh" data-anc="c-${c.id}"><span class="chp">${esc(p.title)}</span><span class="chn">${String(n).padStart(2, '0')}</span><span class="cht">${esc(c.title)}</span>${ec(c.id)}</div>`;
+      const ol = editing && outline && !openCh.has(c.id), olm = editing && outline;
+      h += `<section class="ch${olm ? (ol ? ' olc' : ' olo') : ''}" id="ch-${c.id}"><div class="chh" data-anc="c-${c.id}"${olm ? ` data-olt="${c.id}"` : ''}><span class="chp">${esc(p.title)}</span><span class="chn">${String(n).padStart(2, '0')}</span><span class="cht">${esc(c.title)}</span>${ec(c.id)}</div>`;
       for (const s of c.secs) {
         if (!showSec(s)) continue;
         const its = visItems(s);
-        h += `<div class="sec"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span>${ec(s.id)}</div>`;
+        if (ol) { h += `<div class="sec ols"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span><small class="olcnt">${s.items.length}</small>${ec(s.id)}</div></div>`; continue; }
+        h += `<div class="sec"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span>${editing ? '' : `<button class="shmk${s.mk ? ' has' : ''}" data-shmk="${s.id}" title="Bookmark · Star · Clip this page">${s.mk ? MKS.filter(m => s.mk.includes(m[0])).map(m => mkIcon(m[0])).join('') : mkIcon('b', 'ghost')}</button>`}${ec(s.id)}</div>`;
         if (s.note) { const nh = hlHtmlT(s.note, s.nhl, s.nul, x => x); h += `<div class="note">${hlMode && !editing ? `<span class="hbed" data-hid="${s.id}" data-k="n">${nh}</span>` : nh}</div>`; }
         if (its.length) {
           h += `<table><colgroup><col class="cn"><col class="cq"><col class="ca">${editing ? '<col class="cc">' : ''}</colgroup>`;
@@ -720,7 +748,7 @@ function renderMain() {
         }
         h += `<button class="addrow" data-act="addItem" data-id="${s.id}">+ Add item</button></div>`;
       }
-      h += `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`;
+      h += ol ? `</section>` : `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`;
     }
   }
   if (!n && !editing && mkF) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${MKS.find(m => m[0] === mkF)[1].toLowerCase()} items${yr === 'all' ? '' : ' in ' + esc(yrLabel(yr))} yet.<br>Tap an item number to mark it.</div>`;
@@ -1350,7 +1378,10 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
+  const olb = t.closest('[data-ol]'); if (olb) { outline = olb.dataset.ol === '1'; openCh.clear(); try { localStorage.setItem(KEY + ':outline', outline ? '1' : '0'); } catch (x) {} renderKeep(); return; }
+  const olt = editing && outline && !t.closest('button') && t.closest('[data-olt]'); if (olt) { const id = olt.dataset.olt; openCh.has(id) ? openCh.delete(id) : openCh.add(id); renderKeep(); return; }
   const tdn = !editing && t.closest('#paper tr.it td.n'); if (tdn) { mkPop(tdn); return; }
+  const shb = t.closest('[data-shmk]'); if (shb) { mkPop(shb, shb.dataset.shmk); return; }
   const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
   if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
   const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
