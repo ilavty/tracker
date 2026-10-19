@@ -80,6 +80,11 @@ body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .sec.ols{margin:0 0 2px 18px}
 .sec.ols .sh{padding:3px 8px;font-size:13px;border-left-width:2px;margin:0}
 .olcnt{color:#a8a8ad;font-size:11px;margin-left:6px}
+.olpart{min-height:14px;padding-bottom:4px}
+.olsecs{min-height:6px}
+body.edit .olpart .chh,body.edit .olsecs .sh{cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.drag-ghost{opacity:.35}
+.drag-chosen .chh,.drag-chosen>.sh{background:var(--sky3);border-radius:6px}
 .tools{display:flex;gap:6px;flex-shrink:0;align-items:center}
 .top .btn{height:33px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
 .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
@@ -719,19 +724,21 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Titles only · click a chapter to open its items' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Drag titles to reorder (hold on iPad) · click a chapter to open' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>Part</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ Chapter</button></div>`;
+    if (editing && outline) h += `<div class="olpart" data-pid="${p.id}">`;
     if (!p.chapters.length && editing) h += `<div class="empty">No chapters yet. Add one with ‘+ Chapter’.</div>`;
     for (const c of p.chapters) {
       if (!showCh(c)) continue;
       n++;
       const ol = editing && outline && !openCh.has(c.id), olm = editing && outline;
       h += `<section class="ch${olm ? (ol ? ' olc' : ' olo') : ''}" id="ch-${c.id}"><div class="chh" data-anc="c-${c.id}"${olm ? ` data-olt="${c.id}"` : ''}><span class="chp">${esc(p.title)}</span><span class="chn">${String(n).padStart(2, '0')}</span><span class="cht">${esc(c.title)}</span>${ec(c.id)}</div>`;
+      if (olm) h += `<div class="olsecs" data-cid="${c.id}">`;
       for (const s of c.secs) {
         if (!showSec(s)) continue;
         const its = visItems(s);
-        if (ol) { h += `<div class="sec ols"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span><small class="olcnt">${s.items.length}</small>${ec(s.id)}</div></div>`; continue; }
+        if (ol) { h += `<div class="sec ols"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span><small class="olcnt">${its.length}</small>${ec(s.id)}</div></div>`; continue; }
         h += `<div class="sec"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span>${editing ? '' : `<button class="shmk${s.mk ? ' has' : ''}" data-shmk="${s.id}" title="Bookmark · Star · Clip this page">${s.mk ? MKS.filter(m => s.mk.includes(m[0])).map(m => mkIcon(m[0])).join('') : mkIcon('b', 'ghost')}</button>`}${ec(s.id)}</div>`;
         if (s.note) { const nh = hlHtmlT(s.note, s.nhl, s.nul, x => x); h += `<div class="note">${hlMode && !editing ? `<span class="hbed" data-hid="${s.id}" data-k="n">${nh}</span>` : nh}</div>`; }
         if (its.length) {
@@ -748,8 +755,9 @@ function renderMain() {
         }
         h += `<button class="addrow" data-act="addItem" data-id="${s.id}">+ Add item</button></div>`;
       }
-      h += ol ? `</section>` : `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`;
+      h += (olm ? `</div>` : '') + (ol ? `</section>` : `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`);
     }
+    if (editing && outline) h += `</div>`;
   }
   if (!n && !editing && mkF) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${MKS.find(m => m[0] === mkF)[1].toLowerCase()} items${yr === 'all' ? '' : ' in ' + esc(yrLabel(yr))} yet.<br>Tap an item number to mark it.</div>`;
   else if (!n && !editing) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${esc(yrLabel(yr))} items yet.<br>Add some with ‘Import’ or in Edit mode.</div>`;
@@ -763,6 +771,7 @@ function renderMain() {
   toolsBar();
   document.body.classList.toggle('hlerase', HL.erase);
   observe();
+  if (editing && outline) initDrag();
 }
 
 /* current chapter highlight */
@@ -1359,6 +1368,22 @@ function act(a, id) {
     if (!confirm(`Delete this ${label}?` + (n ? ` (its ${n} items will be deleted too)` : ''))) return;
     L.arr.splice(L.i, 1); commit();
   }
+}
+/* Outline에서 챕터·소제목 꾹 눌러(마우스는 바로) 끌어서 순서 바꾸기 */
+const SORT_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js';
+function initDrag() {
+  if (!window.Sortable) { if (initDrag.tried) return; initDrag.tried = true; loadScript(SORT_SRC).then(() => { if (window.Sortable && editing && outline) initDrag(); }).catch(() => toast('Could not load drag tool — use ↑↓')); return; }
+  const opt = { animation: 150, delay: 220, delayOnTouchOnly: true, touchStartThreshold: 6, filter: '.ec, .ec *, .shmk', preventOnFilter: false, ghostClass: 'drag-ghost', chosenClass: 'drag-chosen', onEnd: dragDone };
+  document.querySelectorAll('#paper .olpart').forEach(el => Sortable.create(el, { ...opt, group: 'ch', handle: '.chh', draggable: '.ch' }));
+  document.querySelectorAll('#paper .olsecs').forEach(el => Sortable.create(el, { ...opt, group: 'sec', handle: '.sh', draggable: '.sec' }));
+}
+function dragDone(ev) {
+  if (ev.from === ev.to && ev.oldIndex === ev.newIndex) return;
+  const d = doc(), chMap = {}, secMap = {};
+  d.parts.forEach(p => p.chapters.forEach(c => { chMap[c.id] = c; c.secs.forEach(x => secMap[x.id] = x); }));
+  document.querySelectorAll('#paper .olpart').forEach(el => { const p = d.parts.find(q => q.id === el.dataset.pid); if (p) p.chapters = [...el.children].filter(x => x.classList.contains('ch')).map(x => chMap[x.id.slice(3)]).filter(Boolean); });
+  document.querySelectorAll('#paper .olsecs').forEach(el => { const c = chMap[el.dataset.cid]; if (c) c.secs = [...el.children].filter(x => x.classList.contains('sec')).map(x => secMap[(x.querySelector('.sh') || {}).dataset?.anc?.slice(2)]).filter(Boolean); });
+  save(); renderKeep(); toast('Order saved');
 }
 /* 다시 그려도 지금 보고 있는 문항이 화면 같은 위치에 오게 */
 function renderKeep() {
