@@ -207,7 +207,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.25</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.26</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -797,7 +797,7 @@ function drawOv(i){
   S.boxes.filter(b=>b.page===i).forEach(b=>{
     const r=disp(b),d=document.createElement('div');
     d.className='blank'+(b.cell?' cell':'')+(b.lost?' lost':'')+(S.sel===b.id?' sel':'');d.dataset.id=b.id;d.style.zIndex=100+zOf(b,'box');
-    Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px',borderRadius:b.cell?'0':Math.min(3,r.h/3,r.w/3)*s+'px'});
+    Object.assign(d.style,{left:r.x*s+'px',top:r.y*s+'px',width:r.w*s+'px',height:r.h*s+'px',borderRadius:b.cell?'0':Math.min(3,r.h/3,r.w/3)*s+'px'});if(b.cell&&b.fill)d.style.background=b.fill;
     d.innerHTML='<button class="x" title="삭제">×</button>'+(b.lost?'<button class="ok" title="이 자리 맞음 (확인 완료)">✓</button>':'')+['n','s','e','w','ne','nw','se','sw'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
       if(e.target.classList.contains('x')){removeBox(b.id);return;}
