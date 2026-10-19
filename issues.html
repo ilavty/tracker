@@ -561,7 +561,14 @@ function load() {
   try { const s = localStorage.getItem(KEY); if (s) { const d = JSON.parse(s); if (d && Array.isArray(d.docs)) return d; } } catch (e) {}
   return null;
 }
+const IDBS = (() => { let p = null; const open = () => p || (p = new Promise((ok, no) => { try { const r = indexedDB.open('issues-store', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } }));
+  return { put: (k, v) => open().then(db => new Promise(ok => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => ok(true); tx.onerror = () => ok(false); })).catch(() => false),
+           get: k => open().then(db => new Promise(ok => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })).catch(() => null) }; })();
 let DB = load() || clone(ORIG);
+const idbReady = IDBS.get(KEY).then(rec => {
+  let lat = 0; try { lat = +(localStorage.getItem(KEY + ':at') || 0); } catch (e) {}
+  if (rec && rec.d && rec.at > lat) { try { const d = JSON.parse(rec.d); if (d && Array.isArray(d.docs)) { DB = d; migrate(); if (typeof render === 'function') { try { render(); } catch (e) {} } } } catch (e) {} }
+}).catch(() => {});
 let cur = (() => { try { return localStorage.getItem(KEY + ':cur'); } catch (e) { return null; } })() || DB.docs[0].id;
 let editing = false;
 /* 연도 */
@@ -574,7 +581,15 @@ const visItems = s => s.items.filter(it => vis(it, s));
 const defYear = () => yr !== 'all' ? yr : DB.years[DB.years.length - 1];
 const yrLabel = y => y === 'all' ? 'All' : (y.length === 2 ? '20' + y : y);
 
-function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(DB)); return true; } catch (e) { return false; } }
+/* 기기 저장: localStorage는 사이트 전체가 5MB를 나눠 써서 꽉 차면 저장이 조용히 실패함 → IndexedDB에도 같이 저장 */
+
+let lsBroken = false;
+function saveLocal() {
+  const json = JSON.stringify(DB), at = Date.now();
+  IDBS.put(KEY, { at, d: json });
+  try { localStorage.setItem(KEY, json); localStorage.setItem(KEY + ':at', at); lsBroken = false; return true; }
+  catch (e) { try { localStorage.removeItem(KEY); localStorage.setItem(KEY + ':at', 0); } catch (x) {} if (!lsBroken) { lsBroken = true; } return true; }
+}
 function save() {
   const ok = saveLocal();
   if (CLOUD && CLOUD.db) { flashSaved('Saving…'); CLOUD.touched(); }
@@ -642,7 +657,7 @@ function mergeInto(B, O) {
   const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; setT(Date.now()); sendRaw(); } }; // 나갈 땐 기다릴 시간이 없어서 바로 올림 (열려 있는 동안은 실시간으로 받아둔 상태)
   addEventListener('pagehide', flush); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
   setTimeout(() => { ready = true; }, 6000);
-  if (db) db.ref(path).on('value', sn => {
+  if (db) Promise.race([idbReady, new Promise(r => setTimeout(r, 2000))]).then(() => db.ref(path).on('value', sn => {
     const r = sn.val();
     if (r && r.t && r.d && (fresh || r.t > lt)) {
       try {
@@ -655,7 +670,7 @@ function mergeInto(B, O) {
     else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; firstV2 = false; push(); } // push()가 클라우드를 먼저 합침
     else if (r.t === lt) pending(false);
     ready = true;
-  });
+  }));
   const nItems = D => D.docs.reduce((n, d) => n + d.parts.reduce((m, p) => m + p.chapters.reduce((k, c) => k + c.secs.reduce((j, x) => j + x.items.length, 0), 0), 0), 0);
   const syncNow = () => {
     if (!db) return toast('Sync is not connected on this device (Firebase did not load)');
