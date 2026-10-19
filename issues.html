@@ -308,10 +308,14 @@ body.punch .pbed mark.bk{background:var(--sky2);color:var(--ans);font-weight:500
 body.punch .pbed mark.bk:hover{background:#f3e3d6;border-bottom-color:var(--brown);text-decoration:line-through}
 body.punch tr.it:hover{background:#fafcfe}
 .pox{color:var(--brown);font-size:.92em}
-.punchb.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-.punchfab{display:none;position:fixed;right:18px;bottom:84px;z-index:60;font-family:var(--tf);font-size:14px;padding:10px 16px;border-radius:22px;border:0;background:var(--acc);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.18)}
-body.punch .punchfab{display:block}
-@media print{.punchfab{display:none!important}}
+.ftools{position:fixed;right:18px;bottom:96px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ftools[hidden]{display:none}
+.tl{font-family:var(--tf);font-size:13px;letter-spacing:.02em;padding:9px 16px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.10);min-width:112px}
+.tl:hover{border-color:var(--acc);color:var(--acc)}
+.tl.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.tl.go{background:var(--ink);border-color:var(--ink);color:#fff}
+@media print{.ftools{display:none!important}}
+body:has(#quiz.open) .ftools,body:has(#ov.open) .ftools,body:has(#quiz.open) .hlbar,body:has(#ov.open) .hlbar{display:none!important}
 mark.hl{color:inherit;border-radius:2px;padding:0 1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 mark.hl.hy{background:#fff1a1}mark.hl.hb{background:#cfe7f9}mark.hl.hp{background:#fbd5de}mark.hl.ho{background:#ecd9c6}
 mark.hl .bl,mark.hl .fill{background:transparent}
@@ -446,27 +450,27 @@ body.hlon .hlbar{display:flex}
 </head>
 <body>
 <div class="top">
-  <button class="btn" id="tocBtn">목차</button>
+  <button class="btn" id="tocBtn">Contents</button>
   <div class="tabs" id="tabs"></div>
   <div class="tools">
     <span class="saved" id="saved"></span>
-    <button class="btn" id="editBtn">편집</button>
-    <button class="btn" id="quizBtn">퀴즈</button>
-    <button class="btn pri" id="impBtn">문서 가져오기</button>
-    <button class="btn hide-m" id="printBtn">PDF 인쇄</button>
+    <button class="btn" id="editBtn">Edit</button>
+    <button class="btn" id="quizBtn">Quiz</button>
+    <button class="btn pri" id="impBtn">Import</button>
+    <button class="btn hide-m" id="printBtn">Print PDF</button>
     <div class="menu">
-      <button class="btn" id="fsBtn" title="본문 글씨">Aa</button>
+      <button class="btn" id="fsBtn" title="Text settings">Aa</button>
       <div class="menu-pop fs-pop" id="fsPop"></div>
     </div>
     <div class="menu">
       <button class="btn" id="menuBtn">⋯</button>
       <div class="menu-pop" id="menuPop">
-        <button data-m="wrong">오답노트</button>
-        <button data-m="import-doc">문서에서 가져오기</button>
-        <button data-m="print">PDF 인쇄</button>
-        <button data-m="export">백업 파일 저장</button>
-        <button data-m="import">백업 파일 불러오기</button>
-        <button data-m="reset">처음 상태로 초기화</button>
+        <button data-m="wrong">Mistake Log</button>
+        <button data-m="import-doc">Import from document</button>
+        <button data-m="print">Print PDF</button>
+        <button data-m="export">Save backup</button>
+        <button data-m="import">Load backup</button>
+        <button data-m="reset">Reset to original</button>
       </div>
     </div>
   </div>
@@ -503,14 +507,14 @@ if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all';
 const vis = it => yr === 'all' || it.y === yr;
 const visItems = s => s.items.filter(vis);
 const defYear = () => yr !== 'all' ? yr : DB.years[DB.years.length - 1];
-const yrLabel = y => y === 'all' ? '전체보기' : (y.length === 2 ? '20' + y : y) + '년';
+const yrLabel = y => y === 'all' ? 'All' : (y.length === 2 ? '20' + y : y);
 
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(DB)); return true; } catch (e) { return false; } }
 function save() {
   const ok = saveLocal();
-  if (CLOUD && CLOUD.db) { flashSaved('저장 중…'); CLOUD.touched(); }
-  else if (ok) flashSaved('저장됨 · 이 기기만');
-  else { flashSaved('저장 실패'); toast('브라우저 저장 실패 — 백업 파일로 저장해 두세요'); }
+  if (CLOUD && CLOUD.db) { flashSaved('Saving…'); CLOUD.touched(); }
+  else if (ok) flashSaved('Saved · this device');
+  else { flashSaved('Save failed'); toast('Browser storage failed — please save a backup file'); }
 }
 /* Firebase 동기화 (DESK·DATABASE와 같은 Firebase, database_v1/issues 경로) */
 let CLOUD = null, pendingRemote = null;
@@ -521,14 +525,14 @@ function applyRemote(st) {
   if (!DB.docs.find(d => d.id === cur)) cur = DB.docs[0].id;
   if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all';
   if (!$('#quiz').classList.contains('open')) { const y = scrollY; render(); scrollTo(0, y); }
-  flashSaved('동기화됨');
+  flashSaved('Synced');
 }
 (function () {
   const path = 'database_v1/issues', TK = KEY + '_cloud_t';
   let lt = +(localStorage.getItem(TK) || 0), fresh = !lt, ready = false, db = null, timer = null;
   const setT = t => { lt = t; try { localStorage.setItem(TK, t); } catch (e) {} };
   try { if (window.firebase) { if (!firebase.apps.length) firebase.initializeApp({ apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" }); db = firebase.database(); } } catch (e) {}
-  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(() => { db.ref(path).set({ t: lt, d: JSON.stringify(DB) }).then(() => flashSaved('저장됨 · 동기화')).catch(() => flashSaved('동기화 실패 · 이 기기엔 저장됨')); }, 800); };
+  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(() => { db.ref(path).set({ t: lt, d: JSON.stringify(DB) }).then(() => flashSaved('Saved · synced')).catch(() => flashSaved('Sync failed · saved on this device')); }, 800); };
   setTimeout(() => { ready = true; }, 6000);
   if (db) db.ref(path).on('value', sn => {
     const r = sn.val();
@@ -599,7 +603,7 @@ const docCnt = d => d.parts.reduce((n, p) => n + p.chapters.reduce((m, c) => m +
 function render() { renderTabs(); renderSide(); renderMain(); }
 function renderTabs() {
   let h = DB.docs.map(d => `<button class="tab ${d.id === doc().id ? 'on' : ''}" data-doc="${d.id}">${esc(d.name)}</button>`).join('');
-  if (editing) h += `<button class="tab add" data-act="addDoc">+ 과목</button>`;
+  if (editing) h += `<button class="tab add" data-act="addDoc">+ Subject</button>`;
   $('#tabs').innerHTML = h;
 }
 function tocHtml(d, cls) {
@@ -614,18 +618,18 @@ function tocHtml(d, cls) {
 }
 function renderSide() {
   const d = doc();
-  $('#side').innerHTML = `<div class="yrs side-yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}</div><h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)}챕터 · ${docCnt(d)}문항</div>` + tocHtml(d);
+  $('#side').innerHTML = `<div class="yrs side-yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}</div><h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)} chapters · ${docCnt(d)} items</div>` + tocHtml(d);
 }
 function ec(id, rename = true) {
-  return `<span class="ec">${rename ? `<button class="ib" data-act="rename" data-id="${id}" title="수정">✎</button>` : ''}<button class="ib" data-act="up" data-id="${id}" title="위로">↑</button><button class="ib" data-act="down" data-id="${id}" title="아래로">↓</button><button class="ib x" data-act="del" data-id="${id}" title="삭제">✕</button></span>`;
+  return `<span class="ec">${rename ? `<button class="ib" data-act="rename" data-id="${id}" title="Rename">✎</button>` : ''}<button class="ib" data-act="up" data-id="${id}" title="Up">↑</button><button class="ib" data-act="down" data-id="${id}" title="Down">↓</button><button class="ib x" data-act="del" data-id="${id}" title="Delete">✕</button></span>`;
 }
 function renderMain() {
   const d = doc(); let n = 0, h = '';
-  h += `<section class="print-only cover"><div class="ct">${esc(d.name)} 논점 정리</div><div class="cs">챕터별 통합본${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">빈칸</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">채움</button></span>${editing ? '' : `<span class="yrs fillsw"><button class="yr punchb ${punch ? 'on' : ''}" data-punch title="본문에서 바로 드래그해 빈칸 만들기">✂ 빈칸 뚫기</button><button class="yr punchb ${hlMode ? 'on' : ''}" data-hlmode title="드래그·애플펜슬로 형광펜">🖍 형광펜</button></span>`}<span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
+  h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
+  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="Add year">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">Blank</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">Filled</button></span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
   for (const p of d.parts) {
-    h += `<div class="partbar"><span>파트</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ 챕터</button></div>`;
-    if (!p.chapters.length && editing) h += `<div class="empty">챕터가 없어요. ‘+ 챕터’로 추가하세요.</div>`;
+    h += `<div class="partbar"><span>Part</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ Chapter</button></div>`;
+    if (!p.chapters.length && editing) h += `<div class="empty">No chapters yet. Add one with ‘+ Chapter’.</div>`;
     for (const c of p.chapters) {
       if (!showCh(c)) continue;
       n++;
@@ -643,22 +647,23 @@ function renderMain() {
             const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
             if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
             if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
-            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? '틀린 횟수 ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
+            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
           });
           h += `</table>`;
         }
-        h += `<button class="addrow" data-act="addItem" data-id="${s.id}">+ 문항 추가</button></div>`;
+        h += `<button class="addrow" data-act="addItem" data-id="${s.id}">+ Add item</button></div>`;
       }
-      h += `<button class="addrow" data-act="addSec" data-id="${c.id}">+ 소제목(섹션) 추가</button></section>`;
+      h += `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`;
     }
   }
-  if (!n && !editing) h += `<div class="empty" style="padding:40px 0;text-align:center">${esc(yrLabel(yr))} 문항이 아직 없어요.<br>‘문서 가져오기’나 편집 모드에서 추가하세요.</div>`;
-  h += `<button class="addrow big" data-act="addPart">+ 파트 추가</button>`;
+  if (!n && !editing) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${esc(yrLabel(yr))} items yet.<br>Add some with ‘Import’ or in Edit mode.</div>`;
+  h += `<button class="addrow big" data-act="addPart">+ Add part</button>`;
   const paper = $('#paper');
   paper.innerHTML = h;
   document.body.classList.toggle('edit', editing);
   document.body.classList.toggle('punch', punch && !editing);
   document.body.classList.toggle('hlon', hlMode && !editing);
+  toolsBar();
   document.body.classList.toggle('hlerase', HL.erase);
   observe();
 }
@@ -687,11 +692,11 @@ function openModal({ title, fields, onSave, onDelete, again }) {
     h += `<div class="fld"><label>${esc(f.label)}</label>`;
     if (f.type === 'textarea') h += `<textarea data-k="${f.key}" placeholder="${esc(f.ph || '')}">${esc(f.value || '')}</textarea>`;
     else if (f.type === 'year') h += `<div class="yrsel" data-k="${f.key}" data-year>${DB.years.map(y => `<label><input type="radio" name="yr_${f.key}" value="${esc(y)}"${y === f.value ? ' checked' : ''}>${esc(yrLabel(y))}</label>`).join('')}</div>`;
-    else if (f.type === 'blank') h += `<div class="bed" contenteditable="true" data-k="${f.key}" data-ph="${esc(f.ph || '')}"></div><div class="hint"><span>문장 붙여넣고 <b>드래그</b>하면 빈칸 · 빈칸 <b>클릭</b>하면 해제</span><button class="btn" type="button" data-blankbtn>선택 → 빈칸</button></div><div class="prev" data-prev></div>`;
+    else if (f.type === 'blank') h += `<div class="bed" contenteditable="true" data-k="${f.key}" data-ph="${esc(f.ph || '')}"></div><div class="hint"><span>Paste a sentence, <b>drag</b> to blank · <b>click</b> a blank to undo</span><button class="btn" type="button" data-blankbtn>Selection → Blank</button></div><div class="prev" data-prev></div>`;
     else h += `<input data-k="${f.key}" value="${esc(f.value || '')}" placeholder="${esc(f.ph || '')}">`;
     h += `</div>`;
   }
-  h += `<div class="mfoot">${onDelete ? '<button class="btn danger" data-mb="del">삭제</button>' : ''}<span class="sp2"></span><button class="btn" data-mb="cancel">취소</button>${again ? '<button class="btn" data-mb="again">저장 후 계속 추가</button>' : ''}<button class="btn pri" data-mb="save">저장</button></div>`;
+  h += `<div class="mfoot">${onDelete ? '<button class="btn danger" data-mb="del">Delete</button>' : ''}<span class="sp2"></span><button class="btn" data-mb="cancel">Cancel</button>${again ? '<button class="btn" data-mb="again">Save & add another</button>' : ''}<button class="btn pri" data-mb="save">Save</button></div>`;
   m.innerHTML = h;
   $('#ov').classList.add('open');
   const bf = fields.find(f => f.type === 'blank');
@@ -706,7 +711,7 @@ function openModal({ title, fields, onSave, onDelete, again }) {
     if (k === 'del') { if (onDelete() !== false) closeModal(); }
     if (k === 'save' || k === 'again') {
       if (onSave(vals()) === false) return;
-      if (k === 'again') { m.querySelectorAll('[data-k]').forEach(el => { if (el.classList.contains('bed')) { setBed(el, ''); el.focus(); el.dispatchEvent(new Event('input')); } else if (el.dataset.k !== 'tag' && !el.hasAttribute('data-year')) el.value = ''; }); toast('추가됨'); }
+      if (k === 'again') { m.querySelectorAll('[data-k]').forEach(el => { if (el.classList.contains('bed')) { setBed(el, ''); el.focus(); el.dispatchEvent(new Event('input')); } else if (el.dataset.k !== 'tag' && !el.hasAttribute('data-year')) el.value = ''; }); toast('Added'); }
       else closeModal();
     }
   };
@@ -727,8 +732,8 @@ function punchWrap() {
   const r = sel.getRangeAt(0);
   const el = n => (n.nodeType === 3 ? n.parentNode : n);
   const ed = el(r.startContainer).closest('.pbed');
-  if (!ed || ed !== el(r.endContainer).closest('.pbed')) { if (ed || el(r.endContainer).closest('.pbed')) toast('한 문항 안에서만 선택하세요'); return false; }
-  if (el(r.commonAncestorContainer).closest('mark') || r.cloneContents().querySelector('mark')) { sel.removeAllRanges(); toast('이미 있는 빈칸과 겹쳐요'); return false; }
+  if (!ed || ed !== el(r.endContainer).closest('.pbed')) { if (ed || el(r.endContainer).closest('.pbed')) toast('Select within a single item'); return false; }
+  if (el(r.commonAncestorContainer).closest('mark') || r.cloneContents().querySelector('mark')) { sel.removeAllRanges(); toast('Overlaps an existing blank'); return false; }
   const txt = r.toString(); if (!txt.trim()) return false;
   const lead = /^\s/.test(txt), trail = /\s$/.test(txt);
   r.deleteContents();
@@ -737,18 +742,23 @@ function punchWrap() {
   r.insertNode(f); sel.removeAllRanges(); ed.normalize(); punchJust = Date.now(); punchSave(ed); return true;
 }
 document.addEventListener('mouseup', e => { if (punch && !editing && e.target.closest && e.target.closest('#paper')) setTimeout(punchWrap, 0); });
-(() => {
-  const b = document.createElement('button'); b.className = 'punchfab'; b.type = 'button'; b.textContent = '선택 → 빈칸';
-  b.addEventListener('mousedown', e => e.preventDefault());
-  b.addEventListener('touchstart', e => { e.preventDefault(); if (!punchWrap()) toast('먼저 문장에서 단어를 선택하세요'); }, { passive: false });
-  b.addEventListener('click', () => { if (!punchWrap()) toast('먼저 문장에서 단어를 선택하세요'); });
-  document.body.appendChild(b);
-})();
+function toolsBar() {
+  let b = $('#ftools');
+  if (!b) {
+    b = document.createElement('div'); b.id = 'ftools'; b.className = 'ftools'; document.body.appendChild(b);
+    b.addEventListener('mousedown', e => { if (e.target.closest('[data-pgo]')) e.preventDefault(); });
+    b.addEventListener('touchstart', e => { if (e.target.closest('[data-pgo]')) { e.preventDefault(); if (!punchWrap()) toast('Select a word in the text first'); } }, { passive: false });
+    b.addEventListener('click', e => { if (e.target.closest('[data-pgo]') && !punchWrap()) toast('Select a word in the text first'); });
+  }
+  b.hidden = editing;
+  b.innerHTML = (punch ? '<button class="tl go" data-pgo>Selection → Blank</button>' : '') +
+    `<button class="tl${punch ? ' on' : ''}" data-punch>Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode>Highlight</button>`;
+}
 
 /* 형광펜 */
 let hlJust = 0;
 try { HL.c = localStorage.getItem(KEY + ':hl') || 'y'; } catch (e) {}
-const HLC = [['y', '노랑'], ['b', '하늘'], ['p', '분홍'], ['o', '갈색']];
+const HLC = [['y', 'Yellow'], ['b', 'Sky'], ['p', 'Pink'], ['o', 'Brown']];
 function offIn(ed, node, off) { const r = document.createRange(); r.setStart(ed, 0); r.setEnd(node, off); return r.toString().length; }
 function hlEdit(it, s, e, c) {
   if (e <= s) return;
@@ -817,11 +827,11 @@ function hlBar() {
   let b = $('#hlbar');
   if (!b) { b = document.createElement('div'); b.id = 'hlbar'; b.className = 'hlbar'; document.body.appendChild(b);
     b.addEventListener('mousedown', e => e.preventDefault());
-    b.addEventListener('touchstart', e => { const go = e.target.closest('[data-hlgo]'); if (go) { e.preventDefault(); if (!hlApply()) toast('먼저 문장을 선택하세요'); } }, { passive: false });
-    b.addEventListener('click', e => { if (e.target.closest('[data-hlgo]') && !hlApply()) toast('먼저 문장을 선택하세요'); });
+    b.addEventListener('touchstart', e => { const go = e.target.closest('[data-hlgo]'); if (go) { e.preventDefault(); if (!hlApply()) toast('Select some text first'); } }, { passive: false });
+    b.addEventListener('click', e => { if (e.target.closest('[data-hlgo]') && !hlApply()) toast('Select some text first'); });
   }
   b.innerHTML = HLC.map(([v, l]) => `<button class="hlc h${v}${!HL.erase && HL.c === v ? ' on' : ''}" data-hlc="${v}" title="${l}"></button>`).join('') +
-    `<button class="hle${HL.erase ? ' on' : ''}" data-hlc="erase">지우개</button><span class="hlsep"></span><button class="hlgo" data-hlgo>선택 → ${HL.erase ? '지우기' : '칠하기'}</button>`;
+    `<button class="hle${HL.erase ? ' on' : ''}" data-hlc="erase">Eraser</button><span class="hlsep"></span><button class="hlgo" data-hlgo>Selection → ${HL.erase ? 'Erase' : 'Highlight'}</button>`;
 }
 hlBar();
 
@@ -835,13 +845,13 @@ function serBed(ed) {
 }
 function initBed(ed, prev, btn) {
   let just = 0;
-  const upd = () => { const t = serBed(ed); const b = blanks(t); if (prev) prev.innerHTML = b.length ? '정답: <b>' + esc(b.join(' / ')) + '</b>' : '빈칸 없음 (정답 칸 없이 서술형으로 저장)'; };
+  const upd = () => { const t = serBed(ed); const b = blanks(t); if (prev) prev.innerHTML = b.length ? 'Answer: <b>' + esc(b.join(' / ')) + '</b>' : 'No blanks (saved as a statement, no answer column)'; };
   const wrap = () => {
     const sel = getSelection(); if (!sel.rangeCount || sel.isCollapsed) return false;
     const r = sel.getRangeAt(0); if (!ed.contains(r.commonAncestorContainer)) return false;
     let anc = r.commonAncestorContainer; if (anc.nodeType === 3) anc = anc.parentNode;
     if (anc.closest && anc.closest('mark')) { sel.removeAllRanges(); return false; }
-    if (r.cloneContents().querySelector('mark')) { sel.removeAllRanges(); toast('이미 있는 빈칸과 겹쳐요'); return false; }
+    if (r.cloneContents().querySelector('mark')) { sel.removeAllRanges(); toast('Overlaps an existing blank'); return false; }
     const txt = r.toString(); if (!txt.trim()) return false;
     const lead = /^\s/.test(txt), trail = /\s$/.test(txt);
     r.deleteContents();
@@ -854,8 +864,8 @@ function initBed(ed, prev, btn) {
   ed._wrap = wrap;
   if (btn) {
     btn.addEventListener('mousedown', e => e.preventDefault());
-    btn.addEventListener('touchstart', e => { e.preventDefault(); if (!wrap()) toast('먼저 단어를 선택하세요'); }, { passive: false });
-    btn.addEventListener('click', () => { if (!wrap()) toast('먼저 단어를 선택하세요'); });
+    btn.addEventListener('touchstart', e => { e.preventDefault(); if (!wrap()) toast('Select a word first'); }, { passive: false });
+    btn.addEventListener('click', () => { if (!wrap()) toast('Select a word first'); });
   }
   ed.addEventListener('click', e => {
     const mk = e.target.closest('mark'); if (!mk || Date.now() - just < 300 || !getSelection().isCollapsed) return;
@@ -874,7 +884,7 @@ const LIB = {
   pdfw: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
   docx: 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js'
 };
-const loadScript = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('라이브러리 로드 실패(인터넷 연결 확인)')); document.head.appendChild(s); });
+const loadScript = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('Failed to load library (check your connection)')); document.head.appendChild(s); });
 async function readPdf(file) {
   if (!window.pdfjsLib) { await loadScript(LIB.pdf); pdfjsLib.GlobalWorkerOptions.workerSrc = LIB.pdfw; }
   const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
@@ -923,7 +933,7 @@ async function readFile(file) {
     const r = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
     return [r.value.split(/\r?\n/)];
   }
-  if (n.endsWith('.hwp') || n.endsWith('.hwpx')) throw new Error('한글(hwp) 파일은 PDF로 저장해서 올려주세요');
+  if (n.endsWith('.hwp') || n.endsWith('.hwpx')) throw new Error('Please save HWP files as PDF first');
   return [(await file.text()).split(/\r?\n/)];
 }
 
@@ -1045,31 +1055,31 @@ function guessCh(theme) {
   return bs >= 2 ? best.id : '__new__';
 }
 function chOptions(sel) {
-  let h = `<option value="__new__"${sel === '__new__' ? ' selected' : ''}>＋ 새 챕터 만들기</option>`;
+  let h = `<option value="__new__"${sel === '__new__' ? ' selected' : ''}>＋ New chapter</option>`;
   for (const p of doc().parts) {
     h += `<optgroup label="${esc(p.title)}">` + p.chapters.map(c => `<option value="${c.id}"${c.id === sel ? ' selected' : ''}>${esc(c.title)}</option>`).join('') + `</optgroup>`;
   }
   return h;
 }
 function secOptions(chId) {
-  let h = `<option value="__new__">＋ 새 소제목으로</option>`;
+  let h = `<option value="__new__">＋ As new section</option>`;
   if (chId !== '__new__') { const L = locate(chId); if (L) h += L.obj.secs.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join(''); }
   return h;
 }
 
 function openImport() {
   const m = $('#mod'); m.classList.add('wide');
-  m.innerHTML = `<h2>문서에서 가져오기 · ${esc(doc().name)}</h2>
-  <div class="fld"><label>넣을 연도</label><div class="yrsel" id="impYr">${DB.years.map(y => `<label><input type="radio" name="impyr" value="${esc(y)}"${y === defYear() ? ' checked' : ''}>${esc(yrLabel(y))}</label>`).join('')}</div></div>
+  m.innerHTML = `<h2>Import from document · ${esc(doc().name)}</h2>
+  <div class="fld"><label>Year</label><div class="yrsel" id="impYr">${DB.years.map(y => `<label><input type="radio" name="impyr" value="${esc(y)}"${y === defYear() ? ' checked' : ''}>${esc(yrLabel(y))}</label>`).join('')}</div></div>
   <label class="drop" id="drop"><input type="file" id="impFile" multiple accept=".pdf,.docx,.txt,.md" hidden>
-    <b>PDF · Word(.docx) · 텍스트 파일</b>을 끌어놓거나 눌러서 선택<br><span>여러 파일 한번에 가능 · 【 】《 》〔 〕 빈칸과 ‘정답’ 줄을 자동으로 맞춰요</span></label>
-  <details class="pastebox"><summary>또는 텍스트 직접 붙여넣기</summary><textarea id="impText" placeholder="1. 문장 【 】 ...\n2. ...\n정답 ①... ②..."></textarea><button class="btn" id="impTextGo">읽기</button></details>
+    Drop or click to choose <b>PDF · Word (.docx) · text files</b><br><span>Multiple files OK · 【 】《 》〔 〕 blanks are matched to ‘정답’ lines automatically</span></label>
+  <details class="pastebox"><summary>Or paste text directly</summary><textarea id="impText" placeholder="1. 문장 【 】 ...\n2. ...\n정답 ①... ②..."></textarea><button class="btn" id="impTextGo">Read</button></details>
   <div id="impOut"></div>
-  <div class="mfoot"><span class="sp2"></span><button class="btn" data-x="cancel">닫기</button><button class="btn pri" data-x="add" id="impAdd" disabled>선택한 문항 추가</button></div>`;
+  <div class="mfoot"><span class="sp2"></span><button class="btn" data-x="cancel">Close</button><button class="btn pri" data-x="add" id="impAdd" disabled>Add selected</button></div>`;
   $('#ov').classList.add('open');
   const out = $('#impOut');
   const go = async files => {
-    out.innerHTML = '<div class="empty">읽는 중…</div>';
+    out.innerHTML = '<div class="empty">Reading…</div>';
     const sheets = [];
     for (const f of files) {
       try { const ss = toSheets(await readFile(f)); ss.forEach(s => { if (!s.theme) s.theme = f.name.replace(/\.[^.]+$/, ''); }); sheets.push(...ss); }
@@ -1082,25 +1092,25 @@ function openImport() {
   dr.ondragover = e => { e.preventDefault(); dr.classList.add('over'); };
   dr.ondragleave = () => dr.classList.remove('over');
   dr.ondrop = e => { e.preventDefault(); dr.classList.remove('over'); const f = [...e.dataTransfer.files]; if (f.length) go(f); };
-  $('#impTextGo').onclick = () => { const t = $('#impText').value; if (!t.trim()) return; const ss = toSheets([t.split(/\r?\n/)]); ss.forEach(s => s.theme ||= '붙여넣은 내용'); showSheets(ss); };
+  $('#impTextGo').onclick = () => { const t = $('#impText').value; if (!t.trim()) return; const ss = toSheets([t.split(/\r?\n/)]); ss.forEach(s => s.theme ||= 'Pasted text'); showSheets(ss); };
 
   function showSheets(sheets) {
-    if (!sheets.length) { out.innerHTML = '<div class="empty">읽을 수 있는 문장을 못 찾았어요. 스캔본(이미지) PDF는 글자를 읽을 수 없어요.</div>'; $('#impAdd').disabled = true; return; }
-    out.innerHTML = `<div class="imp-tip">문장을 직접 고칠 수 있어요 · 드래그=빈칸, 빈칸 클릭=해제 · <b class="w">??</b>는 정답을 못 찾은 빈칸 <button class="btn" type="button" id="impWrap">선택 → 빈칸</button></div>` +
+    if (!sheets.length) { out.innerHTML = '<div class="empty">No readable text found. Scanned (image) PDFs cannot be read.</div>'; $('#impAdd').disabled = true; return; }
+    out.innerHTML = `<div class="imp-tip">You can edit sentences · drag = blank, click blank = undo · <b class="w">??</b> = blank without a matched answer <button class="btn" type="button" id="impWrap">Selection → Blank</button></div>` +
       sheets.map((s, si) => {
         const g = guessCh(s.theme);
         return `<div class="imp-sheet" data-si="${si}">
-        <div class="imp-head"><span class="imp-k">소제목</span><input class="imp-title" value="${esc(s.theme)}"></div>
-        <div class="imp-head"><span class="imp-k">넣을 곳</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
-        <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">새 챕터</span><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select><input class="imp-chname" value="${esc(s.theme)}" placeholder="챕터 이름"></div>
-        ${s.note ? `<div class="imp-noterow"><label><input type="checkbox" class="imp-noteon" checked> 안내 박스로 넣기</label><textarea class="imp-note">${esc(s.note)}</textarea></div>` : ''}
-        <div class="imp-bar"><label><input type="checkbox" class="imp-all" checked> 전체 선택</label><span>${s.items.length}문항</span></div>
-        ${s.items.map(it => `<div class="imp-it${it.t.includes('[[??]]') ? ' warn' : ''}"><input type="checkbox" class="imp-on" checked><div class="imp-body">${it.tag ? `<input class="imp-tag" value="${esc(it.tag)}" title="머리표">` : '<input class="imp-tag" value="" placeholder="머리표" title="머리표">'}<div class="bed sm" contenteditable="true" data-t="${esc(it.t)}"></div><div class="prev"></div></div></div>`).join('')}
+        <div class="imp-head"><span class="imp-k">Section</span><input class="imp-title" value="${esc(s.theme)}"></div>
+        <div class="imp-head"><span class="imp-k">Place in</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
+        <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">New chapter</span><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select><input class="imp-chname" value="${esc(s.theme)}" placeholder="Chapter name"></div>
+        ${s.note ? `<div class="imp-noterow"><label><input type="checkbox" class="imp-noteon" checked> Add as note box</label><textarea class="imp-note">${esc(s.note)}</textarea></div>` : ''}
+        <div class="imp-bar"><label><input type="checkbox" class="imp-all" checked> Select all</label><span>${s.items.length} items</span></div>
+        ${s.items.map(it => `<div class="imp-it${it.t.includes('[[??]]') ? ' warn' : ''}"><input type="checkbox" class="imp-on" checked><div class="imp-body">${it.tag ? `<input class="imp-tag" value="${esc(it.tag)}" title="Tag">` : '<input class="imp-tag" value="" placeholder="Tag" title="Tag">'}<div class="bed sm" contenteditable="true" data-t="${esc(it.t)}"></div><div class="prev"></div></div></div>`).join('')}
       </div>`;
       }).join('');
     out.querySelectorAll('.bed').forEach(ed => { setBed(ed, ed.dataset.t); initBed(ed, ed.nextElementSibling); });
     $('#impWrap').addEventListener('mousedown', e => e.preventDefault());
-    $('#impWrap').onclick = () => { const sel = getSelection(); const n = sel.rangeCount && sel.getRangeAt(0).commonAncestorContainer; const ed = n && (n.nodeType === 3 ? n.parentNode : n).closest('.bed'); if (!ed || !ed._wrap()) toast('먼저 문장에서 단어를 선택하세요'); };
+    $('#impWrap').onclick = () => { const sel = getSelection(); const n = sel.rangeCount && sel.getRangeAt(0).commonAncestorContainer; const ed = n && (n.nodeType === 3 ? n.parentNode : n).closest('.bed'); if (!ed || !ed._wrap()) toast('Select a word in the text first'); };
     out.querySelectorAll('.imp-sheet').forEach(sh => {
       const ch = sh.querySelector('.imp-ch');
       ch.onchange = () => { sh.querySelector('.imp-sec').innerHTML = secOptions(ch.value); sh.querySelector('.imp-new').hidden = ch.value !== '__new__'; };
@@ -1122,31 +1132,31 @@ function openImport() {
       let chId = sh.querySelector('.imp-ch').value, chObj;
       if (chId === '__new__') {
         const p = locate(sh.querySelector('.imp-part').value).obj;
-        chObj = { id: nid(), title: sh.querySelector('.imp-chname').value.trim() || '새 챕터', secs: [] }; p.chapters.push(chObj);
+        chObj = { id: nid(), title: sh.querySelector('.imp-chname').value.trim() || 'New chapter', secs: [] }; p.chapters.push(chObj);
       } else chObj = locate(chId).obj;
       const secId = sh.querySelector('.imp-sec').value; let sec;
-      if (secId === '__new__') { sec = { id: nid(), title: sh.querySelector('.imp-title').value.trim() || '추가 논점', note, items: [] }; chObj.secs.push(sec); }
+      if (secId === '__new__') { sec = { id: nid(), title: sh.querySelector('.imp-title').value.trim() || 'More issues', note, items: [] }; chObj.secs.push(sec); }
       else { sec = locate(secId).obj; if (note) sec.note = sec.note ? sec.note + '\n' + note : note; }
       sec.items.push(...items); n += items.length; firstCh ||= chObj.id;
     });
-    if (!n) { toast('추가할 문항을 선택하세요'); return; }
+    if (!n) { toast('Select items to add'); return; }
     if (yr !== 'all' && yr !== impY) { yr = impY; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} }
-    closeModal(); commit(); toast(`${n}문항 추가${warn ? ` · 정답 확인 필요 ${warn}개` : ''}`);
+    closeModal(); commit(); toast(`Added ${n} items${warn ? ` · ${warn} need answer check` : ''}`);
     const el = document.getElementById('ch-' + firstCh); if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
   };
 }
 
 /* item form */
-const yearField = v => ({ key: 'y', label: '연도', type: 'year', value: v });
+const yearField = v => ({ key: 'y', label: 'Year', type: 'year', value: v });
 const itemFields = it => [
   yearField(it ? it.y : defYear()),
-  { key: 't', label: '문장', type: 'blank', value: it ? it.t : '', ph: '여기에 문장을 붙여넣으세요' },
-  { key: 'a', label: '정답 직접 입력 (선택 · OX 문제 등 — 비우면 빈칸 단어가 정답)', value: it ? it.a || '' : '', ph: '예: X (승인 불요)' },
-  { key: 'q', label: '퀴즐렛 앞면 (선택 · 쓰면 이 질문이 앞면, 위 문장이 뒷면인 카드로 출제)', type: 'textarea', value: it ? it.q || '' : '', ph: '예: Lotus 사건의 핵심 판시사항은?' },
-  { key: 'tag', label: '머리표 (선택)', value: it ? it.tag || '' : '', ph: '예: 기출, 기사, 판례' }
+  { key: 't', label: 'Sentence', type: 'blank', value: it ? it.t : '', ph: 'Paste the sentence here' },
+  { key: 'a', label: 'Answer (optional · for O/X etc. — leave empty to use the blanks)', value: it ? it.a || '' : '', ph: 'e.g. X (승인 불요)' },
+  { key: 'q', label: 'Card front (optional · makes a flashcard: this question on the front, the sentence on the back)', type: 'textarea', value: it ? it.q || '' : '', ph: 'e.g. Lotus 사건의 핵심 판시사항은?' },
+  { key: 'tag', label: 'Tag (optional)', value: it ? it.tag || '' : '', ph: 'e.g. 기출, 기사, 판례' }
 ];
 function itemObj(v, base) {
-  if (!v.t) { toast('문장을 입력하세요'); return null; }
+  if (!v.t) { toast('Enter a sentence'); return null; }
   const o = base || { id: nid() }; if (o.hl && (!o.t || dispOf(o.t) !== dispOf(v.t))) delete o.hl; o.t = v.t; o.y = v.y || defYear();
   if (v.a) o.a = v.a; else delete o.a;
   if (v.q) o.q = v.q.trim(); else delete o.q;
@@ -1159,44 +1169,44 @@ function act(a, id) {
   const d = doc();
   if (a === 'addItem') {
     const s = locate(id).obj;
-    openModal({ title: `문항 추가 · ${s.title}`, fields: itemFields(), again: true, onSave: v => { const o = itemObj(v); if (!o) return false; s.items.push(o); commit(); } });
+    openModal({ title: `Add item · ${s.title}`, fields: itemFields(), again: true, onSave: v => { const o = itemObj(v); if (!o) return false; s.items.push(o); commit(); } });
   }
   if (a === 'editItem') {
     const L = locate(id), it = L.obj;
-    openModal({ title: '문항 수정', fields: itemFields(it), onSave: v => { if (!itemObj(v, it)) return false; commit(); }, onDelete: () => { if (!confirm('이 문항을 삭제할까요?')) return false; L.arr.splice(L.i, 1); commit(); } });
+    openModal({ title: 'Edit item', fields: itemFields(it), onSave: v => { if (!itemObj(v, it)) return false; commit(); }, onDelete: () => { if (!confirm('Delete this item?')) return false; L.arr.splice(L.i, 1); commit(); } });
   }
   if (a === 'addSec') {
     const c = locate(id).obj;
-    openModal({ title: `소제목 추가 · ${c.title}`, fields: [{ key: 'title', label: '소제목', ph: '예: UN해양법협약 조문' }, { key: 'note', label: '안내 박스 (선택)', type: 'textarea', ph: '배경 설명, 기사 요약 등' }], onSave: v => { if (!v.title) { toast('소제목을 입력하세요'); return false; } c.secs.push({ id: nid(), title: v.title, note: v.note, items: [] }); commit(); } });
+    openModal({ title: `Add section · ${c.title}`, fields: [{ key: 'title', label: 'Section', ph: 'e.g. UN해양법협약 조문' }, { key: 'note', label: 'Note box (optional)', type: 'textarea', ph: 'Background, article summary, etc.' }], onSave: v => { if (!v.title) { toast('Enter a section title'); return false; } c.secs.push({ id: nid(), title: v.title, note: v.note, items: [] }); commit(); } });
   }
   if (a === 'addCh') {
     const p = locate(id).obj;
-    openModal({ title: `챕터 추가 · ${p.title}`, fields: [{ key: 'title', label: '챕터 이름' }, { key: 'sec', label: '첫 소제목', value: '주요 논점' }], onSave: v => { if (!v.title) { toast('챕터 이름을 입력하세요'); return false; } p.chapters.push({ id: nid(), title: v.title, secs: v.sec ? [{ id: nid(), title: v.sec, note: '', items: [] }] : [] }); commit(); } });
+    openModal({ title: `Add chapter · ${p.title}`, fields: [{ key: 'title', label: 'Chapter name' }, { key: 'sec', label: 'First section', value: '주요 논점' }], onSave: v => { if (!v.title) { toast('Enter a chapter name'); return false; } p.chapters.push({ id: nid(), title: v.title, secs: v.sec ? [{ id: nid(), title: v.sec, note: '', items: [] }] : [] }); commit(); } });
   }
   if (a === 'addPart') {
-    openModal({ title: '파트 추가', fields: [{ key: 'title', label: '파트 이름', ph: '예: INTL LAW Ⅲ' }], onSave: v => { if (!v.title) return false; d.parts.push({ id: nid(), title: v.title, chapters: [] }); commit(); } });
+    openModal({ title: 'Add part', fields: [{ key: 'title', label: 'Part name', ph: 'e.g. INTL LAW Ⅲ' }], onSave: v => { if (!v.title) return false; d.parts.push({ id: nid(), title: v.title, chapters: [] }); commit(); } });
   }
   if (a === 'addDoc') {
-    openModal({ title: '과목 추가', fields: [{ key: 'name', label: '과목 이름', ph: '예: 경제학' }], onSave: v => { if (!v.name) return false; const nd = { id: nid(), name: v.name, parts: [{ id: nid(), title: 'PART 1', chapters: [] }] }; DB.docs.push(nd); cur = nd.id; commit(); } });
+    openModal({ title: 'Add subject', fields: [{ key: 'name', label: 'Subject name', ph: 'e.g. 경제학' }], onSave: v => { if (!v.name) return false; const nd = { id: nid(), name: v.name, parts: [{ id: nid(), title: 'PART 1', chapters: [] }] }; DB.docs.push(nd); cur = nd.id; commit(); } });
   }
   if (a === 'addYear') {
-    openModal({ title: '연도 추가', fields: [{ key: 'y', label: '연도 (두 자리)', ph: '예: 28' }], onSave: v => { const y = v.y.replace(/\D/g, '').slice(-2); if (!y) return false; if (!DB.years.includes(y)) { DB.years.push(y); DB.years.sort(); } yr = y; try { localStorage.setItem(KEY + ':yr', yr); } catch (e) {} commit(); } });
+    openModal({ title: 'Add year', fields: [{ key: 'y', label: 'Year (two digits)', ph: 'e.g. 28' }], onSave: v => { const y = v.y.replace(/\D/g, '').slice(-2); if (!y) return false; if (!DB.years.includes(y)) { DB.years.push(y); DB.years.sort(); } yr = y; try { localStorage.setItem(KEY + ':yr', yr); } catch (e) {} commit(); } });
   }
   if (a === 'renameDoc') {
-    openModal({ title: '과목 이름 수정', fields: [{ key: 'name', label: '과목 이름', value: d.name }], onSave: v => { if (!v.name) return false; d.name = v.name; commit(); } });
+    openModal({ title: 'Rename subject', fields: [{ key: 'name', label: 'Subject name', value: d.name }], onSave: v => { if (!v.name) return false; d.name = v.name; commit(); } });
   }
   if (a === 'delDoc') {
-    if (DB.docs.length < 2) return toast('과목이 하나뿐이라 삭제할 수 없어요');
-    if (!confirm(`‘${d.name}’ 과목 전체를 삭제할까요? (${docCnt(d)}문항)`)) return;
+    if (DB.docs.length < 2) return toast("Can't delete the only subject");
+    if (!confirm(`Delete the whole subject ‘${d.name}’? (${docCnt(d)} items)`)) return;
     DB.docs = DB.docs.filter(x => x !== d); cur = DB.docs[0].id; commit();
   }
   if (a === 'rename') {
     const L = locate(id), o = L.obj;
-    const f = [{ key: 'title', label: L.kind === 'part' ? '파트 이름' : L.kind === 'ch' ? '챕터 이름' : '소제목', value: o.title }];
-    if (L.kind === 'sec') { f.push({ key: 'note', label: '안내 박스 (선택)', type: 'textarea', value: o.note || '' }); f.push({ key: 'bulk', label: '이 소제목 문항 연도 한번에 바꾸기 (선택)', value: '', ph: '비워두면 그대로 · 예: ' + DB.years[DB.years.length - 1] }); }
-    openModal({ title: '수정', fields: f, onSave: v => {
+    const f = [{ key: 'title', label: L.kind === 'part' ? 'Part name' : L.kind === 'ch' ? 'Chapter name' : 'Section', value: o.title }];
+    if (L.kind === 'sec') { f.push({ key: 'note', label: 'Note box (optional)', type: 'textarea', value: o.note || '' }); f.push({ key: 'bulk', label: 'Change year of all items in this section (optional)', value: '', ph: 'Leave empty to keep · e.g. ' + DB.years[DB.years.length - 1] }); }
+    openModal({ title: 'Edit', fields: f, onSave: v => {
       if (!v.title) return false; o.title = v.title;
-      if (L.kind === 'sec') { o.note = v.note; if (v.bulk) { if (!DB.years.includes(v.bulk)) { toast('없는 연도예요: ' + DB.years.join(', ')); return false; } o.items.forEach(it => it.y = v.bulk); } }
+      if (L.kind === 'sec') { o.note = v.note; if (v.bulk) { if (!DB.years.includes(v.bulk)) { toast('Unknown year: ' + DB.years.join(', ')); return false; } o.items.forEach(it => it.y = v.bulk); } }
       commit(); } });
   }
   if (a === 'up' || a === 'down') {
@@ -1206,9 +1216,9 @@ function act(a, id) {
   }
   if (a === 'del') {
     const L = locate(id), o = L.obj;
-    const label = { part: '파트', ch: '챕터', sec: '소제목', item: '문항' }[L.kind];
+    const label = { part: 'part', ch: 'chapter', sec: 'section', item: 'item' }[L.kind];
     const n = L.kind === 'item' ? 0 : L.kind === 'sec' ? o.items.length : L.kind === 'ch' ? cnt(o) : o.chapters.reduce((m, c) => m + cnt(c), 0);
-    if (!confirm(`이 ${label}을(를) 삭제할까요?` + (n ? ` (안의 ${n}문항도 함께 삭제)` : ''))) return;
+    if (!confirm(`Delete this ${label}?` + (n ? ` (its ${n} items will be deleted too)` : ''))) return;
     L.arr.splice(L.i, 1); commit();
   }
 }
@@ -1219,10 +1229,10 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
-  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); if (hlMode) toast('드래그(또는 애플펜슬로 긋기)하면 형광펜 · 지우개로 지우기'); return; }
+  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); if (hlMode) toast('Drag (or draw with Apple Pencil) to highlight · use Eraser to remove'); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
   if (hlMode && !editing && HL.erase && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
-  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; const y = scrollY; render(); scrollTo(0, y); if (punch) toast('문장에서 단어를 드래그하면 빈칸 · 빈칸을 누르면 해제'); return; }
+  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; const y = scrollY; render(); scrollTo(0, y); if (punch) toast('Drag over words to blank them · tap a blank to undo'); return; }
   const pm = punch && !editing && t.closest('.pbed mark');
   if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }
   const fb = t.closest('[data-fill]');
@@ -1238,7 +1248,7 @@ document.addEventListener('click', e => {
   if (!t.closest('.menu')) $('#menuPop').classList.remove('open');
   if (!t.closest('#side') && !t.closest('#tocBtn')) $('#side').classList.remove('open');
 });
-$('#editBtn').onclick = () => { editing = !editing; $('#editBtn').classList.toggle('on', editing); $('#editBtn').textContent = editing ? '편집 끝' : '편집'; render(); };
+$('#editBtn').onclick = () => { editing = !editing; $('#editBtn').classList.toggle('on', editing); $('#editBtn').textContent = editing ? 'Done' : 'Edit'; render(); };
 $('#printBtn').onclick = () => window.print();
 $('#impBtn').onclick = () => openImport();
 $('#tocBtn').onclick = () => $('#side').classList.toggle('open');
@@ -1253,34 +1263,34 @@ $('#menuPop').onclick = e => {
     const d = new Date(), p = n => String(n).padStart(2, '0');
     const blob = new Blob([JSON.stringify(DB, null, 1)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `논점정리_백업_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
+    a.download = `issues_backup_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast('백업 파일을 저장했어요');
+    toast('Backup saved');
   }
   if (m === 'import') $('#file').click();
-  if (m === 'reset') { if (confirm('직접 추가·수정한 내용이 모두 사라지고 처음 상태로 돌아가요. 계속할까요?\n(먼저 백업 파일 저장을 권장)')) { DB = clone(ORIG); migrate(); cur = DB.docs[0].id; commit(); toast('초기화했어요'); } }
+  if (m === 'reset') { if (confirm('All your additions and edits will be lost and the original restored. Continue?\n(saving a backup first is recommended)')) { DB = clone(ORIG); migrate(); cur = DB.docs[0].id; commit(); toast('Reset done'); } }
 };
 $('#file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   try {
     const d = JSON.parse(await f.text());
     if (!d || !Array.isArray(d.docs) || !d.docs.length) throw 0;
-    if (!confirm('지금 내용을 이 백업 파일 내용으로 바꿀까요?')) return;
-    DB = d; migrate(); if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all'; cur = DB.docs[0].id; commit(); toast('불러왔어요');
-  } catch (x) { toast('올바른 백업 파일이 아니에요'); }
+    if (!confirm('Replace current content with this backup?')) return;
+    DB = d; migrate(); if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all'; cur = DB.docs[0].id; commit(); toast('Loaded');
+  } catch (x) { toast('Not a valid backup file'); }
 };
-window.addEventListener('beforeprint', () => { if (punch || hlMode) { punch = false; hlMode = false; render(); } if (editing) { editing = false; $('#editBtn').classList.remove('on'); $('#editBtn').textContent = '편집'; render(); } });
+window.addEventListener('beforeprint', () => { if (punch || hlMode) { punch = false; hlMode = false; render(); } if (editing) { editing = false; $('#editBtn').classList.remove('on'); $('#editBtn').textContent = 'Edit'; render(); } });
 
 /* 본문 서체·크기 */
 const FONTS = [
-  ['kp', '코펍돋움', "KP,'Noto Sans KR',sans-serif"],
-  ['kpb', '코펍바탕', "KPB,'Noto Serif KR',serif"],
-  ['pre', '프리텐다드', "Pretendard,'Noto Sans KR',sans-serif"],
-  ['noto', '본고딕(Noto Sans)', "'Noto Sans KR',sans-serif"],
-  ['serif', '본명조(Noto Serif)', "'Noto Serif KR',serif"],
-  ['nanum', '나눔명조', "'Nanum Myeongjo',serif"],
-  ['gm', '지마켓산스', "GmarketSans,'Noto Sans KR',sans-serif"],
-  ['pl', '페이퍼로지', "Paperlogy,'Noto Sans KR',sans-serif"]
+  ['kp', 'KoPub Dotum', "KP,'Noto Sans KR',sans-serif"],
+  ['kpb', 'KoPub Batang', "KPB,'Noto Serif KR',serif"],
+  ['pre', 'Pretendard', "Pretendard,'Noto Sans KR',sans-serif"],
+  ['noto', 'Noto Sans', "'Noto Sans KR',sans-serif"],
+  ['serif', 'Noto Serif', "'Noto Serif KR',serif"],
+  ['nanum', 'Nanum Myeongjo', "'Nanum Myeongjo',serif"],
+  ['gm', 'Gmarket Sans', "GmarketSans,'Noto Sans KR',sans-serif"],
+  ['pl', 'Paperlogy', "Paperlogy,'Noto Sans KR',sans-serif"]
 ];
 const FS0 = { f: 'kp', s: 14, lh: 1.6, ls: 0, bw: 1.2 };
 let FS = { ...FS0 };
@@ -1294,12 +1304,12 @@ function applyFS() {
 }
 function renderFS() {
   $('#fsPop').innerHTML = `
-    <div class="fs-row"><span class="lbl">크기</span><input type="range" min="11" max="20" step="0.5" value="${FS.s}" data-fs="s"><span class="fs-val">${FS.s}px</span></div>
-    <div class="fs-row"><span class="lbl">줄간격</span><input type="range" min="1.3" max="2.2" step="0.05" value="${FS.lh}" data-fs="lh"><span class="fs-val">${(+FS.lh).toFixed(2)}</span></div>
-    <div class="fs-row"><span class="lbl">자간</span><input type="range" min="-0.08" max="0.15" step="0.01" value="${FS.ls}" data-fs="ls"><span class="fs-val">${fmtLs(FS.ls)}</span></div>
-    <div class="fs-row"><span class="lbl">빈칸</span><input type="range" min="0.8" max="2" step="0.1" value="${FS.bw}" data-fs="bw"><span class="fs-val">×${(+FS.bw).toFixed(1)}</span></div>
+    <div class="fs-row"><span class="lbl">Size</span><input type="range" min="11" max="20" step="0.5" value="${FS.s}" data-fs="s"><span class="fs-val">${FS.s}px</span></div>
+    <div class="fs-row"><span class="lbl">Line height</span><input type="range" min="1.3" max="2.2" step="0.05" value="${FS.lh}" data-fs="lh"><span class="fs-val">${(+FS.lh).toFixed(2)}</span></div>
+    <div class="fs-row"><span class="lbl">Spacing</span><input type="range" min="-0.08" max="0.15" step="0.01" value="${FS.ls}" data-fs="ls"><span class="fs-val">${fmtLs(FS.ls)}</span></div>
+    <div class="fs-row"><span class="lbl">Blanks</span><input type="range" min="0.8" max="2" step="0.1" value="${FS.bw}" data-fs="bw"><span class="fs-val">×${(+FS.bw).toFixed(1)}</span></div>
     <div class="fs-fonts">${FONTS.map(f => `<button data-ff="${f[0]}" class="${f[0] === FS.f ? 'on' : ''}" style="font-family:${f[2].replace(/"/g, '&quot;')}">국제법 논점 정리 <small>${f[1]}</small></button>`).join('')}</div>
-    <button class="btn fs-reset" data-ff="reset">기본값으로</button>`;
+    <button class="btn fs-reset" data-ff="reset">Reset to default</button>`;
 }
 $('#fsBtn').onclick = e => { e.stopPropagation(); renderFS(); $('#fsPop').classList.toggle('open'); $('#menuPop').classList.remove('open'); };
 $('#fsPop').addEventListener('click', e => {
@@ -1366,22 +1376,22 @@ function quizSetup() {
   const seg = (k, opts) => `<div class="qz-seg" data-k="${k}">${opts.map(([v, l]) => `<button class="${String(QS[k]) === String(v) ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>`;
   $('#qzBody').innerHTML = `
   <div class="qz-setup">
-    <h2>퀴즈 · ${esc(doc().name)}</h2>
-    <div class="qz-row"><span class="qz-l">풀이</span>${seg('mode', [['type', '빈칸 직접 입력'], ['reveal', '가리고 보기']])}</div>
-    <div class="qz-row"><span class="qz-l">보기</span>${seg('view', [['list', '한 번에 여러 개'], ['card', '카드로 하나씩']])}</div>
-    <div class="qz-row"><span class="qz-l">한 번에</span><input type="number" id="qzN" min="1" max="200" value="${QS.n}"> <span class="qz-s">문제씩</span></div>
-    <div class="qz-row"><span class="qz-l">연도</span>${seg('y', [['all', '전체'], ...DB.years.map(v => [v, v])].map(([v, l]) => [v, l]))}</div>
-    <div class="qz-row"><span class="qz-l">범위</span>${seg('scope', [['random', '전체에서 랜덤'], ['topic', '주제(챕터)별']])}</div>
-    <div class="qz-chs"${QS.scope === 'topic' ? '' : ' hidden'}><div class="qz-chtools"><button class="btn" data-chall="1">전체 선택</button><button class="btn" data-chall="0">전체 해제</button></div><div class="qz-chgrid">${chList}</div></div>
-    <div class="qz-row"><span class="qz-l">문제 종류</span>
-      <label class="qz-ck"><input type="checkbox" class="qzKind" value="blank"${QS.kinds.blank ? ' checked' : ''}> 빈칸 문제</label>
-      <label class="qz-ck"><input type="checkbox" class="qzKind" value="card"${QS.kinds.card ? ' checked' : ''}> 퀴즐렛 카드 <small class="qz-s">(앞면 적은 문항)</small></label>
-      <label class="qz-ck"><input type="checkbox" class="qzKind" value="read"${QS.kinds.read ? ' checked' : ''}> 읽기 카드 <small class="qz-s">(서술형)</small></label></div>
-    <div class="qz-row"><span class="qz-l">옵션</span>
-      <label class="qz-ck"${QS.scope === 'topic' ? '' : ' hidden'} id="qzShufW"><input type="checkbox" id="qzShuf"${QS.shuffle ? ' checked' : ''}> 순서 섞기</label>
-      <label class="qz-ck"><input type="checkbox" id="qzWrong"${QS.wrongOnly ? ' checked' : ''}> 틀린 적 있는 문제만</label></div>
+    <h2>Quiz · ${esc(doc().name)}</h2>
+    <div class="qz-row"><span class="qz-l">Mode</span>${seg('mode', [['type', 'Type answers'], ['reveal', 'Cover & reveal']])}</div>
+    <div class="qz-row"><span class="qz-l">View</span>${seg('view', [['list', 'List'], ['card', 'One card at a time']])}</div>
+    <div class="qz-row"><span class="qz-l">Count</span><input type="number" id="qzN" min="1" max="200" value="${QS.n}"> <span class="qz-s">per round</span></div>
+    <div class="qz-row"><span class="qz-l">Year</span>${seg('y', [['all', 'All'], ...DB.years.map(v => [v, v])].map(([v, l]) => [v, l]))}</div>
+    <div class="qz-row"><span class="qz-l">Scope</span>${seg('scope', [['random', 'Random from all'], ['topic', 'By chapter']])}</div>
+    <div class="qz-chs"${QS.scope === 'topic' ? '' : ' hidden'}><div class="qz-chtools"><button class="btn" data-chall="1">Select all</button><button class="btn" data-chall="0">Clear all</button></div><div class="qz-chgrid">${chList}</div></div>
+    <div class="qz-row"><span class="qz-l">Types</span>
+      <label class="qz-ck"><input type="checkbox" class="qzKind" value="blank"${QS.kinds.blank ? ' checked' : ''}> Blanks</label>
+      <label class="qz-ck"><input type="checkbox" class="qzKind" value="card"${QS.kinds.card ? ' checked' : ''}> Flashcards <small class="qz-s">(items with a front)</small></label>
+      <label class="qz-ck"><input type="checkbox" class="qzKind" value="read"${QS.kinds.read ? ' checked' : ''}> Reading cards <small class="qz-s">(statements)</small></label></div>
+    <div class="qz-row"><span class="qz-l">Options</span>
+      <label class="qz-ck"${QS.scope === 'topic' ? '' : ' hidden'} id="qzShufW"><input type="checkbox" id="qzShuf"${QS.shuffle ? ' checked' : ''}> Shuffle</label>
+      <label class="qz-ck"><input type="checkbox" id="qzWrong"${QS.wrongOnly ? ' checked' : ''}> Missed before only</label></div>
     <div class="qz-count" id="qzCount"></div>
-    <div class="qz-foot"><button class="btn" data-q="close">닫기</button><button class="btn" data-q="wrong">오답노트</button><button class="btn" data-q="resetstat">오답 기록 초기화</button><span class="sp2"></span><button class="btn qz-go" data-q="start">시작</button></div>
+    <div class="qz-foot"><button class="btn" data-q="close">Close</button><button class="btn" data-q="wrong">Mistake Log</button><button class="btn" data-q="resetstat">Reset mistake log</button><span class="sp2"></span><button class="btn qz-go" data-q="start">Start</button></div>
   </div>`;
   if (!QS.y) QS.y = yr;
   $('#qzBody').querySelectorAll('.qz-seg[data-k=y] button').forEach(b => b.classList.toggle('on', b.dataset.v === QS.y));
@@ -1395,11 +1405,11 @@ function readSetup() {
   QS.wrongOnly = $('#qzWrong')?.checked ?? false;
   if (b.querySelector('.qzKind')) b.querySelectorAll('.qzKind').forEach(x => QS.kinds[x.value] = x.checked);
 }
-function updCount() { readSetup(); const n = quizPool().length; $('#qzCount').innerHTML = n ? `풀 수 있는 문제 <b>${n}</b>개` : '<span class="w">조건에 맞는 문제가 없어요</span>'; }
+function updCount() { readSetup(); const n = quizPool().length; $('#qzCount').innerHTML = n ? `<b>${n}</b> questions available` : '<span class="w">No questions match</span>'; }
 function startQuiz() {
   readSetup(); saveQS();
   let pool = quizPool();
-  if (!pool.length) return toast('조건에 맞는 문제가 없어요');
+  if (!pool.length) return toast('No questions match');
   if (QS.scope === 'random' || QS.shuffle) shuffleArr(pool);
   QZ = { pool, pos: 0, round: [], idx: 0, res: {}, given: {} };
   nextRound();
@@ -1415,8 +1425,8 @@ function qText(q, mode, revealed) {
   const it = q.it; const ans = qAnswers(it); let k = 0;
   const tag = it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '';
   const kd = kindOf(it);
-  if (kd === 'card') return `<div class="qz-front">${esc(it.q)}</div>` + (revealed ? `<div class="qz-back">${qHtml(it, true, true)}</div>` : `<div class="qz-back hid">뒷면 가려짐</div>`);
-  if (kd === 'read') return `<span class="qz-read">읽기</span> ` + qHtml(it, true, true);
+  if (kd === 'card') return `<div class="qz-front">${esc(it.q)}</div>` + (revealed ? `<div class="qz-back">${qHtml(it, true, true)}</div>` : `<div class="qz-back hid">Back hidden</div>`);
+  if (kd === 'read') return `<span class="qz-read">Read</span> ` + qHtml(it, true, true);
   let body = esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, a) => {
     const i = k++;
     if (mode === 'type') return `<input class="qz-in" data-i="${i}" autocomplete="off" autocapitalize="off" spellcheck="false" style="width:${Math.max(4, Math.min(16, [...a].length * 1.15 + 1.5))}em">`;
@@ -1443,16 +1453,16 @@ function gradeQ(box, q) {
 function showList() {
   const r = QZ.round, total = QZ.pool.length;
   $('#qzBody').innerHTML = `
-  <div class="qz-top"><button class="btn" data-q="setup">← 설정</button><div class="qz-prog">${QZ.pos - r.length + 1}–${QZ.pos} / ${total}</div><button class="btn" data-q="close">닫기</button></div>
+  <div class="qz-top"><button class="btn" data-q="setup">← Settings</button><div class="qz-prog">${QZ.pos - r.length + 1}–${QZ.pos} / ${total}</div><button class="btn" data-q="close">Close</button></div>
   <div class="qz-list">${r.map((q, i) => { const em = effMode(q), kd = kindOf(q.it); return `<div class="qz-item" data-i="${i}"><div class="qz-num">${i + 1}</div><div class="qz-main">${meta(q)}<div class="qz-q">${qText(q, em === 'type' ? 'type' : 'reveal', false)}</div>
-    ${em === 'type' ? `<div class="qz-btns" hidden><button class="qz-o" data-ov="${i}">맞게 처리</button></div>` : `<div class="qz-btns">${kd === 'read' ? '' : `<button class="btn" data-rv="${i}">${kd === 'card' ? '뒷면 보기' : '정답 보기'}</button>`}<button class="qz-o" data-mk="${i}:1"${kd === 'read' ? '' : ' hidden'}>○ ${kd === 'read' ? '알았음' : '맞음'}</button><button class="qz-x" data-mk="${i}:0"${kd === 'read' ? '' : ' hidden'}>✕ ${kd === 'read' ? '몰랐음' : '틀림'}</button></div>`}</div></div>`; }).join('')}</div>
-  <div class="qz-foot">${QS.mode === 'type' ? '<span class="qz-s">Enter = 다음 칸</span>' : '<button class="btn" data-q="revealall">전체 정답 보기</button>'}<span class="sp2"></span><button class="btn qz-go" data-q="${QS.mode === 'type' ? 'grade' : 'finish'}">${QS.mode === 'type' ? '채점하기' : '결과 보기'}</button></div>`;
+    ${em === 'type' ? `<div class="qz-btns" hidden><button class="qz-o" data-ov="${i}">Mark correct</button></div>` : `<div class="qz-btns">${kd === 'read' ? '' : `<button class="btn" data-rv="${i}">${kd === 'card' ? 'Show back' : 'Show answer'}</button>`}<button class="qz-o" data-mk="${i}:1"${kd === 'read' ? '' : ' hidden'}>○ ${kd === 'read' ? 'Knew it' : 'Correct'}</button><button class="qz-x" data-mk="${i}:0"${kd === 'read' ? '' : ' hidden'}>✕ ${kd === 'read' ? "Didn't know" : 'Wrong'}</button></div>`}</div></div>`; }).join('')}</div>
+  <div class="qz-foot">${QS.mode === 'type' ? '<span class="qz-s">Enter = next blank</span>' : '<button class="btn" data-q="revealall">Reveal all</button>'}<span class="sp2"></span><button class="btn qz-go" data-q="${QS.mode === 'type' ? 'grade' : 'finish'}">${QS.mode === 'type' ? 'Grade' : 'Results'}</button></div>`;
   const first = $('#qzBody .qz-in'); if (first) first.focus();
   $('#qzBody').scrollTop = 0;
 }
 function gradeList() {
   const unm = QZ.round.filter(q => effMode(q) !== 'type' && QZ.res[q.it.id] === undefined);
-  if (unm.length) return toast(`카드·읽기 문제 ${unm.length}개는 ○/✕를 눌러주세요`);
+  if (unm.length) return toast(`Mark ○/✕ on ${unm.length} card/reading items`);
   QZ.round.forEach((q, i) => { if (effMode(q) !== 'type') return; const box = $(`#qzBody .qz-item[data-i="${i}"]`); const ok = gradeQ(box, q); QZ.res[q.it.id] = ok; box.classList.add(ok ? 'ok' : 'ng'); if (!ok) box.querySelector('.qz-btns').hidden = false; });
   QZ.checked = true; finishRound(true);
 }
@@ -1461,13 +1471,13 @@ function showCard() {
   const q = QZ.round[QZ.idx], r = QZ.round;
   if (!q) return finishRound();
   $('#qzBody').innerHTML = `
-  <div class="qz-top"><button class="btn" data-q="setup">← 설정</button><div class="qz-prog">${QZ.idx + 1} / ${r.length}<div class="qz-bar"><i style="width:${QZ.idx / r.length * 100}%"></i></div></div><button class="btn" data-q="close">닫기</button></div>
+  <div class="qz-top"><button class="btn" data-q="setup">← Settings</button><div class="qz-prog">${QZ.idx + 1} / ${r.length}<div class="qz-bar"><i style="width:${QZ.idx / r.length * 100}%"></i></div></div><button class="btn" data-q="close">Close</button></div>
   ${(() => { const em = effMode(q), kd = kindOf(q.it);
-    if (kd === 'read') return `<div class="qz-card shown" id="qzCard">${meta(q)}<div class="qz-q big">${qText(q, 'reveal', true)}</div><div class="qz-hint">읽고 체크 · 1 또는 ← = 몰랐음 · 2 또는 → = 알았음</div></div>
-  <div class="qz-cbtns" id="qzCB"><button class="qz-x big" data-q="cno">✕ 몰랐음</button><button class="qz-o big" data-q="cyes">○ 알았음</button></div>`;
+    if (kd === 'read') return `<div class="qz-card shown" id="qzCard">${meta(q)}<div class="qz-q big">${qText(q, 'reveal', true)}</div><div class="qz-hint">Read & check · 1 or ← = didn't know · 2 or → = knew it</div></div>
+  <div class="qz-cbtns" id="qzCB"><button class="qz-x big" data-q="cno">✕ Didn't know</button><button class="qz-o big" data-q="cyes">○ Knew it</button></div>`;
     return `<div class="qz-card${em !== 'type' ? ' flip' : ''}" id="qzCard">${meta(q)}<div class="qz-q big">${qText(q, em === 'type' ? 'type' : 'reveal', false)}</div>
-    <div class="qz-hint">${em === 'type' ? 'Enter로 확인' : `카드 클릭 또는 Space로 ${kd === 'card' ? '뒷면' : '정답'} 보기`}</div></div>
-  <div class="qz-cbtns" id="qzCB">${em === 'type' ? '<button class="btn qz-go" data-q="ccheck">확인</button>' : `<button class="btn qz-go" data-q="cflip">${kd === 'card' ? '뒷면 보기' : '정답 보기'}</button>`}</div>`; })()}`;
+    <div class="qz-hint">${em === 'type' ? 'Press Enter to check' : `Click the card or press Space to show the ${kd === 'card' ? 'back' : 'answer'}`}</div></div>
+  <div class="qz-cbtns" id="qzCB">${em === 'type' ? '<button class="btn qz-go" data-q="ccheck">Check</button>' : `<button class="btn qz-go" data-q="cflip">${kd === 'card' ? 'Show back' : 'Show answer'}</button>`}</div>`; })()}`;
   const inp = $('#qzBody .qz-in'); if (inp) inp.focus();
 }
 function cardCheck() {
@@ -1475,16 +1485,16 @@ function cardCheck() {
   if (QZ.res[q.it.id] !== undefined) return cardNext();
   const ok = gradeQ(card, q); QZ.res[q.it.id] = ok; record(q.it.id, ok); save();
   card.classList.add(ok ? 'ok' : 'ng');
-  $('#qzCB').innerHTML = `${ok ? '' : '<button class="btn" data-q="cover">맞게 처리</button>'}<button class="btn qz-go" data-q="cnext">다음 →</button>`;
-  card.querySelector('.qz-hint').textContent = ok ? '정답! Enter로 다음' : 'Enter로 다음';
+  $('#qzCB').innerHTML = `${ok ? '' : '<button class="btn" data-q="cover">Mark correct</button>'}<button class="btn qz-go" data-q="cnext">Next →</button>`;
+  card.querySelector('.qz-hint').textContent = ok ? 'Correct! Enter for next' : 'Enter for next';
 }
 function cardFlip() {
   const q = QZ.round[QZ.idx], card = $('#qzCard');
   if (card.classList.contains('shown')) return;
   card.classList.add('shown');
   card.querySelector('.qz-q').innerHTML = qText(q, 'reveal', true);
-  card.querySelector('.qz-hint').textContent = '1 또는 ← = 몰랐음 · 2 또는 → = 알았음';
-  $('#qzCB').innerHTML = `<button class="qz-x big" data-q="cno">✕ 몰랐음</button><button class="qz-o big" data-q="cyes">○ 알았음</button>`;
+  card.querySelector('.qz-hint').textContent = '1 or ← = didn\'t know · 2 or → = knew it';
+  $('#qzCB').innerHTML = `<button class="qz-x big" data-q="cno">✕ Didn't know</button><button class="qz-o big" data-q="cyes">○ Knew it</button>`;
 }
 function cardMark(ok) { const q = QZ.round[QZ.idx]; QZ.res[q.it.id] = ok; record(q.it.id, ok); save(); cardNext(); }
 function cardNext() { QZ.idx++; showCard(); }
@@ -1493,15 +1503,15 @@ function finishRound(inline) {
   const r = QZ.round;
   if (QS.view === 'list') {
     const unm = r.filter(q => QZ.res[q.it.id] === undefined);
-    if (unm.length) return toast(`○/✕ 안 누른 문제 ${unm.length}개`);
+    if (unm.length) return toast(`${unm.length} items not marked ○/✕`);
   }
   if (QS.view === 'list') r.forEach(q => record(q.it.id, QZ.res[q.it.id])); save();
   const ok = r.filter(q => QZ.res[q.it.id]).length, wrong = r.filter(q => !QZ.res[q.it.id]);
   const more = QZ.pos < QZ.pool.length;
-  const html = `<div class="qz-result"><div class="qz-score"><b>${ok}</b> / ${r.length}</div><div class="qz-s">${Math.round(ok / r.length * 100)}%${wrong.length ? ` · 틀린 문제 ${wrong.length}개` : ' · 다 맞았어요'}</div>
-    <div class="qz-rbtns">${wrong.length ? '<button class="btn" data-q="retry">틀린 것만 다시</button>' : ''}${more ? `<button class="btn qz-go" data-q="next">다음 ${Math.min(QS.n, QZ.pool.length - QZ.pos)}개</button>` : '<span class="qz-s">범위의 문제를 다 풀었어요</span>'}<button class="btn" data-q="setup">설정으로</button></div></div>`;
+  const html = `<div class="qz-result"><div class="qz-score"><b>${ok}</b> / ${r.length}</div><div class="qz-s">${Math.round(ok / r.length * 100)}%${wrong.length ? ` · ${wrong.length} wrong` : ' · all correct'}</div>
+    <div class="qz-rbtns">${wrong.length ? '<button class="btn" data-q="retry">Retry wrong ones</button>' : ''}${more ? `<button class="btn qz-go" data-q="next">Next ${Math.min(QS.n, QZ.pool.length - QZ.pos)}</button>` : '<span class="qz-s">You finished every question in range</span>'}<button class="btn" data-q="setup">Back to settings</button></div></div>`;
   if (inline) { const f = $('#qzBody .qz-foot'); f.outerHTML = `<div class="qz-foot res">${html}</div>`; }
-  else $('#qzBody').innerHTML = `<div class="qz-top"><button class="btn" data-q="setup">← 설정</button><div class="qz-prog">결과</div><button class="btn" data-q="close">닫기</button></div>${html}` +
+  else $('#qzBody').innerHTML = `<div class="qz-top"><button class="btn" data-q="setup">← Settings</button><div class="qz-prog">Results</div><button class="btn" data-q="close">Close</button></div>${html}` +
     (wrong.length ? `<div class="qz-list review">${wrong.map((q, i) => `<div class="qz-item ng"><div class="qz-num">${i + 1}</div><div class="qz-main">${meta(q)}<div class="qz-q">${qText(q, 'reveal', true)}</div></div></div>`).join('')}</div>` : '');
   QZ.lastWrong = wrong;
 }
@@ -1523,7 +1533,7 @@ $('#quiz').addEventListener('click', e => {
   const a = b.dataset.q;
   if (a === 'close') closeQuiz();
   if (a === 'setup') quizSetup();
-  if (a === 'resetstat') { if (confirm('이 과목의 오답 기록을 모두 지울까요?')) { doc().parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => s.items.forEach(it => { if (DB.stats) delete DB.stats[it.id]; })))); save(); updCount(); toast('오답 기록을 지웠어요'); } }
+  if (a === 'resetstat') { if (confirm('Clear the whole mistake log for this subject?')) { doc().parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => s.items.forEach(it => { if (DB.stats) delete DB.stats[it.id]; })))); save(); updCount(); toast('Mistake log cleared'); } }
   if (a === 'start') startQuiz();
   if (a === 'grade') gradeList();
   if (a === 'finish') finishRound(true);
@@ -1577,14 +1587,14 @@ const fmtDate = t => { if (!t) return ''; const d = new Date(t); return `${d.get
 function openWrong() { $('#quiz').classList.add('open'); document.body.style.overflow = 'hidden'; showWrong(); }
 function showWrong() {
   const L = wrongList();
-  let h = `<div class="qz-top"><button class="btn" data-q="setup">← 퀴즈</button><div class="qz-prog">오답노트 · ${esc(doc().name)}${yr === 'all' ? '' : ' · ' + esc(yrLabel(yr))}</div><button class="btn" data-q="close">닫기</button></div>`;
-  if (!L.length) { $('#qzBody').innerHTML = h + `<div class="qz-result"><div class="qz-s">아직 틀린 문제가 없어요.<br>퀴즈를 풀면 틀린 문제가 여기 모여요.</div></div>`; return; }
-  h += `<div class="wn-bar"><div class="qz-seg" id="wnSort">${[['count', '많이 틀린 순'], ['recent', '최근 틀린 순'], ['toc', '목차 순']].map(([v, l]) => `<button class="${WN.sort === v ? 'on' : ''}" data-ws="${v}">${l}</button>`).join('')}</div><span class="qz-s">${L.length}문항</span><span class="sp2"></span><button class="btn" data-q="wnprint">인쇄</button><button class="btn qz-go" data-q="wnquiz">이 문제들 풀기</button></div>`;
+  let h = `<div class="qz-top"><button class="btn" data-q="setup">← Quiz</button><div class="qz-prog">Mistake Log · ${esc(doc().name)}${yr === 'all' ? '' : ' · ' + esc(yrLabel(yr))}</div><button class="btn" data-q="close">Close</button></div>`;
+  if (!L.length) { $('#qzBody').innerHTML = h + `<div class="qz-result"><div class="qz-s">No mistakes yet.<br>Questions you miss in quizzes collect here.</div></div>`; return; }
+  h += `<div class="wn-bar"><div class="qz-seg" id="wnSort">${[['count', 'Most missed'], ['recent', 'Recent'], ['toc', 'Contents order']].map(([v, l]) => `<button class="${WN.sort === v ? 'on' : ''}" data-ws="${v}">${l}</button>`).join('')}</div><span class="qz-s">${L.length} items</span><span class="sp2"></span><button class="btn" data-q="wnprint">Print</button><button class="btn qz-go" data-q="wnquiz">Quiz these</button></div>`;
   let lastCh = null;
   h += `<div class="qz-list wn">` + L.map((r, i) => {
     let head = '';
     if (WN.sort === 'toc' && r.ch !== lastCh) { head = `<div class="wn-ch">${esc(r.ch)}</div>`; lastCh = r.ch; }
-    return head + `<div class="qz-item ng" data-wid="${r.it.id}"><div class="qz-num">${i + 1}</div><div class="qz-main"><div class="qz-meta">${esc(r.ch)} · ${esc(r.sec)} <span class="qz-wc">✕${r.st.w}</span>${r.st.c ? ` <span class="wn-c">○${r.st.c}</span>` : ''} <span class="wn-d">${fmtDate(r.st.t)}</span><button class="wn-del" data-wdel="${r.it.id}" title="이 문항 기록 지우기">기록 지우기</button></div><div class="qz-q">${qText({ it: r.it }, 'reveal', true)}</div></div></div>`;
+    return head + `<div class="qz-item ng" data-wid="${r.it.id}"><div class="qz-num">${i + 1}</div><div class="qz-main"><div class="qz-meta">${esc(r.ch)} · ${esc(r.sec)} <span class="qz-wc">✕${r.st.w}</span>${r.st.c ? ` <span class="wn-c">○${r.st.c}</span>` : ''} <span class="wn-d">${fmtDate(r.st.t)}</span><button class="wn-del" data-wdel="${r.it.id}" title="Clear this item's record">Clear</button></div><div class="qz-q">${qText({ it: r.it }, 'reveal', true)}</div></div></div>`;
   }).join('') + `</div>`;
   $('#qzBody').innerHTML = h;
 }
@@ -1602,7 +1612,7 @@ $('#quiz').addEventListener('click', e => {
   if (b.dataset.q === 'wnprint') {
     const L = wrongList();
     const w = document.createElement('div'); w.className = 'wn-print';
-    w.innerHTML = `<h1>${esc(doc().name)} 오답노트${yr === 'all' ? '' : ' · ' + esc(yrLabel(yr))}</h1><table><colgroup><col style="width:7mm"><col><col style="width:calc(26mm*var(--r))"><col style="width:10mm"></colgroup>` +
+    w.innerHTML = `<h1>${esc(doc().name)} · Mistake Log${yr === 'all' ? '' : ' · ' + esc(yrLabel(yr))}</h1><table><colgroup><col style="width:7mm"><col><col style="width:calc(26mm*var(--r))"><col style="width:10mm"></colgroup>` +
       L.map((r, i) => { const a = ansOf(r.it); return `<tr><td class="n">${i + 1}</td><td class="q"><div class="wn-pm">${esc(r.ch)} · ${esc(r.sec)}</div>${qHtml(r.it)}</td><td class="a">${esc(a)}</td><td class="n">✕${r.st.w}</td></tr>`; }).join('') + `</table>`;
     document.body.appendChild(w); document.body.classList.add('printing-wn');
     const done = () => { document.body.classList.remove('printing-wn'); w.remove(); window.removeEventListener('afterprint', done); };
