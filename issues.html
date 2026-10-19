@@ -315,6 +315,10 @@ body.punch .pbed mark.bk{background:var(--sky2);color:var(--ans);font-weight:500
 body.punch .pbed mark.bk:hover{background:#f3e3d6;border-bottom-color:var(--brown);text-decoration:line-through}
 body.punch tr.it:hover{background:#fafcfe}
 .pox{color:var(--brown);font-size:.92em}
+.ftools,.hlbar{zoom:.9}
+body.hideans .paper td.a{cursor:pointer;color:transparent!important;background:repeating-linear-gradient(135deg,#efefef 0 6px,#e6e6e6 6px 12px)!important;user-select:none;-webkit-user-select:none}
+body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!important}
+@media print{body.hideans .paper td.a{color:inherit!important;background:none!important}}
 .ftools{position:fixed;right:18px;bottom:96px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .ftools[hidden]{display:none}
 .tl{font-family:var(--tf);font-size:13px;letter-spacing:.02em;padding:9px 16px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.10);width:128px;box-sizing:border-box}
@@ -577,6 +581,7 @@ function locate(id) {
 const blanks = t => (t.match(/\[\[(.+?)\]\]/g) || []).map(x => x.slice(2, -2));
 const B = '<span class="bl">【</span><span class="sp"></span><span class="bl">】</span>';
 let punch = false, hlMode = false;
+let hideAns = (() => { try { return localStorage.getItem(KEY + ':hideans') === '1'; } catch (e) { return false; } })();
 let HL = { c: 'y', erase: false };
 let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
 const dispOf = t => t.replace(/\[\[(.+?)\]\]/g, '$1');
@@ -674,6 +679,7 @@ function renderMain() {
   document.body.classList.toggle('edit', editing);
   document.body.classList.toggle('punch', punch && !editing);
   document.body.classList.toggle('hlon', hlMode && !editing);
+  document.body.classList.toggle('hideans', hideAns && !editing);
   toolsBar();
   document.body.classList.toggle('hlerase', HL.erase);
   observe();
@@ -763,7 +769,7 @@ function toolsBar() {
   }
   b.hidden = editing;
   b.innerHTML = `<div class="tlseg"><button class="${filled ? '' : 'on'}" data-fill="0">Blank</button><button class="${filled ? 'on' : ''}" data-fill="1">Filled</button></div>` + 
-    `<button class="tl${punch ? ' on' : ''}" data-punch>Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode>Highlight</button>`;
+    `<button class="tl${hideAns ? ' on' : ''}" data-hideans>Hide Answer</button><button class="tl${punch ? ' on' : ''}" data-punch>Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode>Highlight</button>`;
 }
 
 /* 형광펜 */
@@ -1240,6 +1246,8 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
+  if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
+  const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
   if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
   if (hlMode && !editing && HL.erase && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
