@@ -674,10 +674,18 @@
         /* --- 플래너 모바일 최적화 완결판 --- */
         @media (max-width: 850px) {
             /* 1. 버튼이 메모장 위로 올라오도록 순서 반전 */
+            /* 아이패드 세로: 메모·형광펜·색·과목·통합 버튼 한 줄 */
             .pl-top-dashboard {
-                flex-direction: column-reverse !important;
-                gap: 12px !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                gap: 8px !important;
+                overflow-x: auto; scrollbar-width: none;
             }
+            .pl-top-dashboard::-webkit-scrollbar { display: none; }
+            .pl-top-dashboard > * { flex-shrink: 0 !important; }
+            .pl-top-dashboard > .action-btn { padding: 6px 12px !important; font-size: 0.75rem !important; }
+            #memo-emoji-bar { gap: 6px !important; padding: 4px 10px !important; }
 
             /* 2. 버튼 비율 유지 (가운데 정렬 및 팽창 방지) */
             .pl-top-buttons {
