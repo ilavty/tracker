@@ -1239,6 +1239,17 @@ function act(a, id) {
     L.arr.splice(L.i, 1); commit();
   }
 }
+/* 다시 그려도 지금 보고 있는 문항이 화면 같은 위치에 오게 */
+function renderKeep() {
+  const top = ($('.top') ? $('.top').getBoundingClientRect().bottom : 0) + 4;
+  const row = [...document.querySelectorAll('#paper tr.it, #paper .sh, #paper .chh')].find(el => el.getBoundingClientRect().bottom > top);
+  if (!row) { const y = scrollY; render(); scrollTo(0, y); return; }
+  const key = row.dataset.item ? `tr.it[data-item="${row.dataset.item}"]` : null;
+  const off = row.getBoundingClientRect().top, y0 = scrollY;
+  render();
+  const el = key && document.querySelector('#paper ' + key);
+  if (el) scrollTo(0, scrollY + el.getBoundingClientRect().top - off); else scrollTo(0, y0);
+}
 function commit() { save(); const y = scrollY; render(); scrollTo(0, y); }
 
 /* events */
@@ -1248,14 +1259,14 @@ document.addEventListener('click', e => {
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
   if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
   const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
-  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); return; }
+  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; renderKeep(); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
   if (hlMode && !editing && HL.erase && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
-  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; const y = scrollY; render(); scrollTo(0, y); return; }
+  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; renderKeep(); return; }
   const pm = punch && !editing && t.closest('.pbed mark');
   if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }
   const fb = t.closest('[data-fill]');
-  if (fb) { filled = fb.dataset.fill === '1'; try { localStorage.setItem(KEY + ':filled', filled ? '1' : '0'); } catch (x) {} const y = scrollY; render(); scrollTo(0, y); return; }
+  if (fb) { filled = fb.dataset.fill === '1'; try { localStorage.setItem(KEY + ':filled', filled ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const yb = t.closest('[data-yr]');
   if (yb) { yr = yb.dataset.yr; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} render(); scrollTo(0, 0); return; }
   const go = t.closest('[data-go]');
