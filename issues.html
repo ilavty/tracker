@@ -593,25 +593,37 @@ function applyRemote(st) {
   flashSaved('Synced');
 }
 /* 안 올라간 내 변경이 있는데 다른 기기 데이터가 오면: 덮어쓰지 않고 합치기 (내가 추가한 문항·챕터 보존) */
-function mergeInto(R, Lc) {
-  const ids = new Set(); R.docs.forEach(d => d.parts.forEach(p => { ids.add(p.id); p.chapters.forEach(c => { ids.add(c.id); c.secs.forEach(s => { ids.add(s.id); s.items.forEach(it => ids.add(it.id)); }); }); }));
-  const find = (id) => { for (const d of R.docs) for (const p of d.parts) { if (p.id === id) return p; for (const c of p.chapters) { if (c.id === id) return c; for (const s of c.secs) if (s.id === id) return s; } } return null; };
-  for (const d of Lc.docs) {
-    let rd = R.docs.find(x => x.id === d.id); if (!rd) { R.docs.push(JSON.parse(JSON.stringify(d))); continue; }
+/* 지운 것 기록 (다른 기기와 합칠 때 되살아나지 않게) */
+function tomb(o) { DB.del = DB.del || {}; const t = Date.now(); const mark = x => { if (!x) return; DB.del[x.id] = t; (x.parts || []).forEach(mark); (x.chapters || []).forEach(mark); (x.secs || []).forEach(mark); (x.items || []).forEach(mark); }; mark(o); }
+/* base에 other에만 있는 것(문항·소제목·챕터·파트·과목)을 더하고, 양쪽에서 지운 건 빼기 */
+function mergeInto(B, O) {
+  const del = Object.assign({}, O.del || {}, B.del || {}); B.del = del;
+  const cl = x => JSON.parse(JSON.stringify(x));
+  const idx = {}; const scan = () => { for (const k in idx) delete idx[k]; B.docs.forEach(d => { idx[d.id] = d; d.parts.forEach(p => { idx[p.id] = p; p.chapters.forEach(c => { idx[c.id] = c; c.secs.forEach(s => { idx[s.id] = s; s.items.forEach(it => idx[it.id] = it); }); }); }); }); };
+  scan();
+  for (const d of O.docs || []) {
+    if (del[d.id]) continue;
+    const bd = idx[d.id]; if (!bd) { B.docs.push(cl(d)); scan(); continue; }
     for (const p of d.parts) {
-      let rp = rd.parts.find(x => x.id === p.id); if (!rp) { rd.parts.push(JSON.parse(JSON.stringify(p))); continue; }
+      if (del[p.id]) continue;
+      const bp = idx[p.id]; if (!bp) { bd.parts.push(cl(p)); scan(); continue; }
       for (const c of p.chapters) {
-        let rc = find(c.id); if (!rc) { rp.chapters.push(JSON.parse(JSON.stringify(c))); continue; }
+        if (del[c.id]) continue;
+        const bc = idx[c.id]; if (!bc) { bp.chapters.push(cl(c)); scan(); continue; }
         for (const s of c.secs) {
-          let rs = find(s.id); if (!rs) { rc.secs.push(JSON.parse(JSON.stringify(s))); continue; }
-          for (const it of s.items) if (!ids.has(it.id)) rs.items.push(JSON.parse(JSON.stringify(it)));
+          if (del[s.id]) continue;
+          const bs = idx[s.id]; if (!bs) { bc.secs.push(cl(s)); scan(); continue; }
+          for (const it of s.items) if (!del[it.id] && !idx[it.id]) { bs.items.push(cl(it)); idx[it.id] = it; }
         }
       }
     }
   }
-  R.stats = R.stats || {}; for (const [k, v] of Object.entries(Lc.stats || {})) { const r = R.stats[k]; if (!r || (v.t || 0) > (r.t || 0)) R.stats[k] = v; }
-  (Lc.years || []).forEach(y => { if (!R.years.includes(y)) R.years.push(y); }); R.years.sort();
-  return R;
+  // 지운 것 정리
+  B.docs = B.docs.filter(d => !del[d.id]);
+  B.docs.forEach(d => { d.parts = d.parts.filter(p => !del[p.id]); d.parts.forEach(p => { p.chapters = p.chapters.filter(c => !del[c.id]); p.chapters.forEach(c => { c.secs = c.secs.filter(s => !del[s.id]); c.secs.forEach(s => { s.items = s.items.filter(it => !del[it.id]); }); }); }); });
+  B.stats = B.stats || {}; for (const [k, v] of Object.entries(O.stats || {})) { const r = B.stats[k]; if (!r || (v.t || 0) > (r.t || 0)) B.stats[k] = v; }
+  B.years = B.years || []; (O.years || []).forEach(y => { if (!B.years.includes(y)) B.years.push(y); }); B.years.sort();
+  return B;
 }
 (function () {
   const path = 'database_v1/issues', TK = KEY + '_cloud_t', PK = KEY + '_pending';
@@ -622,10 +634,12 @@ function mergeInto(R, Lc) {
   // 이 버전 처음 열 때 한 번은 무조건 합치기 (예전 버전에서 못 올라간 문항 살리기)
   let firstV2 = false; try { firstV2 = !localStorage.getItem(KEY + '_v2') && !!localStorage.getItem(KEY); localStorage.setItem(KEY + '_v2', '1'); } catch (e) {}
   try { if (window.firebase) { if (!firebase.apps.length) firebase.initializeApp({ apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" }); db = firebase.database(); } } catch (e) {}
-  const send = () => { if (!db) return; const t = lt; db.ref(path).set({ t, d: JSON.stringify(DB) }).then(() => { if (lt === t) pending(false); flashSaved('Saved · synced'); }).catch(e => { flashSaved('Sync failed · saved on this device'); toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')); }); };
+  // 올리기 전에 클라우드를 한 번 읽어서, 다른 기기가 넣은 걸 내 쪽에 먼저 합친 뒤 올림 (절대 덮어써서 지우지 않게)
+  const send = () => { if (!db) return; db.ref(path).once('value').then(sn => { const r = sn.val(); if (r && r.d && r.t !== lt) { try { const n0 = JSON.stringify(DB).length; mergeInto(DB, JSON.parse(r.d)); saveLocal(); if (JSON.stringify(DB).length !== n0 && !$('#quiz').classList.contains('open') && !$('#ov').classList.contains('open')) renderKeep(); } catch (e) {} } setT(Math.max(Date.now(), (r && r.t || 0) + 1)); return sendRaw(); }).catch(e => { flashSaved('Sync failed · saved on this device'); toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')); }); };
+  const sendRaw = () => { const t = lt; return db.ref(path).set({ t, d: JSON.stringify(DB) }).then(() => { if (lt === t) pending(false); flashSaved('Saved · synced'); }).catch(e => { flashSaved('Sync failed · saved on this device'); toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')); }); };
   const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(send, 600); };
   // 앱을 닫거나 다른 데로 갈 때 남은 변경 바로 올리기 (아이패드에서 금방 나가도 안 날아가게)
-  const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; send(); } };
+  const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; setT(Date.now()); sendRaw(); } }; // 나갈 땐 기다릴 시간이 없어서 바로 올림 (열려 있는 동안은 실시간으로 받아둔 상태)
   addEventListener('pagehide', flush); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
   setTimeout(() => { ready = true; }, 6000);
   if (db) db.ref(path).on('value', sn => {
@@ -633,12 +647,12 @@ function mergeInto(R, Lc) {
     if (r && r.t && r.d && (fresh || r.t > lt)) {
       try {
         const R = JSON.parse(r.d);
-        if ((isPending() || firstV2) && !fresh) { firstV2 = false; if ($('#ov').classList.contains('open')) { pendingRemote = R; return; } applyRemote(mergeInto(R, DB)); setT(Date.now()); push(); }
+        if ((isPending() || firstV2) && !fresh) { firstV2 = false; if ($('#ov').classList.contains('open')) { pendingRemote = R; return; } applyRemote(mergeInto(JSON.parse(JSON.stringify(DB)), R)); push(); }
         else { applyRemote(R); setT(r.t); }
       } catch (e) {}
       fresh = false;
     }
-    else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; firstV2 = false; push(); }
+    else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; firstV2 = false; push(); } // push()가 클라우드를 먼저 합침
     else if (r.t === lt) pending(false);
     ready = true;
   });
@@ -649,9 +663,9 @@ function mergeInto(R, Lc) {
     db.ref(path).once('value').then(sn => {
       const r = sn.val(); let R = null; try { R = r && r.d ? JSON.parse(r.d) : null; } catch (e) {}
       const before = nItems(DB), cloud = R ? nItems(R) : 0;
-      const M = R ? mergeInto(R, DB) : DB;
-      applyRemote(M); setT(Date.now()); clearTimeout(timer); timer = null;
-      return db.ref(path).set({ t: lt, d: JSON.stringify(DB) }).then(() => { pending(false); flashSaved('Saved · synced'); toast(`Synced · cloud had ${cloud}, this device ${before} → now ${nItems(DB)} items`); });
+      const M = R ? mergeInto(JSON.parse(JSON.stringify(DB)), R) : DB;
+      applyRemote(M); setT(Math.max(Date.now(), (r && r.t || 0) + 1)); clearTimeout(timer); timer = null;
+      return sendRaw().then(() => toast(`Synced · cloud had ${cloud}, this device ${before} → now ${nItems(DB)} items`));
     }).catch(e => toast('Sync failed: ' + ((e && (e.code || e.message)) || 'unknown')));
   };
   CLOUD = { db, isPending, syncNow, touched() { if (!db) return; fresh = false; setT(Date.now()); pending(true); if (ready) push(); else { clearTimeout(timer); timer = setTimeout(send, 6000); } } };
@@ -873,7 +887,7 @@ function openModal({ title, fields, onSave, onDelete, again }) {
     }
   };
 }
-function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; const pd = CLOUD && CLOUD.isPending && CLOUD.isPending(); applyRemote(pd ? mergeInto(st, DB) : st); if (pd) CLOUD.touched(); } }
+function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; const pd = CLOUD && CLOUD.isPending && CLOUD.isPending(); applyRemote(pd ? mergeInto(JSON.parse(JSON.stringify(DB)), st) : st); if (pd) CLOUD.touched(); } }
 $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ov').classList.contains('open')) closeModal(); });
 
@@ -1354,7 +1368,7 @@ function act(a, id) {
   }
   if (a === 'editItem') {
     const L = locate(id), it = L.obj;
-    openModal({ title: 'Edit item', fields: itemFields(it), onSave: v => { if (!itemObj(v, it)) return false; commit(); }, onDelete: () => { if (!confirm('Delete this item?')) return false; L.arr.splice(L.i, 1); commit(); } });
+    openModal({ title: 'Edit item', fields: itemFields(it), onSave: v => { if (!itemObj(v, it)) return false; commit(); }, onDelete: () => { if (!confirm('Delete this item?')) return false; tomb(L.obj); L.arr.splice(L.i, 1); commit(); } });
   }
   if (a === 'addSec') {
     const c = locate(id).obj;
@@ -1379,7 +1393,7 @@ function act(a, id) {
   if (a === 'delDoc') {
     if (DB.docs.length < 2) return toast("Can't delete the only subject");
     if (!confirm(`Delete the whole subject ‘${d.name}’? (${docCnt(d)} items)`)) return;
-    DB.docs = DB.docs.filter(x => x !== d); cur = DB.docs[0].id; commit();
+    tomb(d); DB.docs = DB.docs.filter(x => x !== d); cur = DB.docs[0].id; commit();
   }
   if (a === 'rename') {
     const L = locate(id), o = L.obj;
@@ -1408,7 +1422,7 @@ function act(a, id) {
     openModal({ title: `Merge “${L.obj.title}” into…`, fields: [{ key: 'to', label: L.kind === 'ch' ? 'Its sections move to the end of this chapter' : 'Its items move to the end of this section', type: 'select', options: opts }], onSave: v => {
       const T = locate(v.to); if (!T) return false;
       if (L.kind === 'ch') T.obj.secs.push(...L.obj.secs); else { T.obj.items.push(...L.obj.items); if (L.obj.note) T.obj.note = T.obj.note ? T.obj.note + '\n' + L.obj.note : L.obj.note; }
-      L.arr.splice(L.arr.indexOf(L.obj), 1); commit(); toast('Merged');
+      DB.del = DB.del || {}; DB.del[L.obj.id] = Date.now(); L.arr.splice(L.arr.indexOf(L.obj), 1); commit(); toast('Merged');
     } });
   }
   if (a === 'del') {
@@ -1416,7 +1430,7 @@ function act(a, id) {
     const label = { part: 'part', ch: 'chapter', sec: 'section', item: 'item' }[L.kind];
     const n = L.kind === 'item' ? 0 : L.kind === 'sec' ? o.items.length : L.kind === 'ch' ? cnt(o) : o.chapters.reduce((m, c) => m + cnt(c), 0);
     if (!confirm(`Delete this ${label}?` + (n ? ` (its ${n} items will be deleted too)` : ''))) return;
-    L.arr.splice(L.i, 1); commit();
+    tomb(L.obj); L.arr.splice(L.i, 1); commit();
   }
 }
 /* Outline에서 챕터·소제목 꾹 눌러(마우스는 바로) 끌어서 순서 바꾸기 */
