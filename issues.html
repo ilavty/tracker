@@ -35,6 +35,24 @@ button{font-family:inherit;cursor:pointer}
 .tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;color:var(--sub);white-space:nowrap}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .tab.add{border-style:dashed}
+.tmk{display:flex;align-items:center;gap:1px;margin-left:6px;padding-left:8px;border-left:1px solid var(--line);flex:none}
+.tmkb{border:0;background:none;border-radius:14px;padding:5px 7px;cursor:pointer;display:flex;align-items:center}
+.tmkb .mki{width:15px;height:15px;fill:none;stroke:#a8a8ad;stroke-width:1.6}
+.tmkb.on{background:#ececee}
+.tmkb.on .mki{stroke:none}.tmkb.on .mk-b{fill:var(--acc)}.tmkb.on .mk-s{fill:var(--brown)}.tmkb.on .mk-c{fill:none;stroke:#555}
+.mkm{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:3px}
+.mkm .mki{width:11px;height:11px}
+.mki.mk-b{fill:var(--acc)}.mki.mk-s{fill:var(--brown)}.mki.mk-c{fill:none;stroke:#666}
+body:not(.edit) .paper tr.it td.n{cursor:pointer}
+body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
+.tmkb:not(.on) .mki,.mkpop button:not(.on) .mki{fill:none!important;stroke:#a8a8ad!important;stroke-width:1.6}
+.mkpop{position:absolute;z-index:70;display:flex;gap:2px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.12);padding:3px}
+.mkpop[hidden]{display:none}
+.mkpop button{border:0;background:none;border-radius:12px;padding:5px 6px;cursor:pointer;display:flex}
+.mkpop .mki{width:17px;height:17px;fill:none;stroke:#b0b0b5;stroke-width:1.6}
+.mkpop button.on .mki{stroke:none}.mkpop button.on .mk-b{fill:var(--acc)}.mkpop button.on .mk-s{fill:var(--brown)}.mkpop button.on .mk-c{fill:none;stroke:#555}
+.mkpop button:hover{background:#f3f3f5}
+@media print{.mkm,.mkpop{display:none!important}}
 .tyrs{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line);flex:none}
 .tyr{font-family:var(--tf);border:0;background:none;border-radius:14px;padding:5px 11px;font-size:12.5px;color:#9a9a9f;white-space:nowrap;cursor:pointer}
 .tyr:hover{color:#55555a}
@@ -333,6 +351,8 @@ body:has(#quiz.open) .ftools,body:has(#ov.open) .ftools,body:has(#quiz.open) .hl
 mark.hl{color:inherit;border-radius:2px;padding:0 1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 mark.hl.hy{background:#fff1a1}mark.hl.hb{background:#cfe7f9}mark.hl.hp{background:#fbd5de}mark.hl.ho{background:#ecd9c6}
 mark.hl .bl,mark.hl .fill{background:transparent}
+u.ul{text-decoration:underline;text-decoration-color:var(--ink);text-decoration-thickness:1.5px;text-underline-offset:3px;text-decoration-skip-ink:none}
+body.hlon.hlerase .hbed u.ul{cursor:pointer}
 body.hlon .hbed{cursor:text}
 body.hlon.hlerase .hbed mark.hl{cursor:pointer}
 body.hlon.hlerase .hbed mark.hl:hover{text-decoration:line-through;text-decoration-color:#b33}
@@ -345,6 +365,7 @@ body.hlon .hlbar{display:flex}
 .hlgrip:active{cursor:grabbing}
 .hlbar button{border:0;cursor:pointer;font-family:var(--tf)}
 .hlc{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.hlc.hu{background:#fff;position:relative}.hlc.hu::after{content:'U';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--tf);font-size:12.5px;color:var(--ink);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px}
 .hlc.hy{background:#fff1a1}.hlc.hb{background:#cfe7f9}.hlc.hp{background:#fbd5de}.hlc.ho{background:#ecd9c6}
 .hlc.on{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
 .hle{font-size:13px;padding:6px 11px;border-radius:15px;background:#f2f2f2;color:var(--ink)}
@@ -376,7 +397,7 @@ body.hlon .hlbar{display:flex}
 .mod h2{margin:0 0 14px;font-size:17px;font-weight:700}
 .fld{margin-bottom:13px}
 .fld label{display:block;font-size:12px;font-weight:500;color:var(--sub);margin-bottom:5px}
-.fld input,.fld textarea,.fld select{width:100%;font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--ink);font-weight:300;background:#fff}
+.fld input,.fld select,.fld textarea,.fld select{width:100%;font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--ink);font-weight:300;background:#fff}
 .fld textarea{min-height:80px;resize:vertical}
 .fld input:focus,.fld textarea:focus,.bed:focus{outline:2px solid #bfdcf2;border-color:var(--acc)}
 .bed{min-height:110px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14.5px;line-height:1.8;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
@@ -521,7 +542,7 @@ function migrate() { if (!Array.isArray(DB.years) || !DB.years.length) DB.years 
 migrate();
 let yr = (() => { try { return localStorage.getItem(KEY + ':yr'); } catch (e) { return null; } })() || 'all';
 if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all';
-const vis = it => yr === 'all' || it.y === yr;
+const vis = it => (yr === 'all' || it.y === yr) && (!mkF || (it.mk || '').includes(mkF));
 const visItems = s => s.items.filter(vis);
 const defYear = () => yr !== 'all' ? yr : DB.years[DB.years.length - 1];
 const yrLabel = y => y === 'all' ? 'All' : (y.length === 2 ? '20' + y : y);
@@ -583,30 +604,50 @@ function locate(id) {
 /* text helpers */
 const blanks = t => (t.match(/\[\[(.+?)\]\]/g) || []).map(x => x.slice(2, -2));
 const B = '<span class="bl">【</span><span class="sp"></span><span class="bl">】</span>';
-let punch = false, hlMode = false;
+let punch = false, hlMode = false, mkF = null;
+const MKS = [['b', 'Bookmark', '<path d="M6.5 3.5h11v17l-5.5-3.8-5.5 3.8z"/>'], ['s', 'Star', '<path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/>'], ['c', 'Clip', '<path d="M8.5 12.5l6-6a3 3 0 0 1 4.2 4.2l-7.6 7.6a5 5 0 0 1-7.1-7.1l6.9-6.9" fill="none" stroke-width="1.8" stroke-linecap="round"/>']];
+const mkIcon = (k, cls = '') => { const m = MKS.find(x => x[0] === k); return `<svg class="mki mk-${k} ${cls}" viewBox="0 0 24 24" aria-label="${m[1]}">${m[2]}</svg>`; };
+const mkMini = it => it.mk ? `<span class="mkm">${MKS.filter(m => it.mk.includes(m[0])).map(m => mkIcon(m[0])).join('')}</span>` : '';
+function mkPop(td) {
+  let p = $('#mkpop'); if (!p) { p = document.createElement('div'); p.id = 'mkpop'; p.className = 'mkpop'; document.body.appendChild(p); }
+  const id = td.closest('tr.it').dataset.item, L = locate(id); if (!L) return;
+  if (p.dataset.id === id && !p.hidden) { p.hidden = true; return; }
+  p.dataset.id = id; p.hidden = false;
+  p.innerHTML = MKS.map(([k, l]) => `<button class="${(L.obj.mk || '').includes(k) ? 'on' : ''}" data-mkt="${k}" title="${l}">${mkIcon(k)}</button>`).join('');
+  const r = td.getBoundingClientRect(); p.style.left = (r.right + 4 + scrollX) + 'px'; p.style.top = (r.top + scrollY - 2) + 'px';
+}
+document.addEventListener('click', e => {
+  const p = $('#mkpop'); if (!p || p.hidden) return;
+  const b = e.target.closest('[data-mkt]');
+  if (b) { const L = locate(p.dataset.id); if (!L) return; const k = b.dataset.mkt; let m = L.obj.mk || ''; m = m.includes(k) ? m.replace(k, '') : MKS.map(x => x[0]).filter(x => x === k || m.includes(x)).join(''); if (m) L.obj.mk = m; else delete L.obj.mk; save(); b.classList.toggle('on'); const td = document.querySelector(`#paper tr.it[data-item="${p.dataset.id}"] td.n`); if (td) { const old = td.querySelector('.mkm'); if (old) old.remove(); td.insertAdjacentHTML('beforeend', mkMini(L.obj)); } renderSide(); return; }
+  if (!e.target.closest('#mkpop') && !e.target.closest('#paper td.n')) p.hidden = true;
+});
 let hideAns = (() => { try { return localStorage.getItem(KEY + ':hideans') === '1'; } catch (e) { return false; } })();
 let HL = { c: 'y', erase: false };
 let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
 const dispOf = t => t.replace(/\[\[(.+?)\]\]/g, '$1');
-function hlHtml(it, blankFn) {
-  const hl = it.hl || []; let o = 0; const P = [];
-  for (const tok of it.t.split(/(\[\[.+?\]\])/)) {
+function hlHtmlT(t, hl, ul, blankFn) {
+  hl = hl || []; ul = ul || []; let o = 0; const P = [];
+  const at = (L, a, b) => L.find(r => r[0] <= a && r[1] >= b) || null, ov = (L, a, b) => L.find(r => r[0] < b && r[1] > a) || null;
+  for (const tok of (t || '').split(/(\[\[.+?\]\])/)) {
     if (!tok) continue;
     const m = tok.match(/^\[\[(.+?)\]\]$/), txt = m ? m[1] : tok, s = o, e = o + txt.length; o = e;
-    if (m) { P.push([hl.find(r => r[0] < e && r[1] > s) || null, blankFn(esc(txt))]); continue; }
-    const cuts = new Set([s, e]); hl.forEach(r => { if (r[0] > s && r[0] < e) cuts.add(r[0]); if (r[1] > s && r[1] < e) cuts.add(r[1]); });
+    if (m) { P.push([ov(hl, s, e), ov(ul, s, e), blankFn(esc(txt))]); continue; }
+    const cuts = new Set([s, e]); [...hl, ...ul].forEach(r => { if (r[0] > s && r[0] < e) cuts.add(r[0]); if (r[1] > s && r[1] < e) cuts.add(r[1]); });
     const cs = [...cuts].sort((a, b) => a - b);
-    for (let i = 0; i < cs.length - 1; i++) P.push([hl.find(r => r[0] <= cs[i] && r[1] >= cs[i + 1]) || null, esc(txt.slice(cs[i] - s, cs[i + 1] - s))]);
+    for (let i = 0; i < cs.length - 1; i++) P.push([at(hl, cs[i], cs[i + 1]), at(ul, cs[i], cs[i + 1]), esc(txt.slice(cs[i] - s, cs[i + 1] - s))]);
   }
-  // 같은 형광펜 구간은 빈칸을 사이에 두어도 한 덩어리로 (중간에 끊겨 보이지 않게)
+  // 같은 형광펜 구간은 빈칸·밑줄이 끼어도 한 덩어리로 (중간에 끊겨 보이지 않게)
   let h = '';
   for (let i = 0; i < P.length;) {
-    const r = P[i][0]; let x = ''; let k = i;
-    while (k < P.length && P[k][0] === r) x += P[k++][1];
+    const r = P[i][0]; let k = i, x = '';
+    while (k < P.length && P[k][0] === r) { const u = P[k][1]; let y = ''; while (k < P.length && P[k][0] === r && P[k][1] === u) y += P[k++][2]; x += u ? `<u class="ul">${y}</u>` : y; }
     h += r ? `<mark class="hl h${r[2] || 'y'}">${x}</mark>` : x; i = k;
   }
   return h;
 }
+const hlHtml = (it, blankFn) => hlHtmlT(it.t, it.hl, it.ul, blankFn);
+const FILLF = x => `<span class="fill">${x}</span>`;
 function qHtml(it, fill, noFront) {
   const tag = (!noFront && it.q ? `<div class="qfront">Q. ${esc(it.q)}</div>` : '') + (it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '');
   if (fill) {
@@ -619,8 +660,8 @@ function qHtml(it, fill, noFront) {
 }
 const ansOf = it => it.a || blanks(it.t).join(' / ');
 const cnt = c => c.secs.reduce((n, s) => n + visItems(s).length, 0);
-const showCh = c => editing || yr === 'all' || cnt(c) > 0;
-const showSec = s => editing || yr === 'all' || visItems(s).length > 0 || (s.note && !s.items.length);
+const showCh = c => editing || (yr === 'all' && !mkF) || cnt(c) > 0;
+const showSec = s => editing || (yr === 'all' && !mkF) || visItems(s).length > 0 || (s.note && !s.items.length && !mkF);
 const docCnt = d => d.parts.reduce((n, p) => n + p.chapters.reduce((m, c) => m + cnt(c), 0), 0);
 
 /* render */
@@ -628,7 +669,7 @@ function render() { renderTabs(); renderSide(); renderMain(); }
 function renderTabs() {
   let h = DB.docs.map(d => `<button class="tab ${d.id === doc().id ? 'on' : ''}" data-doc="${d.id}">${esc(d.name)}</button>`).join('');
   if (editing) h += `<button class="tab add" data-act="addDoc">+ Subject</button>`;
-  h += `<span class="tyrs">${['all', ...DB.years].map(y => `<button class="tyr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="tyr add" data-act="addYear" title="Add year">+</button>' : ''}</span>`;
+  h += `<span class="tyrs">${['all', ...DB.years].map(y => `<button class="tyr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="tyr add" data-act="addYear" title="Add year">+</button>' : ''}</span><span class="tmk">${MKS.map(([k, l]) => `<button class="tmkb ${mkF === k ? 'on' : ''}" data-mkf="${k}" title="${l} only">${mkIcon(k)}</button>`).join('')}</span>`;
   $('#tabs').innerHTML = h;
 }
 function tocHtml(d, cls) {
@@ -646,7 +687,8 @@ function renderSide() {
   $('#side').innerHTML = `<h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)} chapters · ${docCnt(d)} items</div>` + tocHtml(d);
 }
 function ec(id, rename = true) {
-  return `<span class="ec">${rename ? `<button class="ib" data-act="rename" data-id="${id}" title="Rename">✎</button>` : ''}<button class="ib" data-act="up" data-id="${id}" title="Up">↑</button><button class="ib" data-act="down" data-id="${id}" title="Down">↓</button><button class="ib x" data-act="del" data-id="${id}" title="Delete">✕</button></span>`;
+  const k = (locate(id) || {}).kind, merge = k === 'ch' || k === 'sec';
+  return `<span class="ec">${rename ? `<button class="ib" data-act="rename" data-id="${id}" title="Rename">✎</button>` : ''}<button class="ib" data-act="up" data-id="${id}" title="Up">↑</button><button class="ib" data-act="down" data-id="${id}" title="Down">↓</button>${merge ? `<button class="ib" data-act="merge" data-id="${id}" title="Merge into another">⇲</button>` : ''}<button class="ib x" data-act="del" data-id="${id}" title="Delete">✕</button></span>`;
 }
 function renderMain() {
   const d = doc(); let n = 0, h = '';
@@ -663,16 +705,16 @@ function renderMain() {
         if (!showSec(s)) continue;
         const its = visItems(s);
         h += `<div class="sec"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span>${ec(s.id)}</div>`;
-        if (s.note) h += `<div class="note">${esc(s.note)}</div>`;
+        if (s.note) { const nh = hlHtmlT(s.note, s.nhl, s.nul, x => x); h += `<div class="note">${hlMode && !editing ? `<span class="hbed" data-hid="${s.id}" data-k="n">${nh}</span>` : nh}</div>`; }
         if (its.length) {
           h += `<table><colgroup><col class="cn"><col class="cq"><col class="ca">${editing ? '<col class="cc">' : ''}</colgroup>`;
           its.forEach((it, k) => {
             const a = ansOf(it);
             const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
             const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
-            if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
-            if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
-            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
+            if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
+            if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
+            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}${mkMini(it)}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
           });
           h += `</table>`;
         }
@@ -681,7 +723,8 @@ function renderMain() {
       h += `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`;
     }
   }
-  if (!n && !editing) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${esc(yrLabel(yr))} items yet.<br>Add some with ‘Import’ or in Edit mode.</div>`;
+  if (!n && !editing && mkF) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${MKS.find(m => m[0] === mkF)[1].toLowerCase()} items${yr === 'all' ? '' : ' in ' + esc(yrLabel(yr))} yet.<br>Tap an item number to mark it.</div>`;
+  else if (!n && !editing) h += `<div class="empty" style="padding:40px 0;text-align:center">No ${esc(yrLabel(yr))} items yet.<br>Add some with ‘Import’ or in Edit mode.</div>`;
   h += `<button class="addrow big" data-act="addPart">+ Add part</button>`;
   const paper = $('#paper');
   paper.innerHTML = h;
@@ -717,6 +760,7 @@ function openModal({ title, fields, onSave, onDelete, again }) {
   for (const f of fields) {
     h += `<div class="fld"><label>${esc(f.label)}</label>`;
     if (f.type === 'textarea') h += `<textarea data-k="${f.key}" placeholder="${esc(f.ph || '')}">${esc(f.value || '')}</textarea>`;
+    else if (f.type === 'select') h += `<select data-k="${f.key}">${f.options.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>`;
     else if (f.type === 'year') h += `<div class="yrsel" data-k="${f.key}" data-year>${DB.years.map(y => `<label><input type="radio" name="yr_${f.key}" value="${esc(y)}"${y === f.value ? ' checked' : ''}>${esc(yrLabel(y))}</label>`).join('')}</div>`;
     else if (f.type === 'blank') h += `<div class="bed" contenteditable="true" data-k="${f.key}" data-ph="${esc(f.ph || '')}"></div><div class="hint"><span>Paste a sentence, <b>drag</b> to blank · <b>click</b> a blank to undo</span><button class="btn" type="button" data-blankbtn>Selection → Blank</button></div><div class="prev" data-prev></div>`;
     else h += `<input data-k="${f.key}" value="${esc(f.value || '')}" placeholder="${esc(f.ph || '')}">`;
@@ -784,31 +828,34 @@ function toolsBar() {
 /* 형광펜 */
 let hlJust = 0;
 try { HL.c = localStorage.getItem(KEY + ':hl') || 'y'; } catch (e) {}
-const HLC = [['y', 'Yellow'], ['b', 'Sky'], ['p', 'Pink'], ['o', 'Brown']];
+const HLC = [['y', 'Yellow'], ['b', 'Sky'], ['p', 'Pink'], ['o', 'Brown'], ['u', 'Underline']];
 function offIn(ed, node, off) { const r = document.createRange(); r.setStart(ed, 0); r.setEnd(node, off); return r.toString().length; }
-function hlEdit(it, s, e, c) {
+function hlEdit(it, s, e, c, key = 'hl') {
   if (e <= s) return;
   let L = [];
-  for (const r of it.hl || []) { if (r[1] <= s || r[0] >= e) L.push(r); else { if (r[0] < s) L.push([r[0], s, r[2]]); if (r[1] > e) L.push([e, r[1], r[2]]); } }
+  for (const r of it[key] || []) { if (r[1] <= s || r[0] >= e) L.push(r); else { if (r[0] < s) L.push([r[0], s, r[2]]); if (r[1] > e) L.push([e, r[1], r[2]]); } }
   if (c) L.push([s, e, c]);
   L.sort((a, b) => a[0] - b[0]);
   const M = []; for (const r of L) { const p = M[M.length - 1]; if (p && p[2] === r[2] && p[1] >= r[0]) p[1] = Math.max(p[1], r[1]); else M.push(r.slice()); }
-  if (M.length) it.hl = M; else delete it.hl;
+  if (M.length) it[key] = M; else delete it[key];
 }
+/* 형광펜·밑줄이 붙는 대상: 문항(hl/ul) 또는 소제목 안내 박스(nhl/nul) */
+function hlTarget(ed) { const L = locate(ed.dataset.hid); if (!L) return null; const n = ed.dataset.k === 'n'; return { o: L.obj, h: n ? 'nhl' : 'hl', u: n ? 'nul' : 'ul', html: () => n ? hlHtmlT(L.obj.note, L.obj.nhl, L.obj.nul, x => x) : hlHtml(L.obj, FILLF) }; }
+function hlPaint(T, a, b, erase) { if (erase) { hlEdit(T.o, a, b, null, T.h); hlEdit(T.o, a, b, null, T.u); } else if (HL.c === 'u') hlEdit(T.o, a, b, 'u', T.u); else hlEdit(T.o, a, b, HL.c, T.h); }
 function hlApply(range, forceErase) {
   const sel = getSelection();
   const r = range || (sel.rangeCount && !sel.isCollapsed ? sel.getRangeAt(0) : null); if (!r || r.collapsed) return false;
   const eds = [...document.querySelectorAll('.hbed')].filter(ed => r.intersectsNode(ed)); if (!eds.length) return false;
   let n = 0;
   for (const ed of eds) {
-    const L = locate(ed.dataset.hid); if (!L) continue;
+    const T = hlTarget(ed); if (!T) continue;
     const len = ed.textContent.length;
     const s = ed.contains(r.startContainer) ? offIn(ed, r.startContainer, r.startOffset) : 0;
     const e = ed.contains(r.endContainer) ? offIn(ed, r.endContainer, r.endOffset) : len;
     // 앞뒤 공백은 칠하지 않음
     const tx = ed.textContent; let a = s, b = e; while (a < b && /\s/.test(tx[a])) a++; while (b > a && /\s/.test(tx[b - 1])) b--;
     if (b <= a) continue;
-    hlEdit(L.obj, a, b, (HL.erase || forceErase) ? null : HL.c); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); n++;
+    hlPaint(T, a, b, HL.erase || forceErase); ed.innerHTML = T.html(); n++;
   }
   sel.removeAllRanges(); hlJust = Date.now();
   if (n) save();
@@ -820,12 +867,15 @@ function caretAt(x, y) {
   return null;
 }
 function hlEraseAt(ed, x, y) {
-  const c = caretAt(x, y); const L = locate(ed.dataset.hid); if (!c || !L || !ed.contains(c.startContainer)) return;
+  const c = caretAt(x, y); const T = hlTarget(ed); if (!c || !T || !ed.contains(c.startContainer)) return;
   const o = offIn(ed, c.startContainer, c.startOffset);
-  let hit = (L.obj.hl || []).find(r => r[0] <= o && r[1] >= o);
-  if (!hit) { const mk = c.startContainer.parentNode && c.startContainer.parentNode.closest && c.startContainer.parentNode.closest('mark.hl'); if (mk) { const ms = offIn(ed, mk, 0), me = offIn(ed, mk, mk.childNodes.length); hit = (L.obj.hl || []).find(r => r[0] < me && r[1] > ms); } }
+  const pn = c.startContainer.nodeType === 3 ? c.startContainer.parentNode : c.startContainer;
+  const span = sel => { const m = pn && pn.closest && pn.closest(sel); return m && ed.contains(m) ? [offIn(ed, m, 0), offIn(ed, m, m.childNodes.length)] : null; };
+  const find = (k, sel) => { const L = T.o[k] || []; let hit = L.find(r => r[0] <= o && r[1] >= o); if (!hit) { const sp = span(sel); if (sp) hit = L.find(r => r[0] < sp[1] && r[1] > sp[0]); } return hit; };
+  let hit = find(T.h, 'mark.hl'), key = T.h;
+  if (!hit) { hit = find(T.u, 'u.ul'); key = T.u; }
   if (!hit) return;
-  hlEdit(L.obj, hit[0], hit[1], null); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); save();
+  hlEdit(T.o, hit[0], hit[1], null, key); ed.innerHTML = T.html(); save();
 }
 document.addEventListener('mousedown', e => { if (hlMode && !editing && e.shiftKey && e.target.closest && e.target.closest('#paper')) getSelection().removeAllRanges(); }, true);
 document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.closest && e.target.closest('#paper')) { const sh = e.shiftKey; setTimeout(() => hlApply(null, sh), 0); } });
@@ -1171,12 +1221,15 @@ function openImport() {
       const noteOn = sh.querySelector('.imp-noteon')?.checked, note = noteOn ? sh.querySelector('.imp-note').value.trim() : '';
       if (!items.length && !note) return;
       let chId = sh.querySelector('.imp-ch').value, chObj;
+      const nk = x => (x || '').replace(/\s/g, '');
       if (chId === '__new__') {
-        const p = locate(sh.querySelector('.imp-part').value).obj;
-        chObj = { id: nid(), title: sh.querySelector('.imp-chname').value.trim() || 'New chapter', secs: [] }; p.chapters.push(chObj);
+        const p = locate(sh.querySelector('.imp-part').value).obj, nm = sh.querySelector('.imp-chname').value.trim() || 'New chapter';
+        // 같은 이름 챕터가 이미 있으면(이번에 같이 만든 것 포함) 새로 만들지 않고 거기에 넣기
+        chObj = doc().parts.flatMap(q => q.chapters).find(c => nk(c.title) === nk(nm));
+        if (!chObj) { chObj = { id: nid(), title: nm, secs: [] }; p.chapters.push(chObj); }
       } else chObj = locate(chId).obj;
       const secId = sh.querySelector('.imp-sec').value; let sec;
-      if (secId === '__new__') { sec = { id: nid(), title: sh.querySelector('.imp-title').value.trim() || 'More issues', note, items: [] }; chObj.secs.push(sec); }
+      if (secId === '__new__') { const st = sh.querySelector('.imp-title').value.trim() || 'More issues'; sec = chObj.secs.find(x => nk(x.title) === nk(st)); if (sec) { if (note) sec.note = sec.note ? sec.note + '\n' + note : note; } else { sec = { id: nid(), title: st, note, items: [] }; chObj.secs.push(sec); } }
       else { sec = locate(secId).obj; if (note) sec.note = sec.note ? sec.note + '\n' + note : note; }
       sec.items.push(...items); n += items.length; firstCh ||= chObj.id;
     });
@@ -1247,13 +1300,29 @@ function act(a, id) {
     if (L.kind === 'sec') { f.push({ key: 'note', label: 'Note box (optional)', type: 'textarea', value: o.note || '' }); f.push({ key: 'bulk', label: 'Change year of all items in this section (optional)', value: '', ph: 'Leave empty to keep · e.g. ' + DB.years[DB.years.length - 1] }); }
     openModal({ title: 'Edit', fields: f, onSave: v => {
       if (!v.title) return false; o.title = v.title;
-      if (L.kind === 'sec') { o.note = v.note; if (v.bulk) { if (!DB.years.includes(v.bulk)) { toast('Unknown year: ' + DB.years.join(', ')); return false; } o.items.forEach(it => it.y = v.bulk); } }
+      if (L.kind === 'sec') { if ((o.note || '') !== (v.note || '')) { delete o.nhl; delete o.nul; } o.note = v.note; if (v.bulk) { if (!DB.years.includes(v.bulk)) { toast('Unknown year: ' + DB.years.join(', ')); return false; } o.items.forEach(it => it.y = v.bulk); } }
       commit(); } });
   }
   if (a === 'up' || a === 'down') {
-    const L = locate(id), j = L.i + (a === 'up' ? -1 : 1);
-    if (j < 0 || j >= L.arr.length) return;
-    [L.arr[L.i], L.arr[j]] = [L.arr[j], L.arr[L.i]]; commit();
+    const L = locate(id), up = a === 'up', j = L.i + (up ? -1 : 1);
+    if (j >= 0 && j < L.arr.length) { [L.arr[L.i], L.arr[j]] = [L.arr[j], L.arr[L.i]]; commit(); return; }
+    // 맨 끝이면 이웃 파트(챕터) / 이웃 챕터(소제목)로 넘어가기
+    const d = doc();
+    if (L.kind === 'ch') { const pi = d.parts.findIndex(p => p.chapters === L.arr), np = d.parts[pi + (up ? -1 : 1)]; if (!np) return; L.arr.splice(L.i, 1); up ? np.chapters.push(L.obj) : np.chapters.unshift(L.obj); commit(); toast(`Moved to ${np.title}`); }
+    if (L.kind === 'sec') { const chs = d.parts.flatMap(p => p.chapters), ci = chs.findIndex(c => c.secs === L.arr), nc = chs[ci + (up ? -1 : 1)]; if (!nc) return; L.arr.splice(L.i, 1); up ? nc.secs.push(L.obj) : nc.secs.unshift(L.obj); commit(); toast(`Moved to ${nc.title}`); }
+  }
+  if (a === 'merge') {
+    const L = locate(id), d = doc();
+    const opts = L.kind === 'ch' ? d.parts.flatMap(p => p.chapters.filter(c => c !== L.obj).map(c => [c.id, `${p.title} · ${c.title}`]))
+      : d.parts.flatMap(p => p.chapters.flatMap(c => c.secs.filter(x => x !== L.obj).map(x => [x.id, `${c.title} · ${x.title}`])));
+    if (!opts.length) return toast('Nothing to merge into');
+    const same = opts.find(o => o[1].split(' · ').pop().replace(/\s/g, '') === L.obj.title.replace(/\s/g, ''));
+    if (same) opts.unshift(opts.splice(opts.indexOf(same), 1)[0]);
+    openModal({ title: `Merge “${L.obj.title}” into…`, fields: [{ key: 'to', label: L.kind === 'ch' ? 'Its sections move to the end of this chapter' : 'Its items move to the end of this section', type: 'select', options: opts }], onSave: v => {
+      const T = locate(v.to); if (!T) return false;
+      if (L.kind === 'ch') T.obj.secs.push(...L.obj.secs); else { T.obj.items.push(...L.obj.items); if (L.obj.note) T.obj.note = T.obj.note ? T.obj.note + '\n' + L.obj.note : L.obj.note; }
+      L.arr.splice(L.arr.indexOf(L.obj), 1); commit(); toast('Merged');
+    } });
   }
   if (a === 'del') {
     const L = locate(id), o = L.obj;
@@ -1281,11 +1350,13 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
+  const tdn = !editing && t.closest('#paper tr.it td.n'); if (tdn) { mkPop(tdn); return; }
+  const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
   if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
   const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
   if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; renderKeep(); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
-  if (hlMode && !editing && (HL.erase || e.shiftKey) && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
+  if (hlMode && !editing && (HL.erase || e.shiftKey) && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl, .hbed u.ul'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
   if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; renderKeep(); return; }
   const pm = punch && !editing && t.closest('.pbed mark');
   if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }

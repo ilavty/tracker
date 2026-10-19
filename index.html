@@ -345,7 +345,10 @@
             .pc-text { display: none !important; }
             .mo-text { display: inline-flex !important; }
             header { flex-direction: row; align-items: center; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--primary-blue);}
-            .header-right { width: 100%; justify-content: space-between; overflow-x: auto; padding-bottom: 2px; gap: 6px !important;}
+            .header-right { flex: 1; min-width: 0; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; gap: 6px !important;}
+            .header-right::-webkit-scrollbar { display: none; }
+            .header-right .nav-links { margin-left: auto; }
+            .header-right .nav-links, .header-right .d-day-box { flex: none; white-space: nowrap; } /* 데스크톱처럼 오른쪽 정렬 (넘치면 스크롤) */
             .nav-links { gap: 4px; }
             .nav-links span { font-size: 0.65rem !important; padding: 4px 6px !important; }
             .d-day-box { font-size: 0.65rem !important; padding: 4px 8px !important; }
@@ -787,6 +790,13 @@
             .pl-sub-item::before {
                 left: 24px !important;
             }
+        }
+        @media (max-width: 480px) {
+            .nav-links { gap: 1px !important; }
+            .nav-links span { padding: 4px 4px !important; letter-spacing: -0.2px; }
+            .header-right { gap: 4px !important; }
+            .db-link { margin-right: 2px !important; }
+            .d-day-box { padding: 4px 6px !important; }
         }
     </style>
 </head>
