@@ -312,6 +312,25 @@ body.punch tr.it:hover{background:#fafcfe}
 .punchfab{display:none;position:fixed;right:18px;bottom:84px;z-index:60;font-family:var(--tf);font-size:14px;padding:10px 16px;border-radius:22px;border:0;background:var(--acc);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 body.punch .punchfab{display:block}
 @media print{.punchfab{display:none!important}}
+mark.hl{color:inherit;border-radius:2px;padding:0 1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.hl.hy{background:#fff1a1}mark.hl.hb{background:#cfe7f9}mark.hl.hp{background:#fbd5de}mark.hl.ho{background:#ecd9c6}
+mark.hl .bl,mark.hl .fill{background:transparent}
+body.hlon .hbed{cursor:text}
+body.hlon.hlerase .hbed mark.hl{cursor:pointer}
+body.hlon.hlerase .hbed mark.hl:hover{text-decoration:line-through;text-decoration-color:#b33}
+body.hlon .hbed::selection,body.hlon .hbed *::selection{background:rgba(255,226,80,.55)}
+body.hlon.hlerase .hbed::selection,body.hlon.hlerase .hbed *::selection{background:rgba(200,200,200,.6)}
+.hlbar{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:61;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:0 4px 16px rgba(0,0,0,.14);padding:7px 10px;align-items:center;gap:7px;font-family:var(--tf)}
+body.hlon .hlbar{display:flex}
+.hlbar button{border:0;cursor:pointer;font-family:var(--tf)}
+.hlc{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.hlc.hy{background:#fff1a1}.hlc.hb{background:#cfe7f9}.hlc.hp{background:#fbd5de}.hlc.ho{background:#ecd9c6}
+.hlc.on{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
+.hle{font-size:13px;padding:6px 11px;border-radius:15px;background:#f2f2f2;color:var(--ink)}
+.hle.on{background:var(--ink);color:#fff}
+.hlsep{width:1px;height:20px;background:var(--line)}
+.hlgo{font-size:13px;padding:6px 12px;border-radius:15px;background:var(--acc);color:#fff}
+@media print{.hlbar{display:none!important}}
 /* edit mode */
 .ec{display:none;gap:3px;margin-left:auto}
 .edit .ec{display:inline-flex}
@@ -543,17 +562,32 @@ function locate(id) {
 /* text helpers */
 const blanks = t => (t.match(/\[\[(.+?)\]\]/g) || []).map(x => x.slice(2, -2));
 const B = '<span class="bl">【</span><span class="sp"></span><span class="bl">】</span>';
-let punch = false;
+let punch = false, hlMode = false;
+let HL = { c: 'y', erase: false };
 let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
+const dispOf = t => t.replace(/\[\[(.+?)\]\]/g, '$1');
+function hlHtml(it, blankFn) {
+  const hl = it.hl || []; let o = 0, h = '';
+  const wrap = (r, x) => `<mark class="hl h${r[2] || 'y'}">${x}</mark>`;
+  for (const tok of it.t.split(/(\[\[.+?\]\])/)) {
+    if (!tok) continue;
+    const m = tok.match(/^\[\[(.+?)\]\]$/), txt = m ? m[1] : tok, s = o, e = o + txt.length; o = e;
+    if (m) { const b = blankFn(esc(txt)); const r = hl.find(r => r[0] < e && r[1] > s); h += r ? wrap(r, b) : b; continue; }
+    const cuts = new Set([s, e]); hl.forEach(r => { if (r[0] > s && r[0] < e) cuts.add(r[0]); if (r[1] > s && r[1] < e) cuts.add(r[1]); });
+    const cs = [...cuts].sort((a, b) => a - b);
+    for (let i = 0; i < cs.length - 1; i++) { const pc = esc(txt.slice(cs[i] - s, cs[i + 1] - s)); const r = hl.find(r => r[0] <= cs[i] && r[1] >= cs[i + 1]); h += r ? wrap(r, pc) : pc; }
+  }
+  return h;
+}
 function qHtml(it, fill, noFront) {
   const tag = (!noFront && it.q ? `<div class="qfront">Q. ${esc(it.q)}</div>` : '') + (it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '');
   if (fill) {
-    let h = esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, a) => `<span class="fill">${a}</span>`);
+    let h = hlHtml(it, a => `<span class="fill">${a}</span>`);
     if (it.a && !blanks(it.t).length) h += ` <span class="fill ox">→ ${esc(it.a)}</span>`;
     else if (it.a) h += ` <span class="fill ox">(${esc(it.a)})</span>`;
     return tag + h;
   }
-  return tag + esc(it.t).replace(/\[\[(.+?)\]\]/g, B);
+  return tag + hlHtml(it, () => B);
 }
 const ansOf = it => it.a || blanks(it.t).join(' / ');
 const cnt = c => c.secs.reduce((n, s) => n + visItems(s).length, 0);
@@ -588,7 +622,7 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} 논점 정리</div><div class="cs">챕터별 통합본${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">빈칸</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">채움</button></span>${editing ? '' : `<span class="yrs fillsw"><button class="yr punchb ${punch ? 'on' : ''}" data-punch title="본문에서 바로 드래그해 빈칸 만들기">✂ 빈칸 뚫기</button></span>`}<span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
+  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? '전체보기' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="연도 추가">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">빈칸</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">채움</button></span>${editing ? '' : `<span class="yrs fillsw"><button class="yr punchb ${punch ? 'on' : ''}" data-punch title="본문에서 바로 드래그해 빈칸 만들기">✂ 빈칸 뚫기</button><button class="yr punchb ${hlMode ? 'on' : ''}" data-hlmode title="드래그·애플펜슬로 형광펜">🖍 형광펜</button></span>`}<span class="ec"><button class="btn" data-act="renameDoc">과목 이름 수정</button><button class="btn danger" data-act="delDoc">과목 삭제</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>파트</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ 챕터</button></div>`;
     if (!p.chapters.length && editing) h += `<div class="empty">챕터가 없어요. ‘+ 챕터’로 추가하세요.</div>`;
@@ -607,6 +641,7 @@ function renderMain() {
             const a = ansOf(it);
             const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
             const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
+            if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
             if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
             h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? '틀린 횟수 ' + DB.stats[it.id].w : ''}">${k + 1}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
           });
@@ -623,6 +658,8 @@ function renderMain() {
   paper.innerHTML = h;
   document.body.classList.toggle('edit', editing);
   document.body.classList.toggle('punch', punch && !editing);
+  document.body.classList.toggle('hlon', hlMode && !editing);
+  document.body.classList.toggle('hlerase', HL.erase);
   observe();
 }
 
@@ -707,6 +744,86 @@ document.addEventListener('mouseup', e => { if (punch && !editing && e.target.cl
   b.addEventListener('click', () => { if (!punchWrap()) toast('먼저 문장에서 단어를 선택하세요'); });
   document.body.appendChild(b);
 })();
+
+/* 형광펜 */
+let hlJust = 0;
+try { HL.c = localStorage.getItem(KEY + ':hl') || 'y'; } catch (e) {}
+const HLC = [['y', '노랑'], ['b', '하늘'], ['p', '분홍'], ['o', '갈색']];
+function offIn(ed, node, off) { const r = document.createRange(); r.setStart(ed, 0); r.setEnd(node, off); return r.toString().length; }
+function hlEdit(it, s, e, c) {
+  if (e <= s) return;
+  let L = [];
+  for (const r of it.hl || []) { if (r[1] <= s || r[0] >= e) L.push(r); else { if (r[0] < s) L.push([r[0], s, r[2]]); if (r[1] > e) L.push([e, r[1], r[2]]); } }
+  if (c) L.push([s, e, c]);
+  L.sort((a, b) => a[0] - b[0]);
+  const M = []; for (const r of L) { const p = M[M.length - 1]; if (p && p[2] === r[2] && p[1] >= r[0]) p[1] = Math.max(p[1], r[1]); else M.push(r.slice()); }
+  if (M.length) it.hl = M; else delete it.hl;
+}
+function hlApply(range) {
+  const sel = getSelection();
+  const r = range || (sel.rangeCount && !sel.isCollapsed ? sel.getRangeAt(0) : null); if (!r || r.collapsed) return false;
+  const eds = [...document.querySelectorAll('.hbed')].filter(ed => r.intersectsNode(ed)); if (!eds.length) return false;
+  let n = 0;
+  for (const ed of eds) {
+    const L = locate(ed.dataset.hid); if (!L) continue;
+    const len = ed.textContent.length;
+    const s = ed.contains(r.startContainer) ? offIn(ed, r.startContainer, r.startOffset) : 0;
+    const e = ed.contains(r.endContainer) ? offIn(ed, r.endContainer, r.endOffset) : len;
+    // 앞뒤 공백은 칠하지 않음
+    const tx = ed.textContent; let a = s, b = e; while (a < b && /\s/.test(tx[a])) a++; while (b > a && /\s/.test(tx[b - 1])) b--;
+    if (b <= a) continue;
+    hlEdit(L.obj, a, b, HL.erase ? null : HL.c); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); n++;
+  }
+  sel.removeAllRanges(); hlJust = Date.now();
+  if (n) save();
+  return n > 0;
+}
+function caretAt(x, y) {
+  if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+  if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (!p) return null; const r = document.createRange(); r.setStart(p.offsetNode, p.offset); return r; }
+  return null;
+}
+function hlEraseAt(ed, x, y) {
+  const c = caretAt(x, y); const L = locate(ed.dataset.hid); if (!c || !L || !ed.contains(c.startContainer)) return;
+  const o = offIn(ed, c.startContainer, c.startOffset);
+  const hit = (L.obj.hl || []).find(r => r[0] <= o && r[1] >= o); if (!hit) return;
+  hlEdit(L.obj, hit[0], hit[1], null); ed.innerHTML = hlHtml(L.obj, x => `<span class="fill">${x}</span>`); save();
+}
+document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.closest && e.target.closest('#paper')) setTimeout(() => hlApply(), 0); });
+// 애플펜슬: 스타일러스로 그으면 스크롤 대신 바로 칠하기 (손가락은 그대로 스크롤)
+(() => {
+  let st = null;
+  const isPen = e => [...e.changedTouches].some(t => t.touchType === 'stylus');
+  document.addEventListener('touchstart', e => {
+    if (!hlMode || editing || !isPen(e)) return;
+    const t = e.changedTouches[0]; const el = document.elementFromPoint(t.clientX, t.clientY);
+    if (!el || !el.closest('#paper .hbed, #paper td.q')) return;
+    e.preventDefault(); st = caretAt(t.clientX, t.clientY); st && getSelection().removeAllRanges();
+  }, { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (!st) return; e.preventDefault();
+    const t = e.changedTouches[0]; const c = caretAt(t.clientX, t.clientY); if (!c) return;
+    try { getSelection().setBaseAndExtent(st.startContainer, st.startOffset, c.startContainer, c.startOffset); } catch (x) {}
+  }, { passive: false });
+  document.addEventListener('touchend', e => {
+    if (!st) return; const t = e.changedTouches[0];
+    const sel = getSelection();
+    if (sel.isCollapsed && HL.erase) { const el = document.elementFromPoint(t.clientX, t.clientY); const ed = el && el.closest('.hbed'); if (ed) hlEraseAt(ed, t.clientX, t.clientY); }
+    else hlApply();
+    st = null;
+  });
+})();
+function hlBar() {
+  let b = $('#hlbar');
+  if (!b) { b = document.createElement('div'); b.id = 'hlbar'; b.className = 'hlbar'; document.body.appendChild(b);
+    b.addEventListener('mousedown', e => e.preventDefault());
+    b.addEventListener('touchstart', e => { const go = e.target.closest('[data-hlgo]'); if (go) { e.preventDefault(); if (!hlApply()) toast('먼저 문장을 선택하세요'); } }, { passive: false });
+    b.addEventListener('click', e => { if (e.target.closest('[data-hlgo]') && !hlApply()) toast('먼저 문장을 선택하세요'); });
+  }
+  b.innerHTML = HLC.map(([v, l]) => `<button class="hlc h${v}${!HL.erase && HL.c === v ? ' on' : ''}" data-hlc="${v}" title="${l}"></button>`).join('') +
+    `<button class="hle${HL.erase ? ' on' : ''}" data-hlc="erase">지우개</button><span class="hlsep"></span><button class="hlgo" data-hlgo>선택 → ${HL.erase ? '지우기' : '칠하기'}</button>`;
+}
+hlBar();
 
 /* blank editor */
 function setBed(ed, t) {
@@ -1030,7 +1147,7 @@ const itemFields = it => [
 ];
 function itemObj(v, base) {
   if (!v.t) { toast('문장을 입력하세요'); return null; }
-  const o = base || { id: nid() }; o.t = v.t; o.y = v.y || defYear();
+  const o = base || { id: nid() }; if (o.hl && (!o.t || dispOf(o.t) !== dispOf(v.t))) delete o.hl; o.t = v.t; o.y = v.y || defYear();
   if (v.a) o.a = v.a; else delete o.a;
   if (v.q) o.q = v.q.trim(); else delete o.q;
   if (v.tag) o.tag = v.tag.replace(/^[\[(]|[\])]$/g, ''); else delete o.tag;
@@ -1102,7 +1219,10 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
-  if (t.closest('[data-punch]')) { punch = !punch; const y = scrollY; render(); scrollTo(0, y); if (punch) toast('문장에서 단어를 드래그하면 빈칸 · 빈칸을 누르면 해제'); return; }
+  if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; const y = scrollY; render(); scrollTo(0, y); if (hlMode) toast('드래그(또는 애플펜슬로 긋기)하면 형광펜 · 지우개로 지우기'); return; }
+  const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
+  if (hlMode && !editing && HL.erase && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
+  if (t.closest('[data-punch]')) { punch = !punch; if (punch) hlMode = false; const y = scrollY; render(); scrollTo(0, y); if (punch) toast('문장에서 단어를 드래그하면 빈칸 · 빈칸을 누르면 해제'); return; }
   const pm = punch && !editing && t.closest('.pbed mark');
   if (pm && getSelection().isCollapsed && Date.now() - punchJust > 300) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); return; }
   const fb = t.closest('[data-fill]');
@@ -1149,7 +1269,7 @@ $('#file').onchange = async e => {
     DB = d; migrate(); if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all'; cur = DB.docs[0].id; commit(); toast('불러왔어요');
   } catch (x) { toast('올바른 백업 파일이 아니에요'); }
 };
-window.addEventListener('beforeprint', () => { if (punch) { punch = false; render(); } if (editing) { editing = false; $('#editBtn').classList.remove('on'); $('#editBtn').textContent = '편집'; render(); } });
+window.addEventListener('beforeprint', () => { if (punch || hlMode) { punch = false; hlMode = false; render(); } if (editing) { editing = false; $('#editBtn').classList.remove('on'); $('#editBtn').textContent = '편집'; render(); } });
 
 /* 본문 서체·크기 */
 const FONTS = [
