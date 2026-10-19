@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ISSUES</title>
 <link href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@300;500;700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
@@ -463,10 +465,39 @@ const visItems = s => s.items.filter(vis);
 const defYear = () => yr !== 'all' ? yr : DB.years[DB.years.length - 1];
 const yrLabel = y => y === 'all' ? '전체보기' : (y.length === 2 ? '20' + y : y) + '년';
 
+function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(DB)); return true; } catch (e) { return false; } }
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(DB)); flashSaved('저장됨'); }
-  catch (e) { flashSaved('저장 실패'); toast('브라우저 저장 실패 — 백업 파일로 저장해 두세요'); }
+  const ok = saveLocal();
+  if (CLOUD && CLOUD.db) { flashSaved('저장 중…'); CLOUD.touched(); }
+  else if (ok) flashSaved('저장됨 · 이 기기만');
+  else { flashSaved('저장 실패'); toast('브라우저 저장 실패 — 백업 파일로 저장해 두세요'); }
 }
+/* Firebase 동기화 (DESK·DATABASE와 같은 Firebase, database_v1/issues 경로) */
+let CLOUD = null, pendingRemote = null;
+function applyRemote(st) {
+  if (!st || !Array.isArray(st.docs) || !st.docs.length) return;
+  if ($('#ov').classList.contains('open')) { pendingRemote = st; return; }
+  DB = st; migrate(); saveLocal();
+  if (!DB.docs.find(d => d.id === cur)) cur = DB.docs[0].id;
+  if (yr !== 'all' && !DB.years.includes(yr)) yr = 'all';
+  if (!$('#quiz').classList.contains('open')) { const y = scrollY; render(); scrollTo(0, y); }
+  flashSaved('동기화됨');
+}
+(function () {
+  const path = 'database_v1/issues', TK = KEY + '_cloud_t';
+  let lt = +(localStorage.getItem(TK) || 0), fresh = !lt, ready = false, db = null, timer = null;
+  const setT = t => { lt = t; try { localStorage.setItem(TK, t); } catch (e) {} };
+  try { if (window.firebase) { if (!firebase.apps.length) firebase.initializeApp({ apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" }); db = firebase.database(); } } catch (e) {}
+  const push = () => { if (!db) return; clearTimeout(timer); timer = setTimeout(() => { db.ref(path).set({ t: lt, d: JSON.stringify(DB) }).then(() => flashSaved('저장됨 · 동기화')).catch(() => flashSaved('동기화 실패 · 이 기기엔 저장됨')); }, 800); };
+  setTimeout(() => { ready = true; }, 6000);
+  if (db) db.ref(path).on('value', sn => {
+    const r = sn.val();
+    if (r && r.t && r.d && (fresh || r.t > lt)) { try { applyRemote(JSON.parse(r.d)); } catch (e) {} setT(r.t); fresh = false; }
+    else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; push(); }
+    ready = true;
+  });
+  CLOUD = { db, touched() { if (!db) return; fresh = false; setT(Date.now()); if (ready) push(); else setTimeout(push, 6000); } };
+})();
 let st; function flashSaved(t) { const el = $('#saved'); el.textContent = t; clearTimeout(st); st = setTimeout(() => el.textContent = '', 1600); }
 let tt; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 2200); }
 const doc = () => DB.docs.find(d => d.id === cur) || DB.docs[0];
@@ -612,7 +643,7 @@ function openModal({ title, fields, onSave, onDelete, again }) {
     }
   };
 }
-function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; }
+function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; applyRemote(st); } }
 $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ov').classList.contains('open')) closeModal(); });
 
