@@ -152,6 +152,8 @@ body.text .ov{cursor:text}
 .blank.sel .x{top:-22px;right:-4px}
 .ok{display:none;position:absolute;top:-22px;right:20px;height:18px;padding:0 7px;border-radius:9px;border:0;background:#d9534f;color:#fff;font-size:11px;line-height:18px;cursor:pointer;z-index:3;font-family:sans-serif}
 .blank.sel .ok{display:block}
+#pnoPill{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;background:rgba(27,27,27,.82);color:#fff;font:600 13px 'Paperlogy',sans-serif;padding:6px 14px;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .25s}
+#pnoPill.on{opacity:1}
 .pgok{position:absolute;top:6px;right:6px;z-index:999;height:22px;padding:0 10px;border-radius:11px;border:0;background:#d9534f;color:#fff;font-size:11.5px;cursor:pointer;font-family:'Paperlogy',sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 @media (pointer:coarse){.ok{height:24px;line-height:24px;top:-28px;right:26px}}
 .drag{position:absolute;z-index:9999;border:1.5px dashed var(--sky);background:rgba(140,200,236,.10);pointer-events:none}
@@ -179,6 +181,7 @@ body.dragover #empty{background:var(--sky2)}
 </style>
 </head>
 <body>
+<div id="pnoPill"></div>
 <header>
   <button class="btn" id="sideBtn" title="목차/페이지 열고 닫기">☰</button>
   <div class="brand">BLANK<span>MAKER</span></div>
@@ -198,7 +201,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.20</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.21</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -630,7 +633,13 @@ function setHH(){document.body.style.setProperty('--hh',document.querySelector('
 (()=>{let v=null;try{v=localStorage.getItem('bm:noside');}catch(e){}
   const def=matchMedia('(pointer:coarse)').matches&&innerWidth<1200;
   if(v==='1'||(v===null&&def))document.body.classList.add('noside');})();
-$('#sideBtn').onclick=()=>{document.body.classList.toggle('noside');try{localStorage.setItem('bm:noside',document.body.classList.contains('noside')?'1':'0');}catch(e){}if(S.pages.length){layout();S.pages.forEach(p=>{p.rendered=false;S.io.unobserve(p.el);S.io.observe(p.el);});}};
+/* 화면 폭이 바뀌어도(목차 열고 닫기·회전) 보던 자리 그대로 */
+function viewAnchor(){const pg=$('#pages');if(!pg||!S.pages||!S.pages.length)return null;const r=pg.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=Math.max(r.top,0)+(innerHeight-Math.max(r.top,0))/3;return anchorAt(cx,cy);}
+function relayoutKeep(a){a=a===undefined?viewAnchor():a;layout();
+  if(a){const pg=$('#pages'),r0=pg.getBoundingClientRect(),cx=r0.left+r0.width/2,r=S.pages[a.i].el.getBoundingClientRect();
+    window.scrollBy(0,r.top+a.fy*r.height-a.cy);pg.scrollLeft+=r.left+a.fx*r.width-cx;}}
+$('#sideBtn').onclick=()=>{const a=viewAnchor();document.body.classList.toggle('noside');try{localStorage.setItem('bm:noside',document.body.classList.contains('noside')?'1':'0');}catch(e){}if(S.pages.length){relayoutKeep(a);rerenderAll();}};
 document.querySelectorAll('.stabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.stabs button').forEach(x=>x.classList.toggle('on',x===b));
   $('#toc').classList.toggle('hidden',b.dataset.t!=='toc');$('#thumbs').classList.toggle('hidden',b.dataset.t!=='thumbs');});
@@ -685,7 +694,7 @@ function drawThumb(i){const p=S.pages[i];if(!p||!p.th)return;const tp=p.th.query
     Object.assign(e.style,{left:r.x*k+'px',top:r.y*k+'px',width:Math.max(1,r.w*k)+'px',height:Math.max(1,r.h*k)+'px'});tp.appendChild(e);});
   (S.imgs||[]).filter(m=>m.page===i).forEach(m=>{const e=document.createElement('div');e.className='tb timg';Object.assign(e.style,{left:m.x*k+'px',top:m.y*k+'px',width:m.w*k+'px',height:m.h*k+'px'});if(IMGSRC[m.id])e.style.backgroundImage=`url(${IMGSRC[m.id]})`;tp.appendChild(e);});
   p.th.querySelector('.tn b').textContent=bs.length?'· 빈칸 '+bs.length:'';}
-let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(!S.pages||!S.pages.length)return;layout();rerenderAll();},250);});
+let rt,rsA=null;window.addEventListener('resize',()=>{if(!S.pages||!S.pages.length)return;if(!rsA&&!pinch)rsA=viewAnchor();clearTimeout(rt);rt=setTimeout(()=>{const a=rsA;rsA=null;relayoutKeep(a);rerenderAll();},250);});
 /* ---------- zoom ---------- */
 const ZMIN=.5,ZMAX=4;let zrt,zraf=null;
 function anchorAt(cx,cy){if(!S.pages||!S.pages.length)return null;
@@ -698,7 +707,7 @@ function setZoom(z,cx,cy){
   if(!S.pages||!S.pages.length)return;
   layout();
   if(a){const r=S.pages[a.i].el.getBoundingClientRect();window.scrollBy(0,r.top+a.fy*r.height-a.cy);pg.scrollLeft+=r.left+a.fx*r.width-a.cx;}
-  clearTimeout(zrt);zrt=setTimeout(rerenderAll,250);}
+  clearTimeout(zrt);zrt=setTimeout(rerenderAll,250);showPno();}
 $('#zIn').onclick=()=>setZoom((S.zoom||1)*1.25);
 $('#zOut').onclick=()=>setZoom((S.zoom||1)/1.25);
 $('#zVal').onclick=()=>setZoom(1);
@@ -713,9 +722,32 @@ window.addEventListener('wheel',e=>{if(!e.ctrlKey||!S.pages||!S.pages.length)ret
 // Safari trackpad / iPad pinch
 let gz=1;
 document.addEventListener('gesturestart',e=>{if(!S.pages||!S.pages.length)return;e.preventDefault();inGesture=true;gz=S.zoom||1;},{passive:false});
-document.addEventListener('gesturechange',e=>{if(!S.pages||!S.pages.length)return;e.preventDefault();const z=gz*e.scale,cx=e.clientX,cy=e.clientY;
+document.addEventListener('gesturechange',e=>{if(!S.pages||!S.pages.length)return;e.preventDefault();if(pinch||touchN>1)return;const z=gz*e.scale,cx=e.clientX,cy=e.clientY;
   if(zraf)cancelAnimationFrame(zraf);zraf=requestAnimationFrame(()=>{zraf=null;setZoom(z,cx,cy);});},{passive:false});
 document.addEventListener('gestureend',e=>{e.preventDefault();inGesture=false;},{passive:false});
+/* 아이패드 두 손가락 확대·축소: 손가락 사이 지점 기준으로 부드럽게 미리 보여주고, 손 떼면 그 자리 그대로 선명하게 */
+let pinch=null;
+const tMid=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2}),tDist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY)||1;
+document.addEventListener('touchstart',e=>{if(!S.pages||!S.pages.length||!S.view||e.touches.length!==2)return;
+  if(e.target.closest&&e.target.closest('header,#side,.modal,dialog'))return;
+  e.preventDefault();const m=tMid(e.touches),wr=S.view.getBoundingClientRect();
+  pinch={d0:tDist(e.touches),m0:m,m,z0:S.zoom||1,s:1,a:anchorAt(m.x,m.y)};
+  S.view.style.transformOrigin=(m.x-wr.left)+'px '+(m.y-wr.top)+'px';S.view.style.willChange='transform';showPno();},{passive:false,capture:true});
+document.addEventListener('touchmove',e=>{if(!pinch)return;e.preventDefault();if(e.touches.length<2)return;
+  const m=tMid(e.touches);let sc=tDist(e.touches)/pinch.d0;sc=Math.min(ZMAX/pinch.z0,Math.max(ZMIN/pinch.z0,sc));pinch.s=sc;pinch.m=m;
+  S.view.style.transform=`translate(${m.x-pinch.m0.x}px,${m.y-pinch.m0.y}px) scale(${sc})`;
+  $('#zVal').textContent=Math.round(pinch.z0*sc*100)+'%';showPno();},{passive:false,capture:true});
+const pinchEnd=e=>{if(!pinch||(e.touches&&e.touches.length>=2))return;const P=pinch;pinch=null;
+  S.view.style.transform='';S.view.style.transformOrigin='';S.view.style.willChange='';
+  const z=Math.min(ZMAX,Math.max(ZMIN,Math.round(P.z0*P.s*100)/100));S.zoom=z;$('#zVal').textContent=Math.round(z*100)+'%';saveSettings();
+  layout();const a=P.a;if(a){const pg=$('#pages'),r=S.pages[a.i].el.getBoundingClientRect();window.scrollBy(0,r.top+a.fy*r.height-P.m.y);pg.scrollLeft+=r.left+a.fx*r.width-P.m.x;}
+  clearTimeout(zrt);zrt=setTimeout(rerenderAll,120);showPno();};
+document.addEventListener('touchend',pinchEnd,{capture:true});document.addEventListener('touchcancel',pinchEnd,{capture:true});
+/* 지금 몇 쪽인지 잠깐 표시 (스크롤·확대할 때) */
+let pnoT;function showPno(){const el=$('#pnoPill');if(!el||!S.pages||!S.pages.length)return;
+  const pg=$('#pages').getBoundingClientRect(),a=anchorAt(pg.left+pg.width/2,Math.max(pg.top,0)+(innerHeight-Math.max(pg.top,0))/2);
+  if(!a)return;el.textContent=(a.i+1)+' / '+S.pages.length+' · '+$('#zVal').textContent;el.classList.add('on');clearTimeout(pnoT);pnoT=setTimeout(()=>el.classList.remove('on'),1100);}
+window.addEventListener('scroll',()=>{if(COARSE)showPno();},{passive:true});
 
 function drawAll(){S.pages.forEach((_,i)=>drawOv(i));updLost();}
 function drawOv(i){
