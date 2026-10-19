@@ -1260,7 +1260,7 @@
         // ★ 연표 렌더링 딜레이 완벽 해결 ★
         function initialRender() {
             renderTimeline(); generateQuiz();
-            let lastPage = localStorage.getItem('lastPage') || 'tracker';
+            let lastPage = localStorage.getItem('lastPage') || 'planner';
             if (lastPage === 'main' || lastPage === 'stats' || lastPage === 'rep') lastPage = 'tracker';
             showPage(lastPage);
             if (lastPage === 'chrono') { let lastChronoTab = localStorage.getItem('lastChronoTab') || 'tl'; showChronoTab(lastChronoTab); }
@@ -2125,8 +2125,8 @@
                 
         window.onload = () => { 
             initPlanner(); 
-            if (!sessionStorage.getItem('session_initialized')) { sessionStorage.setItem('session_initialized', 'true'); showPage('tracker'); }
-            else { let lastPage = localStorage.getItem('lastPage') || 'tracker'; if (lastPage === 'main' || lastPage === 'stats' || lastPage === 'rep') lastPage = 'tracker'; showPage(lastPage); }
+            if (!sessionStorage.getItem('session_initialized')) { sessionStorage.setItem('session_initialized', 'true'); localStorage.setItem('lastPage', 'planner'); showPage('planner'); } /* 새로 열면 항상 PLANNER가 메인 */
+            else { let lastPage = localStorage.getItem('lastPage') || 'planner'; if (lastPage === 'main' || lastPage === 'stats' || lastPage === 'rep') lastPage = 'tracker'; showPage(lastPage); }
             loadDataFromFirebase(); 
             
             document.getElementById('csv-upload').addEventListener('change', e => {
