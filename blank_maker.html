@@ -41,7 +41,11 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px
 .seg button{font:inherit;font-size:13px;border:0;background:none;padding:8px 13px;cursor:pointer;color:var(--ink)}
 .seg button.on{background:var(--sky);font-weight:700}
 .ctl{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
-.ctl input[type=range]{width:54px;accent-color:var(--brown)}
+.ctl input[type=range]{width:58px;height:20px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:none}
+.ctl input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:#e3ddd7}
+.ctl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;margin-top:-5.5px;border-radius:50%;background:var(--brown);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+.ctl input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#e3ddd7}
+.ctl input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--brown);border:2px solid #fff}
 .ctl input[type=number]{width:46px;font:inherit;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:4px 6px}
 input[type=color]{width:24px;height:24px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer}
 input[type=color]::-webkit-color-swatch-wrapper{padding:2px}
@@ -202,7 +206,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.22</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.23</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
