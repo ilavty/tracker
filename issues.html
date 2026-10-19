@@ -35,7 +35,8 @@ button{font-family:inherit;cursor:pointer}
 .tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;color:var(--sub);white-space:nowrap}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .tab.add{border-style:dashed}
-.tools{display:flex;gap:6px;flex-shrink:0}
+.tools{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.top .btn{height:33px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
 .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
 .btn:hover{border-color:var(--acc)}
 .btn.on{background:var(--brown);border-color:var(--brown);color:#fff}
@@ -310,10 +311,13 @@ body.punch tr.it:hover{background:#fafcfe}
 .pox{color:var(--brown);font-size:.92em}
 .ftools{position:fixed;right:18px;bottom:96px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .ftools[hidden]{display:none}
-.tl{font-family:var(--tf);font-size:13px;letter-spacing:.02em;padding:9px 16px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.10);min-width:112px}
+.tl{font-family:var(--tf);font-size:13px;letter-spacing:.02em;padding:9px 16px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.10);width:128px;box-sizing:border-box}
 .tl:hover{border-color:var(--acc);color:var(--acc)}
 .tl.on{background:var(--acc);border-color:var(--acc);color:#fff}
-.tl.go{background:var(--ink);border-color:var(--ink);color:#fff}
+.tlseg{display:flex;background:#fff;border:1px solid var(--line);border-radius:20px;padding:3px;box-shadow:0 3px 10px rgba(0,0,0,.10);width:128px;box-sizing:border-box}
+.tlseg button{flex:1;font-family:var(--tf);font-size:12.5px;letter-spacing:.02em;border:0;background:transparent;color:var(--sub);padding:6px 10px;border-radius:16px;cursor:pointer}
+.tlseg button.on{background:var(--acc);color:#fff}
+.tl.go{width:auto;background:var(--ink);border-color:var(--ink);color:#fff}
 @media print{.ftools{display:none!important}}
 body:has(#quiz.open) .ftools,body:has(#ov.open) .ftools,body:has(#quiz.open) .hlbar,body:has(#ov.open) .hlbar{display:none!important}
 mark.hl{color:inherit;border-radius:2px;padding:0 1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-box-decoration-break:clone;box-decoration-break:clone}
@@ -626,7 +630,7 @@ function ec(id, rename = true) {
 function renderMain() {
   const d = doc(); let n = 0, h = '';
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="Add year">+</button>' : ''}</span><span class="yrs fillsw"><button class="yr ${filled ? '' : 'on'}" data-fill="0">Blank</button><button class="yr ${filled ? 'on' : ''}" data-fill="1">Filled</button></span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  h += `<div class="dochead"><h1>${esc(d.name)}</h1><span class="yrs">${['all', ...DB.years].map(y => `<button class="yr ${y === yr ? 'on' : ''}" data-yr="${y}">${y === 'all' ? 'All' : esc(y)}</button>`).join('')}${editing ? '<button class="yr add" data-act="addYear" title="Add year">+</button>' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
   for (const p of d.parts) {
     h += `<div class="partbar"><span>Part</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ Chapter</button></div>`;
     if (!p.chapters.length && editing) h += `<div class="empty">No chapters yet. Add one with ‘+ Chapter’.</div>`;
@@ -751,7 +755,7 @@ function toolsBar() {
     b.addEventListener('click', e => { if (e.target.closest('[data-pgo]') && !punchWrap()) toast('Select a word in the text first'); });
   }
   b.hidden = editing;
-  b.innerHTML = (punch ? '<button class="tl go" data-pgo>Selection → Blank</button>' : '') +
+  b.innerHTML = `<div class="tlseg"><button class="${filled ? '' : 'on'}" data-fill="0">Blank</button><button class="${filled ? 'on' : ''}" data-fill="1">Filled</button></div>` + (punch ? '<button class="tl go" data-pgo>Selection → Blank</button>' : '') +
     `<button class="tl${punch ? ' on' : ''}" data-punch>Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode>Highlight</button>`;
 }
 
