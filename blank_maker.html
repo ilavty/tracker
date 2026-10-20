@@ -207,7 +207,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.29</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.30</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -471,6 +471,15 @@ function reanchorAll(){const rep={same:0,moved:0,lost:0},shift={},fixed=[];
   fixed.forEach(it=>{const o=it.page;let np=o+offAt(o);const out=np<0||np>=S.pages.length;np=Math.max(0,Math.min(S.pages.length-1,np));
     it.page=np;if(out){it.lost=true;rep.lost++;}else if(np!==o){it.lost=false;rep.moved++;}else rep.same++;});
   return rep;}
+/* '확인' 누르면 지금 자리 밑의 글자로 다시 붙임 → 다음에 열 때 또 '확인 필요'가 안 뜨게 */
+function confirmHere(x){
+  x.lost=false;
+  if(!x.raw){if(x.x!=null&&S.pages[x.page])noteAnchor(x);return;}
+  const b=x,p=S.pages[b.page];if(!p)return;const r=disp(b);const idx=snapIdx(p,r);
+  if(b.cell){b.raw={x:r.x,y:r.y,w:r.w,h:r.h};delete b.adj;if(idx.length){b.runs=mkRuns(p,idx);const tb=bbox(p,idx);b.toff={dx:r.x-tb.x,dy:r.y-tb.y};}else{b.runs=[];delete b.toff;}return;}
+  if(!idx.length){b.free=true;b.runs=[];b.raw={x:r.x,y:r.y,w:r.w,h:r.h};delete b.adj;return;}
+  b.free=false;b.raw=bbox(p,idx);b.runs=mkRuns(p,idx);delete b.adj;const n=dispRaw(b.raw,false);
+  if(Math.abs(n.x-r.x)+Math.abs(n.y-r.y)+Math.abs(n.w-r.w)+Math.abs(n.h-r.h)>.5)b.adj={dx:r.x-n.x,dy:r.y-n.y,dw:r.w-n.w,dh:r.h-n.h};}
 function noteAnchor(t){
   const p=S.pages[t.page];let best=-1,bd=1e9;
   p.map.forEach((j,k)=>{const c=p.chars[j];const d=Math.hypot(c.x0-t.x,c.top-t.y);if(d<bd){bd=d;best=k;}});
@@ -770,7 +779,7 @@ function drawOv(i){
   ov.querySelectorAll('.blank,.note,.pimg,.pgok').forEach(e=>e.remove());
   {const L=[...S.boxes,...S.texts,...(S.imgs||[])].filter(x=>x.page===i&&x.lost);
    if(L.length){const bt=document.createElement('button');bt.className='pgok';bt.textContent=`✓ 이 쪽 ${L.length}개 전부 확인`;bt.title='빨간 점선이 지금 자리 그대로 맞으면 한 번에 확인';
-     bt.onpointerdown=bt.onmousedown=e=>e.stopPropagation();bt.onclick=e=>{e.stopPropagation();snap();L.forEach(x=>x.lost=false);save();drawOv(i);updLost();};ov.appendChild(bt);}}
+     bt.onpointerdown=bt.onmousedown=e=>e.stopPropagation();bt.onclick=e=>{e.stopPropagation();snap();L.forEach(confirmHere);save();drawOv(i);updLost();};ov.appendChild(bt);}}
   (S.imgs||[]).filter(m=>m.page===i).forEach(m=>{
     const d=document.createElement('div');d.className='pimg'+(m.lost?' lost':'')+(S.selImg===m.id?' sel':'');d.dataset.id=m.id;
     Object.assign(d.style,{left:m.x*s+'px',top:m.y*s+'px',width:m.w*s+'px',height:m.h*s+'px',zIndex:100+zOf(m,'img')});
@@ -801,7 +810,7 @@ function drawOv(i){
     d.innerHTML='<button class="x" title="삭제">×</button>'+(b.lost?'<button class="ok" title="이 자리 맞음 (확인 완료)">✓</button>':'')+['n','s','e','w','ne','nw','se','sw'].map(h=>`<span class="hd ${h}" data-h="${h}"></span>`).join('');
     d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
       if(e.target.classList.contains('x')){removeBox(b.id);return;}
-      if(e.target.classList.contains('ok')){b.lost=false;save();drawOv(i);drawThumb(i);return;}
+      if(e.target.classList.contains('ok')){snap();confirmHere(b);save();drawOv(i);drawThumb(i);updLost();return;}
       if(e.pointerType==='touch'&&!e.target.dataset.h){fingerScroll(e,()=>select(b.id));return;}
       const hd=e.target.dataset.h||'m';
       let tb=b,el=d;const dup=e.altKey&&hd==='m';
