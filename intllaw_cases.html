@@ -596,6 +596,21 @@ function genQuiz(cases){
     const opts=[r.name,...pick];for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]]}
     out.push({cid:r.id,cname:"",cats:r.cats||[],id:r.id+"|mc",type:"mc",q:"키워드: "+tags,a:r.name,opts});
   }
+  // 법원 맞히기 · 나라 맞히기 (4지선다)
+  const pick3=(pool,ans)=>{const c=[...new Set(pool)].filter(x=>x&&x!==ans);const p=[];while(p.length<3&&c.length)p.push(c.splice(Math.floor(Math.random()*c.length),1)[0]);return p;};
+  const mix=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  const courts=cases.map(c=>String(c.court||"").trim()).filter(Boolean);
+  const partyOK=c=>{const p=String(c.parties||"");return /\s+v\.?\s+/.test(p)&&!/—/.test(p);};
+  for(const r of cases){
+    const base={cid:r.id,cname:r.name,cats:r.cats||[]};
+    const ct=String(r.court||"").trim();
+    const cb=x=>x.replace(/\s*\(.*\)\s*/g,"").trim();
+    if(ct){const d=pick3(courts.filter(x=>cb(x)!==cb(ct)),ct);if(d.length>=2)out.push({...base,id:r.id+"|ct",type:"mc",kind:"ct",q:"이 사건을 다룬 재판소(기관)는?",a:ct,opts:mix([ct,...d])});}
+    if(partyOK(r)){const pa=String(r.parties).trim();
+      const near=cases.filter(c=>c.id!==r.id&&c.g===r.g&&partyOK(c)).map(c=>String(c.parties).trim());
+      let d=pick3(near,pa);if(d.length<3)d=d.concat(pick3(cases.filter(c=>c.id!==r.id&&partyOK(c)).map(c=>String(c.parties).trim()).filter(x=>!d.includes(x)),pa)).slice(0,3);
+      if(d.length>=2)out.push({...base,id:r.id+"|na",type:"mc",kind:"na",q:"이 사건의 당사국(원고 v. 피고)은?",a:pa,opts:mix([pa,...d])});}
+  }
   const seen={};out.forEach(q=>{if(seen[q.id]){q.id+="~"+(seen[q.id]++)}else seen[q.id]=1});
   return out;
 }
@@ -618,7 +633,7 @@ function allQ(){return genQuiz(all())}
 function pool(){
   return allQ().filter(q=>{
     if(QZ.cats.size&&!q.cats.some(c=>QZ.cats.has(c)))return false;
-    if(QZ.type!=="all"&&q.type!==QZ.type)return false;
+    if(QZ.type!=="all"&&(q.kind||q.type)!==QZ.type)return false;
     const st=qState(q.id);
     if(QZ.scope==="new")return st!=="grad";
     if(QZ.scope==="wrong")return st==="wrong";
@@ -642,7 +657,7 @@ function qzSetup(){
     <div class="qstat"><span>전체 <b>${Q.length}</b></span><span>안 푼 문제 <b>${S.new}</b></span><span>오답 <b class="bad">${S.wrong}</b></span><span>졸업 <b>${S.grad}</b></span></div>
     <div class="qlab">목차 <span class="hint">안 고르면 전체</span></div>
     <div class="chips">${Object.entries(C).filter(([k])=>cnt[k]).map(([k,v])=>`<button type="button" class="chip" data-qc="${k}" aria-pressed="${QZ.cats.has(+k)}">${v}<b>${cnt[k]}</b></button>`).join("")}</div>
-    <div class="qrow"><div><div class="qlab">유형</div>${seg("type",[["all","전체"],["ox","OX"],["sa","단답"],["mc","객관식"],["fc","암기카드"]])}</div>
+    <div class="qrow"><div><div class="qlab">유형</div>${seg("type",[["all","전체"],["ox","OX"],["sa","단답"],["mc","객관식"],["ct","법원 맞히기"],["na","나라 맞히기"],["fc","암기카드"]])}</div>
     <div><div class="qlab">범위</div>${seg("scope",[["new","졸업 빼고"],["wrong","오답만"],["all","전부"],["grad","졸업만"]])}</div>
     <div><div class="qlab">문제 수</div>${seg("n",[[10,"10"],[20,"20"],[50,"50"],[9999,"전부"]])}</div></div>
     <div class="qgo"><span class="hint">${n}문제 중에서 랜덤 · 연속 ${GRAD}번 맞히면 졸업</span><button type="button" class="btn pri" data-qa="start" ${n?"":"disabled"}>시작</button></div>
@@ -652,7 +667,7 @@ function qzStart(list){QZ.rev=false;QZ.list=list||shuffle(pool()).slice(0,QZ.n);
 function caseOf(id){return find(id)}
 function qzDraw(){
   const q=QZ.list[QZ.i],r=caseOf(q.cid)||{},a=QZ.ans;
-  const hideMeta=/\|(court|plt|dfd|mc)$/.test(q.id);
+  const hideMeta=/\|(court|plt|dfd|mc|ct|na)(~\d+)?$/.test(q.id);
   const meta=hideMeta?"":`<span>${esc(r.court||"")}</span><span>${esc(r.year||"")}</span>`;
   let body="";
   if(q.type==="mc"){
@@ -691,7 +706,7 @@ function qzNext(){
   if(QZ.i+1<QZ.list.length){QZ.i++;qzDraw();return}
   const ok=QZ.res.filter(x=>x).length,wrong=QZ.list.filter((q,i)=>!QZ.res[i]);
   qzRoot.innerHTML=`<div class="qcard qend"><div class="qscore">${ok} / ${QZ.list.length}</div><div class="hint">${wrong.length?`틀린 ${wrong.length}문제`:"전부 맞혔어요"}</div>
-  ${wrong.length?`<ul class="qwl">${wrong.map(q=>`<li><b>${esc(q.cname||q.a)}</b> · ${esc(q.type==="mc"?"판례 맞히기":q.q)} <span class="hint">→ ${esc(q.type==="ox"?q.a+" ("+q.raw+")":q.type==="mc"?"":String(q.a).split("\n")[0])}</span></li>`).join("")}</ul>`:""}
+  ${wrong.length?`<ul class="qwl">${wrong.map(q=>`<li><b>${esc(q.cname||q.a)}</b> · ${esc(q.kind==="ct"?"법원 맞히기":q.kind==="na"?"나라 맞히기":q.type==="mc"?"판례 맞히기":q.q)} <span class="hint">→ ${esc(q.type==="ox"?q.a+" ("+q.raw+")":q.type==="mc"&&!q.kind?"":String(q.a).split("\n")[0])}</span></li>`).join("")}</ul>`:""}
   <div class="qacts">${wrong.length?`<button type="button" class="btn pri" data-qa="retry">틀린 것만 다시</button>`:""}<button type="button" class="btn" data-qa="home">설정으로</button><button type="button" class="btn" data-qa="again">새로 섞기</button></div></div>`;
   QZ.lastWrong=wrong;
 }
