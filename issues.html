@@ -375,6 +375,19 @@ body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!impo
 .ftools.sm .tlseg{padding:2px}
 .ftools.sm .tlseg button{padding:5px 9px}
 .tl.go{width:auto;background:var(--ink);border-color:var(--ink);color:#fff}
+.fill-ov{position:fixed;inset:0;z-index:200;background:rgba(20,20,25,.35);display:flex;align-items:flex-start;justify-content:center;padding:12vh 14px 20px}
+.fill-ov[hidden]{display:none}
+.fill-md{background:#fff;border-radius:16px;max-width:680px;width:100%;padding:18px 20px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.fill-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--sub);margin-bottom:10px}
+.fill-n{color:var(--acc);font-weight:600;white-space:nowrap}
+.fill-t{font-size:16px;line-height:2;word-break:keep-all}
+.fill-in{font:inherit;font-size:15px;border:1.5px solid var(--acc);background:var(--soft);border-radius:8px;padding:2px 8px;width:11em;max-width:60vw}
+.fill-in:focus{outline:2px solid var(--sky2)}
+.fill-q{color:var(--sub)}
+.fill-a{color:var(--ans);font-weight:600}
+.fill-acts{display:flex;gap:6px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.fill-hint{flex:1;font-size:11.5px;color:var(--sub)}
+.fill-done{font-size:16px;padding:14px 0}
 @media print{.ftools{display:none!important}}
 body:has(#quiz.open) .ftools,body:has(#ov.open) .ftools,body:has(#quiz.open) .hlbar,body:has(#ov.open) .hlbar{display:none!important}
 mark.hl{color:inherit;border-radius:2px;padding:0 1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-box-decoration-break:clone;box-decoration-break:clone}
@@ -534,6 +547,7 @@ body.hlon .hlbar{display:flex}
       <div class="menu-pop" id="menuPop">
         <button data-m="wrong">Mistake Log</button>
         <button data-m="import-doc">Import from document</button>
+        <button data-m="fill">Fill answers</button>
         <button data-m="print">Print PDF</button>
         <button data-m="export">Save backup</button>
         <button data-m="import">Load backup</button>
@@ -1361,8 +1375,50 @@ function openImport() {
     if (!n) { toast('Select items to add'); return; }
     if (yr !== 'all' && yr !== impY) { yr = impY; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} }
     closeModal(); commit(); toast(`Added ${n} items${warn ? ` · ${warn} need answer check` : ''}`);
+    if (fillTargets().length) setTimeout(() => { if (confirm(`답이 비어 있는 빈칸이 ${fillTargets().length}개 있어요.\n지금 하나씩 답 채우기 할까요?`)) openFill(); }, 300);
     const el = document.getElementById('ch-' + firstCh); if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
   };
+}
+
+
+/* ───── 답 채우기: 답이 없는 빈칸(??)을 하나씩 띄워서 Enter로 이어서 입력 ───── */
+function fillTargets() {
+  const out = [];
+  doc().parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(sc => sc.items.forEach(it => {
+    let k = 0; (it.t || '').replace(/\[\[(.+?)\]\]/g, (m, x) => { if (x.trim() === '??') out.push({ it, k, path: `${c.title} · ${sc.title}` }); k++; return m; });
+  }))));
+  return out;
+}
+function setNthBlank(it, k, val) { let i = 0; it.t = it.t.replace(/\[\[(.+?)\]\]/g, (m, x) => (i++ === k ? `[[${val}]]` : m)); }
+let fillSkip = new Set();
+function openFill() {
+  fillSkip = new Set();
+  let ov = $('#fillOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'fillOv'; ov.className = 'fill-ov'; document.body.appendChild(ov);
+    ov.addEventListener('click', e => { if (e.target === ov) closeFill(); }); }
+  ov.hidden = false; drawFill();
+}
+function closeFill() { const ov = $('#fillOv'); if (ov) ov.hidden = true; commit(); }
+function drawFill() {
+  const ov = $('#fillOv'); const all = fillTargets(); const L = all.filter(z => !fillSkip.has(z.it.id + ':' + z.k));
+  if (!all.length) { ov.innerHTML = `<div class="fill-md"><div class="fill-done">빈칸 답을 다 채웠어요 ✓</div><div class="fill-acts"><button class="btn pri" data-f="close">닫기</button></div></div>`; ov.onclick2 = null; bindFill(); return; }
+  if (!L.length) fillSkip = new Set();
+  const T = (L.length ? L : all)[0];
+  let i = 0; const h = esc(T.it.t).replace(/\[\[(.+?)\]\]/g, (m, x) => {
+    const me = i++ === T.k; if (me) return `<input class="fill-in" id="fillIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="답">`;
+    return x.trim() === '??' ? '<span class="fill-q">【 ? 】</span>' : `<b class="fill-a">${x}</b>`;
+  });
+  ov.innerHTML = `<div class="fill-md"><div class="fill-top"><span>${esc(T.path)}</span><span class="fill-n">남은 빈칸 ${all.length}</span></div>
+    <div class="fill-t">${T.it.tag ? `<b class="tag">[${esc(T.it.tag)}]</b> ` : ''}${h}</div>
+    <div class="fill-acts"><span class="fill-hint">Enter 다음 · 비우고 Enter는 건너뛰기</span><button class="btn" data-f="skip">건너뛰기</button><button class="btn" data-f="close">닫기</button><button class="btn pri" data-f="ok">입력</button></div></div>`;
+  bindFill(T);
+  setTimeout(() => { const el = $('#fillIn'); if (el) el.focus(); }, 30);
+}
+function bindFill(T) {
+  const ov = $('#fillOv');
+  const ok = () => { const el = $('#fillIn'); const v = el ? el.value.trim() : ''; if (!T) return; if (!v) { fillSkip.add(T.it.id + ':' + T.k); } else { setNthBlank(T.it, T.k, v); save(); } drawFill(); };
+  ov.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { const f = b.dataset.f; if (f === 'close') closeFill(); else if (f === 'skip') { fillSkip.add(T.it.id + ':' + T.k); drawFill(); } else ok(); });
+  const el = $('#fillIn'); if (el) el.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); ok(); } else if (e.key === 'Escape') closeFill(); };
 }
 
 /* item form */
@@ -1527,6 +1583,7 @@ $('#menuPop').onclick = e => {
   $('#menuPop').classList.remove('open');
   if (m === 'print') window.print();
   if (m === 'import-doc') openImport();
+  if (m === 'fill') openFill();
   if (m === 'wrong') openWrong();
   if (m === 'export') {
     const d = new Date(), p = n => String(n).padStart(2, '0');
