@@ -105,10 +105,10 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 /* ───── 인쇄 페이지 ───── */
 .page{width:210mm;height:297mm;background:#fff;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);font-family:'Paperlogy','GmarketSans',sans-serif;color:#000}
 .phead{position:absolute;left:8mm;right:8mm;top:6mm;height:5.9mm;display:flex;align-items:flex-start;gap:3mm;border-bottom:.2mm solid #000}
-.phead .tbox{border:.25mm solid #000;height:4.6mm;display:flex;align-items:center;justify-content:center;font-size:8pt;font-weight:600;white-space:nowrap;overflow:hidden}
-.phead .t1{width:60mm}
+.phead .tbox{height:4.6mm;display:flex;align-items:center;font-size:8pt;font-weight:600;white-space:nowrap;overflow:hidden}
+.phead .t1{max-width:120mm;padding-left:1.5mm;justify-content:flex-start}
 .phead .t2{width:30mm;font-size:8pt}
-.phead .t3{width:9mm;font-size:6.5pt;font-weight:400}
+.phead .t3{padding-right:1.5mm;justify-content:flex-end;font-size:6.5pt;font-weight:400}
 .phead .ctr{position:absolute;left:0;right:0;top:0;line-height:4.6mm;text-align:center;font-size:10pt;font-weight:600;pointer-events:none}
 .pbody{position:absolute;left:8mm;right:8mm;top:14mm;bottom:10mm}
 .col{position:absolute;top:0;bottom:0;width:calc((100% - 4mm)/2)}
@@ -523,9 +523,10 @@ function rect(pg, x, y, w, h, opt = {}) {
 // 머리말: 페이지 (ML, MT) 기준, 폭 CW
 function drawHead(pg, F, title, center, area, right) {
   const y = MT + 1;
-  const box = (bx, w, t, size, f) => { rect(pg, ML + bx, y, w, 4.6); txt(pg, t, f || F.b, size, ML + bx + w / 2, y + 2.3, 'center', w - 2); };
-  box(0, 60, title, 2.82);
-  box(CW - 9, 9, right, 2.3, F.r);
+  // 박스 없이 제목은 왼쪽, 쪽수는 오른쪽 (끝에서 1.5mm 안쪽)
+  txt(pg, title, F.b, 2.82, ML + 1.5, y + 2.3, 'left', 120);
+  const rw = F.r.widthOfTextAtSize(String(right), 2.3 * MM) / MM;
+  txt(pg, right, F.r, 2.3, ML + CW - 1.5 - rw, y + 2.3, 'left');
   if (center) txt(pg, center, F.b, 3.5, 105, y + 2.3);
   pg.drawLine({start: {x: ML * MM, y: Y(MT + 6)}, end: {x: (ML + CW) * MM, y: Y(MT + 6)}, thickness: .2 * MM, color: PDFLib.rgb(0, 0, 0)});
 }
