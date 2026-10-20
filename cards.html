@@ -1927,5 +1927,13 @@ renderAll();
 initSync();
 window.addEventListener('resize', reportHeight);
 </script>
+<button id="toTop" aria-label="위로" title="위로">↑</button>
+<style>
+#toTop{display:none;position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:90;width:42px;height:42px;border-radius:50%;border:1px solid var(--bd,#ddd);background:#fff;color:#3d6fa8;font-size:19px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer}
+@media (max-width:760px){#toTop.show{display:block}}
+</style>
+<script>
+(function(){const b=document.getElementById('toTop');const f=()=>b.classList.toggle('show',scrollY>300);addEventListener('scroll',f,{passive:true});f();b.onclick=()=>scrollTo({top:0,behavior:'smooth'});})();
+</script>
 </body>
 </html>

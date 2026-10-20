@@ -336,7 +336,15 @@ tr.clickable:hover td{background:#FBF9FE;}
 @media (max-width:640px){.row{flex-direction:column;}}
 
 /* 폰: 전체적으로 조금 작게 */
-@media (max-width:600px){body{zoom:.84}}
+@media (max-width:600px){body{zoom:.84}
+  /* 보충학습: 한 줄에 등급·과목·연도·번호·표시, 오답이유·키워드는 둘째 줄 전체 폭 */
+  #reviewTbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:9px 4px;border-bottom:1px solid var(--line)}
+  #reviewTbody td{display:block;border:0 !important;padding:0 !important;background:none}
+  #reviewTbody td:nth-child(5){order:10;flex-basis:100%;margin-top:2px}
+  #reviewTbody td:nth-child(6){order:11;flex-basis:100%}
+  #reviewTbody td:nth-child(7){margin-left:auto}
+  table:has(#reviewTbody) thead{display:none}
+}
 </style>
 </head>
 <body>
@@ -1200,15 +1208,20 @@ function buildCellHtml(r, n, opts){
   const cls = `cell ${isSelected?'selected':''} ${opts.readonly?'readonly':''}`;
   return `<div class="${cls}" ${style} data-rec="${r.id}" data-num="${n}">${isWrong?'X':'O'}</div>`;
 }
-function buildGridBlock(rec, opts, trailingHtml){
-  const total = rec.total;
-  let header='', cells='';
-  for(let n=1;n<=total;n++){
-    header += `<div class="head-cell" data-num="${n}">${n}</div>`;
-    cells += buildCellHtml(rec, n, opts);
+/* 폰: 번호줄+O/X줄을 10개씩 끊어서 여러 줄로 (화면 밖으로 안 넘치게) */
+function gridPerRow(total){ return window.matchMedia('(max-width:600px)').matches ? 10 : total; }
+function gridRows(total, headFn, cellFn, trailingHtml){
+  const K = gridPerRow(total); let out = '';
+  for(let s=1; s<=total; s+=K){
+    let header='', cells='';
+    for(let n=s; n<Math.min(total+1, s+K); n++){ header += `<div class="head-cell" data-num="${n}">${n}</div>`; cells += cellFn(n); }
+    if(trailingHtml && s+K>total) cells += trailingHtml;
+    out += `<div class="grid-row-block"><div class="num-header">${header}</div><div class="cell-grid">${cells}</div></div>`;
   }
-  if(trailingHtml) cells += trailingHtml;
-  return `<div class="grid-row-block"><div class="num-header">${header}</div><div class="cell-grid">${cells}</div></div>`;
+  return out;
+}
+function buildGridBlock(rec, opts, trailingHtml){
+  return gridRows(rec.total, null, n=>buildCellHtml(rec, n, opts), trailingHtml);
 }
 
 // ---------- Test list ----------
@@ -2250,14 +2263,14 @@ function renderAnswerKeyTab(){
   });
   document.getElementById('answerKeyEmpty').style.display = rows.length ? 'none':'block';
   document.getElementById('answerKeyList').innerHTML = rows.map(row=>{
-    let header='', cells='';
+    let header='', cells=''; const akCell = {};
     for(let n=1;n<=row.total;n++){
       const val = getAnswer(row.idk, n);
       const cnt = aggWrongCount(row.idk, n);
       const alpha = Math.min(cnt*0.2,1);
       const style = cnt>0 ? `style="background:rgba(226,120,100,${alpha});"` : '';
       header += `<div class="head-cell" data-num="${n}">${n}</div>`;
-      cells += `<div class="akey-cell" ${style} data-idk="${row.idk}" data-num="${n}" data-level="${row.level}" data-subject="${row.subject}" data-year="${row.year}">${toCircled(val)}</div>`;
+      cells += (akCell[n] = `<div class="akey-cell" ${style} data-idk="${row.idk}" data-num="${n}" data-level="${row.level}" data-subject="${row.subject}" data-year="${row.year}">${toCircled(val)}</div>`);
     }
     return `<div class="test-card compact">
       <div class="test-side" data-idk="${row.idk}" data-level="${row.level}" data-subject="${row.subject}" data-year="${row.year}">
@@ -2265,7 +2278,7 @@ function renderAnswerKeyTab(){
         <span class="akey-year-text">${row.year}</span>
         <span class="akey-subject-text">${row.subject}</span>
       </div>
-      <div class="test-main"><div class="grid-row-block"><div class="num-header">${header}</div><div class="cell-grid">${cells}</div></div></div>
+      <div class="test-main">${gridRows(row.total, null, n=>akCell[n])}</div>
     </div>`;
   }).join('');
 }
