@@ -793,6 +793,7 @@ function folderMenu(e, id) {
     { t: '다른 폴더 안으로 이동', f: () => pickFolder('어디로 옮길까?', descIds(id), true, pid => { f.parentId = pid; f.u = Date.now(); save(); renderAll(); }, fk(f)) },
     ...(fk(f) === 'date' ? [{ t: '카드 전부 주제 폴더에 넣기', f: () => { const ids = S.cards.filter(c => descIds(id).some(x => c.dateId === x)).map(c => c.id); pickFolder(`카드 ${ids.length}장을 어느 주제 폴더에?`, [], false, t => moveCards(ids, t), 'topic'); } }] : []),
     { t: '다른 폴더에 합치기', f: () => mergeFolderFlow(id) },
+    { t: '다른 과목으로 (카드 포함)', f: () => pickSubject(`'${f.name}' 폴더를 어느 과목으로?`, sid => moveFolderToSubject(id, sid)) },
     { t: '이 폴더 공부하기', f: () => openStudySetup({ folders: [id] }) },
     '-',
     { t: '폴더 삭제', danger: true, f: () => deleteFolderFlow(id) },
@@ -905,6 +906,7 @@ function selBarHtml() {
     <button class="btn sm" onclick="selAll()">전체 선택</button>
     <button class="btn sm pri" onclick="selTo('topic')">주제 폴더로</button>
     <button class="btn sm" onclick="selTo('date')">날짜 폴더로</button>
+    <button class="btn sm" onclick="selToSubject()">다른 과목으로</button>
     <button class="btn sm danger" onclick="selDelete()">삭제</button>
     <button class="btn sm ghost" onclick="selExit()">완료</button></div>`;
 }
@@ -912,6 +914,7 @@ function selToggleMode() { selMode = !selMode; SEL.clear(); renderMain(); report
 function selExit() { selMode = false; SEL.clear(); renderMain(); reportHeight(); }
 function selAll() { const all = [...document.querySelectorAll('#main .card')].map(e => e.dataset.id); const every = all.every(id => SEL.has(id)); all.forEach(id => every ? SEL.delete(id) : SEL.add(id)); renderMain(); }
 function selTo(kind) { if (!SEL.size) return; pickFolder(`${SEL.size}장을 어느 ${kind === 'date' ? '날짜' : '주제'} 폴더에?`, [], true, fid => { moveCards([...SEL], fid, kind); SEL.clear(); renderMain(); }, kind); }
+function selToSubject() { if (!SEL.size) return; pickSubject(`${SEL.size}장을 어느 과목으로?`, sid => { moveCardsToSubject([...SEL], sid); SEL.clear(); selMode = false; renderAll(); }); }
 function selDelete() { if (!SEL.size || !confirm(`${SEL.size}장을 지울까?`)) return; const now = Date.now(); [...SEL].forEach(id => { const c = C(id); if (!c) return; S.deleted[id] = now; c.items.forEach(it => delete S.stats[it.id]); }); S.cards = S.cards.filter(c => !SEL.has(c.id)); SEL.clear(); save(); renderAll(); }
 function cardHtml(c, opts = {}) {
   const q = UI.search;
@@ -942,6 +945,7 @@ function cardMenu(e, id) {
     { t: '편집', f: () => openCardEditor(id) },
     { t: '주제 폴더 지정', f: () => pickFolder('어느 주제 폴더에?', [], true, fid => moveCards([id], fid, 'topic'), 'topic') },
     { t: '날짜 폴더 지정', f: () => pickFolder('어느 날짜 폴더에?', [], true, fid => moveCards([id], fid, 'date'), 'date') },
+    { t: '다른 과목으로', f: () => pickSubject('어느 과목으로?', sid => moveCardsToSubject([id], sid)) },
     { t: '여러 장 선택', f: () => { selMode = true; SEL = new Set([id]); renderMain(); reportHeight(); } },
     { t: '복제', f: () => { const n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.c = n.u = n.o = Date.now(); n.items.forEach(it => it.id = uid()); n.subjectId = c.subjectId; S.cards.push(n); save(); renderAll(); } },
     { t: '줄마다 별도 카드로 쪼개기', f: () => splitCard(id) },
@@ -955,6 +959,51 @@ function splitCard(id) {
   const now = Date.now();
   c.items.forEach((it, i) => S.cards.push({ id: uid(), subjectId: c.subjectId, folderId: c.folderId, dateId: c.dateId, title: it.label || c.title, tags: c.tags.slice(), items: [{ ...it, label: '' }], o: (c.o || c.c) + i * 0.001, c: now, u: now }));
   S.cards = S.cards.filter(x => x.id !== id); S.deleted[id] = now; save(); renderAll();
+}
+/* ---- 다른 과목으로 옮기기 ---- */
+function pickSubject(title, onPick) {
+  const list = subjects().filter(x => x.id !== UI.subject);
+  if (!list.length) return toast('옮길 다른 과목이 없어요');
+  const m = openModal(`<h3>${esc(title)}</h3><div class="box ftree-pick">${list.map(x => `<div class="fnode" data-id="${x.id}"><span class="car"></span><span class="nm">${esc(x.name)}</span></div>`).join('')}</div>
+  <div class="mfoot"><button class="btn ghost" onclick="closeModal()">취소</button></div>`, 'narrow');
+  m.querySelectorAll('.fnode').forEach(n => n.onclick = () => { closeModal(); onPick(n.dataset.id); });
+}
+// 대상 과목에서 같은 이름 폴더 찾기 (없으면 날짜 폴더만 새로 만들기)
+function sameNameFolder(sid, name, kind, create) {
+  const hit = S.folders.find(f => fk(f) === kind && f.name === name && (rootOf(f.id) || f).subjectId === sid);
+  if (hit || !create) return hit ? hit.id : null;
+  const f = { id: uid(), name, parentId: null, subjectId: sid, kind, o: Date.now(), u: Date.now() };
+  S.folders.push(f); return f.id;
+}
+function moveCardsToSubject(ids, sid) {
+  const now = Date.now(); const sname = (S.subjects.find(x => x.id === sid) || {}).name || '';
+  ids.forEach(id => {
+    const c = C(id); if (!c || c.subjectId === sid) return;
+    const tf = c.folderId && F(c.folderId), df = c.dateId && F(c.dateId);
+    c.folderId = tf ? sameNameFolder(sid, tf.name, 'topic', false) : null;
+    c.dateId = df ? sameNameFolder(sid, df.name, 'date', true) : null;
+    c.subjectId = sid; c.u = now;
+  });
+  save(); renderAll(); toast(`${ids.length}장을 ${sname}(으)로 옮겼어요`);
+}
+function moveFolderToSubject(id, sid) {
+  const f = F(id); if (!f) return; const now = Date.now(); const kind = fk(f), other = kind === 'date' ? 'folderId' : 'dateId';
+  const ds = descIds(id), fld = FIELD(kind);
+  // 대상 과목에 같은 이름 폴더가 있고 하위 폴더가 없으면 그 폴더에 합치기
+  const same = ds.length === 1 && sameNameFolder(sid, f.name, kind, false);
+  if (same) {
+    const cs = S.cards.filter(c => c[fld] === id);
+    cs.forEach(c => { const of = c[other] && F(c[other]); c[other] = of ? sameNameFolder(sid, of.name, kind === 'date' ? 'topic' : 'date', kind !== 'date') : null; c[fld] = same; c.subjectId = sid; c.u = now; });
+    S.folders = S.folders.filter(x => x.id !== id); S.deleted[id] = now;
+    if (UI.view.type === 'folder' && UI.view.id === id) UI.view = { type: 'all' };
+    save(); saveUI(); renderAll(); return toast(`카드 ${cs.length}장을 '${f.name}'에 합쳤어요`);
+  }
+  f.parentId = null; f.subjectId = sid; f.u = now;
+  ds.forEach(x => { const g = F(x); if (g) { g.subjectId = sid; g.u = now; } });
+  const cs = S.cards.filter(c => ds.includes(c[fld]));
+  cs.forEach(c => { const of = c[other] && F(c[other]); c[other] = of ? sameNameFolder(sid, of.name, kind === 'date' ? 'topic' : 'date', kind !== 'date') : null; c.subjectId = sid; c.u = now; });
+  if (UI.view.type === 'folder' && ds.includes(UI.view.id)) UI.view = { type: 'all' };
+  save(); saveUI(); renderAll(); toast(`'${f.name}' 폴더와 카드 ${cs.length}장을 옮겼어요`);
 }
 function moveCards(ids, fid, kind) {
   kind = fid ? fk(F(fid)) : (kind || 'topic'); const fld = FIELD(kind), now = Date.now();
