@@ -527,7 +527,7 @@ function drawHead(pg, F, title, center, area, right) {
   box(0, 60, title, 2.82);
   box(CW - 9, 9, right, 2.3, F.r);
   if (center) txt(pg, center, F.b, 3.5, 105, y + 2.3);
-  rect(pg, ML, MT + 5.9, CW, .2, {fill: [0, 0, 0], stroke: false});
+  pg.drawLine({start: {x: ML * MM, y: Y(MT + 6)}, end: {x: (ML + CW) * MM, y: Y(MT + 6)}, thickness: .2 * MM, color: PDFLib.rgb(0, 0, 0)});
 }
 async function buildPdf() {
   if (!st.sel.length || building) return;
