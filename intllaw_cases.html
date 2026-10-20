@@ -127,6 +127,21 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc .rawacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 #ilc .hint{font-size:11.5px;color:var(--muted);font-weight:400}
 #ilc .err{color:var(--danger);font-size:12.5px}
+#ilc .ctog{align-self:flex-start;font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 12px;cursor:pointer}
+#ilc .ctog b{color:var(--ink);font-weight:600}
+#ilc .ctog i{font-style:normal;margin-left:2px}
+@media (max-width:560px){
+  #ilc{font-size:13px}
+  #ilc h1{font-size:20px}
+  #ilc .btn{font-size:12px;padding:6px 10px}
+  #ilc .chip{font-size:11.5px;padding:5px 10px}
+  #ilc table{min-width:0;table-layout:fixed}
+  #ilc th,#ilc td{padding:7px 8px;font-size:12px}
+  #ilc col.c4,#ilc col.c5,#ilc th:nth-child(4),#ilc th:nth-child(5),#ilc td:nth-child(4),#ilc td:nth-child(5){display:none}
+  #ilc col.c1{width:24%}#ilc col.c2{width:58%}#ilc col.c3{width:18%}
+  #ilc td.court{font-size:11px;white-space:normal}
+  #ilc h2{font-size:15px}
+}
 @media (max-width:560px){#ilc .frm{grid-template-columns:1fr}#ilc .md{padding:18px 16px}}
 #ilc [hidden]{display:none!important}
 #ilc .qset{margin-top:18px;display:flex;flex-direction:column;gap:14px}
@@ -191,6 +206,7 @@ window.makeCloud=function(path,key,getState,applyState){
     </div>
     <div class="bar">
       <input id="ilc-q" type="search" placeholder="검색" aria-label="검색">
+      <button type="button" class="ctog" id="ilc-ctog"></button>
       <div class="chips" id="ilc-chips"></div>
     </div>
     <div id="ilc-out"></div>
@@ -224,6 +240,12 @@ function drawChips(){
   const R=all();
   const list=[["all","전체",R.length],...G.map(([k,l])=>[k,l,R.filter(r=>r.g===k).length])];
   $("#ilc-chips").innerHTML=list.map(([k,l,n])=>`<button type="button" class="chip" data-k="${k}" aria-pressed="${k===active}">${l}<b>${n}</b></button>`).join("");
+  /* 재판소 고르기 열고 닫기 (폰은 처음에 닫힘) */
+  let op=null;try{op=localStorage.getItem('ilc_courts_open');}catch(e){}
+  const open=op===null?!matchMedia('(max-width:560px)').matches:op==='1';
+  const cur=list.find(x=>x[0]===active)||list[0];
+  const tg=$("#ilc-ctog");tg.innerHTML=`재판소 · <b>${cur[1]}</b> <i>${open?'▴':'▾'}</i>`;
+  $("#ilc-chips").hidden=!open;
 }
 function noteText(n){return n?[n.src,...(n.items||[]).map(i=>i[1]),n.tags].join(" "):""}
 function render(){
@@ -456,6 +478,7 @@ root.addEventListener("click",e=>{
   if(t.closest("[data-close]")&&(t.dataset.close||t.closest(".x"))){closeM();return}
   const nm=t.closest(".nm");if(nm){show(nm.dataset.id);return}
   const ch=t.closest("#ilc-chips .chip");if(ch){active=ch.dataset.k;drawChips();render();return}
+  if(t.closest("#ilc-ctog")){const o=$("#ilc-chips").hidden;try{localStorage.setItem("ilc_courts_open",o?"1":"0")}catch(e){}drawChips();return}
   const a=t.closest("[data-act]");if(!a)return;
   const act=a.dataset.act,id=a.dataset.id;
   if(act==="print"){openPrint();return}
