@@ -114,7 +114,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .col{position:absolute;top:0;bottom:0;width:calc((100% - 4mm)/2)}
 .col.l{left:0}
 .col.r{right:0}
-.vline{position:absolute;top:0;bottom:0;left:50%;border-left:.25mm solid #000}
+.vline{position:absolute;top:0;bottom:0;left:50%;border-left:.2mm solid #000}
 .q{margin-bottom:8mm}
 .q .lab{font-size:7.5pt;line-height:1;margin:0 0 1.4mm 1mm;font-family:-apple-system,'Paperlogy',sans-serif;text-decoration:underline;text-decoration-thickness:.2mm;text-underline-offset:.6mm}
 .q img,.q .ph-img{display:block;width:100%}
@@ -557,7 +557,7 @@ async function buildPdf() {
         pg.drawText(title, {x: 105 * MM - F.r.widthOfTextAtSize(title, 10) / 2, y: Y(138) - 3.5, size: 10, font: F.r, color: rgb(.4, .4, .4)});
         continue;
       }
-      pg.drawLine({start: {x: 105 * MM, y: Y(BT)}, end: {x: 105 * MM, y: Y(297 - MB)}, thickness: .25 * MM, color: rgb(0, 0, 0)});
+      pg.drawLine({start: {x: 105 * MM, y: Y(BT)}, end: {x: 105 * MM, y: Y(297 - MB)}, thickness: .2 * MM, color: rgb(0, 0, 0)});
       for (let ci = 0; ci < 2; ci++) {
         let y = BT; const x0 = ML + (ci ? COL_W + 4 : 0);
         for (const b of pages[pi].cols[ci]) {
