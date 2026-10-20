@@ -656,7 +656,7 @@ function mergeInto(B, O) {
   // 앱을 닫거나 다른 데로 갈 때 남은 변경 바로 올리기 (아이패드에서 금방 나가도 안 날아가게)
   const flush = () => { if (timer && ready) { clearTimeout(timer); timer = null; setT(Date.now()); sendRaw(); } }; // 나갈 땐 기다릴 시간이 없어서 바로 올림 (열려 있는 동안은 실시간으로 받아둔 상태)
   addEventListener('pagehide', flush); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
-  setTimeout(() => { ready = true; }, 6000);
+  /* 클라우드를 한 번 읽은 뒤에만 올림 (빈 기기가 덮어쓰지 않게) */
   if (db) Promise.race([idbReady, new Promise(r => setTimeout(r, 2000))]).then(() => db.ref(path).on('value', sn => {
     const r = sn.val();
     if (r && r.t && r.d && (fresh || r.t > lt)) {

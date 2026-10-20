@@ -11,7 +11,7 @@ window.makeCloud=function(path,key,getState,applyState){
   const setT=t=>{lt=t;try{localStorage.setItem(TK,t)}catch(e){}};
   try{if(!firebase.apps.length)firebase.initializeApp({apiKey:"AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o",projectId:"time-8d30b",databaseURL:"https://tracker-d3a39-default-rtdb.firebaseio.com/"});db=firebase.database()}catch(e){}
   const push=()=>{if(!db)return;clearTimeout(timer);timer=setTimeout(()=>{db.ref(path).set({t:lt,d:JSON.stringify(getState())}).catch(()=>{})},500)};
-  setTimeout(()=>{ready=true},6000);
+  /* 클라우드를 한 번 읽은 뒤에만 올림 (못 읽으면 기기에만 저장 → 빈 기기가 덮어쓰지 않게) */
   if(db)db.ref(path).on('value',s=>{
     const r=s.val();
     if(r&&r.t&&r.d&&(fresh||r.t>lt)){try{applyState(JSON.parse(r.d))}catch(e){}setT(r.t);fresh=false}

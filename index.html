@@ -1142,7 +1142,7 @@
         let db = null; try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch (e) {}
 
         const USER_DOC_ID = "my_study_data_final10";
-        let isInitialLoadDone = false; 
+        let isInitialLoadDone = false; let cloudReadOk = false, lastCloudSize = 0, shrinkAsked = false; 
         
         let detailedSessions = []; let subjectsData = [];
         window._getDetailedSessions = function() { return detailedSessions; };
@@ -1220,9 +1220,18 @@
             
             if(!db) { isInitialLoadDone = true; initialRender(); if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); return; }
             db.ref("study_records/" + USER_DOC_ID).once('value').then((snapshot) => {
+                cloudReadOk = true;
                 if (snapshot.exists()) {
                     try {
                         const data = snapshot.val();
+                        lastCloudSize = JSON.stringify(data).length;
+                        // ▼ 다른 기기(홈화면 앱 등)가 빈 데이터로 덮어쓴 경우: 이 기기에 더 많은 데이터가 있으면 복구할지 물어봄 ▼
+                        const localSize = JSON.stringify(cloudPayload()).length;
+                        if (localSize > 3000 && localSize > lastCloudSize * 1.6 && confirm('이 기기에 저장된 기록이 클라우드보다 훨씬 많아요.\n(다른 기기에서 빈 데이터로 덮였을 수 있어요)\n\n이 기기 기록으로 클라우드를 복구할까요?')) {
+                            isInitialLoadDone = true; lastCloudSize = 0; saveDataToFirebase();
+                            initialRender(); if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); if(typeof pl_renderMemos === 'function') pl_renderMemos();
+                            return;
+                        }
                         if(data.subjects) { subjectsData = toArray(data.subjects).filter(s => s && s.id); } ensureSubjectsData();
                         if(data.detailedSessions) { detailedSessions = toArray(data.detailedSessions).filter(s => s && s.id); }
                         if(data.trackerData) { trackerData = { ...trackerData, ...data.trackerData }; }
@@ -1264,7 +1273,25 @@
                 initialRender(); 
                 if(typeof pl_renderPlanner === 'function') pl_renderPlanner(); 
                 if(typeof pl_renderMemos === 'function') pl_renderMemos();
+                // 클라우드를 못 읽었으면 올리지 않고(빈 데이터로 덮어쓰기 방지) 잠시 뒤 다시 읽기
+                setTimeout(retryCloudRead, 5000);
             }); 
+        }
+        function retryCloudRead() {
+            if (cloudReadOk || !db) return;
+            db.ref("study_records/" + USER_DOC_ID).once('value').then(() => { isInitialLoadDone = false; loadDataFromFirebase(); }).catch(() => setTimeout(retryCloudRead, 8000));
+        }
+        function cloudPayload() {
+            return {
+                subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [],
+                plannerData: typeof pData !== 'undefined' ? JSON.stringify(pData) : "{}",
+                plannerTags: typeof pTags !== 'undefined' ? JSON.stringify(pTags) : "[]",
+                plannerBgs: typeof pBgColors !== 'undefined' ? JSON.stringify(pBgColors) : "[]",
+                plannerMemo: typeof pTopMemo !== 'undefined' ? JSON.stringify(pTopMemo) : "[]",
+                plannerMemoCfg: typeof pMemos !== 'undefined' ? JSON.stringify(pMemos) : "[]",
+                plannerHls: typeof pHighlighters !== 'undefined' ? JSON.stringify(pHighlighters) : "[]",
+                plannerLastTags: typeof pLastTags !== 'undefined' ? JSON.stringify(pLastTags) : "{}"
+            };
         }
         
         // ★ 연표 렌더링 딜레이 완벽 해결 ★
@@ -1281,18 +1308,14 @@
         function saveDataToFirebase() { 
             if(!isInitialLoadDone) return; 
             saveAllToLocal(); 
-            if(!db) return; 
-            db.ref("study_records/" + USER_DOC_ID).set({ 
-                subjects: subjectsData || [], detailedSessions: detailedSessions || [], trackerData: trackerData || {}, repCols_v5: repCols || [], repData_v5: repData || [], repHistory_v5: repHistory || [], chronoEvents_v5: chronoEvents || [],
-                // ▼ 서버 전송 시 6.13 같은 점(.) 에러 방지를 위해 데이터를 문자열로 압축해서 전송 ▼
-                plannerData: typeof pData !== 'undefined' ? JSON.stringify(pData) : "{}",
-                plannerTags: typeof pTags !== 'undefined' ? JSON.stringify(pTags) : "[]",
-                plannerBgs: typeof pBgColors !== 'undefined' ? JSON.stringify(pBgColors) : "[]",
-                plannerMemo: typeof pTopMemo !== 'undefined' ? JSON.stringify(pTopMemo) : "[]",
-                plannerMemoCfg: typeof pMemos !== 'undefined' ? JSON.stringify(pMemos) : "[]",
-                plannerHls: typeof pHighlighters !== 'undefined' ? JSON.stringify(pHighlighters) : "[]",
-                plannerLastTags: typeof pLastTags !== 'undefined' ? JSON.stringify(pLastTags) : "{}"
-            }); 
+            if(!db || !cloudReadOk) return; 
+            const payload = cloudPayload(); const size = JSON.stringify(payload).length;
+            if (lastCloudSize > 3000 && size < lastCloudSize * 0.5 && !shrinkAsked) {
+                shrinkAsked = true;
+                if (!confirm('저장하려는 기록이 클라우드에 있는 것보다 절반 이상 적어요.\n그래도 클라우드에 덮어쓸까요?\n(취소하면 이 기기에만 저장돼요)')) { cloudReadOk = false; return; }
+            }
+            lastCloudSize = size;
+            db.ref("study_records/" + USER_DOC_ID).set(payload); 
         }
         // ▼ 모바일에서 입력 직후 앱을 끄거나 화면이 꺼져서 저장 요청이 중간에 끊기는 것을 막기 위한 강제 플러시 ▼
         // (화면이 안 보이게 되는 즉시 / 페이지를 떠나기 직전 한번 더 강제로 저장을 쏨)

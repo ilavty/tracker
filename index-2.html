@@ -346,14 +346,16 @@ try{
   _db=_fbApp.database();
 }catch(e){console.log('Firebase init error',e);}
 var _FB_KEY='diplomat_state_v1';
+var _fbReadOk=false;
 function saveToFirebase(){
-  if(!_db)return;
+  if(!_db||!_fbReadOk)return; /* 클라우드를 먼저 읽기 전엔 올리지 않음 → 빈 기기가 덮어쓰지 않게 */
   try{_db.ref('diplomat/'+_FB_KEY).set(st);}catch(e){}
 }
 function loadFromFirebase(cb){
   if(!_db){cb();return;}
   try{
     _db.ref('diplomat/'+_FB_KEY).once('value').then(function(snap){
+      _fbReadOk=true;
       var data=snap.val();
       if(data&&typeof data.idx!=='undefined'){
         // 누락된 필드 보정
@@ -363,7 +365,7 @@ function loadFromFirebase(cb){
         try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}
       }
       cb();
-    }).catch(function(){cb();});
+    }).catch(function(){cb();setTimeout(function(){loadFromFirebase(function(){try{if(st.idx!==null&&st.idx<POSTS.length)renderCity(POSTS[st.idx]);renderVisited();renderMap();}catch(e){}});},6000);});
   }catch(e){cb();}
 }
 </script>

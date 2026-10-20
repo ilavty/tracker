@@ -477,13 +477,13 @@ function initSync() {
   if (!db) { setSync('기기에 저장됨'); return; }
   setSync('불러오는 중…');
   let done = false;
-  const finish = () => { if (done) return; done = true; fbReady = true; subscribe(); };
-  setTimeout(() => { if (!done) { setSync('오프라인 (기기에 저장됨)'); finish(); } }, 8000);
+  const finish = ok => { if (done) return; done = true; fbReady = !!ok; subscribe(); };   // 클라우드를 읽은 뒤에만 올림 (빈 기기가 덮어쓰지 않게)
+  setTimeout(() => { if (!done) { setSync('오프라인 (기기에 저장됨)'); finish(false); } }, 8000);
   db.ref(FB_PATH).once('value').then(snap => {
     const v = snap.val();
     applyRemote(v, true);
-    finish();
-  }).catch(() => { setSync('오프라인 (기기에 저장됨)'); finish(); });
+    finish(true);
+  }).catch(() => { setSync('오프라인 (기기에 저장됨)'); finish(false); });
 }
 // 서버 데이터와 로컬 데이터를 "덮어쓰기" 대신 항목 단위로 병합 → 빈 기기가 서버를 지우는 사고 방지
 function applyRemote(v, initial) {
@@ -501,6 +501,7 @@ function subscribe() {
   if (!db) return;
   db.ref(FB_PATH).on('value', snap => {
     const v = snap.val();
+    if (!fbReady) { fbReady = true; applyRemote(v, true); return; }   // 늦게라도 처음 읽으면 합친 뒤 올리기 시작
     if (!v || v.by === DEVICE) return;
     applyRemote(v, false);
   });

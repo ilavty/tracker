@@ -782,7 +782,11 @@ function psatLoadFromFirebase(){
       }
     }
     psatBootAfterLoad();
-  }).catch(()=>{ psatBootAfterLoad(); });
+  }).catch(()=>{ psatBootAfterLoad(); psatFbReady = false; /* 클라우드를 못 읽었으면 올리지 않음 (빈 기기가 덮어쓰지 않게) */ setTimeout(psatRetryRead, 6000); });
+}
+function psatRetryRead(){
+  if(psatFbReady || !psatDb) return;
+  psatDb.ref('psat_tracker_data/' + PSAT_FB_DOC_ID).once('value').then(()=>{ psatLoadFromFirebase(); }).catch(()=>setTimeout(psatRetryRead, 8000));
 }
 
 try{
