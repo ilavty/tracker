@@ -126,6 +126,20 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc .srow .hint{margin-right:auto}
 #ilc .rawacts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 #ilc .hint{font-size:11.5px;color:var(--muted);font-weight:400}
+#ilc .kwbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#ilc .kwbar .chip,#ilc .kwpick .chip{padding:4px 11px;font-size:12px;border-color:var(--sky);color:var(--ink)}
+#ilc .kwbar .chip[aria-pressed="true"],#ilc .kwpick .chip[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:#fff}
+#ilc .kwbar .chip[aria-pressed="true"] b{color:#fff}
+#ilc .kwbar .mode,#ilc .kwbar .clr{all:unset;cursor:pointer;font-size:12px;color:var(--muted);padding:3px 6px}
+#ilc .kwbar .mode b{color:var(--ink);font-weight:600}
+#ilc .kwpick{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+#ilc .kwpick .chip.warn{border-color:var(--danger);color:var(--danger);background:var(--surface)}
+#ilc .kwpick input{width:auto;flex:1 1 140px;min-width:120px;padding:5px 10px;font-size:12.5px;border-radius:999px}
+#ilc .tkw{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+#ilc .tkw span,#ilc .mkw button{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--sky);color:var(--ink)}
+#ilc .mkw{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+#ilc .mkw button{all:unset;cursor:pointer;font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid var(--sky);color:var(--ink)}
+#ilc .mkw button:hover{background:var(--sky);color:#fff}
 #ilc .err{color:var(--danger);font-size:12.5px}
 #ilc .ctog{align-self:flex-start;font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 12px;cursor:pointer}
 #ilc .ctog b{color:var(--ink);font-weight:600}
@@ -208,6 +222,8 @@ window.makeCloud=function(path,key,getState,applyState){
       <input id="ilc-q" type="search" placeholder="검색" aria-label="검색">
       <button type="button" class="ctog" id="ilc-ctog"></button>
       <div class="chips" id="ilc-chips"></div>
+      <button type="button" class="ctog" id="ilc-ktog"></button>
+      <div class="kwbar" id="ilc-kws" hidden></div>
     </div>
     <div id="ilc-out"></div>
     <div id="ilc-quiz" hidden></div>
@@ -232,6 +248,20 @@ let store={added:[],edits:{}};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.added&&s.edits)store=s}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){};if(cloud)cloud.touched()}
 let cloud=null;
+const kwPool=()=>{if(!Array.isArray(store.kwPool))store.kwPool=[];return store.kwPool};
+const kwOf=id=>(store.kw&&Array.isArray(store.kw[id]))?store.kw[id]:[];
+function setKw(id,list){if(!store.kw||typeof store.kw!=="object")store.kw={};if(list.length)store.kw[id]=list;else delete store.kw[id]}
+function kwCount(k){let n=0;for(const id in (store.kw||{}))if(kwOf(id).includes(k))n++;return n}
+let kwSel=new Set(),kwAnd=false;
+function drawKw(){
+  const P=kwPool();let op=null;try{op=localStorage.getItem("ilc_kw_open")}catch(e){}
+  const open=op==="1"||kwSel.size>0&&op!=="0";
+  $("#ilc-ktog").innerHTML=`논점 키워드${kwSel.size?` · <b>${kwSel.size}개</b>`:""} <i>${open?'▴':'▾'}</i>`;
+  const box=$("#ilc-kws");box.hidden=!open;
+  box.innerHTML=P.length?P.map(k=>`<button type="button" class="chip" data-kw="${esc(k)}" aria-pressed="${kwSel.has(k)}">${esc(k)}<b>${kwCount(k)}</b></button>`).join("")+
+    (kwSel.size?`<button type="button" class="mode" data-kwmode="1">${kwAnd?"<b>모두</b> 포함":"<b>하나라도</b> 포함"} ⇄</button><button type="button" class="clr" data-kwclr="1">선택 해제</button>`:""):
+    `<span class="hint">아직 키워드가 없어요 · 판례 수정 창의 '논점 키워드'에서 추가해요</span>`;
+}
 function all(){return BASE.map(b=>store.edits[b.id]?{...b,...store.edits[b.id],edited:true}:b).concat(store.added.map(a=>({...a,mine:true})))}
 function find(id){return all().find(r=>r.id===id)}
 
@@ -253,11 +283,11 @@ function render(){
   const R=all();let html="",any=false;
   for(const [k,l] of G){
     if(active!=="all"&&active!==k)continue;
-    const rows=R.filter(r=>r.g===k).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2)].join(" ").toLowerCase().includes(t)).sort((a,b)=>yr(a.year)-yr(b.year));
+    const rows=R.filter(r=>r.g===k).filter(r=>{if(!kwSel.size)return true;const m=kwOf(r.id);return kwAnd?[...kwSel].every(x=>m.includes(x)):m.some(x=>kwSel.has(x))}).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2),...kwOf(r.id)].join(" ").toLowerCase().includes(t)).sort((a,b)=>yr(a.year)-yr(b.year));
     if(!rows.length)continue;any=true;
     html+=`<section><h2>${l}<span>${rows.length}건</span></h2><div class="tw"><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><thead><tr><th>재판소</th><th>판례 이름</th><th>연도</th><th>원고 v. 피고</th><th>목차 분류</th></tr></thead><tbody>`+
     rows.map(r=>{const f=r.flag?` <span class="fl" title="${esc(r.flag)}">*</span>`:"";const yf=r.flag&&r.flag.startsWith("연도")?f:"",pf=r.flag&&!r.flag.startsWith("연도")?f:"";
-      return `<tr><td class="court">${esc(r.court)}</td><td><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}</td><td class="year">${esc(r.year)}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
+      return `<tr><td class="court">${esc(r.court)}</td><td><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="year">${esc(r.year)}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
   }
   $("#ilc-out").innerHTML=any?html:`<div class="empty">맞는 판례가 없어요</div>`;
 }
@@ -276,6 +306,7 @@ function show(id){
   openM(`<h3>${esc(r.name)}</h3>
     <div class="meta"><span><b>${esc(r.court)}</b></span><span>${esc(r.year)}</span><span>${esc(r.parties)}</span></div>
     <div>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</div>
+    ${kwOf(r.id).length?`<div class="mkw">${kwOf(r.id).map(x=>`<button type="button" data-kwgo="${esc(x)}" title="이 키워드 판례 모아보기">${esc(x)}</button>`).join("")}</div>`:""}
     ${r.flag?`<div class="flag">* ${esc(r.flag)}</div>`:""}
     ${noteHTML(r.note)||'<div class="empty">아직 정리한 노트가 없어요</div>'}
     ${r.note2?`<div class="sub">국제분쟁의 평화적 해결 수단 파트 정리</div>${noteHTML(r.note2)}`:""}
@@ -406,7 +437,8 @@ function form(r){
     <label>원고 v. 피고<input id="ilc-f-parties" value="${esc(r.parties)}"></label>
     <div class="full"><label style="margin-bottom:4px">목차 분류</label><div class="catpick" id="ilc-f-cats">${Object.entries(C).map(([k,v])=>`<button type="button" class="chip" data-c="${k}" aria-pressed="${sel.has(+k)}">${v}</button>`).join("")}</div></div>
     <label class="full">노트 <span class="hint">Tab 한 단계 내리기 · Shift+Tab 올리기 · Enter 같은 단계로 다음 줄</span><textarea id="ilc-f-note">${esc(toText(r.note))}</textarea></label>
-    <label class="full">키워드 <span class="hint">쉼표로 구분</span><input id="ilc-f-tags" value="${esc(r.note&&r.note.tags)}"></label>
+    <label class="full">핵심 논지 <span class="hint">쉼표로 구분</span><input id="ilc-f-tags" value="${esc(r.note&&r.note.tags)}"></label>
+    <div class="full"><label style="margin-bottom:4px">논점 키워드 <span class="hint">누르면 선택 · 다시 누르면 취소 · 우클릭하면 키워드 삭제</span></label><div class="kwpick" id="ilc-f-kw"></div></div>
     <div class="full err" id="ilc-f-err"></div>
     <div class="full mdacts"><button type="button" class="btn" data-close="1">취소</button><button type="submit" class="btn pri">저장</button></div>
   </form>`);
@@ -457,6 +489,21 @@ function form(r){
     });
   }
   noteKeys(f.querySelector("#ilc-f-note"));
+  const kwSet=new Set(isNew?[]:kwOf(r.id)),kp=f.querySelector("#ilc-f-kw");let kwWarn="";
+  const drawPick=()=>{
+    kp.innerHTML=kwPool().map(k=>`<button type="button" class="chip${kwWarn===k?" warn":""}" data-k="${esc(k)}" aria-pressed="${kwSet.has(k)}">${kwWarn===k?`${kwCount(k)}건에 쓰임 · 한 번 더 우클릭하면 삭제`:esc(k)}</button>`).join("")+`<input id="ilc-f-kwnew" placeholder="+ 새 키워드 입력 후 Enter" autocomplete="off">`;
+  };
+  drawPick();
+  kp.addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;kwWarn="";const k=b.dataset.k;kwSet.has(k)?kwSet.delete(k):kwSet.add(k);drawPick()});
+  kp.addEventListener("contextmenu",e=>{const b=e.target.closest(".chip");if(!b)return;e.preventDefault();const k=b.dataset.k;
+    const others=Object.keys(store.kw||{}).filter(id=>id!==r.id&&kwOf(id).includes(k)).length;
+    if(others&&kwWarn!==k){kwWarn=k;drawPick();return}
+    kwWarn="";store.kwPool=kwPool().filter(x=>x!==k);kwSet.delete(k);for(const id in (store.kw||{}))setKw(id,kwOf(id).filter(x=>x!==k));kwSel.delete(k);save();drawPick();drawKw();render()});
+  kp.addEventListener("keydown",e=>{
+    if(e.target.id!=="ilc-f-kwnew"||e.key!=="Enter"||e.isComposing)return;e.preventDefault();
+    const v=e.target.value.trim();if(!v)return;
+    if(!kwPool().includes(v)){kwPool().push(v);save();drawKw()}
+    kwSet.add(v);drawPick();kp.querySelector("#ilc-f-kwnew").focus()});
   f.querySelector("#ilc-f-cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b)b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true")});
   f.addEventListener("submit",e=>{
     e.preventDefault();
@@ -469,8 +516,10 @@ function form(r){
     let id;
     if(isNew){id="u"+Date.now();store.added.push({id,flag:"",...rec})}
     else if(r.mine){id=r.id;const i=store.added.findIndex(a=>a.id===id);store.added[i]={...store.added[i],...rec}}
-    else{id=r.id;store.edits[id]=rec}
-    save();drawChips();render();show(id);
+    else{id=r.id;const b0=BASE.find(x=>x.id===id),pick=o=>JSON.stringify([o.g,o.court,o.name,o.year,o.parties,o.cats,(o.note&&o.note.items)||[],(o.note&&o.note.tags)||""]);
+      if(b0&&pick(b0)===pick(rec))delete store.edits[id];else store.edits[id]=rec}
+    setKw(id,kwPool().filter(k=>kwSet.has(k)));
+    save();drawChips();drawKw();render();show(id);
   });
 }
 root.addEventListener("click",e=>{
@@ -478,6 +527,11 @@ root.addEventListener("click",e=>{
   if(t.closest("[data-close]")&&(t.dataset.close||t.closest(".x"))){closeM();return}
   const nm=t.closest(".nm");if(nm){show(nm.dataset.id);return}
   const ch=t.closest("#ilc-chips .chip");if(ch){active=ch.dataset.k;drawChips();render();return}
+  const kc=t.closest("#ilc-kws [data-kw]");if(kc){const k=kc.dataset.kw;kwSel.has(k)?kwSel.delete(k):kwSel.add(k);drawKw();render();return}
+  if(t.closest("[data-kwmode]")){kwAnd=!kwAnd;drawKw();render();return}
+  if(t.closest("[data-kwclr]")){kwSel.clear();drawKw();render();return}
+  const kg=t.closest("[data-kwgo]");if(kg){kwSel=new Set([kg.dataset.kwgo]);try{localStorage.setItem("ilc_kw_open","1")}catch(e){}closeM();if(typeof QZ!=="undefined"&&QZ.on)toggleQuiz();drawKw();render();return}
+  if(t.closest("#ilc-ktog")){const o=$("#ilc-kws").hidden;try{localStorage.setItem("ilc_kw_open",o?"1":"0")}catch(e){}drawKw();return}
   if(t.closest("#ilc-ctog")){const o=$("#ilc-chips").hidden;try{localStorage.setItem("ilc_courts_open",o?"1":"0")}catch(e){}drawChips();return}
   const a=t.closest("[data-act]");if(!a)return;
   const act=a.dataset.act,id=a.dataset.id;
@@ -486,7 +540,7 @@ root.addEventListener("click",e=>{
   else if(act==="add")form(null);
   else if(act==="edit")form(find(id));
   else if(act==="del"){
-    if(a.dataset.sure){store.added=store.added.filter(x=>x.id!==id);save();closeM();drawChips();render()}
+    if(a.dataset.sure){store.added=store.added.filter(x=>x.id!==id);setKw(id,[]);save();closeM();drawChips();drawKw();render()}
     else{a.dataset.sure="1";a.textContent="한 번 더 누르면 삭제"}
   }
   else if(act==="reset"){
@@ -503,7 +557,7 @@ root.addEventListener("click",e=>{
 $("#ilc-file").addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;
   const rd=new FileReader();
-  rd.onload=()=>{try{const s=JSON.parse(rd.result);if(s.added&&s.edits){store=s;save();drawChips();render()}}catch(err){}e.target.value=""};
+  rd.onload=()=>{try{const s=JSON.parse(rd.result);if(s.added&&s.edits){store=s;save();drawChips();drawKw();render()}}catch(err){}e.target.value=""};
   rd.readAsText(file);
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden){const md=modal.querySelector(".md");if(md&&md._closeSub&&md._closeSub())return;closeM()}});
@@ -1020,8 +1074,8 @@ const setBar=()=>document.documentElement.style.setProperty("--barh",document.qu
 if(document.fonts){document.fonts.ready.then(()=>layout());document.fonts.addEventListener&&document.fonts.addEventListener("loadingdone",()=>redo())}
 <\/script></body></html>`;
 $("#ilc-q").addEventListener("input",render);
-drawChips();render();
-if(!PRINT_MODE)cloud=makeCloud('database_v1/intllaw_cases',KEY,()=>store,o=>{if(o&&o.added&&o.edits){store=o;try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){};drawChips();render()}});
+drawChips();drawKw();render();
+if(!PRINT_MODE)cloud=makeCloud('database_v1/intllaw_cases',KEY,()=>store,o=>{if(o&&o.added&&o.edits){store=o;try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){};drawChips();drawKw();render()}});
 })();
 </script>
 <!-- ===== 판례표 END ===== -->
