@@ -207,7 +207,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.31</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.32</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -395,9 +395,30 @@ let tt;function toast(m,ms=2600){const el=$('#toast');el.textContent=m;el.classL
 const mctx=document.createElement('canvas').getContext('2d');mctx.font='100px sans-serif';
 const wc=new Map();
 function cw(ch){if(!/\S/.test(ch))return 30;let w=wc.get(ch);if(w==null){w=mctx.measureText(ch).width||60;wc.set(ch,w);}return w;}
+/* 일러스트레이터 PDF: 글자 코드가 깨진(ToUnicode가 엉터리인) Paperlogy 글자를 글꼴 모양으로 되살림 */
+const PL_W=[[/thin/i,'Thin'],[/extralight/i,'2ExtraLight'],[/light/i,'3Light'],[/regular/i,'4Regular'],[/medium/i,'5Medium'],[/semibold/i,'6SemiBold'],[/extrabold/i,'8ExtraBold'],[/bold/i,'7Bold'],[/black/i,'9Black']];
+const PL_HAVE={'3Light':1,'4Regular':1,'5Medium':1,'6SemiBold':1,'7Bold':1};
+const plFull={};const fixCache=new Map();
+const gKey=g=>{try{const c=g.path.commands;if(!c||c.length<3)return null;return c.map(o=>o.command[0]+o.args.map(Math.round).join(',')).join(' ');}catch(e){return null;}};
+async function plMap(w){if(!plFull[w])plFull[w]=(async()=>{const r=await fetch('fonts/Paperlogy-'+w+'.ttf');if(!r.ok)throw 0;const f=fontkit.create(new Uint8Array(await r.arrayBuffer()));const m=new Map();
+  for(const cp of f.characterSet){if(cp<0x80)continue;const k=gKey(f.glyphForCodePoint(cp));if(k&&!m.has(k))m.set(k,String.fromCodePoint(cp));}return m;})().catch(()=>null);return plFull[w];}
+const looksBroken=(it,fh)=>{const a=Array.from(it.str.replace(/\s/g,''));if(!a.length||/[\uac00-\ud7a3]/.test(it.str))return false;return (it.width||0)/a.length>=fh*.72;};
+async function fontFix(page,id){
+  if(fixCache.has(id))return fixCache.get(id);let res=null;
+  try{if(!page.commonObjs.has(id))await page.getOperatorList();const F=page.commonObjs.get(id);
+    const wm=PL_W.find(([re])=>re.test(F.name||''));
+    if(/paperlogy/i.test(F.name||'')&&wm&&PL_HAVE[wm[1]]&&F.data&&F.toUnicode){
+      const full=await plMap(wm[1]);
+      if(full){const f=fontkit.create(new Uint8Array(F.data));const m=new Map();const tu=F.toUnicode._map||[];
+        tu.forEach((u,code)=>{if(u==null||u==='')return;let ch=null;try{ch=full.get(gKey(f.getGlyph(code)));}catch(e){}if(ch)m.set(u,ch);});
+        if(m.size)res=m;}}}catch(e){}
+  fixCache.set(id,res);return res;}
 async function extractChars(page,vp){
   const tc=await page.getTextContent();const out=[];
+  const need=new Set();for(const it of tc.items){if(!it.str||!it.str.trim())continue;const tx=pdfjsLib.Util.transform(vp.transform,it.transform);const fh=Math.hypot(tx[2],tx[3])||10;if(looksBroken(it,Math.hypot(it.transform[2],it.transform[3])||fh))need.add(it.fontName);}
+  const fixes={};for(const id of need){const m=await fontFix(page,id);if(m)fixes[id]=m;}
   for(const it of tc.items){
+    if(fixes[it.fontName]){const m=fixes[it.fontName];it.str=Array.from(it.str).map(c=>m.get(c)||c).join('');}
     if(!it.str||!it.str.trim())continue;
     const tx=pdfjsLib.Util.transform(vp.transform,it.transform);
     const fh=Math.hypot(tx[2],tx[3])||10;
@@ -545,7 +566,7 @@ async function openFile(file,quiet){
   try{
     toast('PDF 읽는 중…',0);
     const buf=new Uint8Array(await file.arrayBuffer());
-    const pdf=await pdfjsLib.getDocument({data:buf.slice(),cMapUrl:CMAP_BASES[0],cMapPacked:true,CMapReaderFactory:KCMapFactory,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',useSystemFonts:true}).promise;
+    const pdf=await pdfjsLib.getDocument({data:buf.slice(),cMapUrl:CMAP_BASES[0],cMapPacked:true,CMapReaderFactory:KCMapFactory,standardFontDataUrl:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',useSystemFonts:true,fontExtraProperties:true}).promise;fixCache.clear();
     const pages=[];
     for(let i=1;i<=pdf.numPages;i++){
       toast(`글자 위치 읽는 중… ${i}/${pdf.numPages}`,0);
