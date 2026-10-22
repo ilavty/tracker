@@ -64,7 +64,7 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:4px}
 #sync.ing{animation:syncp 1s ease-in-out infinite}@keyframes syncp{50%{opacity:.35}}
 body.full .hint{display:none}
 @media (max-width:1500px){.brand{display:none}}
-@media (max-width:1180px){.tools{gap:5px}.btn{padding:7px 10px}.ctl input[type=range]{width:44px}#size{width:44px;padding:4px 3px;text-align:center}}
+@media (max-width:1180px){.tools{gap:5px}.btn{padding:7px 10px}.ctl input[type=range]{width:44px}#size,#tlh{width:44px;padding:4px 3px;text-align:center}}
 @media (max-width:1040px){.ctl{font-size:0;gap:3px}.ctl input[type=range]{width:46px}}
 /* 좁은 화면(아이패드 세로): 버튼이 찌그러지거나 두 줄 되지 않게 */
 .seg,.zoom,.ctl,.tools>.btn,.more{flex:none}
@@ -198,7 +198,7 @@ body.dragover #empty{background:var(--sky2)}
     <label class="ctl">높이<input type="range" id="lh" title="빈칸 높이" min="4" max="30" step="0.5"><span id="lhv"></span></label>
     <label class="ctl">여백<input type="range" id="pad" title="빈칸 옆여백" min="0" max="5" step="0.5"></label>
     <label class="ctl">빈칸색<input type="color" id="bcol" title="빈칸 색"></label>
-    <label class="ctl">글자<select id="font"><option value="pl">페이퍼로지</option><option value="kd">코펍돋움</option><option value="kb">코펍바탕</option></select><input type="number" id="size" min="4" max="48" step="0.5"><input type="color" id="tcol"></label>
+    <label class="ctl">글자<select id="font"><option value="pl">페이퍼로지</option><option value="kd">코펍돋움</option><option value="kb">코펍바탕</option></select><input type="number" id="size" min="4" max="48" step="0.5" title="글자 크기"><input type="number" id="tlh" min="0.8" max="3" step="0.1" title="행간 (줄 간격)" style="width:50px"><input type="color" id="tcol"></label>
     <div class="zoom"><button id="zOut" title="축소 (⌘−)">−</button><button id="zVal" title="화면 너비에 맞추기 (⌘0)">100%</button><button id="zIn" title="확대 (⌘+)">+</button></div>
     <button class="btn" id="undo" title="되돌리기 (⌘Z)">↶</button>
     <button class="btn warn hidden" id="lostBtn"></button>
@@ -207,7 +207,7 @@ body.dragover #empty{background:var(--sky2)}
         <button id="saveWork">백업 파일로 저장 <small>⌘S</small></button>
         <label>백업 파일 열기<input type="file" accept=".json,application/json" id="workFile" hidden></label>
         <button id="hintBtn">사용법 보기</button>
-        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.30</div>
+        <div style="font-size:11px;color:#aaa;padding:6px 12px 2px">버전 10.31</div>
       </div></div>
     <button class="btn ic g" id="share" title="굿노트로 보내기 (공유 창에서 Goodnotes 선택)">G</button>
     <button class="btn ic main" id="export" title="PDF 저장"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></button>
@@ -248,7 +248,7 @@ class KCMapFactory{constructor(o){this.o=o;}
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const $=s=>document.querySelector(s);
 const S={name:null,bytes:null,pages:[],boxes:[],texts:[],mode:'box',sel:null,selNote:null,hist:[],
-  pad:1.5,lineH:null,font:'pl',bcol:'#ebebeb',size:11,tcol:'#1a1a1a'};
+  pad:1.5,lineH:null,font:'pl',bcol:'#ebebeb',size:11,tlh:1.3,tcol:'#1a1a1a'};
 const FONTS={
   pl:{css:"'Paperlogy'",urls:['fonts/Paperlogy-4Regular.ttf']},
   kd:{css:"'KoPubDotum'",urls:['https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.otf','https://unpkg.com/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Medium.otf']},
@@ -373,8 +373,8 @@ const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 
 /* ---------- settings ---------- */
 try{Object.assign(S,JSON.parse(localStorage.getItem('bm:settings')||'{}'));}catch(e){}
-function saveSettings(){try{localStorage.setItem('bm:settings',JSON.stringify({zoom:S.zoom,font:S.font,pad:S.pad,lineH:S.lineH,bcol:S.bcol,size:S.size,tcol:S.tcol}));}catch(e){}}
-$('#pad').value=S.pad;$('#bcol').value=S.bcol;$('#size').value=S.size;$('#tcol').value=S.tcol;
+function saveSettings(){try{localStorage.setItem('bm:settings',JSON.stringify({zoom:S.zoom,font:S.font,pad:S.pad,lineH:S.lineH,bcol:S.bcol,size:S.size,tlh:S.tlh,tcol:S.tcol}));}catch(e){}}
+$('#pad').value=S.pad;$('#bcol').value=S.bcol;$('#size').value=S.size;$('#tlh').value=S.tlh||1.3;$('#tcol').value=S.tcol;
 document.body.style.setProperty('--bcol',S.bcol);
 $('#pad').oninput=e=>{S.pad=+e.target.value;saveSettings();drawAll();};
 if(S.lineH)$('#lh').value=S.lineH;
@@ -383,6 +383,8 @@ $('#bcol').oninput=e=>{S.bcol=e.target.value;document.body.style.setProperty('--
 $('#font').value=S.font;
 $('#font').onchange=e=>{S.font=e.target.value;saveSettings();const t=S.texts.find(t=>t.id===S.selNote);if(t){snap();t.font=S.font;save();drawOv(t.page);}};
 $('#tcol').oninput=e=>{S.tcol=e.target.value;saveSettings();drawAll();};
+$('#tlh').onchange=e=>{const v=+e.target.value;if(!v)return;S.tlh=v;saveSettings();
+  const t=S.texts.find(t=>t.id===S.selNote);if(t){snap();t.lh=v;save();drawOv(t.page);}};
 $('#size').onchange=e=>{const v=+e.target.value;if(!v)return;S.size=v;saveSettings();
   const t=S.texts.find(t=>t.id===S.selNote);if(t){snap();t.size=v;save();drawOv(t.page);}};
 
@@ -836,14 +838,14 @@ function drawOv(i){
     ov.appendChild(d);});
   S.texts.filter(t=>t.page===i).forEach(t=>{
     const d=document.createElement('div');d.className='note'+(t.lost?' lost':'');d.style.zIndex=100+zOf(t,'note');
-    Object.assign(d.style,{left:t.x*s+'px',top:t.y*s+'px',fontSize:t.size*s+'px',color:t.color||S.tcol,fontFamily:fcss(t.font||'pl')});
+    Object.assign(d.style,{left:t.x*s+'px',top:t.y*s+'px',fontSize:t.size*s+'px',color:t.color||S.tcol,fontFamily:fcss(t.font||'pl'),lineHeight:String(t.lh||1.3)});
     const h=document.createElement('span');h.className='nh';h.textContent='⠿';h.title='끌어서 옮기기';
     const x=document.createElement('button');x.className='x';x.textContent='×';
     const body=document.createElement('div');body.className='nb';body.contentEditable='true';body.innerText=t.text;
     d.append(h,body,x);ov.appendChild(d);t._el=body;
     d.addEventListener('pointerdown',e=>e.stopPropagation());
     x.onclick=()=>{snap();S.texts=S.texts.filter(o=>o!==t);save();drawOv(i);};
-    body.addEventListener('focus',()=>{S.selNote=t.id;$('#size').value=t.size;$('#font').value=t.font||'pl';select(null);});
+    body.addEventListener('focus',()=>{S.selNote=t.id;$('#size').value=t.size;$('#tlh').value=t.lh||1.3;$('#font').value=t.font||'pl';select(null);});
     body.addEventListener('blur',()=>{const v=body.innerText.replace(/\n+$/,'');
       if(!v.trim()){S.texts=S.texts.filter(o=>o!==t);save();drawOv(i);return;}
       if(v!==t.text){snap();t.text=v;save();}});
@@ -1003,7 +1005,7 @@ function nudge(id,key,shift){
   const idx=[];for(let k=a;k<=z;k++)idx.push(p.map[k]);
   snap();b.raw=bbox(p,idx);b.runs=mkRuns(p,idx);b.lost=false;save();drawOv(b.page);}
 function addNote(i,pt){
-  snap();const t={id:uid(),page:i,x:pt.x,y:pt.y-S.size*.65,text:'',size:S.size,color:S.tcol,font:S.font};
+  snap();const t={id:uid(),page:i,x:pt.x,y:pt.y-S.size*.65,text:'',size:S.size,lh:S.tlh||1.3,color:S.tcol,font:S.font};
   noteAnchor(t);S.texts.push(t);drawOv(i);setTimeout(()=>t._el&&t._el.focus(),0);}
 
 /* ---------- modes & keys ---------- */
@@ -1051,7 +1053,7 @@ function rrOps(L,x,y,w,h,r){const k=.5523*r;return[L.moveTo(x+r,y),L.lineTo(x+w-
 async function noteImg(t){
   if(!t.text.trim())return null;
   try{await document.fonts.load(`${t.size}px ${fcss(t.font||'pl')}`);}catch(e){}
-  const Z=4,lines=t.text.split('\n'),lh=t.size*1.3,f=`${t.size*Z}px ${fcss(t.font||'pl')}`;
+  const Z=4,lines=t.text.split('\n'),lh=t.size*(t.lh||1.3),f=`${t.size*Z}px ${fcss(t.font||'pl')}`;
   const c=document.createElement('canvas'),ctx=c.getContext('2d');ctx.font=f;
   const w=Math.max(1,...lines.map(l=>ctx.measureText(l).width))/Z+1,h=lh*lines.length;
   c.width=Math.ceil(w*Z);c.height=Math.ceil(h*Z);ctx.font=f;ctx.fillStyle=t.color||S.tcol;ctx.textBaseline='middle';
@@ -1084,7 +1086,7 @@ async function buildPdf(){
         const img=/^data:image\/png/.test(src)?await doc.embedPng(bytes):await doc.embedJpg(bytes);
         const q=toPdf(m.page,{x:m.x,y:m.y,w:m.w,h:m.h});pg.drawImage(img,{x:q.x,y:q.y,width:q.w,height:q.h});continue;}
       const t=o;if(!t.text.trim())continue;const kf=emb[t.font||'pl'];
-      if(kf){const lh=t.size*1.3,[r,g,bl]=hex(t.color||S.tcol),vp=S.pages[t.page].vp;
+      if(kf){const lh=t.size*(t.lh||1.3),[r,g,bl]=hex(t.color||S.tcol),vp=S.pages[t.page].vp;
         t.text.split('\n').forEach((line,k)=>{if(!line)return;const by=t.y+lh*k+(lh-t.size)/2+t.size*.86;
           const[px,py]=vp.convertToPdfPoint(t.x,by);pg.drawText(line,{x:px,y:py,size:t.size,font:kf,color:L.rgb(r,g,bl)});});
         continue;}
