@@ -733,9 +733,9 @@ function renderSide() {
   tree = $('#treeDate'); tree.innerHTML = ''; walk(null, 0, 'date');
 
   const tl = $('#tagList'); const tags = [...allTags().entries()].sort((a, b) => ko(a[0], b[0]));
-  tl.innerHTML = tags.map(([t, n]) => `<span class="tagnav ${UI.view.type === 'tag' && UI.view.id === t ? 'on' : ''}" data-t="${esc(t)}">#${esc(t)}<span class="n">${n}</span></span>`).join('');
+  tl.innerHTML = tags.map(([t, n]) => `<span class="tagnav ${vTags(UI.view).includes(t) ? 'on' : ''}" data-t="${esc(t)}">#${esc(t)}<span class="n">${n}</span></span>`).join('');
   tl.querySelectorAll('.tagnav').forEach(s => {
-    s.onclick = () => setView({ type: 'tag', id: s.dataset.t });
+    s.onclick = () => toggleTagView(s.dataset.t);
     s.oncontextmenu = e => tagMenu(e, s.dataset.t);
     longPress(s, e => tagMenu(e, s.dataset.t));
   });
@@ -865,7 +865,7 @@ function renameTag(from, to) {
   const now = Date.now();
   const fix = a => { const i = a.indexOf(from); if (i < 0) return false; a.splice(i, 1); if (to && !a.includes(to)) a.push(to); return true; };
   S.cards.forEach(c => { let ch = fix(c.tags); c.items.forEach(it => { if (fix(it.tags)) ch = true; }); if (ch) c.u = now; });
-  save(); if (UI.view.type === 'tag' && UI.view.id === from) UI.view = to ? { type: 'tag', id: to } : { type: 'all' }; renderAll();
+  save(); if (vTags(UI.view).includes(from)) { const ids = [...new Set(vTags(UI.view).map(x => x === from ? to : x).filter(Boolean))]; UI.view = ids.length ? { type: 'tag', ids, mode: UI.view.mode || 'or' } : { type: 'all' }; } renderAll();
 }
 function openMoreMenu(e) {
   const r = e.currentTarget.getBoundingClientRect();
@@ -881,6 +881,17 @@ function openMoreMenu(e) {
 /* =====================================================================
    MAIN VIEW
    ===================================================================== */
+/* 태그 보기: 여러 개 선택 가능 (v.ids, v.mode = 'or' | 'and') */
+const vTags = v => (v && v.type === 'tag') ? (v.ids || (v.id ? [v.id] : [])) : [];
+function tagHit(c, it, v) { const t = effTags(c, it), ts = vTags(v); return v.mode === 'and' ? ts.every(x => t.includes(x)) : ts.some(x => t.includes(x)); }
+function toggleTagView(t) {
+  if (UI.view.type !== 'tag') return setView({ type: 'tag', ids: [t], mode: 'or' });
+  const ids = vTags(UI.view).slice(); const i = ids.indexOf(t);
+  if (i >= 0) ids.splice(i, 1); else ids.push(t);
+  if (!ids.length) return setView({ type: 'all' });
+  UI.view = { type: 'tag', ids, mode: UI.view.mode || 'or' }; saveUI(); renderAll();
+}
+function setTagMode(m) { if (UI.view.type !== 'tag') return; UI.view = { ...UI.view, mode: m }; saveUI(); renderAll(); }
 function viewCards() {
   const v = UI.view;
   if (v.type === 'folder') { const ids = new Set(descIds(v.id)); return SC().filter(c => inSet(c, ids)); }
@@ -1032,12 +1043,14 @@ function renderMain() {
     sub = `<div class="subchips">${kids(f.id).map(k => `<span class="subchip" onclick="setView({type:'folder',id:'${k.id}'})">${icHtml(k)}${esc(k.name)}</span>`).join('')}<span class="subchip" onclick="newFolder('${f.id}')" style="color:var(--grey)">＋ 하위 폴더</span></div>`;
     itemsForStat = viewCards().flatMap(c => c.items);
   } else if (v.type === 'tag') {
-    title = '#' + esc(v.id);
-    const hits = sortCards(SC().filter(c => c.items.some(it => effTags(c, it).includes(v.id)) && matchSearch(c, q)));
+    const ts = vTags(v);
+    title = ts.map(t => '#' + esc(t)).join(' ');
+    if (ts.length > 1) sub = `<div class="subchips"><span class="seg" style="display:inline-flex"><button class="${v.mode !== 'and' ? 'on' : ''}" onclick="setTagMode('or')">하나라도</button><button class="${v.mode === 'and' ? 'on' : ''}" onclick="setTagMode('and')">전부 포함</button></span><span class="subchip" onclick="setView({type:'all'})" style="color:var(--grey)">✕ 선택 해제</span></div>`;
+    const hits = sortCards(SC().filter(c => c.items.some(it => tagHit(c, it, v)) && matchSearch(c, q)));
     hits.sort((a, b) => ko(pathStr(a.folderId), pathStr(b.folderId)));
     body = hits.map(c => {
-      const shown = c.items.filter(it => effTags(c, it).includes(v.id));
-      return cardHtml(c, { itemFilter: it => effTags(c, it).includes(v.id), showPath: true, hiddenN: c.items.length - shown.length });
+      const shown = c.items.filter(it => tagHit(c, it, v));
+      return cardHtml(c, { itemFilter: it => tagHit(c, it, v), showPath: true, hiddenN: c.items.length - shown.length });
     }).join('');
     itemsForStat = [];
   } else if (v.type === 'star') {
@@ -1056,7 +1069,7 @@ function renderMain() {
     }
     itemsForStat = [];
   }
-  window._studyPre = UI.view.type === 'folder' ? { folders: [UI.view.id], tags: [] } : UI.view.type === 'tag' ? { folders: [], tags: [UI.view.id], tagScope: 'items' } : UI.view.type === 'star' ? { folders: [], tags: [], starOnly: true } : { folders: [], tags: [] };
+  window._studyPre = UI.view.type === 'folder' ? { folders: [UI.view.id], tags: [] } : UI.view.type === 'tag' ? { folders: [], tags: vTags(UI.view), tagMode: UI.view.mode === 'and' ? 'and' : 'or', tagScope: 'items' } : UI.view.type === 'star' ? { folders: [], tags: [], starOnly: true } : { folders: [], tags: [] };
   main.innerHTML = `
     ${crumb ? `<div class="crumb">${crumb}</div>` : ''}
     <div class="toolbar">
@@ -1074,7 +1087,7 @@ ${selBarHtml()}
   const doSearch = () => { UI.search = sb.value; const pos = sb.selectionStart; renderMain(); const n = $('#searchBox'); n.focus(); n.setSelectionRange(pos, pos); reportHeight(); };
   sb.oninput = e => { if (e.isComposing) return; doSearch(); };
   sb.addEventListener('compositionend', doSearch);
-  main.querySelectorAll('[data-tagv]').forEach(t => t.onclick = e => { e.stopPropagation(); setView({ type: 'tag', id: t.dataset.tagv }); });
+  main.querySelectorAll('[data-tagv]').forEach(t => t.onclick = e => { e.stopPropagation(); setView({ type: 'tag', ids: [t.dataset.tagv], mode: 'or' }); });
   main.querySelectorAll('[data-goto]').forEach(t => t.onclick = e => { e.stopPropagation(); setView({ type: 'folder', id: t.dataset.goto }); });
   if (selMode) main.querySelectorAll('.card').forEach(el => {
     el.classList.toggle('sel', SEL.has(el.dataset.id));
@@ -1121,7 +1134,7 @@ function openCardEditor(id) {
   const src = id ? C(id) : null;
   const vf = UI.view.type === 'folder' ? F(UI.view.id) : null;
   const defFolder = vf && fk(vf) === 'topic' ? vf.id : null, defDate = vf && fk(vf) === 'date' ? vf.id : null;
-  ED = src ? JSON.parse(JSON.stringify(src)) : { id: uid(), subjectId: UI.subject, folderId: defFolder, dateId: defDate, title: '', tags: UI.view.type === 'tag' ? [UI.view.id] : [], items: [{ id: uid(), label: '', text: '', tags: [] }], c: Date.now(), o: Date.now() };
+  ED = src ? JSON.parse(JSON.stringify(src)) : { id: uid(), subjectId: UI.subject, folderId: defFolder, dateId: defDate, title: '', tags: vTags(UI.view).slice(), items: [{ id: uid(), label: '', text: '', tags: [] }], c: Date.now(), o: Date.now() };
   ED._new = !src;
   const m = openModal(`
     <h3>${src ? '카드 편집' : '새 카드'}<span class="sp"></span><button class="ibtn" onclick="closeModal()">✕</button></h3>
@@ -1364,7 +1377,7 @@ function exportText() {
   download('cards.txt', t, 'text/plain');
 }
 function resetStatsView() {
-  const items = UI.view.type === 'tag' ? SC().flatMap(c => c.items.filter(it => effTags(c, it).includes(UI.view.id))) : viewCards().flatMap(c => c.items);
+  const items = UI.view.type === 'tag' ? SC().flatMap(c => c.items.filter(it => tagHit(c, it, UI.view))) : viewCards().flatMap(c => c.items);
   if (!confirm(`지금 보고 있는 ${items.length}줄의 학습 단계를 미학습으로 되돌릴게요 (별표는 유지).`)) return;
   items.forEach(it => setSt(it.id, { lv: 0, c: 0, w: 0 })); save(); renderAll();
 }
