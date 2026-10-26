@@ -216,6 +216,9 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .np-back:hover{border-color:var(--lavender-deep);color:#2A558C;}
 .np-pin-btn.pinned{background:#FBE6E2;border-color:var(--red-text);color:var(--red-text);}
 .np-pin-btn svg{width:15px;height:15px;}
+.np-pin-btn.np-mark{font-size:14px;filter:grayscale(1);opacity:.45}
+.np-pin-btn.np-mark:hover{opacity:.8;border-color:var(--line)}
+.np-pin-btn.np-mark.marked{filter:none;opacity:1;background:#EAF5FC;border-color:#5aaee0}
 .pin-icon{display:inline-flex;vertical-align:-2px;width:13px;height:13px;margin-right:2px;}
 .pin-icon svg{width:100%;height:100%;}
 .np-body{padding:6px 26px 26px;}
@@ -615,6 +618,18 @@ function psatNormalizeRecords(){
 }
 psatNormalizeRecords();
 let reviewBox = JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]');
+// 🔁 한 번 더 풀기 / ⭐ 중요 — 프린트에서 묶음으로 모아짐
+const MARK_KEY = 'psatTrackerMarkBox_v1';
+let markBox = []; try{ markBox = JSON.parse(localStorage.getItem(MARK_KEY) || '[]') || []; }catch(e){ markBox = []; }
+const MARK_KINDS = {again:{icon:'🔁', name:'한 번 더 풀기'}, star:{icon:'⭐', name:'중요'}};
+function markHas(idk, num, kind){ return markBox.some(e=>e.idKeyStr===idk && e.num===num && e.kind===kind); }
+function markToggle(info, num, kind){
+  const ex = markBox.find(e=>e.idKeyStr===info.idk && e.num===num && e.kind===kind);
+  if(ex) markBox = markBox.filter(e=>e!==ex);
+  else markBox.push({ id:uid('m'), kind, idKeyStr:info.idk, level:info.level, subject:info.subject, label:info.label, num, addedAt:Date.now() });
+  saveReview();
+  return !ex;
+}
 let keywordStore = JSON.parse(localStorage.getItem(KEYWORD_KEY) || '{"reason":[],"type":[],"choice":[]}');
 if(!keywordStore.choice) keywordStore.choice = [];
 // 키워드는 과목별(언어논리/상황판단/자료해석)로 따로 관리. 처음엔 기존 키워드를 세 과목에 복사해서 하나도 안 잃게 함
@@ -725,6 +740,7 @@ function psatSaveAllToLocal(){
   const _set = (k,v)=>{ try{ localStorage.setItem(k, v); return true; }catch(err){ psatQuotaWarn(); return false; } };
   _set(STORAGE_KEY, JSON.stringify(records));
   _set(REVIEW_KEY, JSON.stringify(reviewBox));
+  _set(MARK_KEY, JSON.stringify(markBox));
   _set(KEYWORD_KEY, JSON.stringify(keywordStore));
   _set(CUTOFF_KEY, JSON.stringify(cutoffs));
   _set(TODO_KEY, JSON.stringify(todos));
@@ -741,7 +757,7 @@ function psatSaveAllToLocal(){
 function psatPushToFirebase(){
   if(!psatDb) return;
   psatDb.ref('psat_tracker_data/' + PSAT_FB_DOC_ID).set({
-    records: records || [], reviewBox: reviewBox || [], keywordStore: keywordStore || {reason:[],type:[],choice:[]},
+    records: records || [], reviewBox: reviewBox || [], markBox: markBox || [], keywordStore: keywordStore || {reason:[],type:[],choice:[]},
     cutoffs: cutoffs || {}, todos: todos || [], notesStore: notesStore || {}, savedViews: savedViews || [], answerKeyStore: answerKeyStore || {},
     updatedAt: parseInt(localStorage.getItem(PSAT_LOCAL_TS_KEY)||'0',10) || Date.now()
   }).catch(()=>{});
@@ -775,6 +791,8 @@ function psatLoadFromFirebase(){
         // server copy is at least as new as ours — safe to pull it in
         if(Array.isArray(d.records)) records = d.records;
         if(Array.isArray(d.reviewBox)) reviewBox = d.reviewBox;
+        if(Array.isArray(d.markBox)) markBox = d.markBox;
+        else if(d.markBox && typeof d.markBox==='object') markBox = Object.values(d.markBox);
         if(d.keywordStore) keywordStore = d.keywordStore;
         if(!keywordStore.choice) keywordStore.choice = [];
         kwEnsure(); kwSeedOnce();
@@ -917,7 +935,7 @@ let filterTypeKwSelected = new Set();
 let filterReasonKwSelected = new Set();
 
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); scheduleFbSync(); }
-function saveReview(){ localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox)); scheduleFbSync(); }
+function saveReview(){ localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewBox)); try{ localStorage.setItem(MARK_KEY, JSON.stringify(markBox)); }catch(e){} scheduleFbSync(); }
 function saveKeywordStore(){ try{ localStorage.setItem(KEYWORD_KEY, JSON.stringify(keywordStore)); }catch(e){ psatQuotaWarn(); } scheduleFbSync(); }
 function saveCutoffs(){ localStorage.setItem(CUTOFF_KEY, JSON.stringify(cutoffs)); scheduleFbSync(); }
 function saveTodos(){ localStorage.setItem(TODO_KEY, JSON.stringify(todos)); scheduleFbSync(); }
@@ -1298,6 +1316,8 @@ function openQuickPop(rec, num, x, y){
   const pop = document.getElementById('quickPop');
   pop.innerHTML = `
     <button type="button" data-qaction="review"><span class="pin-icon">${PIN_ICON}</span> ${flagged?'보충학습에서 빼기':'보충학습에 담기'}</button>
+    <button type="button" data-qaction="mark-again">🔁 ${markHas(idk,num,'again')?'한 번 더 풀기에서 빼기':'한 번 더 풀기'}</button>
+    <button type="button" data-qaction="mark-star">⭐ ${markHas(idk,num,'star')?'중요에서 빼기':'중요 표시'}</button>
     <button type="button" data-qaction="wrong">${isWrong?'✏️ 오답 정보 수정':'❌ 오답으로 변경'}</button>
     ${isWrong?'<button type="button" data-qaction="correct">✅ 정답으로 되돌리기</button>':''}
     <div class="ctx-sep"></div>
@@ -1320,7 +1340,10 @@ document.getElementById('quickPop').addEventListener('click', e=>{
   if(!rec) return;
   const idk = idKey(rec);
   const action = btn.dataset.qaction;
-  if(action==='review'){
+  if(action==='mark-again' || action==='mark-star'){
+    markToggle({idk, level:rec.level, subject:rec.subject, label:testLabel(rec)}, num, action==='mark-again'?'again':'star');
+    activeSelection={testId:null,nums:new Set()}; renderTests();
+  } else if(action==='review'){
     const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===num);
     if(existing){ reviewBox = reviewBox.filter(e=>e.id!==existing.id); }
     else { reviewBox.push({ id:uid('v'), idKeyStr:idk, level:rec.level, subject:rec.subject, label:testLabel(rec), num, addedAt:Date.now() }); }
@@ -2372,6 +2395,8 @@ function openProblemDetailPage(idk, num, level, subject, label){
       </div>
       <div class="np-header-actions">
         ${modalBackStack.length ? `<button type="button" class="np-back" id="detailBackBtn" title="이전으로">←</button>` : ''}
+        <button type="button" class="np-pin-btn np-mark${markHas(idk,num,'again')?' marked':''}" data-mark="again" title="한 번 더 풀기">🔁</button>
+        <button type="button" class="np-pin-btn np-mark${markHas(idk,num,'star')?' marked':''}" data-mark="star" title="중요">⭐</button>
         <button type="button" class="np-pin-btn${alreadyFlagged?' pinned':''}" id="npAddReviewBtn" title="보충학습에 담기">${PIN_ICON}</button>
         <button type="button" class="np-close" id="detailCloseBtn">×</button>
       </div>
@@ -2399,6 +2424,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
   document.getElementById('detailCloseBtn').addEventListener('click', closeDetailOverlay);
   const backBtn = document.getElementById('detailBackBtn');
   if(backBtn) backBtn.addEventListener('click', goBackModal);
+  box.querySelectorAll('.np-mark').forEach(b=>b.addEventListener('click', ()=>{
+    b.classList.toggle('marked', markToggle({idk, level, subject, label}, num, b.dataset.mark));
+  }));
   document.getElementById('npAddReviewBtn').addEventListener('click', ()=>{
     const btn = document.getElementById('npAddReviewBtn');
     const existing = reviewBox.find(e=>e.idKeyStr===idk && e.num===num);

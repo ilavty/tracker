@@ -37,6 +37,19 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .tab{flex:1;text-align:center;padding:7px 0;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;user-select:none}
 .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 
+.bmode{display:flex;gap:2px;margin:0 16px 8px;padding:3px;border:1px solid var(--line);border-radius:9px;background:#fff}
+.bmode span{flex:1;text-align:center;padding:4px 0;border-radius:6px;font-size:11.5px;cursor:pointer;user-select:none;color:var(--sub)}
+.bmode span.on{background:var(--sky-l);color:var(--ink);font-weight:600}
+.kwg{padding:4px 16px 2px;font-size:11px;color:var(--brown);font-weight:600}
+.kws{display:flex;flex-wrap:wrap;gap:5px;padding:2px 16px 8px}
+.kw{border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11.5px;background:#fff;cursor:pointer;user-select:none}
+.kw i{font-style:normal;color:var(--sub);font-size:10.5px;margin-left:3px}
+.kw.on{background:var(--sky);border-color:var(--sky);color:#fff}.kw.on i{color:#eaf5fc}
+.kwres{margin:6px 12px 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.kwres .gh{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.kwres .knums{display:flex;flex-wrap:wrap;gap:5px}
+.kwres .num{height:auto;padding:5px 8px;font-size:11.5px}
+.kwempty{padding:20px 16px;color:var(--sub);font-size:12px;line-height:1.7}
 .kind{padding:6px 16px 2px;font-size:11px;color:var(--brown);font-weight:600}
 .exams{display:flex;flex-wrap:wrap;gap:5px;padding:2px 16px 6px}
 .ex{border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11.5px;background:#fff;cursor:pointer;user-select:none;position:relative;font-variant-numeric:tabular-nums}
@@ -130,6 +143,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 <div class="app">
   <section class="panel">
     <div class="tabs" id="tabs"></div>
+    <div class="bmode" id="bmode"><span data-m="exam">시험별</span><span data-m="kw">키워드</span></div>
     <div class="scroll" id="bank"></div>
   </section>
 
@@ -203,7 +217,9 @@ st.hidden = (st.hidden || []).filter(k => st.sel.includes(k));
 const RV_SUBJ = {언어논리: '언어', 자료해석: '자료', 상황판단: '상황'};
 const LINKED = {};          // 'rv:상황판단' → {name, keys, miss}
 let linkLoaded = false;
-function isLinked(id = st.cur) { return !!id && (id.startsWith('rv:') || id.startsWith('th:')); }
+const AUTO_PFX = {rv: {suf: '_보충학습', icon: '📌'}, ag: {suf: '_한번더', icon: '🔁'}, sr: {suf: '_중요', icon: '⭐'}};
+const isAuto = id => !!id && /^(rv|ag|sr):/.test(id);
+function isLinked(id = st.cur) { return !!id && (isAuto(id) || id.startsWith('th:')); }
 (window.PSAT_SETS || []).forEach(t => { LINKED[t.id] = {name: t.name, keys: t.keys.filter(k => isDiv(k) || EX[k.split('|')[0]]), miss: 0}; });
 function findExam(level, sub, yearRaw) {
   const y = String(yearRaw || ''), yd = (y.match(/\d{4}/) || [''])[0];
@@ -220,44 +236,63 @@ function findExam(level, sub, yearRaw) {
   if (/외교/.test(y)) return pick('외교', yd);
   return pick('5급', yd);
 }
-function buildLinked(box) {
+const yrOf = e => e.book === '모의' ? 2020.5 : (+e.year || 0);
+function cmpKey(a, b) { const A = itemOf(a), B = itemOf(b); return yrOf(A.e) - yrOf(B.e) || String(A.e.book).localeCompare(String(B.e.book)) || String(A.e.kind).localeCompare(String(B.e.kind)) || A.it.n[0] - B.it.n[0]; }
+function entryKey(en) {     // 트래커 항목 → 프린트 키 (못 찾으면 null)
+  const parts = String(en.idKeyStr || '').split('|');
+  if (parts[0] && parts[0] !== '기출') return undefined;          // 유형모음 등은 제외
+  const level = en.level || parts[1], subj = en.subject || parts[2], year = parts[3] || en.label;
+  const sub = RV_SUBJ[subj]; if (!sub) return undefined;
+  const e = findExam(level, sub, year);
+  const it = e && e.items.find(i => i.n.includes(+en.num));
+  return it ? {subj, k: keyOf(e, it)} : {subj, k: null};
+}
+function buildLinked(box, marks) {
   const by = {};
-  (box || []).slice().sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0)).forEach(en => {
-    const parts = String(en.idKeyStr || '').split('|');
-    if (parts[0] && parts[0] !== '기출') return;          // 유형모음 등은 제외
-    const level = en.level || parts[1], subj = en.subject || parts[2], year = parts[3] || en.label;
-    const sub = RV_SUBJ[subj]; if (!sub) return;
-    const id = 'rv:' + subj;
-    const g = by[id] || (by[id] = {name: subj + '_보충학습', keys: [], miss: 0});
-    const e = findExam(level, sub, year);
-    const it = e && e.items.find(i => i.n.includes(+en.num));
-    if (!it) { g.miss++; return; }
-    const k = keyOf(e, it);
-    if (!g.keys.includes(k)) g.keys.push(k);
-  });
-  Object.keys(LINKED).filter(k => k.startsWith('rv:')).forEach(k => delete LINKED[k]);
+  const add = (pfx, en) => {
+    const r = entryKey(en); if (!r) return;
+    const id = pfx + ':' + r.subj;
+    const g = by[id] || (by[id] = {name: r.subj + AUTO_PFX[pfx].suf, keys: [], miss: 0});
+    if (!r.k) { g.miss++; return; }
+    if (!g.keys.includes(r.k)) g.keys.push(r.k);
+  };
+  (box || []).forEach(en => en && add('rv', en));
+  (marks || []).forEach(en => en && add(en.kind === 'star' ? 'sr' : 'ag', en));
+  Object.keys(LINKED).filter(isAuto).forEach(k => delete LINKED[k]);
   Object.assign(LINKED, by);
 }
 function linkedSel(id) {
   const L = LINKED[id], m = st.link[id] || {};
-  if (!L) return {sel: [], hidden: [], title: id.slice(3) + '_보충학습'};
+  if (!L) return {sel: [], hidden: [], title: id.slice(3) + (AUTO_PFX[id.slice(0, 2)] || {suf: ''}).suf};
   const order = (m.order || []).filter(k => L.keys.includes(k) || userDiv(k));
-  const sel = order.concat(L.keys.filter(k => !order.includes(k)));
+  let sel = [...order];
+  if (id.startsWith('th:')) sel = sel.concat(L.keys.filter(k => !order.includes(k)));
+  else {   // 처음엔 연도순, 손으로 옮긴 순서는 유지하고 새로 담긴 건 연도 자리에 끼워넣기
+    L.keys.filter(k => !order.includes(k)).sort(cmpKey).forEach(k => {
+      const at = sel.findIndex(x => !isDiv(x) && cmpKey(k, x) < 0);
+      at < 0 ? sel.push(k) : sel.splice(at, 0, k);
+    });
+  }
   return {sel, hidden: (m.hidden || []).filter(k => sel.includes(k)), title: m.title || L.name};
 }
+const FB = 'https://tracker-d3a39-default-rtdb.firebaseio.com/psat_tracker_data/psat_tracker_data_v1/';
+const asArr = v => Array.isArray(v) ? v.filter(Boolean) : (v && typeof v === 'object' ? Object.values(v).filter(Boolean) : null);
+async function fbGet(node, lsKey) {
+  let v = null;
+  try { const r = await fetch(FB + node + '.json', {cache: 'no-store'}); if (r.ok) v = asArr(await r.json()); } catch (e) {}
+  if (!v) { try { v = asArr(JSON.parse(localStorage.getItem(lsKey) || '[]')); } catch (e) {} }
+  return v || [];
+}
+let RECS = [];
 async function loadReviewBox() {
-  let box = null;
-  try {
-    const r = await fetch('https://tracker-d3a39-default-rtdb.firebaseio.com/psat_tracker_data/psat_tracker_data_v1/reviewBox.json', {cache: 'no-store'});
-    if (r.ok) box = await r.json();
-  } catch (e) {}
-  if (!Array.isArray(box)) { try { box = JSON.parse(localStorage.getItem('psatTrackerReviewBox_v1') || '[]'); } catch (e) { box = []; } }
-  buildLinked(box);
+  const [box, marks, recs] = await Promise.all([fbGet('reviewBox', 'psatTrackerReviewBox_v1'), fbGet('markBox', 'psatTrackerMarkBox_v1'), fbGet('records', 'psatTrackerRecords_v1')]);
+  RECS = recs; buildKw();
+  buildLinked(box, marks);
   linkLoaded = true;
   if (isLinked()) Object.assign(st, linkedSel(st.cur));
   renderAll();
 }
-if (st.cur && !st.sets[st.cur] && !/^(rv|th):/.test(st.cur)) st.cur = null;
+if (st.cur && !st.sets[st.cur] && !/^(rv|ag|sr|th):/.test(st.cur)) st.cur = null;
 const isOn = k => !st.hidden.includes(k);
 const numStr = it => it.n.length > 1 ? it.n[0] + '-' + it.n[it.n.length - 1] : '' + it.n[0];
 const kindShow = e => e.kind === '7급근로' ? '근로감독' : e.kind + (e.book === '모의' ? '모의' : '');
@@ -302,8 +337,48 @@ function renderSeg(e, seg, scale, now) {
 function renderTabs() {
   $('tabs').innerHTML = SUBS.map(s => `<div class="tab ${st.sub === s ? 'on' : ''}" data-s="${s}">${s}</div>`).join('');
 }
+/* ───── 키워드: 트래커에 넣어둔 유형·오답 키워드로 문제 모으기 ───── */
+let KW = {};     // sub → {type: {kw: [keys]}, reason: {kw: [keys]}}
+function buildKw() {
+  KW = {};
+  const vals = o => !o ? [] : Array.isArray(o) ? o.map((v, i) => [i, v]) : Object.entries(o);
+  RECS.forEach(r => {
+    if (!r || (r.category && r.category !== '기출')) return;
+    const sub = RV_SUBJ[r.subject]; if (!sub) return;
+    const e = findExam(r.level, sub, r.year); if (!e) return;
+    const K = KW[sub] || (KW[sub] = {type: {}, reason: {}});
+    const put = (g, n, list) => {
+      const it = e.items.find(i => i.n.includes(+n)); if (!it) return;
+      const k = keyOf(e, it);
+      (Array.isArray(list) ? list : asArr(list) || []).forEach(w => { if (!w) return; const a = K[g][w] || (K[g][w] = []); if (!a.includes(k)) a.push(k); });
+    };
+    vals(r.problemTypeKeywords).forEach(([n, l]) => put('type', n, l));
+    vals(r.wrongs).forEach(([n, w]) => w && put('reason', n, w.reasonKeywords));
+    vals(r.noteKeywords).forEach(([n, l]) => put('reason', n, l));
+  });
+}
+function renderKw() {
+  const K = KW[st.sub];
+  if (!linkLoaded) return '<div class="kwempty">트래커에서 키워드 불러오는 중…</div>';
+  if (!K || (!Object.keys(K.type).length && !Object.keys(K.reason).length)) return '<div class="kwempty">이 영역은 트래커에 넣은 키워드가 아직 없어요</div>';
+  st.kwSel = (st.kwSel || []).filter(x => { const [g, w] = x.split('\u0001'); return K[g] && K[g][w]; });
+  const chips = g => Object.keys(K[g]).sort((a, b) => a.localeCompare(b, 'ko')).map(w => { const id = g + '\u0001' + w; return `<span class="kw ${st.kwSel.includes(id) ? 'on' : ''}" data-kw="${esc(id)}">${esc(w)}<i>${K[g][w].length}</i></span>`; }).join('');
+  let h = '';
+  if (Object.keys(K.type).length) h += `<div class="kwg">유형 키워드</div><div class="kws">${chips('type')}</div>`;
+  if (Object.keys(K.reason).length) h += `<div class="kwg">오답 키워드</div><div class="kws">${chips('reason')}</div>`;
+  if (st.kwSel.length) {
+    const keys = [...new Set(st.kwSel.flatMap(x => { const [g, w] = x.split('\u0001'); return K[g][w]; }))].filter(k => itemOf(k)).sort(cmpKey);
+    const allOn = keys.every(k => st.sel.includes(k));
+    h += `<div class="kwres"><div class="gh"><span class="gt" style="font-weight:600">고른 키워드 문제</span><span class="cnt">${keys.length}개</span><span class="sp"></span><button data-kwall="1" style="padding:3px 8px">${allOn ? '전체 빼기' : '전체 담기'}</button></div>
+      <div class="knums">${keys.map(k => { const {e, it} = itemOf(k); return `<div class="num ${st.sel.includes(k) ? 'on' : ''}" data-k="${k}">${esc(srcLabel(e, it))}</div>`; }).join('')}</div></div>`;
+  }
+  return h;
+}
+function kwKeys() { const K = KW[st.sub] || {}; return [...new Set((st.kwSel || []).flatMap(x => { const [g, w] = x.split('\u0001'); return (K[g] || {})[w] || []; }))].filter(k => itemOf(k)); }
 function selCountIn(e) { return st.sel.filter(k => k.startsWith(e.id + '|')).length; }
 function renderBank() {
+  document.querySelectorAll('#bmode span').forEach(x => x.classList.toggle('on', x.dataset.m === (st.bmode || 'exam')));
+  if (st.bmode === 'kw') { $('bank').innerHTML = renderKw(); return; }
   const list = EXAMS.filter(e => e.sub === st.sub);
   let html = '';
   for (const k of KINDS) {
@@ -337,10 +412,11 @@ const EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.2 4.1M6.6 6.6A17.4 17.4 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
 function renderSets() {
   const ids = Object.keys(st.sets).sort((a, b) => st.sets[a].name.localeCompare(st.sets[b].name, 'ko'));
-  const lids = ['rv:언어논리', 'rv:자료해석', 'rv:상황판단'].filter(id => LINKED[id] || st.cur === id);
+  const autoGrp = (pfx, lab) => { const l = ['언어논리', '자료해석', '상황판단'].map(x => pfx + ':' + x).filter(id => LINKED[id] || st.cur === id);
+    return l.length ? `<optgroup label="${lab}">` + l.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${AUTO_PFX[pfx].icon} ${esc(id.slice(3))}${AUTO_PFX[pfx].suf} (${LINKED[id] ? LINKED[id].keys.length : 0})</option>`).join('') + '</optgroup>' : ''; };
   $('setSel').innerHTML = `<option value="">＋ 새 묶음 (저장 안 됨)</option>` +
     (ids.length ? '<optgroup label="내 묶음">' + ids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(st.sets[id].name)}</option>`).join('') + '</optgroup>' : '') +
-    (lids.length ? '<optgroup label="PSAT 보충학습 (자동)">' + lids.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(id.slice(3))}_보충학습 (${LINKED[id] ? LINKED[id].keys.length : 0})</option>`).join('') + '</optgroup>' : '') +
+    autoGrp('ag', '🔁 한 번 더 풀기 (자동)') + autoGrp('sr', '⭐ 중요 (자동)') + autoGrp('rv', '📌 보충학습 (자동)') +
     [['언어논리', '언어'], ['자료해석', '자료'], ['상황판단', '상황']].map(([full, short]) => {
       const ts = Object.keys(LINKED).filter(id => id.startsWith('th:' + full));
       return ts.length ? `<optgroup label="모음집 · ${short}">` + ts.map(id => `<option value="${id}" ${st.cur === id ? 'selected' : ''}>${esc(LINKED[id].name.slice(full.length + 1))} (${LINKED[id].keys.length})</option>`).join('') + '</optgroup>' : '';
@@ -349,7 +425,7 @@ function renderSets() {
   $('setSave').title = isLinked() ? '이 목록을 내 묶음으로 복사' : '';
   $('setDel').style.display = st.cur && !isLinked() ? '' : 'none';
   const miss = isLinked() && LINKED[st.cur] ? LINKED[st.cur].miss : 0;
-  $('linkInfo').textContent = !isLinked() ? '' : st.cur.startsWith('th:') ? '모음집 순서 그대로 (고정 묶음)' : (linkLoaded ? 'PSAT 트래커 📌 자동 연결' + (miss ? ` · 못 찾은 문제 ${miss}개` : '') : '트래커에서 불러오는 중…');
+  $('linkInfo').textContent = !isLinked() ? '' : st.cur.startsWith('th:') ? '모음집 순서 그대로 (고정 묶음)' : (linkLoaded ? 'PSAT 트래커 ' + AUTO_PFX[st.cur.slice(0, 2)].icon + ' 자동 연결 · 연도순 (드래그로 바꾸면 유지)' + (miss ? ` · 못 찾은 문제 ${miss}개` : '') : '트래커에서 불러오는 중…');
   $('linkInfo').style.display = isLinked() ? '' : 'none';
 }
 function renderSel() {
@@ -358,7 +434,7 @@ function renderSel() {
   $('selCnt').textContent = nq ? nq + '개' + (off ? ` · 숨김 ${off}` : '') : '';
   let no = 0;
   $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
-    if (isDiv(k)) { const on = isOn(k); return `<div class="sl div ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="src">${esc(divName(k))}</span><span class="dtag">구분 페이지</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${userDiv(k) ? `<button class="x" data-x="${i}">✕</button>` : ''}</div>`; }
+    if (isDiv(k)) { const on = isOn(k); return `<div class="sl div ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="src">${esc(divName(k))}</span><span class="dtag">구분 페이지</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${userDiv(k) || !String(st.cur || '').startsWith('th:') ? `<button class="x" data-x="${i}">✕</button>` : ''}</div>`; }
     no++;
     const {e, it} = itemOf(k);
     const on = isOn(k);
@@ -618,7 +694,16 @@ async function buildPdf() {
 
 /* ───── 이벤트 ───── */
 $('tabs').onclick = e => { const s = e.target.dataset.s; if (!s) return; st.sub = s; st.open = null; renderTabs(); renderBank(); save(); };
+$('bmode').onclick = e => { const m = e.target.dataset.m; if (!m) return; st.bmode = m; renderBank(); save(); };
 $('bank').onclick = ev => {
+  const kw = ev.target.closest('.kw');
+  if (kw) { const id = kw.dataset.kw; st.kwSel = (st.kwSel || []).includes(id) ? st.kwSel.filter(x => x !== id) : [...(st.kwSel || []), id]; renderBank(); save(); return; }
+  if (ev.target.dataset.kwall) {
+    if (lockLinked()) return;
+    const keys = kwKeys().sort(cmpKey), on = keys.every(k => st.sel.includes(k));
+    st.sel = on ? st.sel.filter(k => !keys.includes(k)) : st.sel.concat(keys.filter(k => !st.sel.includes(k)));
+    renderAll(); return;
+  }
   const ex = ev.target.closest('.ex');
   if (ex) { st.open = st.open === ex.dataset.e ? null : ex.dataset.e; renderBank(); save(); return; }
   const all = ev.target.dataset.all;
@@ -642,7 +727,7 @@ $('addDiv').onclick = () => {
 };
 function lockLinked() {
   if (!isLinked()) return false;
-  alert((st.cur.startsWith('th:') ? '모음집 묶음은 고정이에요.' : '보충학습 묶음은 PSAT 트래커의 📌로 관리돼요.') + '\n여기서 바꾸려면 위에서 [복사]해서 내 묶음으로 만들어줘!');
+  alert((st.cur.startsWith('th:') ? '모음집 묶음은 고정이에요.' : '이 묶음은 PSAT 트래커의 ' + AUTO_PFX[st.cur.slice(0, 2)].icon + '로 관리돼요.') + '\n여기서 바꾸려면 위에서 [복사]해서 내 묶음으로 만들어줘!');
   return true;
 }
 $('clear').onclick = () => { if (lockLinked()) return; if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; st.hidden = []; renderAll(); } };
@@ -674,9 +759,8 @@ $('setDel').onclick = () => {
   renderAll();
 };
 $('sortNo').onclick = () => {
-  const yr = e => e.book === '모의' ? 2020.5 : (+e.year || 0);
   const out = []; let seg = [];
-  const flush = () => { seg.sort((a, b) => { const A = itemOf(a), B = itemOf(b); return yr(A.e) - yr(B.e) || String(A.e.book).localeCompare(String(B.e.book)) || String(A.e.kind).localeCompare(String(B.e.kind)) || A.it.n[0] - B.it.n[0]; }); out.push(...seg); seg = []; };
+  const flush = () => { seg.sort(cmpKey); out.push(...seg); seg = []; };
   st.sel.forEach(k => { if (isDiv(k)) { flush(); out.push(k); } else seg.push(k); }); flush();
   st.sel = out; renderAll();
 };
