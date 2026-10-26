@@ -219,6 +219,7 @@ h3{color:var(--ink)!important}
 .grid td.nw,.grid th.nw{white-space:nowrap}
 .grid td.mk{text-align:center;vertical-align:middle}
 .grid td.sh{background:var(--sky-soft);font-family:var(--font);font-weight:500;font-size:13px;text-align:center;vertical-align:middle}
+.grid .yr{font-weight:300;color:var(--muted);font-size:.92em}
 .gw{overflow-x:auto;scrollbar-width:none}.gw::-webkit-scrollbar{display:none}
 .gw.wide{margin:8px 0;--sbw:0px;position:relative;left:50%;transform:translateX(-50%);width:min(1600px,calc(100vw - var(--sbw) - 56px))}
 @media(min-width:1180px){body.side .gw.wide{--sbw:236px}}
@@ -269,7 +270,7 @@ const block=b=>{
  if(b.k==='grid'){
   const R=b.v.map(r=>r.slice()), rs={};const nolab=R[0][0].startsWith('!');if(nolab)R[0][0]=R[0][0].slice(1);
   R.forEach((r,ri)=>r.forEach((c,ci)=>{if(c==='^^'){let k=ri-1;while(k>=0&&R[k][ci]==='^^')k--;rs[k+','+ci]=(rs[k+','+ci]||1)+1;}}));
-  const cell=(c,tag,cs,rsp,ci)=>{let k=[];if(c.startsWith('#')){c=c.slice(1);k.push('sh');}if(ci===0&&!nolab)k.push('c0');if(/^\s*[○×△◯]\s*$/.test(c))k.push('mk');if(c.replace(/<[^>]+>|\*\*|\{[rb]\||\}/g,'').length<=6)k.push('nw');const cl=k.length?` class="${k.join(' ')}"`:'';return `<${tag}${cl}${cs>1?` colspan="${cs}"`:''}${rsp>1?` rowspan="${rsp}"`:''}>${fmt(c).replace(/【(.+?)】/g,'<span class="k">【$1】</span>')}</${tag}>`;};
+  const cell=(c,tag,cs,rsp,ci)=>{let k=[];if(c.startsWith('#')){c=c.slice(1);k.push('sh');}if(ci===0&&!nolab)k.push('c0');if(/^\s*[○×△◯]\s*$/.test(c))k.push('mk');if(c.replace(/<[^>]+>|\*\*|\{[rb]\||\}/g,'').length<=6)k.push('nw');const cl=k.length?` class="${k.join(' ')}"`:'';return `<${tag}${cl}${cs>1?` colspan="${cs}"`:''}${rsp>1?` rowspan="${rsp}"`:''}>${(()=>{let h=fmt(c).replace(/【(.+?)】/g,'<span class="k">【$1】</span>');if(tag==='th'||(ci===0&&!nolab))h=h.replace(/\((\d{4}[^()<]*)\)/g,'<span class="yr">($1)</span>');return h;})()}</${tag}>`;};
   const row=(r,ri,tag)=>{let o='';for(let i=0;i<r.length;i++){if(r[i]==='<<'||r[i]==='^^')continue;let s=1;while(r[i+s]==='<<')s++;o+=cell(r[i],tag,s,rs[ri+','+i]||1,i);}return `<tr>${o}</tr>`;};
   return `<div class="gw${b.wide?' wide':''}"><table class="grid${b.wide?' wide':''}">${R.map((r,ri)=>row(r,ri,ri<(b.wide?2:1)?'th':'td')).join('')}</table></div>`;}
  return '';
