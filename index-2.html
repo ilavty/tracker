@@ -1034,6 +1034,8 @@ function renderCity(p){
   updBar(elapsed);updStars(elapsed);updTime(elapsed);
   var ov=qs('stampOverlay');
   var isDone=(elapsed>=TARGET);
+  // 이 기기에서 안 열려 있을 때 100시간을 채웠어도 도장 모음에 들어가게
+  if(isDone&&st.visited&&st.visited.indexOf(st.idx)<0){st.visited.push(st.idx);saveSt();try{window.parent.postMessage('missionComplete','*');}catch(e){}}
   if(ov)if(isDone)ov.classList.add('show');else ov.classList.remove('show');
   // 항상 발권표 내용 업데이트 (완료 여부와 무관)
   var en2=EN_MAP[p.city]||p.city;
@@ -1825,6 +1827,7 @@ window.addEventListener('storage', function(event) {
         if (newElapsed === elapsed) return;
         elapsed = newElapsed;
         st.elapsed = newSt.elapsed;
+        saveToFirebase(); // 플래너에서 넣은 시간도 클라우드에 올려서 다음에 열 때 안 사라지게
         updBar(elapsed);
         updStars(elapsed);
         updTime(elapsed);
