@@ -718,12 +718,13 @@ header h1{font-size:20px;font-weight:700;margin:0;flex:1}
 .sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;text-align:center}
 .sum b{display:block;font-size:22px;font-weight:700;color:var(--ink)}.sum b small{font-size:13px;color:var(--muted);font-weight:400}
 .sum span{font-size:12px;color:var(--muted)}
-.sl{list-style:none;padding:0;margin:0}
+.sl{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px}
+@media(max-width:640px){.sl{grid-template-columns:minmax(0,1fr)}}
 .sl li{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:9px 2px;font-size:13.5px;cursor:pointer}
 .sl li:hover{background:var(--sky-soft)}
 .sl .k{font-weight:700;color:var(--sky);width:30px;flex:none}
 .sl .st{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl .st small{color:var(--muted);font-size:11px;margin-left:6px}
-.sbar{width:90px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex:none}.sbar i{display:block;height:100%;background:var(--sky)}
+.sbar{width:64px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex:none}.sbar i{display:block;height:100%;background:var(--sky)}
 .sv{width:38px;text-align:right;font-size:12px;color:var(--ink);flex:none}
 .wl li{border-top:1px solid var(--line);padding:10px 0;font-size:14px;line-height:1.55}
 .wl .k{font-weight:700;margin-right:6px}
@@ -758,14 +759,15 @@ function setup(){const g=ST.set.g,sel=new Set(selPts(g)),P=pool();
   const seg=(key,opts)=>`<div class="seg ${key==='g'?'grades':''}">`+opts.map(([v,l])=>`<button class="${ST.set[key]===v?'on':''}" onclick="ST.set['${key}']='${v}';save();render()">${l}</button>`).join('')+'</div>';
   $('#app').innerHTML=header()+`<div class="card"><div class="lbl">등급</div>${seg('g',GRADES.map(x=>[x,x+'급']))}
   <div class="lbl" style="margin-top:12px">문제</div>${seg('mode',[['all','섞기'],['ox','OX'],['sa','단답']])}
-  <div class="lbl" style="margin-top:12px">순서 · 범위</div><div class="row">${seg('order',[['book','책 순서'],['rand','랜덤']])}${seg('filt',[['all','전부'],['new','안 푼 것'],['wrong','최근 틀린 것']])}</div></div>
+  <div class="lbl" style="margin-top:12px">순서 · 범위</div><div class="row">${seg('order',[['book','책 순서'],['rand','랜덤'],['low','정답률 낮은 순']])}${seg('filt',[['all','전부'],['new','안 푼 것'],['wrong','최근 틀린 것']])}</div></div>
   <div class="card"><div class="row" style="justify-content:space-between"><div class="lbl" style="margin:0">POINT</div><div><button class="mini" onclick="allPts(1)">전체 선택</button><button class="mini" onclick="allPts(0)">전체 해제</button></div></div>${ph}</div>
   <button class="start" ${P.length?'':'disabled'} onclick="start()">${P.length}문제 시작</button>`;}
 function togPt(no){const g=ST.set.g,a=selPts(g),i=a.indexOf(no);i<0?a.push(no):a.splice(i,1);save();render()}
 function togCh(list){const g=ST.set.g,a=selPts(g),L=list.split(',');const all=L.every(x=>a.includes(x));L.forEach(x=>{const i=a.indexOf(x);if(all&&i>=0)a.splice(i,1);if(!all&&i<0)a.push(x)});save();render()}
 function allPts(on){ST.set.pts[ST.set.g]=on?ptsOf(ST.set.g):[];save();render()}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function start(list){let a=list||pool().slice();if(ST.set.order==='rand')shuffle(a);RUN={qs:a,i:0,ans:null,res:[]};view='play';render();scrollTo(0,0)}
+function start(list){let a=list||pool().slice();if(ST.set.order==='rand')shuffle(a);
+  if(ST.set.order==='low'){const r=q=>{const x=ST.s[q.id];return x&&x.n?(x.n-x.w)/x.n:2};a=a.map((q,i)=>[q,i]).sort((A,B)=>r(A[0])-r(B[0])||((ST.s[B[0].id]||{w:0}).w-(ST.s[A[0].id]||{w:0}).w)||A[1]-B[1]).map(x=>x[0]);}RUN={qs:a,i:0,ans:null,res:[]};view='play';render();scrollTo(0,0)}
 function norm(s){return String(s).toLowerCase().replace(/제|개정헌법|헌법|개헌|[\s·,.()\-~]/g,'')}
 function play(){const R=RUN,q=R.qs[R.i],P=PTS[q.p]||{};const pct=Math.round(R.i/R.qs.length*100);
   let body='';
