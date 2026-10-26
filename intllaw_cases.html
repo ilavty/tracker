@@ -224,6 +224,8 @@ window.makeCloud=function(path,key,getState,applyState){
       <div class="chips" id="ilc-chips"></div>
       <button type="button" class="ctog" id="ilc-ktog"></button>
       <div class="kwbar" id="ilc-kws" hidden></div>
+      <button type="button" class="ctog" id="ilc-ntog"></button>
+      <div class="kwbar" id="ilc-nats" hidden></div>
     </div>
     <div id="ilc-out"></div>
     <div id="ilc-quiz" hidden></div>
@@ -253,7 +255,28 @@ const kwOf=id=>(store.kw&&Array.isArray(store.kw[id]))?store.kw[id]:[];
 function setKw(id,list){if(!store.kw||typeof store.kw!=="object")store.kw={};if(list.length)store.kw[id]=list;else delete store.kw[id]}
 function kwCount(k){let n=0;for(const id in (store.kw||{}))if(kwOf(id).includes(k))n++;return n}
 let kwSel=new Set(),kwAnd=false;
-function drawKw(){
+/* 국가 필터: 원고 v. 피고 칸에서 나라 이름만 뽑음 */
+const NATS="미국 영국 프랑스 독일 한국 일본 중국 북한 러시아 인도 파키스탄 이탈리아 벨기에 네덜란드 노르웨이 덴마크 스웨덴 핀란드 아이슬란드 스위스 스페인 포르투갈 그리스 폴란드 헝가리 슬로바키아 루마니아 불가리아 몰타 아일랜드 우크라이나 조지아 리히텐슈타인 세르비아 몬테네그로 크로아티아 보스니아-헤르체고비나 알바니아 튀르키예 이스라엘 이란 카타르 바레인 이집트 리비아 튀니지 캐나다 멕시코 니카라과 코스타리카 콜롬비아 페루 칠레 볼리비아 아르헨티나 브라질 우루과이 베네수엘라 온두라스 엘살바도르 과테말라 파나마 가이아나 도미니카공화국 앤티가바부다 세인트빈센트그레나딘 호주 뉴질랜드 마셜제도 나우루 필리핀 말레이시아 인도네시아 태국 캄보디아 베트남 미얀마 방글라데시 싱가포르 콩고민주공화국 우간다 르완다 기니 기니비사우 적도기니 세네갈 감비아 말리 부르키나파소 니제르 베냉 나이지리아 카메룬 차드 가나 코트디부아르 소말리아 케냐 보츠와나 나미비아 지부티 모리셔스".split(" ");
+const NAT_AL={"대한민국":"한국","한국 정부":"한국","서독":"독일","영":"영국","미 측":"미국","EC":"EC·EU","EU":"EC·EU","스페인 공화국 정부":"스페인","네덜란드 세관":"네덜란드"};
+const NATSET=new Set(NATS.concat(["EC·EU"]));
+function natsOf(r){
+  let p=String(r.parties||"").replace(/인도 거절/g,"").replace(/\(([^)]*)\)/g," / $1");
+  const out=new Set();
+  p.split(/\s+v\.\s+|\/|·|,|↔|–|\s등(?=\s|$)/).forEach(t=>{t=t.trim().replace(/^v\.\s*/,"").replace(/\s*(참가|병합|반소|해석 청구|특별협정|인도 청구)$/,"").trim();t=NAT_AL[t]||t;if(NATSET.has(t))out.add(t);});
+  return [...out];
+}
+let natSel=new Set();
+function drawNats(){
+  const cnt={};all().forEach(r=>natsOf(r).forEach(n=>cnt[n]=(cnt[n]||0)+1));
+  const L=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||a.localeCompare(b,"ko"));
+  let op=null;try{op=localStorage.getItem("ilc_nat_open")}catch(e){}
+  const open=op==="1"||natSel.size>0&&op!=="0";
+  $("#ilc-ntog").innerHTML=`국가${natSel.size?` · <b>${[...natSel].join(", ")}</b>`:""} <i>${open?'▴':'▾'}</i>`;
+  const box=$("#ilc-nats");box.hidden=!open;
+  box.innerHTML=L.map(k=>`<button type="button" class="chip" data-nat="${esc(k)}" aria-pressed="${natSel.has(k)}">${esc(k)}<b>${cnt[k]}</b></button>`).join("")+(natSel.size?`<button type="button" class="clr" data-natclr="1">선택 해제</button>`:"");
+}
+function drawKw(){drawKw0();drawNats();}
+function drawKw0(){
   const P=kwPool();let op=null;try{op=localStorage.getItem("ilc_kw_open")}catch(e){}
   const open=op==="1"||kwSel.size>0&&op!=="0";
   $("#ilc-ktog").innerHTML=`논점 키워드${kwSel.size?` · <b>${kwSel.size}개</b>`:""} <i>${open?'▴':'▾'}</i>`;
@@ -283,7 +306,7 @@ function render(){
   const R=all();let html="",any=false;
   for(const [k,l] of G){
     if(active!=="all"&&active!==k)continue;
-    const rows=R.filter(r=>r.g===k).filter(r=>{if(!kwSel.size)return true;const m=kwOf(r.id);return kwAnd?[...kwSel].every(x=>m.includes(x)):m.some(x=>kwSel.has(x))}).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2),...kwOf(r.id)].join(" ").toLowerCase().includes(t)).sort((a,b)=>yr(a.year)-yr(b.year));
+    const rows=R.filter(r=>r.g===k).filter(r=>!natSel.size||natsOf(r).some(n=>natSel.has(n))).filter(r=>{if(!kwSel.size)return true;const m=kwOf(r.id);return kwAnd?[...kwSel].every(x=>m.includes(x)):m.some(x=>kwSel.has(x))}).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2),...kwOf(r.id)].join(" ").toLowerCase().includes(t)).sort((a,b)=>yr(a.year)-yr(b.year));
     if(!rows.length)continue;any=true;
     html+=`<section><h2>${l}<span>${rows.length}건</span></h2><div class="tw"><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><thead><tr><th>재판소</th><th>판례 이름</th><th>연도</th><th>원고 v. 피고</th><th>목차 분류</th></tr></thead><tbody>`+
     rows.map(r=>{const f=r.flag?` <span class="fl" title="${esc(r.flag)}">*</span>`:"";const yf=r.flag&&r.flag.startsWith("연도")?f:"",pf=r.flag&&!r.flag.startsWith("연도")?f:"";
@@ -530,6 +553,9 @@ root.addEventListener("click",e=>{
   const kc=t.closest("#ilc-kws [data-kw]");if(kc){const k=kc.dataset.kw;kwSel.has(k)?kwSel.delete(k):kwSel.add(k);drawKw();render();return}
   if(t.closest("[data-kwmode]")){kwAnd=!kwAnd;drawKw();render();return}
   if(t.closest("[data-kwclr]")){kwSel.clear();drawKw();render();return}
+  const nc=t.closest("#ilc-nats [data-nat]");if(nc){const k=nc.dataset.nat;natSel.has(k)?natSel.delete(k):natSel.add(k);drawNats();render();return}
+  if(t.closest("[data-natclr]")){natSel.clear();drawNats();render();return}
+  if(t.closest("#ilc-ntog")){const o=$("#ilc-nats").hidden;try{localStorage.setItem("ilc_nat_open",o?"1":"0")}catch(e){}drawNats();return}
   const kg=t.closest("[data-kwgo]");if(kg){kwSel=new Set([kg.dataset.kwgo]);try{localStorage.setItem("ilc_kw_open","1")}catch(e){}closeM();if(typeof QZ!=="undefined"&&QZ.on)toggleQuiz();drawKw();render();return}
   if(t.closest("#ilc-ktog")){const o=$("#ilc-kws").hidden;try{localStorage.setItem("ilc_kw_open",o?"1":"0")}catch(e){}drawKw();return}
   if(t.closest("#ilc-ctog")){const o=$("#ilc-chips").hidden;try{localStorage.setItem("ilc_courts_open",o?"1":"0")}catch(e){}drawChips();return}
