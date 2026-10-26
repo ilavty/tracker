@@ -143,6 +143,8 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc .err{color:var(--danger);font-size:12.5px}
 #ilc .ctog{align-self:flex-start;font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 12px;cursor:pointer}
 #ilc .ctog b{color:var(--ink);font-weight:600}
+#ilc .ftogs{display:flex;flex-wrap:wrap;gap:8px}
+#ilc .ftogs .ctog.on{border-color:var(--ink);color:var(--ink)}
 #ilc .ctog i{font-style:normal;margin-left:2px}
 @media (max-width:560px){
   #ilc{font-size:13px}
@@ -220,11 +222,9 @@ window.makeCloud=function(path,key,getState,applyState){
     </div>
     <div class="bar">
       <input id="ilc-q" type="search" placeholder="검색" aria-label="검색">
-      <button type="button" class="ctog" id="ilc-ctog"></button>
-      <div class="chips" id="ilc-chips"></div>
-      <button type="button" class="ctog" id="ilc-ktog"></button>
+      <div class="ftogs"><button type="button" class="ctog" id="ilc-ctog"></button><button type="button" class="ctog" id="ilc-ktog"></button><button type="button" class="ctog" id="ilc-ntog"></button></div>
+      <div class="chips" id="ilc-chips" hidden></div>
       <div class="kwbar" id="ilc-kws" hidden></div>
-      <button type="button" class="ctog" id="ilc-ntog"></button>
       <div class="kwbar" id="ilc-nats" hidden></div>
     </div>
     <div id="ilc-out"></div>
@@ -255,6 +255,9 @@ const kwOf=id=>(store.kw&&Array.isArray(store.kw[id]))?store.kw[id]:[];
 function setKw(id,list){if(!store.kw||typeof store.kw!=="object")store.kw={};if(list.length)store.kw[id]=list;else delete store.kw[id]}
 function kwCount(k){let n=0;for(const id in (store.kw||{}))if(kwOf(id).includes(k))n++;return n}
 let kwSel=new Set(),kwAnd=false;
+/* 필터 셋 중 하나만 펼침 */
+let filtOpen=null;try{filtOpen=localStorage.getItem("ilc_filt_open")||null}catch(e){}
+function setFilt(k){filtOpen=filtOpen===k?null:k;try{localStorage.setItem("ilc_filt_open",filtOpen||"")}catch(e){}drawChips();drawKw();}
 /* 국가 필터: 원고 v. 피고 칸에서 나라 이름만 뽑음 */
 const NATS="미국 영국 프랑스 독일 한국 일본 중국 북한 러시아 인도 파키스탄 이탈리아 벨기에 네덜란드 노르웨이 덴마크 스웨덴 핀란드 아이슬란드 스위스 스페인 포르투갈 그리스 폴란드 헝가리 슬로바키아 루마니아 불가리아 몰타 아일랜드 우크라이나 조지아 리히텐슈타인 세르비아 몬테네그로 크로아티아 보스니아-헤르체고비나 알바니아 튀르키예 이스라엘 이란 카타르 바레인 이집트 리비아 튀니지 캐나다 멕시코 니카라과 코스타리카 콜롬비아 페루 칠레 볼리비아 아르헨티나 브라질 우루과이 베네수엘라 온두라스 엘살바도르 과테말라 파나마 가이아나 도미니카공화국 앤티가바부다 세인트빈센트그레나딘 호주 뉴질랜드 마셜제도 나우루 필리핀 말레이시아 인도네시아 태국 캄보디아 베트남 미얀마 방글라데시 싱가포르 콩고민주공화국 우간다 르완다 기니 기니비사우 적도기니 세네갈 감비아 말리 부르키나파소 니제르 베냉 나이지리아 카메룬 차드 가나 코트디부아르 소말리아 케냐 보츠와나 나미비아 지부티 모리셔스".split(" ");
 const NAT_AL={"대한민국":"한국","한국 정부":"한국","서독":"독일","영":"영국","미 측":"미국","EC":"EC·EU","EU":"EC·EU","스페인 공화국 정부":"스페인","네덜란드 세관":"네덜란드"};
@@ -269,16 +272,14 @@ let natSel=new Set();
 function drawNats(){
   const cnt={};all().forEach(r=>natsOf(r).forEach(n=>cnt[n]=(cnt[n]||0)+1));
   const L=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||a.localeCompare(b,"ko"));
-  let op=null;try{op=localStorage.getItem("ilc_nat_open")}catch(e){}
-  const open=op==="1"||natSel.size>0&&op!=="0";
+  const open=filtOpen==="nat";$("#ilc-ntog").classList.toggle("on",open);
   $("#ilc-ntog").innerHTML=`국가${natSel.size?` · <b>${[...natSel].join(", ")}</b>`:""} <i>${open?'▴':'▾'}</i>`;
   const box=$("#ilc-nats");box.hidden=!open;
   box.innerHTML=L.map(k=>`<button type="button" class="chip" data-nat="${esc(k)}" aria-pressed="${natSel.has(k)}">${esc(k)}<b>${cnt[k]}</b></button>`).join("")+(natSel.size?`<button type="button" class="clr" data-natclr="1">선택 해제</button>`:"");
 }
 function drawKw(){drawKw0();drawNats();}
 function drawKw0(){
-  const P=kwPool();let op=null;try{op=localStorage.getItem("ilc_kw_open")}catch(e){}
-  const open=op==="1"||kwSel.size>0&&op!=="0";
+  const P=kwPool();const open=filtOpen==="kw";$("#ilc-ktog").classList.toggle("on",open);
   $("#ilc-ktog").innerHTML=`논점 키워드${kwSel.size?` · <b>${kwSel.size}개</b>`:""} <i>${open?'▴':'▾'}</i>`;
   const box=$("#ilc-kws");box.hidden=!open;
   box.innerHTML=P.length?P.map(k=>`<button type="button" class="chip" data-kw="${esc(k)}" aria-pressed="${kwSel.has(k)}">${esc(k)}<b>${kwCount(k)}</b></button>`).join("")+
@@ -294,8 +295,7 @@ function drawChips(){
   const list=[["all","전체",R.length],...G.map(([k,l])=>[k,l,R.filter(r=>r.g===k).length])];
   $("#ilc-chips").innerHTML=list.map(([k,l,n])=>`<button type="button" class="chip" data-k="${k}" aria-pressed="${k===active}">${l}<b>${n}</b></button>`).join("");
   /* 재판소 고르기 열고 닫기 (폰은 처음에 닫힘) */
-  let op=null;try{op=localStorage.getItem('ilc_courts_open');}catch(e){}
-  const open=op===null?!matchMedia('(max-width:560px)').matches:op==='1';
+  const open=filtOpen==="court";$("#ilc-ctog").classList.toggle("on",open);
   const cur=list.find(x=>x[0]===active)||list[0];
   const tg=$("#ilc-ctog");tg.innerHTML=`재판소 · <b>${cur[1]}</b> <i>${open?'▴':'▾'}</i>`;
   $("#ilc-chips").hidden=!open;
@@ -555,10 +555,10 @@ root.addEventListener("click",e=>{
   if(t.closest("[data-kwclr]")){kwSel.clear();drawKw();render();return}
   const nc=t.closest("#ilc-nats [data-nat]");if(nc){const k=nc.dataset.nat;natSel.has(k)?natSel.delete(k):natSel.add(k);drawNats();render();return}
   if(t.closest("[data-natclr]")){natSel.clear();drawNats();render();return}
-  if(t.closest("#ilc-ntog")){const o=$("#ilc-nats").hidden;try{localStorage.setItem("ilc_nat_open",o?"1":"0")}catch(e){}drawNats();return}
-  const kg=t.closest("[data-kwgo]");if(kg){kwSel=new Set([kg.dataset.kwgo]);try{localStorage.setItem("ilc_kw_open","1")}catch(e){}closeM();if(typeof QZ!=="undefined"&&QZ.on)toggleQuiz();drawKw();render();return}
-  if(t.closest("#ilc-ktog")){const o=$("#ilc-kws").hidden;try{localStorage.setItem("ilc_kw_open",o?"1":"0")}catch(e){}drawKw();return}
-  if(t.closest("#ilc-ctog")){const o=$("#ilc-chips").hidden;try{localStorage.setItem("ilc_courts_open",o?"1":"0")}catch(e){}drawChips();return}
+  if(t.closest("#ilc-ntog")){setFilt("nat");return}
+  const kg=t.closest("[data-kwgo]");if(kg){kwSel=new Set([kg.dataset.kwgo]);filtOpen="kw";closeM();if(typeof QZ!=="undefined"&&QZ.on)toggleQuiz();drawKw();render();return}
+  if(t.closest("#ilc-ktog")){setFilt("kw");return}
+  if(t.closest("#ilc-ctog")){setFilt("court");return}
   const a=t.closest("[data-act]");if(!a)return;
   const act=a.dataset.act,id=a.dataset.id;
   if(act==="print"){openPrint();return}
