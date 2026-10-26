@@ -715,6 +715,16 @@ header h1{font-size:20px;font-weight:700;margin:0;flex:1}
 .fix button{border:0;background:none;color:var(--sky);font-weight:600;font-size:12px}
 .score{font-size:40px;font-weight:700;text-align:center;margin:8px 0}
 .wl{list-style:none;padding:0;margin:0}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;text-align:center}
+.sum b{display:block;font-size:22px;font-weight:700;color:var(--ink)}.sum b small{font-size:13px;color:var(--muted);font-weight:400}
+.sum span{font-size:12px;color:var(--muted)}
+.sl{list-style:none;padding:0;margin:0}
+.sl li{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:9px 2px;font-size:13.5px;cursor:pointer}
+.sl li:hover{background:var(--sky-soft)}
+.sl .k{font-weight:700;color:var(--sky);width:30px;flex:none}
+.sl .st{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sl .st small{color:var(--muted);font-size:11px;margin-left:6px}
+.sbar{width:90px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex:none}.sbar i{display:block;height:100%;background:var(--sky)}
+.sv{width:38px;text-align:right;font-size:12px;color:var(--ink);flex:none}
 .wl li{border-top:1px solid var(--line);padding:10px 0;font-size:14px;line-height:1.55}
 .wl .k{font-weight:700;margin-right:6px}
 .wl .n{color:var(--brown);font-size:13px}
@@ -738,8 +748,8 @@ function pool(){const g=ST.set.g,sel=new Set(selPts(g));let a=qsOf(g).filter(q=>
   if(ST.set.mode==='ox')a=a.filter(q=>q.k!=='Q');if(ST.set.mode==='sa')a=a.filter(q=>q.k==='Q');
   if(ST.set.filt==='wrong')a=a.filter(q=>ST.s[q.id]&&ST.s[q.id].last===0);
   if(ST.set.filt==='new')a=a.filter(q=>!ST.s[q.id]);return a;}
-function render(){view==='setup'?setup():view==='play'?play():view==='done'?done():notes();}
-function header(){return `<header><h1>헌법 문제</h1><div class="tabs"><button class="tab ${view!=='notes'?'on':''}" onclick="view='setup';render()">풀기</button><button class="tab ${view==='notes'?'on':''}" onclick="view='notes';render()">오답노트</button></div></header>`}
+function render(){view==='setup'?setup():view==='play'?play():view==='done'?done():view==='stats'?stats():notes();}
+function header(){return `<header><h1>헌법 문제</h1><div class="tabs"><button class="tab ${view!=='notes'&&view!=='stats'?'on':''}" onclick="view='setup';render()">풀기</button><button class="tab ${view==='notes'?'on':''}" onclick="view='notes';render()">오답노트</button><button class="tab ${view==='stats'?'on':''}" onclick="view='stats';render()">정답률</button></div></header>`}
 function setup(){const g=ST.set.g,sel=new Set(selPts(g)),P=pool();
   let groups={};ptsOf(g).forEach(no=>{const c=(PTS[no]&&PTS[no].ch)||['','',''];const k=c[0]+'-'+c[1];(groups[k]=groups[k]||{t:c[2],pts:[]}).pts.push(no)});
   let ph='';Object.values(groups).forEach(G=>{ph+=`<div class="ch">${esc(G.t)} <button class="mini" onclick="togCh('${G.pts.join(',')}')">전체</button></div><div class="row">`;
@@ -784,7 +794,19 @@ function wli(q){const a=q.k==='Q'?`정답: ${esc(q.a[0])}`:`정답 ${q.k}${q.n?'
 function notes(){const g=ST.set.g;const W=qsOf(g).filter(q=>ST.s[q.id]&&ST.s[q.id].w>0).sort((a,b)=>(ST.s[b.id].w-ST.s[a.id].w)||(a.p<b.p?-1:1));
   const seg=`<div class="seg grades">`+GRADES.map(x=>`<button class="${g===x?'on':''}" onclick="ST.set.g='${x}';save();render()">${x}급</button>`).join('')+'</div>';
   $('#app').innerHTML=header()+`<div class="card"><div class="row" style="justify-content:space-between">${seg}${W.length?`<button class="mini" onclick="start(OW())">${W.length}문제 풀기</button>`:''}</div></div>
-  <div class="card">${W.length?`<ul class="wl">${W.map(q=>wli(q).replace('<li>',`<li><span class="k" style="color:var(--bad)">×${ST.s[q.id].w}</span>`)).join('')}</ul>`:'<div class="empty">아직 틀린 문제 없음</div>'}</div>`;}
+  <div class="card">${W.length?`<ul class="wl">${W.map(q=>wli(q).replace('<li>',`<li><span class="k" style="color:var(--bad)">×${ST.s[q.id].w}<small style="color:var(--muted);font-weight:400;margin-left:4px">${pct(ST.s[q.id])}%</small></span>`)).join('')}</ul>`:'<div class="empty">아직 틀린 문제 없음</div>'}</div>`;}
+function pct(a){return a?Math.round((a.n-a.w)/a.n*100):null}
+function bar(v){return `<span class="sbar"><i style="width:${v==null?0:v}%"></i></span><span class="sv">${v==null?'–':v+'%'}</span>`}
+function stats(){const g=ST.set.g,Q=qsOf(g);if(!ST.set.ssort)ST.set.ssort='book';
+  const done=Q.filter(q=>ST.s[q.id]),all=acc(Q.map(q=>q.id)),ox=acc(Q.filter(q=>q.k!=='Q').map(q=>q.id)),sa=acc(Q.filter(q=>q.k==='Q').map(q=>q.id));
+  const seg=`<div class="seg grades">`+GRADES.map(x=>`<button class="${g===x?'on':''}" onclick="ST.set.g='${x}';save();render()">${x}급</button>`).join('')+'</div>';
+  const sseg=`<div class="seg">`+[['book','책 순서'],['low','낮은 순']].map(([v,l])=>`<button class="${ST.set.ssort===v?'on':''}" onclick="ST.set.ssort='${v}';save();render()">${l}</button>`).join('')+'</div>';
+  let rows=ptsOf(g).map(no=>{const qs=Q.filter(q=>q.p===no);const a=acc(qs.map(q=>q.id));return {no,t:(PTS[no]||{}).t||'',v:pct(a),d:qs.filter(q=>ST.s[q.id]).length,tot:qs.length}});
+  if(ST.set.ssort==='low')rows=rows.filter(r=>r.v!=null).sort((a,b)=>a.v-b.v||(a.no<b.no?-1:1)).concat(rows.filter(r=>r.v==null));
+  $('#app').innerHTML=header()+`<div class="card">${seg}
+   <div class="sum"><div><b>${pct(all)==null?'–':pct(all)+'%'}</b><span>전체 정답률</span></div><div><b>${done.length}<small> / ${Q.length}</small></b><span>푼 문제</span></div><div><b>${pct(ox)==null?'–':pct(ox)+'%'}</b><span>OX</span></div><div><b>${pct(sa)==null?'–':pct(sa)+'%'}</b><span>단답</span></div></div></div>
+   <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:6px"><div class="lbl" style="margin:0">POINT별</div>${sseg}</div>
+   <ul class="sl">${rows.map(r=>`<li onclick="ST.set.pts[ST.set.g]=['${r.no}'];ST.set.filt='all';save();view='setup';render()"><span class="k">${r.no}</span><span class="st">${esc(r.t)}<small>${r.d}/${r.tot}</small></span>${bar(r.v)}</li>`).join('')}</ul></div>`;}
 function OW(){const g=ST.set.g;return qsOf(g).filter(q=>ST.s[q.id]&&ST.s[q.id].w>0)}
 document.addEventListener('keydown',e=>{if(view!=='play'||e.target.tagName==='INPUT')return;const q=RUN.qs[RUN.i];
   if(!RUN.ans&&q.k!=='Q'){if(e.key==='o'||e.key==='O'||e.key==='ㅐ')R_ox('O');if(e.key==='x'||e.key==='X'||e.key==='ㅌ')R_ox('X')}
