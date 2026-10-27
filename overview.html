@@ -459,9 +459,9 @@ function cycleEvents(){const ev={},list=[];const T=ST.tracker||{};const data=T.d
 /* ───── 위젯 ───── */
 const DOW=['일','월','화','수','목','금','토'],MONS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 let calOff=0;
-const TD={txt:{ff:'pl',fw:500,ls:0,lh:1.25},clock:{ff:'gm',fw:700,ls:-0.04,lh:.92}};
-const TDV={txt:{ff:'lb',fw:400,ls:0,lh:1.3},clock:{ff:'pf',fw:500,ls:-0.02,lh:.92}};
-const TDC={txt:{ff:'is',fw:400,ls:0,lh:1.2},clock:{ff:'is',fw:400,ls:-0.02,lh:.95}};
+const TD={txt:{ff:'pl',fw:500,ls:0,lh:1.25},clock:{ff:'gm',fw:700,ls:-0.04,lh:.92},dday:{ff:'gm',fw:700,ls:-0.04,lh:1}};
+const TDV={txt:{ff:'lb',fw:400,ls:0,lh:1.3},clock:{ff:'pf',fw:500,ls:-0.02,lh:.92},dday:{ff:'pf',fw:600,ls:-0.01,lh:1}};
+const TDC={txt:{ff:'is',fw:400,ls:0,lh:1.2},clock:{ff:'is',fw:400,ls:-0.02,lh:.95},dday:{ff:'pf',fw:600,ls:-0.01,lh:1}};
 const tv=(it,k)=>{const D=(isVin()?TDV:isCol()?TDC:TD)[it.t]||TD.txt;const v=it[k]!=null?it[k]:D[k];if(k==='ff'&&!FF[v])return D.ff;return v;};
 const _tvOld=(it,k)=>{const v=it[k]!=null?it[k]:TD[it.t][k];return k==='ff'&&!FF[v]?TD[it.t].ff:v;};
 const FONTS=[['pl','Paperlogy',"'Paperlogy'"],['gm','Gmarket',"'GM'"],
@@ -477,8 +477,9 @@ function wDday(it){it=it||{};let v=null;try{v=localStorage.getItem('myDday');}ca
   if(!v)return `<div class="lbl">D-DAY</div><b>—</b><div class="sm"></div>`;
   const t=new Date(v),n=new Date();t.setHours(0,0,0,0);n.setHours(0,0,0,0);const df=Math.ceil((t-n)/864e5);
   const txt=df>0?'D-'+df:df===0?'D-Day':'D+'+(-df);
-  if(!it.ddfull)return `<b class="ddo" style="font-size:${Math.round(Math.min(it.h*.52,it.w/txt.length*1.55))}px">${txt}</b>`;
-  return `<div class="lbl">D-DAY</div><b>${txt}</b><div class="sm">${t.getFullYear()}.${t.getMonth()+1}.${t.getDate()}</div>`;}
+  const ty=it.t?`font-family:${FF[tv(it,'ff')]};font-weight:${tv(it,'fw')};letter-spacing:${tv(it,'ls')}em;${it.ital?'font-style:italic;':''}${it.c?'color:'+it.c+';':''}`:'';
+  if(!it.ddfull)return `<b class="ddo" style="font-size:${Math.round(Math.min(it.h*.52,it.w/txt.length*1.55))}px;${ty}">${txt}</b>`;
+  return `<div class="lbl">D-DAY</div><b style="${ty}">${txt}</b><div class="sm">${t.getFullYear()}.${t.getMonth()+1}.${t.getDate()}</div>`;}
 /* 이번 주 (월~일): 칠한 과목 합쳐서 + 아래에 못한 것 */
 function weekDays(){const t=logicalToday();t.setHours(0,0,0,0);const mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));
   return [...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;}).filter(d=>d<=t);}
@@ -786,7 +787,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
   if(it.t==='img')h+=`<button data-a="aicut">자동 누끼 (AI)</button><button data-a="mkclk">${it.clk?'시계 바늘 맞추기':'시계로 만들기 (바늘 얹기)'}</button>${it.clk?'<button data-a="rmclk">시계 바늘 빼기</button>':''}<button data-a="cutbg">단색 배경 지우기</button>${it.orig?'<button data-a="uncut">원래 사진으로</button>':''}<button data-a="cut">${it.cut?'그림자 모양 끄기':'오려낸 사진처럼 (투명 PNG)'}</button><button data-a="pol">${it.pol?'폴라로이드 빼기':'폴라로이드'}</button><button data-a="crop">자르기</button><button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button><button data-a="wall">배경으로 쓰기</button><hr>`;
   if(WG[it.t]&&it.t!=='clock')h+=`<div class="cap">바탕</div>${[['glass','유리'],['white','흰색'],['gray','회색'],['dark','어둡게'],['clear','투명']].map(([k,l])=>`<button data-a="st" data-v="${k}">${(it.st||(it.t==='aclock'?'clear':'glass'))===k?'✓ ':''}${l}</button>`).join('')}<hr>`;
   if(it.t==='dream'){const on=(it.tk!=null?it.tk:isCol());h+=`<button data-a="tk">${on?'티켓 모양 끄기':'티켓 모양'}</button>${on?`<div class="cap">티켓 색</div><div class="row" style="flex-wrap:wrap;max-width:230px">${Object.keys(TKC).map(k=>`<button data-a="tkc" data-v="${k}" title="${TKN[k]}" style="background:${TKC[k][0]};${((it.tkc||'ivory')===k)?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div>`:''}<hr>`;}
-  if(it.t==='dday')h+=`<button data-a="ddfull">${it.ddfull?'숫자만':'D-DAY 글자·날짜 보이기'}</button><hr>`;
+  if(it.t==='dday')h+=`<button data-a="ddfull">${it.ddfull?'숫자만':'D-DAY 글자·날짜 보이기'}</button><div class="cap">색</div><div class="row">${SW.map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${typeRows(it)}<button data-a="ital">${it.ital?'기울임 끄기':'기울임'}</button><hr>`;
   if(it.t==='music')h+=`<button data-a="song">곡 적기</button>${it.cover?`<button data-a="cc">${it.cc?'커버 색 따라가기 끄기':'커버 색 따라가기'}</button>`:''}<button data-a="nocv">${it.nocv?'커버 보이기':'커버 숨기기'}</button>${it.nocv?'':`<button data-a="cover">커버 ${it.cover?'바꾸기':'넣기'}</button>`}${it.cover&&!it.nocv?'<button data-a="uncover">커버 빼기</button>':''}<hr>`;
   if(it.t==='aclock')h+=`<div class="cap">모양</div>${CLOCKS.map(([k,l])=>`<button data-a="acs" data-v="${k}">${(it.cs||'simple')===k?'✓ ':''}${l}</button>`).join('')}${it.cs==='digital'?`<div class="cap">색</div><div class="row">${Object.keys(DGC).map(k=>`<button data-a="dgc" data-v="${k}" style="background:${DGC[k]};${(it.dgc||'ink')===k?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div><button data-a="dgoff">${it.dgoff===false?'꺼진 칸 보이기':'꺼진 칸 숨기기'}</button>`:''}${it.cs==='flip'||it.cs==='digital'?`<button data-a="h24">${it.h24?'12시간으로':'24시간으로'}</button>`:''}<hr>`;
   if(it.t==='aclock'&&(!it.cs||it.cs==='simple'))h+=`<div class="cap">숫자</div><div class="row">${[['roman','로마자'],['arabic','숫자'],['none','눈금만']].map(([k,l])=>`<button data-a="anum" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.num||'roman')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">판</div><div class="row">${[['w','흰색'],['b','검정'],['','테마색']].map(([k,l])=>`<button data-a="aface" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.face||'')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><button data-a="asec">${it.nosec?'초침 보이기':'초침 숨기기'}</button><hr>`;
