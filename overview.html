@@ -129,10 +129,19 @@ body.dark #editBtn.on{background:#f1f1ee;color:#111}
 /* 전체화면 */
 html.full,html.full body{height:100%;overflow:hidden;background:var(--bgg)}
 #wrap.full{position:fixed;inset:0;border-radius:0;height:100vh!important;background:var(--bgg)}
-#tools{position:absolute;right:16px;top:14px;z-index:20000;display:flex;gap:6px;align-items:center}
+#tools{position:absolute;right:16px;top:14px;z-index:20000;display:flex;gap:0;align-items:center}
+#tools button{margin-left:6px}#tools .opt{margin-left:0}#tools.open .opt,#tools.on #editBtn,html.full #tools #fullBtn{margin-left:6px}
 #tools button{border:0;background:rgba(255,255,255,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);font-family:'GM';font-weight:500;font-size:12px;letter-spacing:.04em;padding:6px 11px;border-radius:14px;opacity:.55}
 #tools button:hover{opacity:1}
 #tools.on button{opacity:.95}
+ #tools .opt{max-width:0;padding-left:0!important;padding-right:0!important;opacity:0!important;overflow:hidden;white-space:nowrap;transform:translateX(14px);pointer-events:none;transition:max-width .32s cubic-bezier(.2,.8,.2,1),padding .32s,opacity .22s,transform .32s cubic-bezier(.2,.8,.2,1)}
+#tools.open .opt,#tools.on #editBtn{max-width:80px;padding-left:11px!important;padding-right:11px!important;opacity:.6!important;transform:none;pointer-events:auto}
+#tools.open .opt:hover{opacity:1!important}
+#tools.open #editBtn{transition-delay:0s}#tools.open #darkBtn{transition-delay:.05s}#tools.open #fullBtn{transition-delay:.1s}
+#tools.on #editBtn{opacity:1!important}
+html.full #tools:not(.open) #fullBtn{max-width:80px;padding-left:11px!important;padding-right:11px!important;opacity:.6!important;transform:none;pointer-events:auto}
+#moreBtn{letter-spacing:.08em!important;padding:6px 10px!important}
+#tools.on #moreBtn{display:none}
 #tools .add{display:none}
 #tools.on .add{display:inline-block}
 #editBtn.on{background:var(--ink);color:#fff;opacity:1}
@@ -178,7 +187,7 @@ html.full,html.full body{height:100%;overflow:hidden;background:var(--bgg)}
 </head>
 <body>
 <div id="wrap"><div id="cv"></div>
-  <div id="tools"><button class="add" data-add="img">사진</button><button class="add" data-add="txt">글</button><button class="add" id="wgBtn">위젯</button><button class="add" id="wallBtn">배경</button><button id="fullBtn">full</button><button id="darkBtn">dark</button><button id="editBtn">edit</button></div>
+  <div id="tools"><button class="add" data-add="img">사진</button><button class="add" data-add="txt">글</button><button class="add" id="wgBtn">위젯</button><button class="add" id="wallBtn">배경</button><button class="opt" id="fullBtn">full</button><button class="opt" id="darkBtn">dark</button><button class="opt" id="editBtn">edit</button><button id="moreBtn" aria-label="more">···</button></div>
 </div>
 <div id="crop"><div class="cbox"><div class="cst" id="cst"><img id="cimg" alt=""><div class="cshade" id="cshade"><b></b><b></b><b></b><b></b></div><div class="crect" id="crect"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><i data-h="n"></i><i data-h="s"></i><i data-h="w"></i><i data-h="e"></i></div></div>
   <div class="bt"><button id="cReset">원본</button><span class="sp"></span><button id="cX">취소</button><button class="ok" id="cOk">완료</button></div></div></div>
@@ -417,10 +426,12 @@ function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" s
 
 /* ───── 넣기 ───── */
 const T=document.getElementById('tools');
+document.getElementById('moreBtn').onclick=e=>{e.stopPropagation();T.classList.toggle('open');};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#tools'))T.classList.remove('open');});
 document.getElementById('fullBtn').onclick=()=>{full?exitFull():goFull();};
 function applyTheme(){const d=O.theme==='dark';document.body.classList.toggle('dark',d);document.getElementById('darkBtn').textContent=d?'light':'dark';}
 document.getElementById('darkBtn').onclick=()=>{put('theme',O.theme==='dark'?null:'dark');applyTheme();};
-document.getElementById('editBtn').onclick=()=>{if(edit)items().forEach(i=>{if(i.t==='txt'&&!String(i.text||'').trim())put('items/'+i.id,null);});edit=!edit;T.classList.toggle('on',edit);document.getElementById('editBtn').classList.toggle('on',edit);document.getElementById('editBtn').textContent=edit?'done':'edit';closeMenu();render();};
+document.getElementById('editBtn').onclick=()=>{T.classList.remove('open');if(edit)items().forEach(i=>{if(i.t==='txt'&&!String(i.text||'').trim())put('items/'+i.id,null);});edit=!edit;T.classList.toggle('on',edit);document.getElementById('editBtn').classList.toggle('on',edit);document.getElementById('editBtn').textContent=edit?'done':'edit';closeMenu();render();};
 function freeSpot(w,h){let top=window.scrollY||0,vh=innerHeight;try{const fr=window.frameElement;if(fr){const r=fr.getBoundingClientRect();top=Math.max(0,-r.top);vh=parent.innerHeight;}}catch(e){}
   return {x:Math.round((1150-w)/2),y:Math.max(20,Math.round((top+vh/2)/S-h/2))};}
 T.addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(!b)return;
