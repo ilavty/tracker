@@ -104,16 +104,21 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 .dr{padding:18px 20px;gap:4px}
 .dr:has(.tkt){padding:0;background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;overflow:visible}
 .tkt{width:100%;height:100%;background:var(--tkb,#f3efe6);color:var(--tki,#2a3540);display:flex;flex-direction:column;border-radius:.6em;box-shadow:inset 0 0 0 1px var(--tkl,transparent);
-  -webkit-mask:radial-gradient(circle at 0 calc(100% - 5.1em),transparent .42em,#000 calc(.42em + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% calc(100% - 5.1em),transparent .42em,#000 calc(.42em + .5px)) right/51% 100% no-repeat;
-  mask:radial-gradient(circle at 0 calc(100% - 5.1em),transparent .42em,#000 calc(.42em + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% calc(100% - 5.1em),transparent .42em,#000 calc(.42em + .5px)) right/51% 100% no-repeat}
+  -webkit-mask:radial-gradient(circle at 0 var(--tkcut,62%),transparent .42em,#000 calc(.42em + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% var(--tkcut,62%),transparent .42em,#000 calc(.42em + .5px)) right/51% 100% no-repeat;
+  mask:radial-gradient(circle at 0 var(--tkcut,62%),transparent .42em,#000 calc(.42em + .5px)) left/51% 100% no-repeat,radial-gradient(circle at 100% var(--tkcut,62%),transparent .42em,#000 calc(.42em + .5px)) right/51% 100% no-repeat}
 .tk1{display:flex;padding:.9em 1.1em 0}
 .tkk{font-family:'Courier Prime',monospace;font-size:.56em;letter-spacing:.22em;color:var(--tkm,#a3a7ad)}
-.tkt .tk2b{flex:1;display:flex;align-items:center;padding:.3em 0 .5em}
+.tkt .tk2b{flex:1;display:flex;align-items:center;padding:.2em 0 .3em;min-height:0}
+.tkt .tkk{white-space:nowrap;overflow:hidden;text-overflow:clip}
+.tkt.tall .tk2{flex-direction:column;align-items:stretch;gap:.25em}
+.tkt.tall .tk2 > div:first-child{text-align:left}
+.tkt.tall .tk2 .tkp{align-self:center;transform:rotate(180deg);width:1.6em;height:1.6em}
+.tkt.tall .tk2 b{font-size:2.15em}.tkt.tall .tk2 .r small{margin-top:.2em}
 .tk2{display:flex;align-items:flex-start;justify-content:space-between;padding:0 1.1em;width:100%}
 .tk2 b{display:block;font-family:'Libre Baskerville','Playfair Display',serif;font-weight:400;font-size:2.1em;line-height:1;letter-spacing:-.01em}
 .tk2 small{display:block;font-family:'Courier Prime',monospace;font-size:.56em;letter-spacing:.14em;color:var(--tkm,#aaa);margin-top:.35em;text-transform:uppercase}
 .tk2 .r{text-align:right}.tkp{width:2.1em;height:2.1em;fill:var(--tkpl,#2a3540);transform:rotate(90deg);flex-shrink:0}
-.tk3{height:5.1em;box-sizing:border-box;flex:none;display:flex;border-top:1.5px dashed color-mix(in srgb,var(--tki) 22%,transparent);padding:.65em 1.1em .5em;align-items:center}
+.tk3{height:var(--stub,5.1em);box-sizing:border-box;flex:none;display:flex;border-top:1.5px dashed color-mix(in srgb,var(--tki) 22%,transparent);padding:.65em 1.1em .5em;align-items:center}
 .tkb{flex:1;min-width:0}.tkt .tkk2{font-family:'Courier Prime',monospace;font-size:.56em;letter-spacing:.22em;color:var(--tkm,#a3a7ad)}
 .tkc{font-family:'Libre Baskerville',serif;font-size:.82em;color:var(--tki);margin:.15em 0 .4em}
 .tkbar{height:.25em;border-radius:.13em;background:color-mix(in srgb,var(--tki) 10%,transparent);overflow:hidden}.tkbar i{display:block;height:100%;background:#96C7FF}
@@ -551,7 +556,8 @@ function dreamTicket(p,it){const en=p?(ENM[p.city]||p.city):'—';const code=p?(
   const el=p?+((DIP.elapsed||{})[DIP.idx]||0):0,pc=Math.min(100,el/360000*100),h=Math.floor(el/3600);
   let bars='',x=0;const seed=hsh(en+code);for(let i=0;i<34;i++){const w=1+((seed>>(i%24))&3)%3;bars+=`<rect x="${x}" y="0" width="${w}" height="100%"/>`;x+=w+1+((seed>>((i+5)%24))&1);}
   const TC=(it&&it.tkc&&it.tkc[0]==='#')?(()=>{const b=it.tkc,dk=lum(b)<.3,ink=dk?'#f2efe8':'#26303a';return [b,ink,lum(b)>.85?'rgba(0,0,0,.1)':'transparent',mix(ink,b,.45),dk?'#96C7FF':ink];})():(TKC[(it&&it.tkc)||'ivory']||TKC.ivory);
-  return `<div class="tkt" style="font-size:${it?Math.max(6,Math.min(it.w/17.5,it.h/11.6)).toFixed(2):16}px;--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]};--tkpl:${TC[4]||TC[1]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
+  const tall=it&&it.w/it.h<1.45;const fz=Math.max(6,it?(tall?Math.min(it.w/12,it.h/17):Math.min(it.w/17.5,it.h/12.5)):16);const stub=it?Math.round(Math.max(fz*5.3,it.h*.36)):82;
+  return `<div class="tkt${tall?' tall':''}" style="font-size:${fz.toFixed(2)}px;--tkcut:calc(100% - ${stub}px);--stub:${stub}px;--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]};--tkpl:${TC[4]||TC[1]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
    <div class="tk2b"><div class="tk2" style="width:100%"><div><b>MOFA</b><small>SEOUL</small></div><svg class="tkp" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg><div class="r"><b>${esc(code)}</b><small>${esc(en)}</small></div></div></div>
    <div class="tk3"><div class="tkb"><div class="tkk2">MISSION BRIEF</div><div class="tkc">${p?esc(CEN[p.country]||p.country):''}</div><div class="tkbar"><i style="width:${pc}%"></i></div><div class="tkh"><span>${h}h</span><span>${pc>=100?'COMPLETE':'IN PROGRESS'}</span><span>100h</span></div></div></div></div>`;}
 function wCycle(){const {list}=cycleEvents();const now=logicalToday();now.setHours(0,0,0,0);
