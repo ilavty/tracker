@@ -81,6 +81,12 @@ button{font-family:inherit;cursor:pointer}
 .td li i{width:22px;height:10px;border-radius:5px;flex-shrink:0}
 .td .none,.cy .none{font-family:'GM';font-weight:300;color:var(--sub);font-size:22px}
 .cy{padding:18px 20px;gap:10px}
+.dr{padding:18px 20px;gap:4px}
+.dr .dcity{display:flex;align-items:center;gap:8px;margin-top:6px}.dr .dcity b{font-size:26px;font-weight:700;letter-spacing:-.02em}.dr .fl{font-size:24px;line-height:1}
+.dr .dsub{font-family:'GM';font-weight:300;font-size:12px;color:var(--sub)}
+.dr .dbar{height:5px;border-radius:3px;background:rgba(17,17,17,.1);margin-top:auto;overflow:hidden}.dr .dbar i{display:block;height:100%;background:var(--sky);border-radius:3px}
+.dr .dh{display:flex;justify-content:space-between;font-family:'GM';font-weight:300;font-size:11px;color:var(--sub)}
+.w.dark .dr .dsub,.w.dark .dr .dh{color:rgba(255,255,255,.7)}
 .cy li{display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.3}
 .cy li div{display:flex;gap:8px;align-items:baseline}
 .cy li b{font-weight:700}
@@ -251,6 +257,19 @@ function wToday(){const D=weekDays();const ids=[],miss=[];const DW=['일','월',
   const groups=[...G.values()].filter(g=>g.g).sort((a,b)=>a.pos-b.pos);
   return `<div class="wkh"><span class="lbl">THIS WEEK</span>${L.length?`<div class="wkc">${L.map(t=>`<span style="background:${t.color}">${esc(t.name)}</span>`).join('')}</div>`:''}</div>
    ${groups.length?`<div class="mg">${groups.map(g=>`<div class="mgr"><div class="mgh"><i style="background:${g.g?g.g.color:'#c9c9c9'}"></i>${esc(g.g?g.g.name:'기타')}</div>${[...g.rows.values()].map(r=>`<div class="mrow"><span>${esc(r.text)}</span><small>${r.days.join('·')}</small></div>`).join('')}</div>`).join('')}</div>`:''}`;}
+/* 외무영사 드림: 지금 가 있는 도시 (index-2.html의 도시 목록을 그대로 읽음) */
+let POSTS=null,ENM={},DIP=null;
+try{DIP=JSON.parse(localStorage.getItem('diplomat_state_v1')||'null');}catch(e){}
+fetch('index-2.html').then(r=>r.text()).then(t=>{const g=(n,o,c)=>{const i=t.indexOf('var '+n+'=');if(i<0)return null;const j=t.indexOf('\n'+c,i);return t.slice(i+('var '+n+'=').length,j+1+c.length);};
+  try{POSTS=new Function('return '+g('POSTS','[','];').replace(/;$/,''))();}catch(e){}
+  try{ENM=new Function('return '+g('EN_MAP','{','};').replace(/;$/,''))();}catch(e){}
+  if(!drag)renderLive();}).catch(()=>{});
+function wDream(){const p=DIP&&POSTS&&DIP.idx!=null?POSTS[DIP.idx]:null;
+  if(!p)return `<div class="lbl">POSTING</div><div class="none">—</div>`;
+  const el=+((DIP.elapsed||{})[DIP.idx]||0),T=360000,pc=Math.min(100,el/T*100);const h=Math.floor(el/3600);
+  return `<div class="lbl">POSTING</div><div class="dcity"><span class="fl">${p.flag||''}</span><b>${esc(p.city)}</b></div>
+   <div class="dsub">${esc(ENM[p.city]||'')}${ENM[p.city]?' · ':''}${esc(p.country)} ${esc(p.type)}</div>
+   <div class="dbar"><i style="width:${pc}%"></i></div><div class="dh"><span>${h}h</span><span>100h</span></div>`;}
 function wCycle(){const {list}=cycleEvents();const now=logicalToday();now.setHours(0,0,0,0);
   const L=list.filter(c=>!c.en).sort((a,b)=>a.st-b.st);
   return `<div class="lbl">CYCLE</div>${L.length?`<ul>${L.map(c=>`<li><b style="color:${c.color}">${esc(c.sub)} ${esc(c.num)}</b><div><span>${c.st.getMonth()+1}.${c.st.getDate()} ~</span><em>${Math.floor((now-c.st)/864e5)+1}일째</em></div></li>`).join('')}</ul>`:'<div class="none">—</div>'}`;}
@@ -261,7 +280,7 @@ function wCal(){const base=logicalToday();const m0=new Date(base.getFullYear(),b
     cells+=`<div class="dc${out?' out':''}${d.getDay()===0?' sun':''}${!out&&k===tk&&calOff===0?' today':''}"><span class="n">${d.getDate()}</span>${tags.map(t=>`<span class="bk" style="background:${t.color}">${esc(t.name)}</span>`).join('')}${cs.map(c=>`<span class="cm${c.k==='e'?' e':''}" style="color:${c.color}">${esc(c.name)} ${c.k==='s'?'시작':'끝'}</span>`).join('')}</div>`;}
   return `<div class="ch"><b>${MONS[m]}</b><small>${y}</small><span class="sp"></span>${calOff?'<button class="now" data-cal="0">today</button>':''}<button data-cal="-1">‹</button><button data-cal="1">›</button></div>
     <div class="wk">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(s=>`<span>${s}</span>`).join('')}</div><div class="gd" style="grid-template-rows:repeat(${rows},minmax(0,1fr))">${cells}</div>`;}
-const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:wDday,cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'이번 주'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'}};
+const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:wDday,cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'이번 주'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'},dream:{f:wDream,cls:'dr',w:280,h:170,label:'외무영사 드림'}};
 
 /* ───── 그리기 ───── */
 const CV=document.getElementById('cv'),WR=document.getElementById('wrap');
@@ -431,6 +450,7 @@ CR.addEventListener('pointerdown',e=>{if(e.target===CR)closeCrop();});
 function applyStudy(d){if(!d)return;ST={pData:pj(d.plannerData)||{},pTags:arr(pj(d.plannerTags)),tracker:d.trackerData||{}};try{localStorage.setItem(LK+'_study',JSON.stringify(ST));}catch(e){}}
 if(window.__OV_SEED){O=window.__OV_SEED.O||O;ST=window.__OV_SEED.ST||ST;}
 if(db){
+  db.ref('diplomat/diplomat_state_v1').on('value',s=>{const v=s.val();if(v&&v.idx!=null){DIP=v;if(!drag)renderLive();}});
   db.ref(STUDY).on('value',s=>{applyStudy(s.val());studyReady=true;if(!drag)renderLive();});
   db.ref(ROOT).on('value',s=>{const v=s.val()||{};const first=!ready;ready=true;O={items:v.items||{},imgs:v.imgs||{},wall:v.wall||null};cache();
     if(first)seedDefault();if(!drag&&!document.querySelector('.tx:focus'))render();});
