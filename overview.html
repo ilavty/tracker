@@ -105,7 +105,7 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 .tk2{display:flex;align-items:flex-start;justify-content:space-between;padding:6px 18px 12px}
 .tk2 b{display:block;font-family:'Libre Baskerville','Playfair Display',serif;font-weight:400;font-size:34px;line-height:1;letter-spacing:-.01em}
 .tk2 small{display:block;font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.14em;color:var(--tkm,#aaa);margin-top:3px;text-transform:uppercase}
-.tk2 .r{text-align:right}.tkp{width:34px;height:34px;fill:var(--tki,#2a3540);transform:rotate(90deg);flex-shrink:0}
+.tk2 .r{text-align:right}.tkp{width:34px;height:34px;fill:var(--tkpl,#2a3540);transform:rotate(90deg);flex-shrink:0}
 .tk2{margin-top:auto;margin-bottom:auto}.tk2{flex:none}.tkt .tk1{flex:none}.tkt .tk2b{flex:1;display:flex;align-items:center}
 .tk3{display:flex;border-top:1.5px dashed color-mix(in srgb,var(--tki) 22%,transparent);padding:10px 18px 8px;gap:14px;align-items:center}
 .tkb{flex:1;min-width:0}.tkc{font-family:'Libre Baskerville',serif;font-size:13px;color:var(--tki);margin:2px 0 6px}
@@ -516,16 +516,16 @@ function wDream(it){const p=DIP&&POSTS&&DIP.idx!=null?POSTS[DIP.idx]:null;
    <div class="dbar"><i style="width:${pc}%"></i></div><div class="dh"><span>${h}h</span><span>100h</span></div>`;}
 /* 외무영사 드림 보딩패스 (비행기 화면 발권표 모양) */
 const TEN2={'대사관':'Embassy of the Republic of Korea','총영사관':'Consulate General of the Republic of Korea','대표부':'Mission of the Republic of Korea','유엔대표부':'Permanent Mission to the UN'};
-const TKC={white:['#ffffff','#2a3540','rgba(0,0,0,.1)','#a3a7ad'],ivory:['#f3efe6','#2a3540','transparent','#a39e93'],sky:['#e4edf7','#22364d','transparent','#8ea3bb'],gray:['#e9e8e5','#262626','transparent','#9a9894'],kraft:['#d8c3a0','#3a2c1c','transparent','#8a7459'],mint:['#dfece6','#24403a','transparent','#86a39a'],black:['#1c1c1c','#f2efe8','transparent','#8a8a8a']};
+const TKC={white:['#ffffff','#2a3540','rgba(0,0,0,.1)','#a3a7ad'],ivory:['#f3efe6','#2a3540','transparent','#a39e93'],sky:['#e4edf7','#22364d','transparent','#8ea3bb'],gray:['#e9e8e5','#262626','transparent','#9a9894'],kraft:['#d8c3a0','#3a2c1c','transparent','#8a7459'],mint:['#dfece6','#24403a','transparent','#86a39a'],black:['#1c1c1c','#f2efe8','transparent','#8a8a8a','#96C7FF']};
 const TKN={white:'흰색',ivory:'아이보리',sky:'하늘',gray:'연회색',kraft:'크라프트',mint:'민트',black:'검정'};
 function dreamTicket(p,it){const en=p?(ENM[p.city]||p.city):'—';const code=p?(IATA[p.city]||en.slice(0,3).toUpperCase()):'—';
   const el=p?+((DIP.elapsed||{})[DIP.idx]||0):0,pc=Math.min(100,el/360000*100),h=Math.floor(el/3600);
   let bars='',x=0;const seed=hsh(en+code);for(let i=0;i<34;i++){const w=1+((seed>>(i%24))&3)%3;bars+=`<rect x="${x}" y="0" width="${w}" height="100%"/>`;x+=w+1+((seed>>((i+5)%24))&1);}
   const TC=TKC[(it&&it.tkc)||'ivory']||TKC.ivory;
-  return `<div class="tkt" style="--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
+  return `<div class="tkt" style="--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]};--tkpl:${TC[4]||TC[1]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
    <div class="tk2b"><div class="tk2" style="width:100%"><div><b>MOFA</b><small>SEOUL</small></div><svg class="tkp" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg><div class="r"><b>${esc(code)}</b><small>${esc(en)}</small></div></div></div>
    <div class="tk3"><div class="tkb"><div class="tkk">MISSION BRIEF</div><div class="tkc">${p?esc(CEN[p.country]||p.country):''}</div><div class="tkbar"><i style="width:${pc}%"></i></div><div class="tkh"><span>${h}h</span><span>${pc>=100?'COMPLETE':'IN PROGRESS'}</span><span>100h</span></div></div>
-   <svg class="tkbc" viewBox="0 0 ${x} 40" preserveAspectRatio="none">${bars}</svg></div><div class="tkf">OVERSEAS POSTING RECORD</div></div>`;}
+   <svg class="tkbc" viewBox="0 0 ${x} 40" preserveAspectRatio="none">${bars}</svg></div></div>`;}
 function wCycle(){const {list}=cycleEvents();const now=logicalToday();now.setHours(0,0,0,0);
   const L=list.filter(c=>!c.en).sort((a,b)=>a.st-b.st);
   return `<div class="lbl">CYCLE</div>${L.length?`<ul>${L.map(c=>`<li><b style="color:${c.color}">${esc(c.sub)} ${esc(c.num)}</b><div><span>${c.st.getMonth()+1}.${c.st.getDate()} ~</span><em>${Math.floor((now-c.st)/864e5)+1}일째</em></div></li>`).join('')}</ul>`:'<div class="none">—</div>'}`;}
