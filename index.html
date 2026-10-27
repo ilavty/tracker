@@ -2251,6 +2251,8 @@
     .pl-text-input { min-width: 0; max-width: 100%; width: 0; box-sizing: border-box; }
     .pl-minimal-select { max-width: 55px; min-width: 55px; overflow: hidden; flex-shrink: 0; }
     .planner-card { overflow-x: hidden; box-sizing: border-box; }
+    .planner-card.pl-unlocked { outline: 1.5px dashed rgba(0,0,0,.35); outline-offset: -4px; }
+    .planner-card.pl-locked .pl-item-wrapper, .planner-card.pl-locked .pl-grouped-item { cursor: default; }
 
     /* 폰트 한 단계 축소 */
     .planner-card { font-size: 0.88rem; }
@@ -2706,6 +2708,7 @@
 
 <div id="pl-card-menu" class="pl-menu" onmouseleave="this.style.display='none'">
     <div id="pl-color-swatches" style="padding: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-blue);"></div>
+    <div class="pl-menu-item" id="pl-unlock-btn" onclick="pl_toggleUnlock()" style="display:none">수정</div>
     <div class="pl-menu-item" onclick="pl_toggleEditMode()">할 일 추가/수정</div>
     <div class="pl-menu-item" onclick="pl_openCommentModal()">코멘트 추가</div>
     <div class="pl-menu-item" onclick="pl_editCardDate()">날짜 수정</div>
@@ -3195,6 +3198,7 @@
     let pl_touchStartTime = 0;
     function pl_touchStartRecord() { pl_touchStartTime = Date.now(); }
     let plSortableInstances = [];
+    const plUnlock = new Set();
     function pl_ensureSelectModeBtn() {
         let btn = document.getElementById('pl-select-mode-btn');
         if(btn) btn.classList.toggle('active', pl_selectMode);
@@ -3288,6 +3292,8 @@
 
             // ★ 1. 데이터가 없는 지난 과거 날짜는 렌더링 생략
             if (timeClass === 'is-past' && isEmpty) return;
+            const locked = timeClass === 'is-past' && !plUnlock.has(dateStr);
+            if (locked) timeClass += ' pl-locked'; else if (timeClass === 'is-past') timeClass += ' pl-unlocked';
 
             let currentSelectedTag = pLastTags[dateStr] || (pTags.length > 0 ? pTags[0].id : '');
 
@@ -3346,12 +3352,13 @@
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
         let plSortableInstances_local = [];
-        document.querySelectorAll('.planner-sortable-list').forEach(el => { plSortableInstances_local.push(new Sortable(el, { group: 'planner', animation: 150, fallbackTolerance: 3, disabled: pl_selectMode, onEnd: function() { pl_syncAfterDrag(); } })); });
+        document.querySelectorAll('.planner-sortable-list').forEach(el => { const lk = !!el.closest('.pl-locked'); plSortableInstances_local.push(new Sortable(el, { group: { name: 'planner', pull: !lk, put: !lk }, animation: 150, fallbackTolerance: 3, disabled: pl_selectMode || lk, onEnd: function() { pl_syncAfterDrag(); } })); });
         plSortableInstances = plSortableInstances_local;
         pl_ensureSelectModeBtn();
     }
 
     function pl_itemClick(e, el, dateStr, id) {
+        if(pl_isLocked(dateStr)) return;
         if(pl_selectMode) { el.classList.toggle('pl-selected'); pl_updateMergeFab(); return; }
         if(e.shiftKey || e.ctrlKey || e.metaKey) { el.classList.toggle('pl-selected'); pl_updateMergeFab(); } else {
             let item = pData[dateStr].items.find(x => x.id === id);
@@ -3362,7 +3369,7 @@
     }
 
     function pl_subItemClick(e, dateStr, id, sIdx) {
-        e.stopPropagation(); if(e.shiftKey || e.ctrlKey || e.metaKey) return; 
+        e.stopPropagation(); if(pl_isLocked(dateStr)) return; if(e.shiftKey || e.ctrlKey || e.metaKey) return; 
         let item = pData[dateStr].items.find(x => x.id === id);
         if(item && item.subItems[sIdx]) { let sub = item.subItems[sIdx]; let currentColor = sub.hl || null; if (currentColor === currentHl) { sub.hl = null; sub.done = false; } else { sub.hl = currentHl; sub.done = true; } pl_savePlanner(); pl_renderPlanner(); }
     }
@@ -3401,12 +3408,15 @@
     function pl_openCardMenu(e, dateStr) { 
         if(e.cancelable) e.preventDefault(); e.stopPropagation(); 
         currentContextDate = dateStr; 
+        { const ub = document.getElementById('pl-unlock-btn'); const c = document.getElementById('card-' + dateStr); const past = c && (c.classList.contains('pl-locked') || c.classList.contains('pl-unlocked')); if(ub){ ub.style.display = past ? '' : 'none'; ub.textContent = plUnlock.has(dateStr) ? '수정 끝 (다시 잠금)' : '수정'; } }
         let swatches = document.getElementById('pl-color-swatches'); swatches.innerHTML = pBgColors.map(c => `<div style="width:20px; height:20px; background:${c}; border-radius:50%; cursor:pointer; border:1px solid #ccc;" onclick="pl_changeColor('${c}')"></div>`).join(''); 
         let menu = document.getElementById('pl-card-menu'); menu.style.display = 'flex'; 
         let px = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : window.innerWidth / 2);
         let py = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : window.innerHeight / 2);
         menu.style.left = px + 'px'; menu.style.top = py + 'px'; 
     }
+    function pl_isLocked(dateStr) { const c = document.getElementById('card-' + dateStr); return !!(c && c.classList.contains('pl-locked')); }
+    function pl_toggleUnlock() { const d = currentContextDate; if(!d) return; if(plUnlock.has(d)) plUnlock.delete(d); else plUnlock.add(d); document.getElementById('pl-card-menu').style.display = 'none'; pl_renderPlanner(); }
     function pl_changeColor(color) { if (!currentContextDate) return; pData[currentContextDate].bgColor = color; pl_savePlanner(); pl_renderPlanner(); document.getElementById('pl-card-menu').style.display = 'none'; }
     function pl_editCardDate() { if (!currentContextDate) return; let newDate = prompt("수정할 날짜 (예: 7.20):", currentContextDate); if (newDate && newDate.trim() !== "" && newDate !== currentContextDate) { if (pData[newDate]) { alert("이미 존재하는 날짜입니다."); return; } pData[newDate] = pData[currentContextDate]; delete pData[currentContextDate]; pl_savePlanner(); pl_renderPlanner(); } document.getElementById('pl-card-menu').style.display = 'none'; }
     function pl_deleteCard() { if (!currentContextDate) return; if (confirm(`${currentContextDate} 일정을 완전히 삭제하시겠습니까?`)) { delete pData[currentContextDate]; pl_savePlanner(); pl_renderPlanner(); } document.getElementById('pl-card-menu').style.display = 'none'; }
@@ -3415,6 +3425,7 @@
   currentItemContext = { dateStr: null, id: null, sIdx: null };
 
     function pl_openItemMenu(e, dateStr, id, sIdx = null) { 
+        if(pl_isLocked(dateStr)) return pl_openCardMenu(e, dateStr);
         if(e.cancelable) e.preventDefault(); e.stopPropagation(); 
         currentItemContext = { dateStr, id, sIdx }; 
         
