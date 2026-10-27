@@ -532,9 +532,12 @@ function wCal(){const base=logicalToday();const m0=new Date(base.getFullYear(),b
     <div class="wk">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(s=>`<span>${s}</span>`).join('')}</div><div class="gd" style="grid-template-rows:repeat(${rows},minmax(0,1fr))">${cells}</div>`;}
 /* 재생 중 (직접 적기) */
 function wMusic(it){if(it.cc&&it.ccol)return `<div class="mcc" style="--mcc:${it.ccol};--mct:${lum(it.ccol)>.35?'#141414':'#ffffff'}"></div>`+wMusicIn(it);return wMusicIn(it);}
-function coverColor(src){return new Promise(res=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');x.drawImage(im,0,0,24,24);const d=x.getImageData(0,0,24,24).data;
+function loadCors(src){return new Promise((res,rej)=>{const tryLoad=(u,next)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=()=>next?next():rej(new Error('load'));im.src=u;};
+  if(/^data:|^blob:/.test(src))return tryLoad(src);
+  tryLoad(src,()=>tryLoad('https://images.weserv.nl/?url='+encodeURIComponent(src.replace(/^https?:\/\//,''))+'&output=png&n=-1'));});}
+function coverColor(src){return new Promise(res=>{loadCors(src).then(im=>{try{const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');x.drawImage(im,0,0,24,24);const d=x.getImageData(0,0,24,24).data;
     let r=0,g=0,b=0,n=0;for(let i=0;i<d.length;i+=4){if(d[i+3]<128)continue;const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);const w=1+(mx-mn)/40;r+=d[i]*w;g+=d[i+1]*w;b+=d[i+2]*w;n+=w;}
-    if(!n)return res(null);const h='#'+[r,g,b].map(v=>Math.round(v/n).toString(16).padStart(2,'0')).join('');res(h);}catch(e){res(null);}};im.onerror=()=>res(null);im.src=src;});}
+    if(!n)return res(null);const h='#'+[r,g,b].map(v=>Math.round(v/n).toString(16).padStart(2,'0')).join('');res(h);}catch(e){res(null);}}).catch(()=>res(null));});}
 async function setCoverColor(id){const it=O.items[id];if(!it||!it.cover)return;const src=it.cover.img?O.imgs[it.cover.img]:it.cover.url;const c=await coverColor(src);
   if(!c){alert('이 커버는 색을 못 읽어요. 커버 이미지를 붙여넣기로 넣으면 돼요.');return;}put('items/'+id,{...O.items[id],cc:true,ccol:c});render();}
 function wMusicIn(it){const src=it.cover?(it.cover.img?O.imgs[it.cover.img]:it.cover.url):'';const ce=f=>edit?`contenteditable="true" spellcheck="false" data-mf="${f}"`:'';
@@ -659,7 +662,7 @@ function inner(it){
 function cls(it){if(it.t==='stk')return 'it stk';if(it.t==='img')return 'it img'+(it.sq?' sq':'')+(it.pol?' pol':'')+(isVin()&&!it.norot?' vr':'');if(it.t==='txt'){const bg=it.bg||'';return 'it txt'+(bg?' tb':'')+(['glass','white','dark','gray'].includes(bg)?' tb-'+bg:'')+(it.sq?' sq':'');}const W=WG[it.t];return `it w${isVin()&&!it.norot?' vr':''} ${W?W.cls:''}${it.t==='music'?(it.h>=it.w*1.05?' tall':'')+(it.nocv?' nocv':'')+(it.h<150&&it.h<it.w*1.05?' short':'')+(it.h<115&&it.h<it.w*1.05?' tiny':''):''} ${it.st||(it.t==='clock'||it.t==='aclock'?'clear':'glass')}${it.t==='clock'&&it.lt?' light':''}`;}
 function render(){applyTheme();const wc_=wallCss();CV.style.backgroundImage=wc_;CV.style.backgroundSize=wc_?'cover':'';CV.classList.toggle('edit',edit);
   const vin=isVin();
-  CV.innerHTML=items().sort((a,b)=>(a.z||0)-(b.z||0)).map(it=>`<div class="${cls(it)}" data-id="${it.id}" style="${vin?`--rot:${rotOf(it)}deg;`:''}${it.t==='stk'?`color:${it.c||'var(--ink)'};`+(it.rot?`transform:rotate(${it.rot}deg);`:''):''}left:${it.x}px;top:${it.y}px;width:${it.w}px;${it.t==='txt'?'min-height':'height'}:${it.h}px;z-index:${it.z||1}${it.t==='txt'&&it.bg&&it.bg[0]==='#'?';background:'+it.bg:''}">${inner(it)}<span class="rz" data-rz="se"></span><span class="rze" data-rz="n"></span><span class="rze" data-rz="s"></span><span class="rze" data-rz="e"></span><span class="rze" data-rz="w"></span><span class="rze" data-rz="nw"></span><span class="rze" data-rz="ne"></span><span class="rze" data-rz="sw"></span></div>`).join('')+(vin||isCol()?tapes():'');
+  CV.innerHTML=items().sort((a,b)=>(a.z||0)-(b.z||0)).map(it=>`<div class="${cls(it)}" data-id="${it.id}" style="${vin?`--rot:${rotOf(it)}deg;`:''}${it.t==='music'&&it.cc&&it.ccol?`--mcc:${it.ccol};--mct:${lum(it.ccol)>.35?'#141414':'#ffffff'};`:''}${it.t==='stk'?`color:${it.c||'var(--ink)'};`+(it.rot?`transform:rotate(${it.rot}deg);`:''):''}left:${it.x}px;top:${it.y}px;width:${it.w}px;${it.t==='txt'?'min-height':'height'}:${it.h}px;z-index:${it.z||1}${it.t==='txt'&&it.bg&&it.bg[0]==='#'?';background:'+it.bg:''}">${inner(it)}<span class="rz" data-rz="se"></span><span class="rze" data-rz="n"></span><span class="rze" data-rz="s"></span><span class="rze" data-rz="e"></span><span class="rze" data-rz="w"></span><span class="rze" data-rz="nw"></span><span class="rze" data-rz="ne"></span><span class="rze" data-rz="sw"></span></div>`).join('')+(vin||isCol()?tapes():'');
   layout();marquee();}
 /* ───── 스티커 ───── */
 const STK={
@@ -937,8 +940,7 @@ document.getElementById('shOk').onclick=()=>{if(!shData){const t=PZ.innerText.tr
 
 /* ───── 배경 지우기: 가장자리에서부터 비슷한 색을 투명하게 (붙여넣은 사진·CORS 되는 주소) ───── */
 function cutBg(id){const it=O.items[id];if(!it)return;const src=it.img?O.imgs[it.img]:it.url;if(!src)return;
-  const im=new Image();im.crossOrigin='anonymous';
-  im.onload=()=>{try{const k=Math.min(1,900/Math.max(im.width,im.height));const W=Math.round(im.width*k),H=Math.round(im.height*k);
+  loadCors(src).then(im=>{try{const k=Math.min(1,900/Math.max(im.width,im.height));const W=Math.round(im.width*k),H=Math.round(im.height*k);
     const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(im,0,0,W,H);const D=x.getImageData(0,0,W,H),p=D.data;
     // 가장자리 색 평균
     let n=0,br=0,bg=0,bb=0;for(let i=0;i<W;i+=3)for(const j of[0,H-1]){const o=(j*W+i)*4;br+=p[o];bg+=p[o+1];bb+=p[o+2];n++;}for(let j=0;j<H;j+=3)for(const i of[0,W-1]){const o=(j*W+i)*4;br+=p[o];bg+=p[o+1];bb+=p[o+2];n++;}
@@ -949,8 +951,7 @@ function cutBg(id){const it=O.items[id];if(!it)return;const src=it.img?O.imgs[it
       const i=q%W,j=(q-i)/W;if(i>0)st.push(q-1);if(i<W-1)st.push(q+1);if(j>0)st.push(q-W);if(j<H-1)st.push(q+W);}
     x.putImageData(D,0,0);const url=c.toDataURL('image/png');const key=uid();put('imgs/'+key,url);
     const o={...O.items[id]};if(!o.orig)o.orig={img:o.img||null,url:o.url||null};o.img=key;delete o.url;o.cut=true;put('items/'+id,o);render();}
-    catch(e){alert('이 사진은 주소로 넣어서 배경을 못 지워요. 사진을 복사해서 붙여넣기로 다시 넣어보세요.');}};
-  im.onerror=()=>alert('사진을 못 불러왔어요.');im.src=src;}
+    catch(e){alert('이 사진은 배경을 못 지워요. 사진을 복사해서 붙여넣기로 다시 넣어보세요.');}}).catch(()=>alert('사진을 못 불러왔어요. 사진을 복사해서 붙여넣기로 다시 넣어보세요.'));}
 
 /* ───── 자동 누끼: 브라우저 안에서 AI로 (처음 한 번 모델 받음, 사진은 밖으로 안 나감) ───── */
 let BGR=null;
@@ -959,7 +960,8 @@ function toast(t){let el=document.getElementById('toast');if(!el){el=document.cr
 async function aiCut(id){const it=O.items[id];if(!it)return;const src=it.img?O.imgs[it.img]:it.url;if(!src)return;
   try{toast('누끼 준비 중… 처음 한 번은 AI 모델을 받느라 조금 걸려요');
     if(!BGR)BGR=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm');
-    let pct=0;const blob=await BGR.removeBackground(src,{model:'isnet_fp16',output:{format:'image/png'},progress:(k,cur,tot)=>{if(tot){const p=Math.round(cur/tot*100);if(p!==pct){pct=p;toast((/fetch/.test(k)?'모델 받는 중 ':'누끼 따는 중 ')+p+'%');}}}});
+    let inp=src;if(!/^data:/.test(src)){const im=await loadCors(src);const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);inp=await new Promise(r=>c.toBlob(r,'image/png'));}
+    let pct=0;const blob=await BGR.removeBackground(inp,{model:'isnet_fp16',output:{format:'image/png'},progress:(k,cur,tot)=>{if(tot){const p=Math.round(cur/tot*100);if(p!==pct){pct=p;toast((/fetch/.test(k)?'모델 받는 중 ':'누끼 따는 중 ')+p+'%');}}}});
     toast('거의 다 됐어요…');
     const url=await new Promise(res=>{const im=new Image();im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);res(c.toDataURL('image/png'));};im.src=URL.createObjectURL(blob);});
     const key=uid();put('imgs/'+key,url);const o={...O.items[id]};if(!o.orig)o.orig={img:o.img||null,url:o.url||null};o.img=key;delete o.url;o.cut=true;put('items/'+id,o);toast('');render();}
