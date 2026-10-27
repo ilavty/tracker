@@ -214,6 +214,8 @@ html.full #tools:not(.open) #fullBtn{max-width:80px;padding-left:11px!important;
 #sheet.on{display:flex}
 #sheet .box{width:min(420px,92vw);background:#fff;border-radius:20px;padding:20px 20px 16px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
 #sheet h4{margin:0 0 12px;font-family:'GM';font-weight:700;font-size:15px}
+#sheet .pul{display:flex;flex-direction:column;gap:5px;font-family:'GM';font-size:11.5px;color:#7c8796;letter-spacing:.02em;margin-bottom:10px}
+#sheet .pul input{border:0;background:#e8f1f9;border-radius:10px;padding:10px 12px;font-family:'Paperlogy';font-size:14px;color:#111;outline:none}
 #sheet .pz{min-height:84px;border-radius:12px;background:var(--skyl);padding:12px;outline:none;font-size:13px;word-break:break-all;color:var(--sub)}
 #sheet .pz img{max-width:100%;max-height:160px;border-radius:8px;display:block}
 #sheet .bt{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;align-items:center}
@@ -231,7 +233,7 @@ html.full #tools:not(.open) #fullBtn{max-width:80px;padding-left:11px!important;
   <div class="bt"><button id="cReset">원본</button><span class="sp"></span><button id="cX">취소</button><button class="ok" id="cOk">완료</button></div></div></div>
 <div id="song"><div class="box"><label>제목<input id="sgT" spellcheck="false"></label><label>가수<input id="sgA" spellcheck="false"></label><label>커버 이미지 주소<input id="sgC" spellcheck="false" inputmode="url" autocapitalize="off"></label>
   <div class="bt"><span class="sp"></span><button id="sgX">취소</button><button class="ok" id="sgOk">완료</button></div></div></div>
-<div id="sheet"><div class="box"><h4 id="shT">사진</h4><div class="pz" id="pz" contenteditable="true"></div>
+<div id="sheet"><div class="box"><h4 id="shT">사진</h4><label class="pul">이미지 주소<input id="pu" spellcheck="false" inputmode="url" autocapitalize="off"></label><div class="pz" id="pz" contenteditable="true"></div>
   <div class="bt"><label>파일<input type="file" id="pf" accept="image/*" hidden></label><span class="sp"></span><button id="shX">취소</button><button class="ok" id="shOk">넣기</button></div></div></div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -504,9 +506,11 @@ document.getElementById('wallBtn').onclick=e=>{openMenu(e.clientX-120,e.clientY+
 document.getElementById('wgBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.entries(WG).map(([k,v])=>`<button data-a="${k}">${v.label}</button>`).join(''),k=>{const W=WG[k];const p=freeSpot(W.w,W.h);const nid=uid();put('items/'+nid,{t:k,x:p.x,y:p.y,w:W.w,h:W.h,z:topZ()+1});render();if(k==='music')openSong(nid);});};
 
 /* 사진: 주소 붙여넣기 / 이미지 붙여넣기 / 파일 */
-const SH=document.getElementById('sheet'),PZ=document.getElementById('pz');let shMode='img',shData=null;
+const SH=document.getElementById('sheet'),PZ=document.getElementById('pz'),PU=document.getElementById('pu');
+PU.addEventListener('input',()=>{const t=PU.value.trim();if(/^https?:\/\/\S+$/.test(t)){shData={url:t};PZ.innerHTML=`<img src="${esc(t)}">`;}});
+PU.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();document.getElementById('shOk').click();}});let shMode='img',shData=null;
 let coverFor=null;
-function openSheet(m){shMode=m;shData=null;PZ.innerHTML='';document.getElementById('shT').textContent=m==='wall'?'배경':m==='cover'?'커버':'사진';SH.classList.add('on');setTimeout(()=>PZ.focus(),30);}
+function openSheet(m){shMode=m;shData=null;PZ.innerHTML='';PU.value='';document.getElementById('shT').textContent=m==='wall'?'배경':m==='cover'?'커버':'사진';SH.classList.add('on');setTimeout(()=>PU.focus(),30);}
 function closeSheet(){SH.classList.remove('on');}
 document.getElementById('shX').onclick=closeSheet;SH.addEventListener('pointerdown',e=>{if(e.target===SH)closeSheet();});
 function shrink(file,max){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res({src:c.toDataURL('image/jpeg',.82),ar:im.width/im.height});};im.onerror=()=>res(null);im.src=r.result;};r.readAsDataURL(file);});}
