@@ -229,7 +229,7 @@ html.full #tools:not(.open) #fullBtn{max-width:80px;padding-left:11px!important;
 </div>
 <div id="crop"><div class="cbox"><div class="cst" id="cst"><img id="cimg" alt=""><div class="cshade" id="cshade"><b></b><b></b><b></b><b></b></div><div class="crect" id="crect"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i><i data-h="n"></i><i data-h="s"></i><i data-h="w"></i><i data-h="e"></i></div></div>
   <div class="bt"><button id="cReset">원본</button><span class="sp"></span><button id="cX">취소</button><button class="ok" id="cOk">완료</button></div></div></div>
-<div id="song"><div class="box"><label>제목<input id="sgT" spellcheck="false"></label><label>가수<input id="sgA" spellcheck="false"></label>
+<div id="song"><div class="box"><label>제목<input id="sgT" spellcheck="false"></label><label>가수<input id="sgA" spellcheck="false"></label><label>커버 이미지 주소<input id="sgC" spellcheck="false" inputmode="url" autocapitalize="off"></label>
   <div class="bt"><span class="sp"></span><button id="sgX">취소</button><button class="ok" id="sgOk">완료</button></div></div></div>
 <div id="sheet"><div class="box"><h4 id="shT">사진</h4><div class="pz" id="pz" contenteditable="true"></div>
   <div class="bt"><label>파일<input type="file" id="pf" accept="image/*" hidden></label><span class="sp"></span><button id="shX">취소</button><button class="ok" id="shOk">넣기</button></div></div></div>
@@ -527,11 +527,12 @@ document.getElementById('shOk').onclick=()=>{if(!shData){const t=PZ.innerText.tr
 
 /* ───── 곡 적기 ───── */
 let songFor=null;const SG=document.getElementById('song');
-function openSong(id){const it=O.items[id];if(!it)return;songFor=id;document.getElementById('sgT').value=it.title||'';document.getElementById('sgA').value=it.artist||'';SG.classList.add('on');setTimeout(()=>document.getElementById('sgT').focus(),30);}
+function openSong(id){const it=O.items[id];if(!it)return;songFor=id;document.getElementById('sgT').value=it.title||'';document.getElementById('sgA').value=it.artist||'';document.getElementById('sgC').value=it.cover&&it.cover.url?it.cover.url:'';SG.classList.add('on');setTimeout(()=>document.getElementById('sgT').focus(),30);}
 function closeSong(){SG.classList.remove('on');songFor=null;}
 document.getElementById('sgX').onclick=closeSong;SG.addEventListener('pointerdown',e=>{if(e.target===SG)closeSong();});
-document.getElementById('sgOk').onclick=()=>{const it=O.items[songFor];if(it)put('items/'+songFor,{...it,title:document.getElementById('sgT').value.trim(),artist:document.getElementById('sgA').value.trim()});closeSong();render();};
-SG.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();if(e.target.id==='sgT')document.getElementById('sgA').focus();else document.getElementById('sgOk').click();}if(e.key==='Escape')closeSong();});
+document.getElementById('sgOk').onclick=()=>{const it=O.items[songFor];if(it){const o={...it,title:document.getElementById('sgT').value.trim(),artist:document.getElementById('sgA').value.trim()};const cu=document.getElementById('sgC').value.trim();
+    if(/^https?:\/\//.test(cu)){o.cover={url:cu};o.nocv=false;}else if(!cu&&it.cover&&it.cover.url)delete o.cover;put('items/'+songFor,o);}closeSong();render();};
+SG.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();if(e.target.id==='sgT')document.getElementById('sgA').focus();else if(e.target.id==='sgA')document.getElementById('sgC').focus();else document.getElementById('sgOk').click();}if(e.key==='Escape')closeSong();});
 
 /* ───── 사진 자르기 ───── */
 const CR=document.getElementById('crop'),CI=document.getElementById('cimg'),CRT=document.getElementById('crect'),CST=document.getElementById('cst');
