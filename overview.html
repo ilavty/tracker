@@ -973,6 +973,7 @@ function openItemMenu(id,x,y){const it=pzM(O.items[id]);if(!it)return;let h='';
     else if(a==='grp'){const g='g'+Date.now().toString(36);[...SEL].forEach(i=>{const r=O.items[i];if(r)put('items/'+i,{...r,gid:g});});render();return;}
     else if(a==='ungrp'){const g=o.gid;rawItems().filter(i=>i.gid===g).forEach(i=>{const r={...O.items[i.id]};delete r.gid;put('items/'+i.id,r);});render();return;}
     else if(a==='del'){const ids=SEL.has(id)&&SEL.size>1?[...SEL]:[id];ids.forEach(i=>put('items/'+i,null));SEL.clear();render();return;}
+    if(!PORT&&o.t&&!raw.pz&&SZK.some(k=>o[k]!==raw[k])){const pz={};SZK.forEach(k=>{pz[k]=raw[k]!=null?raw[k]:'d';});o.pz=pz;}
     if(PORT&&o.t){const pz={};SZK.forEach(k=>{pz[k]=o[k]!=null?o[k]:'d';if(raw[k]!=null)o[k]=raw[k];else delete o[k];});o.pz=pz;}
     put('items/'+id,o);render();if(['sx','ff','fw','ls','lh','tr','fs','c','bg','anum','aface','srot','ital','acs','h24','tkc','dgc','dgoff','pp','ppc','tts','tpc','cz','al','pps','wbg','st','rotb','c2','bgv','wtc','bgb','tz'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}},document.querySelector(`[data-id="${id}"]`));
   const bR=document.getElementById('bgbR');if(bR){const liv=()=>{const o={...O.items[id]},v=+bR.value;if(v)o.bgb=v;else delete o.bgb;O.items[id]=o;document.getElementById('bgbN').textContent=v;render();};bR.addEventListener('input',liv);bR.addEventListener('change',()=>{liv();put('items/'+id,O.items[id]);});}}
