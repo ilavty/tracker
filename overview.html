@@ -123,7 +123,8 @@ button{font-family:inherit;cursor:pointer}
 .menu hr{border:0;border-top:1px solid #eee;margin:4px 6px}
 .menu .row{display:flex;gap:5px;padding:5px 9px}
 .menu .row button{width:auto;padding:0;border-radius:50%;width:20px;height:20px;border:1px solid rgba(0,0,0,.15)}
-.menu .row.fonts{flex-wrap:wrap;max-width:300px;gap:4px}
+.menu .row.fonts{flex-wrap:wrap;max-width:280px;gap:3px}.menu .row.fonts button{font-size:11.5px!important;padding:2px 6px!important}
+.menu{max-height:calc(100vh - 16px);overflow-y:auto}
 .menu .nv{font-family:'GM';font-size:11px;min-width:34px;text-align:center;color:var(--ink)}
 .menu .cap{font-size:11px;color:var(--sub);padding:5px 11px 1px;font-family:'GM'}
 /* 이미지 넣기 창 */
@@ -324,8 +325,13 @@ CV.addEventListener('click',e=>{const b=e.target.closest('[data-cal]');if(b){cal
 
 let menu=null;
 function closeMenu(){if(menu){menu.remove();menu=null;}}
-function openMenu(x,y,html,on){closeMenu();menu=document.createElement('div');menu.className='menu';menu.innerHTML=html;document.body.appendChild(menu);
-  const r=menu.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(x,innerWidth-r.width-8))+'px';menu.style.top=Math.max(8,Math.min(y,innerHeight-r.height-8))+'px';
+function openMenu(x,y,html,on,avoid){closeMenu();menu=document.createElement('div');menu.className='menu';menu.innerHTML=html;document.body.appendChild(menu);
+  const r=menu.getBoundingClientRect();let L=x,T=y;
+  if(avoid){const a=avoid.getBoundingClientRect(),g=14;   // 고르는 것 옆에 띄워서 안 가리게
+    if(a.right+g+r.width<=innerWidth-8)L=a.right+g;else if(a.left-g-r.width>=8)L=a.left-g-r.width;
+    else{L=x;T=a.bottom+g<=innerHeight-r.height-8?a.bottom+g:Math.max(8,a.top-g-r.height);}
+    if(L!==x)T=a.top;}
+  menu.style.left=Math.max(8,Math.min(L,innerWidth-r.width-8))+'px';menu.style.top=Math.max(8,Math.min(T,innerHeight-r.height-8))+'px';
   menu.addEventListener('click',ev=>{const b=ev.target.closest('[data-a]');if(!b)return;ev.stopPropagation();const keep=on(b.dataset.a,b.dataset.v);if(!keep)closeMenu();});}
 document.addEventListener('pointerdown',e=>{if(menu&&!menu.contains(e.target)&&!e.target.closest('#wgBtn'))closeMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();closeSheet();if(crop)closeCrop();}if(crop)return;
@@ -353,7 +359,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     else if(a==='dup'){put('items/'+uid(),{...o,x:o.x+24,y:o.y+24,z:topZ()+1});render();return;}
     else if(a==='wall'){put('wall',o.img?{img:o.img}:{url:o.url});render();return;}
     else if(a==='del'){put('items/'+id,null);render();return;}
-    put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c','bg'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}});}
+    put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c','bg'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}},document.querySelector(`[data-id="${id}"]`));}
 function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${on?'background:var(--skyl)':''}">${l}</button>`;
   const ls=tv(it,'ls'),lh=tv(it,'lh');
   return `<div class="cap">폰트</div><div class="row fonts">${FONTS.map(f=>`<button data-a="ff" data-v="${f[0]}" style="width:auto;height:auto;border-radius:6px;padding:3px 7px;font-size:13px;font-family:${f[2].replace(/"/g,'&quot;')};${tv(it,'ff')===f[0]?'background:var(--skyl)':''}">${f[1]}</button>`).join('')}</div>
