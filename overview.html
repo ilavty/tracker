@@ -310,7 +310,7 @@ function wToday(){const D=weekDays();const ids=[],miss=[];const DW=['일','월',
   miss.forEach(m=>{const g=m.tag?grpOf(m.tag):null;const key=g?g.id:'_';if(!G.has(key))G.set(key,{g,pos:g?(g.id==='PSAT'?Math.min(...arr(ST.pTags).map((x,i)=>x&&mergePsat([x.id])[0]&&mergePsat([x.id])[0].id==='PSAT'?i:999)):ord.indexOf(g.id)):9999,rows:new Map()});
     const R=G.get(key).rows;const r=R.get(m.text)||{text:m.text,days:[]};const dw=DW[m.d.getDay()];if(!r.days.includes(dw))r.days.push(dw);R.set(m.text,r);});
   const groups=[...G.values()].filter(g=>g.g).sort((a,b)=>a.pos-b.pos);
-  return `<div class="wkh"><span class="lbl">LEFTOVERS</span></div>
+  return `<div class="wkh"><span class="lbl">UNFINISHED</span></div>
    ${groups.length?`<div class="mg">${groups.map(g=>`<div class="mgr"><div class="mgh"><i style="background:${g.g?g.g.color:'#c9c9c9'}"></i>${esc(g.g?g.g.name:'기타')}</div>${[...g.rows.values()].map(r=>`<div class="mrow"><span>${esc(r.text)}</span><small>${r.days.join('·')}</small></div>`).join('')}</div>`).join('')}</div>`:'<div class="none">—</div>'}`;}
 /* 외무영사 드림: 지금 가 있는 도시 (index-2.html의 도시 목록을 그대로 읽음) */
 let POSTS=null,ENM={},DIP=null;
