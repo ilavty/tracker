@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Homemade+Apple&family=Reenie+Beanie&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 @font-face{font-family:'Paperlogy';font-weight:300;src:url('fonts/Paperlogy-3Light.ttf') format('truetype')}
 @font-face{font-family:'Paperlogy';font-weight:400;src:url('fonts/Paperlogy-4Regular.ttf') format('truetype')}
@@ -110,6 +112,7 @@ button{font-family:inherit;cursor:pointer}
 .menu hr{border:0;border-top:1px solid #eee;margin:4px 6px}
 .menu .row{display:flex;gap:5px;padding:5px 9px}
 .menu .row button{width:auto;padding:0;border-radius:50%;width:20px;height:20px;border:1px solid rgba(0,0,0,.15)}
+.menu .row.fonts{flex-wrap:wrap;max-width:300px;gap:4px}
 .menu .nv{font-family:'GM';font-size:11px;min-width:34px;text-align:center;color:var(--ink)}
 .menu .cap{font-size:11px;color:var(--sub);padding:5px 11px 1px;font-family:'GM'}
 /* 이미지 넣기 창 */
@@ -205,8 +208,14 @@ function cycleEvents(){const ev={},list=[];const T=ST.tracker||{};const data=T.d
 const DOW=['일','월','화','수','목','금','토'],MONS=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 let calOff=0;
 const TD={txt:{ff:'pl',fw:500,ls:0,lh:1.25},clock:{ff:'gm',fw:700,ls:-0.04,lh:.92}};
-const tv=(it,k)=>it[k]!=null?it[k]:TD[it.t][k];
-const FF={pl:"'Paperlogy'",gm:"'GM'"};
+const tv=(it,k)=>{const v=it[k]!=null?it[k]:TD[it.t][k];return k==='ff'&&!FF[v]?TD[it.t].ff:v;};
+const FONTS=[['pl','Paperlogy',"'Paperlogy'"],['gm','Gmarket',"'GM'"],
+ ['hm','Hahmlet',"'Hahmlet',serif"],['ns','Noto Serif',"'Noto Serif KR',serif"],['gb','고운바탕',"'Gowun Batang',serif"],['nm','나눔명조',"'Nanum Myeongjo',serif"],
+ ['lb','Baskerville',"'Libre Baskerville','Hahmlet',serif"],['pf','Playfair',"'Playfair Display','Hahmlet',serif"],['cg','Cormorant',"'Cormorant Garamond','Gowun Batang',serif"],
+ ['dm','DM Serif',"'DM Serif Display','Hahmlet',serif"],['is','Instrument',"'Instrument Serif','Gowun Batang',serif"],['bd','Bodoni',"'Bodoni Moda','Nanum Myeongjo',serif"],
+ ['cp','Courier',"'Courier Prime','Paperlogy',monospace"],['se','Special Elite',"'Special Elite','Paperlogy',monospace"],
+ ['ha','Homemade Apple',"'Homemade Apple','Nanum Pen Script',cursive"],['rb','Reenie Beanie',"'Reenie Beanie','Nanum Pen Script',cursive"],['np','나눔펜',"'Nanum Pen Script',cursive"],['gg','개구',"'Gaegu',cursive"]];
+const FF=Object.fromEntries(FONTS.map(f=>[f[0],f[2]]));
 function wClock(it){const d=new Date();const h=it.h;const tmS=Math.round(h*.62),dtS=Math.max(12,Math.round(h*.12));
   return `<div class="dt" style="font-size:${dtS}px;margin-bottom:${Math.round((tv(it,'lh')-1)*tmS*.6)}px;font-family:${FF[tv(it,'ff')]};${it.c?'color:'+it.c:''}">${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일</div><div class="tm" style="font-size:${tmS}px;font-family:${FF[tv(it,'ff')]};font-weight:${tv(it,'fw')};letter-spacing:${tv(it,'ls')}em;line-height:1;${it.c?'color:'+it.c:''}">${d.getHours()}:${pad(d.getMinutes())}</div>`;}
 function wDday(){let v=null;try{v=localStorage.getItem('myDday');}catch(e){}
@@ -328,7 +337,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}});}
 function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${on?'background:var(--skyl)':''}">${l}</button>`;
   const ls=tv(it,'ls'),lh=tv(it,'lh');
-  return `<div class="cap">폰트</div><div class="row">${b('ff','pl','Paperlogy',tv(it,'ff')==='pl')}${b('ff','gm','Gmarket',tv(it,'ff')==='gm')}</div>
+  return `<div class="cap">폰트</div><div class="row fonts">${FONTS.map(f=>`<button data-a="ff" data-v="${f[0]}" style="width:auto;height:auto;border-radius:6px;padding:3px 7px;font-size:13px;font-family:${f[2].replace(/"/g,'&quot;')};${tv(it,'ff')===f[0]?'background:var(--skyl)':''}">${f[1]}</button>`).join('')}</div>
    <div class="cap">굵기</div><div class="row">${[300,400,500,600,700].map(w=>b('fw',w,w,tv(it,'fw')==w)).join('')}</div>
    <div class="cap">자간 · 행간</div><div class="row" style="align-items:center">${b('ls',-0.01,'−')}<span class="nv">${ls.toFixed(2)}</span>${b('ls',0.01,'+')}<span style="width:10px"></span>${b('lh',-0.05,'−')}<span class="nv">${lh.toFixed(2)}</span>${b('lh',0.05,'+')}</div>
    <button data-a="tr">글자 설정 처음대로</button>`;}
