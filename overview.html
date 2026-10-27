@@ -72,6 +72,7 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 /* 작은 위젯 */
 .lbl{font-family:'GM';font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--sub)}
 .dd{padding:18px 20px;justify-content:space-between}
+.dd:has(.ddo){justify-content:center;align-items:center;padding:6px 10px}.dd .ddo{line-height:1;white-space:nowrap}
 .dd b{font-family:'GM';font-weight:700;font-size:44px;letter-spacing:-.04em;line-height:1}
 .dd .sm{font-size:12px;color:var(--sub);font-family:'GM';font-weight:300}
 .td{padding:18px 20px;gap:9px;overflow-y:auto!important}
@@ -472,10 +473,12 @@ const FONTS=[['pl','Paperlogy',"'Paperlogy'"],['gm','Gmarket',"'GM'"],
 const FF=Object.fromEntries(FONTS.map(f=>[f[0],f[2]]));
 function wClock(it){const d=new Date();const h=it.h;const tmS=Math.round(h*.62),dtS=Math.max(12,Math.round(h*.12));
   return `<div class="dt" style="font-size:${dtS}px;margin-bottom:${Math.round((tv(it,'lh')-1)*tmS*.6)}px;font-family:${FF[tv(it,'ff')]};${it.c?'color:'+it.c:''}">${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일</div><div class="tm" style="font-size:${tmS}px;font-family:${FF[tv(it,'ff')]};font-weight:${tv(it,'fw')};letter-spacing:${tv(it,'ls')}em;line-height:1;${it.c?'color:'+it.c:''}">${d.getHours()}:${pad(d.getMinutes())}</div>`;}
-function wDday(){let v=null;try{v=localStorage.getItem('myDday');}catch(e){}
+function wDday(it){it=it||{};let v=null;try{v=localStorage.getItem('myDday');}catch(e){}
   if(!v)return `<div class="lbl">D-DAY</div><b>—</b><div class="sm"></div>`;
   const t=new Date(v),n=new Date();t.setHours(0,0,0,0);n.setHours(0,0,0,0);const df=Math.ceil((t-n)/864e5);
-  return `<div class="lbl">D-DAY</div><b>${df>0?'D-'+df:df===0?'D-Day':'D+'+(-df)}</b><div class="sm">${t.getFullYear()}.${t.getMonth()+1}.${t.getDate()}</div>`;}
+  const txt=df>0?'D-'+df:df===0?'D-Day':'D+'+(-df);
+  if(!it.ddfull)return `<b class="ddo" style="font-size:${Math.round(Math.min(it.h*.52,it.w/txt.length*1.55))}px">${txt}</b>`;
+  return `<div class="lbl">D-DAY</div><b>${txt}</b><div class="sm">${t.getFullYear()}.${t.getMonth()+1}.${t.getDate()}</div>`;}
 /* 이번 주 (월~일): 칠한 과목 합쳐서 + 아래에 못한 것 */
 function weekDays(){const t=logicalToday();t.setHours(0,0,0,0);const mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));
   return [...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;}).filter(d=>d<=t);}
@@ -646,7 +649,7 @@ function wAclockSimple(it){const d=new Date();const sec=d.getSeconds()+d.getMill
    <g class="hd" style="${dl(3600,min)}"><path d="M100 114 C99.2 109 98.9 104 99 100 L99.55 34 L100 22 L100.45 34 L101 100 C101.1 104 100.8 109 100 114 Z"/></g>
    ${it.nosec?'':`<g class="hd sc" style="${dl(60,sec)}"><line x1="100" y1="124" x2="100" y2="16"/></g>`}
    <circle class="pin" cx="100" cy="100" r="2.6"/><circle class="pin2" cx="100" cy="100" r="1"/></svg>`;}
-const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:wDday,cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'못한 것'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'},aclock:{f:wAclock,cls:'ac',w:230,h:230,label:'클래식 시계'},music:{f:wMusic,cls:'ms',w:360,h:170,label:'재생 중'},dream:{f:it=>wDream(it),cls:'dr',w:280,h:170,label:'외무영사 드림'}};
+const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:it=>wDday(it),cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'못한 것'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'},aclock:{f:wAclock,cls:'ac',w:230,h:230,label:'클래식 시계'},music:{f:wMusic,cls:'ms',w:360,h:170,label:'재생 중'},dream:{f:it=>wDream(it),cls:'dr',w:280,h:170,label:'외무영사 드림'}};
 
 /* ───── 그리기 ───── */
 const CV=document.getElementById('cv'),WR=document.getElementById('wrap');
@@ -783,6 +786,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
   if(it.t==='img')h+=`<button data-a="aicut">자동 누끼 (AI)</button><button data-a="mkclk">${it.clk?'시계 바늘 맞추기':'시계로 만들기 (바늘 얹기)'}</button>${it.clk?'<button data-a="rmclk">시계 바늘 빼기</button>':''}<button data-a="cutbg">단색 배경 지우기</button>${it.orig?'<button data-a="uncut">원래 사진으로</button>':''}<button data-a="cut">${it.cut?'그림자 모양 끄기':'오려낸 사진처럼 (투명 PNG)'}</button><button data-a="pol">${it.pol?'폴라로이드 빼기':'폴라로이드'}</button><button data-a="crop">자르기</button><button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button><button data-a="wall">배경으로 쓰기</button><hr>`;
   if(WG[it.t]&&it.t!=='clock')h+=`<div class="cap">바탕</div>${[['glass','유리'],['white','흰색'],['gray','회색'],['dark','어둡게'],['clear','투명']].map(([k,l])=>`<button data-a="st" data-v="${k}">${(it.st||(it.t==='aclock'?'clear':'glass'))===k?'✓ ':''}${l}</button>`).join('')}<hr>`;
   if(it.t==='dream'){const on=(it.tk!=null?it.tk:isCol());h+=`<button data-a="tk">${on?'티켓 모양 끄기':'티켓 모양'}</button>${on?`<div class="cap">티켓 색</div><div class="row" style="flex-wrap:wrap;max-width:230px">${Object.keys(TKC).map(k=>`<button data-a="tkc" data-v="${k}" title="${TKN[k]}" style="background:${TKC[k][0]};${((it.tkc||'ivory')===k)?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div>`:''}<hr>`;}
+  if(it.t==='dday')h+=`<button data-a="ddfull">${it.ddfull?'숫자만':'D-DAY 글자·날짜 보이기'}</button><hr>`;
   if(it.t==='music')h+=`<button data-a="song">곡 적기</button>${it.cover?`<button data-a="cc">${it.cc?'커버 색 따라가기 끄기':'커버 색 따라가기'}</button>`:''}<button data-a="nocv">${it.nocv?'커버 보이기':'커버 숨기기'}</button>${it.nocv?'':`<button data-a="cover">커버 ${it.cover?'바꾸기':'넣기'}</button>`}${it.cover&&!it.nocv?'<button data-a="uncover">커버 빼기</button>':''}<hr>`;
   if(it.t==='aclock')h+=`<div class="cap">모양</div>${CLOCKS.map(([k,l])=>`<button data-a="acs" data-v="${k}">${(it.cs||'simple')===k?'✓ ':''}${l}</button>`).join('')}${it.cs==='digital'?`<div class="cap">색</div><div class="row">${Object.keys(DGC).map(k=>`<button data-a="dgc" data-v="${k}" style="background:${DGC[k]};${(it.dgc||'ink')===k?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div><button data-a="dgoff">${it.dgoff===false?'꺼진 칸 보이기':'꺼진 칸 숨기기'}</button>`:''}${it.cs==='flip'||it.cs==='digital'?`<button data-a="h24">${it.h24?'12시간으로':'24시간으로'}</button>`:''}<hr>`;
   if(it.t==='aclock'&&(!it.cs||it.cs==='simple'))h+=`<div class="cap">숫자</div><div class="row">${[['roman','로마자'],['arabic','숫자'],['none','눈금만']].map(([k,l])=>`<button data-a="anum" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.num||'roman')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">판</div><div class="row">${[['w','흰색'],['b','검정'],['','테마색']].map(([k,l])=>`<button data-a="aface" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.face||'')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><button data-a="asec">${it.nosec?'초침 보이기':'초침 숨기기'}</button><hr>`;
@@ -795,7 +799,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     else if(a==='ls'){o.ls=Math.round((tv(o,'ls')+(+v))*100)/100;}else if(a==='lh'){o.lh=Math.max(.6,Math.round((tv(o,'lh')+(+v))*100)/100);}
     else if(a==='tr'){['ff','fw','ls','lh'].forEach(k=>delete o[k]);}else if(a==='al')o.al=o.al==='center'?'left':'center';
     else if(a==='crop'){openCrop(id);return;}
-    else if(a==='pol')o.pol=!o.pol;else if(a==='cc'){if(o.cc){delete o.cc;delete o.ccol;}else{setCoverColor(id);return;}}else if(a==='tk')o.tk=!(o.tk!=null?o.tk:isCol());else if(a==='tkc')o.tkc=v;else if(a==='srot'){o.rot=+v;if(!o.rot)delete o.rot;}else if(a==='ital')o.ital=!o.ital;else if(a==='quote'){o.ff='is';o.ital=true;o.fw=400;o.ls=0;o.lh=1.15;if(!o.fs||o.fs<26)o.fs=34;o.al='center';}
+    else if(a==='pol')o.pol=!o.pol;else if(a==='ddfull')o.ddfull=!o.ddfull;else if(a==='cc'){if(o.cc){delete o.cc;delete o.ccol;}else{setCoverColor(id);return;}}else if(a==='tk')o.tk=!(o.tk!=null?o.tk:isCol());else if(a==='tkc')o.tkc=v;else if(a==='srot'){o.rot=+v;if(!o.rot)delete o.rot;}else if(a==='ital')o.ital=!o.ital;else if(a==='quote'){o.ff='is';o.ital=true;o.fw=400;o.ls=0;o.lh=1.15;if(!o.fs||o.fs<26)o.fs=34;o.al='center';}
     else if(a==='cutbg'){cutBg(id);return;}else if(a==='aicut'){aiCut(id);return;}else if(a==='mkclk'){openClk(id);return;}else if(a==='rmclk'){delete o.clk;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='acs'){o.cs=v;const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230],digital:[300,110]}[v];if(sz){o.h=Math.round(o.w*sz[1]/sz[0]);}}else if(a==='h24')o.h24=!o.h24;else if(a==='dgc')o.dgc=v;else if(a==='dgoff')o.dgoff=o.dgoff===false?true:false;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
     else if(a==='cover'){coverFor=id;openSheet('cover');return;}else if(a==='uncover'){delete o.cover;}else if(a==='nocv'){o.nocv=!o.nocv;}else if(a==='song'){openSong(id);return;}
     else if(a==='sq')o.sq=!o.sq;else if(a==='st')o.st=v;else if(a==='lt')o.lt=!o.lt;
