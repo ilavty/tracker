@@ -102,6 +102,14 @@ button{font-family:inherit;cursor:pointer}
 .ac .hd.sc{animation-timing-function:steps(60,end)}.ac .hd.sc line{stroke:#b3423a;stroke-width:.7}
 .ac .pin{fill:var(--fi)}.ac .pin2{fill:#b3423a}
 @keyframes spin{to{transform:rotate(360deg)}}
+.ac .alm .anm text{font-family:'GM','Paperlogy',sans-serif;font-weight:700;font-size:15px;fill:#1f1f1f;text-anchor:middle;dominant-baseline:central}
+.ac .alm .asm{font-family:'GM',sans-serif;font-weight:700;font-size:6.4px;letter-spacing:.06em;fill:#2b2b2b;text-anchor:middle;dominant-baseline:central}
+.ac .flp .fpn{font-family:'GM','Paperlogy',sans-serif;font-weight:700;font-size:50px;letter-spacing:-.03em;fill:#151515;text-anchor:middle;dominant-baseline:central}
+.ac .brs .bnm text{font-family:'Bodoni Moda','Playfair Display',serif;font-weight:700;font-size:15px;fill:#1a1714;text-anchor:middle;dominant-baseline:central}
+.ac .pkt .pnm text{font-family:'Bodoni Moda','Playfair Display',serif;font-weight:700;font-size:17px;fill:#111;text-anchor:middle;dominant-baseline:central;letter-spacing:-.04em}
+.ac .alm .hd.sc line,.ac .brs .hd.sc line,.ac .pkt .hd.sc line{stroke-linecap:round}
+.ac .brs .hd.sc line,.ac .pkt .hd.sc line{stroke:#111}
+.ac .alm .hd,.ac .brs .hd,.ac .pkt .hd{filter:drop-shadow(0 1px .6px rgba(0,0,0,.25))}
 .ms{padding:16px 18px 14px;gap:10px}
 .mu{flex:1;min-height:0;display:flex;gap:16px;align-items:center;min-width:0}
 .mu .cv{height:100%;max-height:150px;aspect-ratio:1;border-radius:12px;overflow:hidden;flex-shrink:0;background:rgba(17,17,17,.08);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.14)}
@@ -471,7 +479,67 @@ function wMusic(it){const src=it.cover?(it.cover.img?O.imgs[it.cover.img]:it.cov
    <div class="mt"><b class="mf" ${ce('title')}>${edit?esc(it.title||''):`<span class="mq">${esc(it.title||'')}</span>`}</b><span class="mf" ${ce('artist')}>${esc(it.artist||'')}</span></div>
    <div class="mbar"><i style="animation-delay:-${(Date.now()%214000)/1000}s"></i></div><div class="mctl"><span>⏮</span><span class="pp">⏸</span><span>⏭</span></div></div></div>`;}
 /* 클래식 시계 (바늘은 CSS로 돌아서 매초 다시 그릴 필요 없음) */
-function wAclock(it){const d=new Date();const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;
+/* ───── 시계 모양 여러 개 ───── */
+function tnow(){const d=new Date();const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;return {d,sec,min,hr};}
+function hd(cx,cy,per,v,inner,cl=''){return `<g class="hd ${cl}" style="transform-origin:${cx}px ${cy}px;animation-duration:${per}s;animation-delay:-${(v/(per===43200?12:60)*per).toFixed(2)}s">${inner}</g>`;}
+function polar(cx,cy,r,i,n){const a=i/n*2*Math.PI;return [cx+r*Math.sin(a),cy-r*Math.cos(a)];}
+function clockAlarm(it){const {sec,min,hr}=tnow();const cx=100,cy=124;let t='';
+  for(let i=0;i<60;i++){const [x,y]=polar(cx,cy,62,i,60);t+=i%5?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r=".7" fill="#2b2b2b"/>`:'';}
+  let n='';for(let i=0;i<12;i++){const [x,y]=polar(cx,cy,51,i,12);n+=`<text x="${x.toFixed(1)}" y="${(y+.5).toFixed(1)}">${i||12}</text>`;}
+  const sub=(y)=>{let s=`<circle cx="${cx}" cy="${y}" r="11.5" fill="none" stroke="#6d6a62" stroke-width=".5"/>`;for(let i=0;i<12;i++){const [a,b]=polar(cx,y,10.5,i,12),[c,d]=polar(cx,y,8.8,i,12);s+=`<line x1="${a.toFixed(1)}" y1="${b.toFixed(1)}" x2="${c.toFixed(1)}" y2="${d.toFixed(1)}" stroke="#6d6a62" stroke-width=".5"/>`;}return s;};
+  return `<svg class="acf alm" viewBox="0 0 200 232"><defs>
+   <radialGradient id="almB" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#f2f3f1"/><stop offset=".45" stop-color="#a9aca8"/><stop offset="1" stop-color="#54574f"/></radialGradient>
+   <radialGradient id="almC" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#a9d2c8"/><stop offset=".7" stop-color="#7fb0a5"/><stop offset="1" stop-color="#4f7d73"/></radialGradient>
+   <radialGradient id="almF" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#f4eedf"/><stop offset="1" stop-color="#ddd3bb"/></radialGradient>
+   <linearGradient id="almR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1f2ef"/><stop offset=".5" stop-color="#8f928c"/><stop offset="1" stop-color="#e6e7e3"/></linearGradient></defs>
+   <rect x="96.5" y="20" width="7" height="30" rx="2" fill="url(#almB)"/><circle cx="100" cy="18" r="5" fill="url(#almB)"/>
+   <g transform="rotate(-28 52 52)"><path d="M18 58 Q18 24 52 22 Q86 24 86 58 Z" fill="url(#almB)"/><rect x="47" y="12" width="10" height="9" rx="2" fill="url(#almB)"/></g>
+   <g transform="rotate(28 148 52)"><path d="M114 58 Q114 24 148 22 Q182 24 182 58 Z" fill="url(#almB)"/><rect x="143" y="12" width="10" height="9" rx="2" fill="url(#almB)"/></g>
+   <path d="M58 196 L48 222 Q47 228 54 228 L64 228 Q70 228 69 221 L72 200Z" fill="url(#almB)"/><path d="M142 196 L152 222 Q153 228 146 228 L136 228 Q130 228 131 221 L128 200Z" fill="url(#almB)"/>
+   <circle cx="${cx}" cy="${cy}" r="84" fill="url(#almC)"/><circle cx="${cx}" cy="${cy}" r="84" fill="none" stroke="#3f675e" stroke-width="1.2" opacity=".6"/>
+   <circle cx="${cx}" cy="${cy}" r="72" fill="url(#almR)"/><circle cx="${cx}" cy="${cy}" r="68" fill="url(#almF)"/>
+   ${t}<g class="anm">${n}</g>${sub(cy-26)}${sub(cy+26)}
+   <text x="${cx-25}" y="${cy+1}" class="asm">REPEAT</text><text x="${cx+25}" y="${cy+1}" class="asm">ALARM</text>
+   ${hd(cx,cy+26,60,sec,`<line x1="${cx}" y1="${cy+28}" x2="${cx}" y2="${cy+17}" stroke="#b3423a" stroke-width="1"/>`,'sc')}
+   ${hd(cx,cy,43200,hr,`<path d="M${cx} ${cy+6} L${cx-2.4} ${cy} L${cx-1.2} ${cy-30} L${cx} ${cy-36} L${cx+1.2} ${cy-30} L${cx+2.4} ${cy}Z" fill="#1c1c1c"/>`)}
+   ${hd(cx,cy,3600,min,`<path d="M${cx} ${cy+8} L${cx-1.8} ${cy} L${cx-.8} ${cy-50} L${cx} ${cy-57} L${cx+.8} ${cy-50} L${cx+1.8} ${cy}Z" fill="#1c1c1c"/>`)}
+   <circle cx="${cx}" cy="${cy}" r="3" fill="#1c1c1c"/><circle cx="${cx}" cy="${cy+26}" r="1.6" fill="#b3423a"/></svg>`;}
+function clockFlip(it){const d=new Date();let h=d.getHours();if(!it.h24){h=h%12||12;}const H=it.h24?String(h).padStart(2,'0'):String(h),M=String(d.getMinutes()).padStart(2,'0');
+  const card=(x,txt)=>`<g><rect x="${x}" y="30" width="96" height="92" rx="5" fill="#2a2926"/><rect x="${x+5}" y="35" width="86" height="82" rx="3" fill="#f7f5ef"/>
+    <rect x="${x+5}" y="35" width="86" height="41" rx="3" fill="#fdfcf8"/><text x="${x+48}" y="78" class="fpn">${txt}</text>
+    <line x1="${x+5}" y1="76" x2="${x+91}" y2="76" stroke="#1d1c1a" stroke-width="1.6"/><rect x="${x+1}" y="72" width="5" height="8" rx="1" fill="#2a2926"/><rect x="${x+90}" y="72" width="5" height="8" rx="1" fill="#2a2926"/></g>`;
+  return `<svg class="acf flp" viewBox="0 0 250 150"><defs><linearGradient id="flpB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3efe4"/><stop offset="1" stop-color="#dcd5c4"/></linearGradient>
+   <linearGradient id="flpI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfc7b4"/><stop offset="1" stop-color="#e8e2d3"/></linearGradient></defs>
+   <rect x="4" y="8" width="242" height="136" rx="30" fill="url(#flpB)"/><rect x="4" y="8" width="242" height="136" rx="30" fill="none" stroke="#c9c1ae" stroke-width="1"/>
+   <rect x="20" y="22" width="210" height="108" rx="12" fill="url(#flpI)"/>${card(24,H)}${card(130,M)}
+   <rect x="70" y="134" width="20" height="2" rx="1" fill="#bdb5a2"/><rect x="160" y="134" width="20" height="2" rx="1" fill="#bdb5a2"/></svg>`;}
+function sqPt(cx,cy,h,i,n,rr=1){const a=i/n*2*Math.PI,sx=Math.sin(a),cy_=Math.cos(a);const k=h/Math.max(Math.abs(sx),Math.abs(cy_));const kk=k*rr+(h*(1-rr));const m=Math.min(k,h*1.32);return [cx+m*sx,cy-m*cy_];}
+function clockBrass(it){const {sec,min,hr}=tnow();const cx=100,cy=100;let tk='',n='';
+  for(let i=0;i<60;i++){const [a,b]=sqPt(cx,cy,66,i,60),[c,d]=sqPt(cx,cy,i%5?62:59,i,60);tk+=`<line x1="${a.toFixed(1)}" y1="${b.toFixed(1)}" x2="${c.toFixed(1)}" y2="${d.toFixed(1)}" stroke="#2a2621" stroke-width="${i%5?.6:1.4}"/>`;}
+  for(let i=0;i<12;i++){const [x,y]=sqPt(cx,cy,49,i,12);n+=`<text x="${x.toFixed(1)}" y="${(y+.5).toFixed(1)}">${i||12}</text>`;}
+  return `<svg class="acf brs" viewBox="0 0 200 200"><defs><linearGradient id="brsG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8b77e"/><stop offset=".35" stop-color="#8f6b3f"/><stop offset=".6" stop-color="#c49a5f"/><stop offset="1" stop-color="#5e4426"/></linearGradient>
+   <linearGradient id="brsI" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e2c48d"/><stop offset="1" stop-color="#6d5030"/></linearGradient><radialGradient id="brsF" cx="45%" cy="40%" r="75%"><stop offset="0" stop-color="#f6f0e0"/><stop offset="1" stop-color="#e3d8bf"/></radialGradient></defs>
+   <rect x="4" y="4" width="192" height="192" rx="22" fill="url(#brsG)"/><rect x="14" y="14" width="172" height="172" rx="16" fill="url(#brsI)"/>
+   <rect x="20" y="20" width="160" height="160" rx="13" fill="url(#brsF)"/><rect x="28" y="28" width="144" height="144" rx="10" fill="none" stroke="#2a2621" stroke-width=".6"/>
+   ${tk}<g class="bnm">${n}</g>
+   ${hd(cx,cy,43200,hr,`<path d="M${cx-2.2} ${cy+8} L${cx-2.2} ${cy-24} L${cx} ${cy-30} L${cx+2.2} ${cy-24} L${cx+2.2} ${cy+8}Z" fill="#141210"/><circle cx="${cx}" cy="${cy-26}" r="4.2" fill="#141210"/>`)}
+   ${hd(cx,cy,3600,min,`<path d="M${cx-1.6} ${cy+10} L${cx-1.6} ${cy-46} L${cx} ${cy-54} L${cx+1.6} ${cy-46} L${cx+1.6} ${cy+10}Z" fill="#141210"/>`)}
+   ${it.nosec?'':hd(cx,cy,60,sec,`<line x1="${cx}" y1="${cy+14}" x2="${cx}" y2="${cy-58}" stroke="#141210" stroke-width=".6"/>`,'sc')}
+   <circle cx="${cx}" cy="${cy}" r="5" fill="url(#brsG)" stroke="#5e4426" stroke-width=".6"/></svg>`;}
+function clockPocket(it){const {sec,min,hr}=tnow();const cx=100,cy=128;const RN=['XII','I','II','III','IIII','V','VI','VII','VIII','IX','X','XI'];let n='',dt='';
+  for(let i=0;i<12;i++){const [x,y]=polar(cx,cy,64,i,12);n+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" transform="rotate(${i*30} ${x.toFixed(1)} ${y.toFixed(1)})">${RN[i]}</text>`;}
+  for(let i=0;i<60;i++){if(i%5===0){const [x,y]=polar(cx,cy,79,i,60);dt+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.3" fill="#111"/>`;}}
+  const orn=(len,w)=>`<path d="M${cx-w} ${cy+12} L${cx-w*.6} ${cy} L${cx-w*.5} ${cy-len*.55} Q${cx-w*3} ${cy-len*.66} ${cx} ${cy-len*.74} Q${cx+w*3} ${cy-len*.66} ${cx+w*.5} ${cy-len*.55} L${cx+w*.6} ${cy} L${cx+w} ${cy+12}Z" fill="#111"/><path d="M${cx-w*.45} ${cy-len*.74} L${cx} ${cy-len} L${cx+w*.45} ${cy-len*.74}Z" fill="#111"/><circle cx="${cx}" cy="${cy-len*.63}" r="${w*1.1}" fill="#fff"/>`;
+  return `<svg class="acf pkt" viewBox="0 0 200 228"><defs><linearGradient id="pkG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdfdfd"/><stop offset=".3" stop-color="#9da1a6"/><stop offset=".55" stop-color="#eef0f2"/><stop offset=".8" stop-color="#7d8186"/><stop offset="1" stop-color="#e2e4e6"/></linearGradient></defs>
+   <circle cx="${cx}" cy="17" r="12" fill="none" stroke="url(#pkG)" stroke-width="4.5"/><rect x="93" y="27" width="14" height="10" rx="3" fill="url(#pkG)"/>
+   <circle cx="${cx}" cy="${cy}" r="96" fill="url(#pkG)"/><circle cx="${cx}" cy="${cy}" r="89" fill="#d9dcdf"/><circle cx="${cx}" cy="${cy}" r="87" fill="#fdfdfc"/>
+   <circle cx="${cx}" cy="${cy}" r="79" fill="none" stroke="#111" stroke-width=".35" opacity=".5"/>${dt}<g class="pnm">${n}</g>
+   ${hd(cx,cy,43200,hr,orn(44,3.4))}${hd(cx,cy,3600,min,orn(66,2.6))}
+   ${it.nosec?'':hd(cx,cy,60,sec,`<line x1="${cx}" y1="${cy+18}" x2="${cx}" y2="${cy-74}" stroke="#111" stroke-width=".55"/>`,'sc')}
+   <circle cx="${cx}" cy="${cy}" r="4" fill="#111"/></svg>`;}
+const CLOCKS=[['simple','심플'],['alarm','민트 알람시계'],['flip','플립시계'],['brass','황동 탁상시계'],['pocket','은색 회중시계']];
+function wAclock(it){if(it.cs==='alarm')return clockAlarm(it);if(it.cs==='flip')return clockFlip(it);if(it.cs==='brass')return clockBrass(it);if(it.cs==='pocket')return clockPocket(it);return wAclockSimple(it);}
+function wAclockSimple(it){const d=new Date();const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;
   const RN=['XII','I','II','III','IIII','V','VI','VII','VIII','IX','X','XI'];const mode=it.num||'roman';
   let marks='';for(let i=0;i<60;i++){const big=i%5===0;marks+=`<line x1="100" y1="${big?9:9.5}" x2="100" y2="${big?15:12}" stroke-width="${big?1.3:.55}" transform="rotate(${i*6} 100 100)"/>`;}
   let nums='';if(mode!=='none')for(let i=0;i<12;i++){const a=i*30*Math.PI/180,r=mode==='roman'?74:75;const x=100+r*Math.sin(a),y=100-r*Math.cos(a);
@@ -621,7 +689,8 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
   if(it.t==='img')h+=`<button data-a="cutbg">배경 지우기</button>${it.orig?'<button data-a="uncut">원래 사진으로</button>':''}<button data-a="cut">${it.cut?'그림자 모양 끄기':'오려낸 사진처럼 (투명 PNG)'}</button><button data-a="pol">${it.pol?'폴라로이드 빼기':'폴라로이드'}</button><button data-a="crop">자르기</button><button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button><button data-a="wall">배경으로 쓰기</button><hr>`;
   if(WG[it.t]&&it.t!=='clock')h+=`<div class="cap">바탕</div>${[['glass','유리'],['white','흰색'],['dark','어둡게'],['clear','투명']].map(([k,l])=>`<button data-a="st" data-v="${k}">${(it.st||(it.t==='aclock'?'clear':'glass'))===k?'✓ ':''}${l}</button>`).join('')}<hr>`;
   if(it.t==='music')h+=`<button data-a="song">곡 적기</button><button data-a="nocv">${it.nocv?'커버 보이기':'커버 숨기기'}</button>${it.nocv?'':`<button data-a="cover">커버 ${it.cover?'바꾸기':'넣기'}</button>`}${it.cover&&!it.nocv?'<button data-a="uncover">커버 빼기</button>':''}<hr>`;
-  if(it.t==='aclock')h+=`<div class="cap">숫자</div><div class="row">${[['roman','로마자'],['arabic','숫자'],['none','눈금만']].map(([k,l])=>`<button data-a="anum" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.num||'roman')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">판</div><div class="row">${[['w','흰색'],['b','검정'],['','테마색']].map(([k,l])=>`<button data-a="aface" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.face||'')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><button data-a="asec">${it.nosec?'초침 보이기':'초침 숨기기'}</button><hr>`;
+  if(it.t==='aclock')h+=`<div class="cap">모양</div>${CLOCKS.map(([k,l])=>`<button data-a="acs" data-v="${k}">${(it.cs||'simple')===k?'✓ ':''}${l}</button>`).join('')}${it.cs==='flip'?`<button data-a="h24">${it.h24?'12시간으로':'24시간으로'}</button>`:''}<hr>`;
+  if(it.t==='aclock'&&(!it.cs||it.cs==='simple'))h+=`<div class="cap">숫자</div><div class="row">${[['roman','로마자'],['arabic','숫자'],['none','눈금만']].map(([k,l])=>`<button data-a="anum" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.num||'roman')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">판</div><div class="row">${[['w','흰색'],['b','검정'],['','테마색']].map(([k,l])=>`<button data-a="aface" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.face||'')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><button data-a="asec">${it.nosec?'초침 보이기':'초침 숨기기'}</button><hr>`;
   if(it.t==='clock')h+=`<div class="cap">색</div><div class="row">${SW.map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${typeRows(it)}<hr>`;
   if(it.t==='stk'){const pc=curPal()||[];h+=`<div class="cap">색</div><div class="row" style="flex-wrap:wrap;max-width:220px">${[...new Set([...SW,...pc])].map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div><div class="cap">기울기</div><div class="row">${[-20,-10,0,10,20].map(d=>`<button data-a="srot" data-v="${d}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.rot||0)==d?'background:var(--skyl)':''}">${d}°</button>`).join('')}</div><hr>`;}
   if(isVin()||isCol())h+=`<button data-a="tape">${hasTape(it)?'테이프 떼기':'테이프 붙이기'}</button>${isVin()?`<button data-a="rot">${it.norot?'살짝 기울이기':'똑바로 놓기'}</button>`:''}<hr>`;
@@ -632,14 +701,14 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     else if(a==='tr'){['ff','fw','ls','lh'].forEach(k=>delete o[k]);}else if(a==='al')o.al=o.al==='center'?'left':'center';
     else if(a==='crop'){openCrop(id);return;}
     else if(a==='pol')o.pol=!o.pol;else if(a==='srot'){o.rot=+v;if(!o.rot)delete o.rot;}else if(a==='ital')o.ital=!o.ital;else if(a==='quote'){o.ff='is';o.ital=true;o.fw=400;o.ls=0;o.lh=1.15;if(!o.fs||o.fs<26)o.fs=34;o.al='center';}
-    else if(a==='cutbg'){cutBg(id);return;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
+    else if(a==='cutbg'){cutBg(id);return;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='acs'){o.cs=v;const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230]}[v];if(sz){o.h=Math.round(o.w*sz[1]/sz[0]);}}else if(a==='h24')o.h24=!o.h24;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
     else if(a==='cover'){coverFor=id;openSheet('cover');return;}else if(a==='uncover'){delete o.cover;}else if(a==='nocv'){o.nocv=!o.nocv;}else if(a==='song'){openSong(id);return;}
     else if(a==='sq')o.sq=!o.sq;else if(a==='st')o.st=v;else if(a==='lt')o.lt=!o.lt;
     else if(a==='up')o.z=topZ()+1;else if(a==='dn'){const mn=Math.min(...items().map(i=>i.z||1));o.z=mn-1;}
     else if(a==='dup'){put('items/'+uid(),{...o,x:o.x+24,y:o.y+24,z:topZ()+1});render();return;}
     else if(a==='wall'){put('wall',o.img?{img:o.img}:{url:o.url});render();return;}
     else if(a==='del'){put('items/'+id,null);render();return;}
-    put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c','bg','anum','aface','srot','ital'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}},document.querySelector(`[data-id="${id}"]`));}
+    put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c','bg','anum','aface','srot','ital','acs','h24'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}},document.querySelector(`[data-id="${id}"]`));}
 function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${on?'background:var(--skyl)':''}">${l}</button>`;
   const ls=tv(it,'ls'),lh=tv(it,'lh');
   return `<div class="cap">폰트</div><div class="row fonts">${FONTS.map(f=>`<button data-a="ff" data-v="${f[0]}" style="width:auto;height:auto;border-radius:6px;padding:3px 7px;font-size:13px;font-family:${f[2].replace(/"/g,'&quot;')};${tv(it,'ff')===f[0]?'background:var(--skyl)':''}">${f[1]}</button>`).join('')}</div>
@@ -756,7 +825,7 @@ document.getElementById('wallBtn').onclick=e=>{const r=e.target.getBoundingClien
   openMenu(r.left-60,r.bottom+8,`<button data-a="pick">배경 사진 넣기</button>${O.wall?'<button data-a="clr">배경 사진 빼기</button>':''}<hr><div class="cap">바탕</div>${BGP.map(([k,l])=>`<button data-a="bgp" data-v="${k}">${cur===k&&!O.wall?'✓ ':''}${l}</button>`).join('')}`,(a,v)=>{
     if(a==='pick')openSheet('wall');else if(a==='clr'){put('wall',null);render();}else if(a==='bgp'){if(O.wall)put('wall',null);put('th/bgp',v||null);render();}});};
 document.getElementById('stkBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.keys(STK).map(k=>`<button data-a="${k}"><svg viewBox="0 0 100 100" style="width:18px;height:18px;color:#111">${STK[k]}</svg>${STKN[k]}</button>`).join(''),k=>{const sz=k==='check'?110:k==='arrow'||k==='circle'?120:70;const p=freeSpot(sz,sz);put('items/'+uid(),{t:'stk',kind:k,x:p.x,y:p.y,w:sz,h:sz,z:topZ()+1});render();});};
-document.getElementById('wgBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.entries(WG).map(([k,v])=>`<button data-a="${k}">${v.label}</button>`).join(''),k=>{const W=WG[k];const p=freeSpot(W.w,W.h);const nid=uid();put('items/'+nid,{t:k,x:p.x,y:p.y,w:W.w,h:W.h,z:topZ()+1});render();if(k==='music')openSong(nid);});};
+document.getElementById('wgBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.entries(WG).filter(([k])=>k!=='aclock').map(([k,v])=>`<button data-a="${k}">${v.label}</button>`).join('')+'<hr><div class="cap">시계</div>'+CLOCKS.map(([k,l])=>`<button data-a="ac:${k}">${l}</button>`).join(''),k=>{if(k.startsWith('ac:')){const cs=k.slice(3);const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230]}[cs];const p=freeSpot(sz[0],sz[1]);put('items/'+uid(),{t:'aclock',cs,x:p.x,y:p.y,w:sz[0],h:sz[1],z:topZ()+1});render();return;}const W=WG[k];const p=freeSpot(W.w,W.h);const nid=uid();put('items/'+nid,{t:k,x:p.x,y:p.y,w:W.w,h:W.h,z:topZ()+1});render();if(k==='music')openSong(nid);});};
 
 /* 사진: 주소 붙여넣기 / 이미지 붙여넣기 / 파일 */
 const SH=document.getElementById('sheet'),PZ=document.getElementById('pz'),PU=document.getElementById('pu');
