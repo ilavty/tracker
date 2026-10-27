@@ -176,6 +176,8 @@ body.dark .mbar{background:rgba(255,255,255,.14)}body.dark .mu .cv{background:rg
 /* 편집 버튼, 도구 */
  /* 사진 안쪽 틀 */
 .it.img .pi{position:absolute;inset:0;overflow:hidden;border-radius:inherit}
+.clko{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 1.5px 1.2px rgba(0,0,0,.3))}
+.clko .hd,#ckh .hd{animation-name:spin;animation-timing-function:linear;animation-iteration-count:infinite}.clko .hd.sc,#ckh .hd.sc{animation-timing-function:steps(60,end)}
 .it.img.pol{background:var(--noise,none),var(--paper2,#fbf8f1);border-radius:2px;box-shadow:0 1px 1px rgba(0,0,0,.08),0 12px 26px rgba(0,0,0,.22)}
 .it.img.pol .pi{inset:4% 4% 15% 4%;border-radius:0}
 /* ───── 빈티지 (스크랩·나무) ───── */
@@ -302,6 +304,20 @@ html.full #tools:not(.open) #fullBtn{max-width:80px;padding-left:11px!important;
 #crop .crect i[data-h=w]{left:0;top:50%;width:8px;height:26px;border-radius:4px;margin:-13px 0 0 -4px;cursor:ew-resize}#crop .crect i[data-h=e]{left:100%;top:50%;width:8px;height:26px;border-radius:4px;margin:-13px 0 0 -4px;cursor:ew-resize}
 #crop .bt{display:flex;gap:8px;margin-top:14px;align-items:center}#crop .bt .sp{flex:1}
 #crop .bt button{border:0;border-radius:11px;padding:8px 14px;font-size:13px;background:#f1f1f1;color:var(--ink)}#crop .bt .ok{background:var(--ink);color:#fff}
+#ckm{position:fixed;inset:0;z-index:40000;display:none;align-items:center;justify-content:center;background:rgba(20,24,30,.55)}#ckm.on{display:flex}
+#ckm .cbox{background:#fff;border-radius:20px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);color:#111}
+#ckm .cks{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;background:#eee;overflow:hidden;border-radius:6px}
+#ckm .ckp{position:absolute;inset:0}#ckm .ckp .pi{position:absolute;inset:0;overflow:hidden}#ckm .ckp img{width:100%;height:100%;object-fit:cover;display:block}
+#ckm .ckh{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.85}
+#ckm .ckc{position:absolute;border:1.5px dashed #fff;outline:1px dashed rgba(0,0,0,.5);border-radius:50%;cursor:move;box-sizing:border-box}
+#ckm .ckc::after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#e0559a;box-shadow:0 0 0 2px #fff}
+#ckm .ckr{position:absolute;right:-10px;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4);cursor:ew-resize}
+#ckm .ckopt{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;align-items:center;font-size:12px}
+#ckm .ckopt .g{display:flex;gap:4px;align-items:center}#ckm .ckopt .g span{font-family:'GM';font-size:11px;color:#7c8796;margin-right:2px}
+#ckm .ckopt button{border:0;border-radius:8px;padding:4px 9px;font-size:12px;background:#f1f1f1;color:#111}#ckm .ckopt button.on{background:#111;color:#fff}
+#ckm .ckopt .sw{width:20px;height:20px;padding:0;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.2)}#ckm .ckopt .sw.on{box-shadow:0 0 0 2.5px #111}
+#ckm .bt{display:flex;gap:8px;margin-top:14px;align-items:center}#ckm .bt .sp{flex:1}
+#ckm .bt button{border:0;border-radius:11px;padding:8px 14px;font-size:13px;background:#f1f1f1;color:#111}#ckm .bt .ok{background:#111;color:#fff}
 #song{position:fixed;inset:0;z-index:40000;display:none;align-items:center;justify-content:center;background:rgba(20,24,30,.18)}#song.on{display:flex}
 #song .box{width:min(360px,92vw);background:#fff;color:#111;border-radius:20px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:12px}
 #song label{display:flex;flex-direction:column;gap:5px;font-family:'GM';font-size:11.5px;color:#7c8796;letter-spacing:.04em}
@@ -330,6 +346,8 @@ html.full #tools:not(.open) #fullBtn{max-width:80px;padding-left:11px!important;
   <div class="bt"><button id="cReset">원본</button><span class="sp"></span><button id="cX">취소</button><button class="ok" id="cOk">완료</button></div></div></div>
 <div id="thp"><div class="tbox"><div class="th"><b>THEMES</b><span class="sp"></span><button id="thX">닫기</button></div><div id="thList"></div>
   <div id="palBox"></div></div></div>
+<div id="ckm"><div class="cbox"><div class="cks" id="cks"><div class="ckp" id="ckp"></div><svg class="ckh" id="ckh"></svg><div class="ckc" id="ckc"><i class="ckr" id="ckr"></i></div></div>
+  <div class="ckopt" id="ckopt"></div><div class="bt"><span class="sp"></span><button id="ckX">취소</button><button class="ok" id="ckOk">완료</button></div></div></div>
 <div id="song"><div class="box"><label>제목<input id="sgT" spellcheck="false"></label><label>가수<input id="sgA" spellcheck="false"></label><label>커버 이미지 주소<input id="sgC" spellcheck="false" inputmode="url" autocapitalize="off"></label>
   <div class="bt"><span class="sp"></span><button id="sgX">취소</button><button class="ok" id="sgOk">완료</button></div></div></div>
 <div id="sheet"><div class="box"><h4 id="shT">사진</h4><label class="pul">이미지 주소<input id="pu" spellcheck="false" inputmode="url" autocapitalize="off"></label><div class="pz" id="pz" contenteditable="true"></div>
@@ -538,6 +556,15 @@ function clockPocket(it){const {sec,min,hr}=tnow();const cx=100,cy=128;const RN=
    ${it.nosec?'':hd(cx,cy,60,sec,`<line x1="${cx}" y1="${cy+18}" x2="${cx}" y2="${cy-74}" stroke="#111" stroke-width=".55"/>`,'sc')}
    <circle cx="${cx}" cy="${cy}" r="4" fill="#111"/></svg>`;}
 const CLOCKS=[['simple','심플'],['alarm','민트 알람시계'],['flip','플립시계'],['brass','황동 탁상시계'],['pocket','은색 회중시계']];
+/* 사진(시계 사진) 위에 진짜로 도는 바늘 얹기 */
+function piAspect(it){return it.pol?(it.w*.92)/(it.h*.81):it.w/it.h;}
+function clkHands(k,VW,VH){const {sec,min,hr}=tnow();const cx=k.x*VW,cy=k.y*VH,R=k.r*Math.min(VW,VH);const c=k.c||'#111';const st=k.st||'cl';
+  const p=(len,w,tail)=>`M${cx-w} ${cy+tail} L${cx-w*.7} ${cy} L${cx-w*.35} ${cy-len*.92} L${cx} ${cy-len} L${cx+w*.35} ${cy-len*.92} L${cx+w*.7} ${cy} L${cx+w} ${cy+tail}Z`;
+  const spade=(len,w)=>`<path d="${p(len*.7,w,R*.12)}" fill="${c}"/><path d="M${cx} ${cy-len} Q${cx-w*3.2} ${cy-len*.78} ${cx-w*.5} ${cy-len*.66} L${cx+w*.5} ${cy-len*.66} Q${cx+w*3.2} ${cy-len*.78} ${cx} ${cy-len}Z" fill="${c}"/>`;
+  const H=st==='sp'?spade(R*.52,R*.035):st==='bd'?`<path d="${p(R*.5,R*.055,R*.1)}" fill="${c}"/>`:`<path d="${p(R*.5,R*.03,R*.12)}" fill="${c}"/>`;
+  const M=st==='sp'?spade(R*.8,R*.026):st==='bd'?`<path d="${p(R*.78,R*.042,R*.12)}" fill="${c}"/>`:`<path d="${p(R*.8,R*.022,R*.14)}" fill="${c}"/>`;
+  return hd(cx,cy,43200,hr,H)+hd(cx,cy,3600,min,M)+(k.sec===false?'':hd(cx,cy,60,sec,`<line x1="${cx}" y1="${cy+R*.2}" x2="${cx}" y2="${cy-R*.88}" stroke="${k.sc||'#b3423a'}" stroke-width="${Math.max(1.2,R*.008)}" stroke-linecap="round"/>`,'sc'))+`<circle cx="${cx}" cy="${cy}" r="${R*.045}" fill="${c}"/>`;}
+function clkOverlay(it){const VW=1000,VH=Math.round(1000/piAspect(it));return `<svg class="clko" viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">${clkHands(it.clk,VW,VH)}</svg>`;}
 function wAclock(it){if(it.cs==='alarm')return clockAlarm(it);if(it.cs==='flip')return clockFlip(it);if(it.cs==='brass')return clockBrass(it);if(it.cs==='pocket')return clockPocket(it);return wAclockSimple(it);}
 function wAclockSimple(it){const d=new Date();const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;
   const RN=['XII','I','II','III','IIII','V','VI','VII','VIII','IX','X','XI'];const mode=it.num||'roman';
@@ -578,8 +605,8 @@ function exitFull(){const d=window.frameElement?parent.document:document;if(fsEl
 function wallCss(){const w=O.wall;if(!w)return '';const src=w.img?O.imgs[w.img]:w.url;return src?`url("${src}")`:'';}
 function inner(it){
   if(it.t==='img'){const src=it.img?O.imgs[it.img]:it.url;if(!src)return '';const c=it.crop;
-    if(c&&c.w>0&&c.h>0)return `<div class="pi"><img src="${esc(src)}" alt="" style="position:absolute;width:${100/c.w}%;height:${100/c.h}%;left:${-c.x/c.w*100}%;top:${-c.y/c.h*100}%;max-width:none;object-fit:fill"></div>`;
-    return `<div class="pi"><img src="${esc(src)}" alt=""></div>`;}
+    if(c&&c.w>0&&c.h>0)return `<div class="pi"><img src="${esc(src)}" alt="" style="position:absolute;width:${100/c.w}%;height:${100/c.h}%;left:${-c.x/c.w*100}%;top:${-c.y/c.h*100}%;max-width:none;object-fit:fill">${it.clk?clkOverlay(it):''}</div>`;
+    return `<div class="pi"><img src="${esc(src)}" alt="">${it.clk?clkOverlay(it):''}</div>`;}
   if(it.t==='stk')return stkSvg(it);
   if(it.t==='txt')return `<div class="tx" ${edit?'contenteditable="true"':''} spellcheck="false" style="font-size:${it.fs||28}px;color:${it.c||'var(--txtc)'};font-family:${FF[tv(it,'ff')]};font-weight:${tv(it,'fw')};font-style:${it.ital?'italic':'normal'};letter-spacing:${tv(it,'ls')}em;line-height:${tv(it,'lh')};text-align:${it.al||'left'}">${esc(it.text||'')}</div>`;
   const W=WG[it.t];return W?W.f(it):'';}
@@ -686,7 +713,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     ${it.bg?`<button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button>`:''}
     <button data-a="quote">인용문 스타일</button><button data-a="ital">${it.ital?'기울임 끄기':'기울임'}</button>
     ${typeRows(it)}<button data-a="al">${it.al==='center'?'왼쪽 정렬':'가운데 정렬'}</button><hr>`;
-  if(it.t==='img')h+=`<button data-a="cutbg">배경 지우기</button>${it.orig?'<button data-a="uncut">원래 사진으로</button>':''}<button data-a="cut">${it.cut?'그림자 모양 끄기':'오려낸 사진처럼 (투명 PNG)'}</button><button data-a="pol">${it.pol?'폴라로이드 빼기':'폴라로이드'}</button><button data-a="crop">자르기</button><button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button><button data-a="wall">배경으로 쓰기</button><hr>`;
+  if(it.t==='img')h+=`<button data-a="mkclk">${it.clk?'시계 바늘 맞추기':'시계로 만들기 (바늘 얹기)'}</button>${it.clk?'<button data-a="rmclk">시계 바늘 빼기</button>':''}<button data-a="cutbg">배경 지우기</button>${it.orig?'<button data-a="uncut">원래 사진으로</button>':''}<button data-a="cut">${it.cut?'그림자 모양 끄기':'오려낸 사진처럼 (투명 PNG)'}</button><button data-a="pol">${it.pol?'폴라로이드 빼기':'폴라로이드'}</button><button data-a="crop">자르기</button><button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button><button data-a="wall">배경으로 쓰기</button><hr>`;
   if(WG[it.t]&&it.t!=='clock')h+=`<div class="cap">바탕</div>${[['glass','유리'],['white','흰색'],['dark','어둡게'],['clear','투명']].map(([k,l])=>`<button data-a="st" data-v="${k}">${(it.st||(it.t==='aclock'?'clear':'glass'))===k?'✓ ':''}${l}</button>`).join('')}<hr>`;
   if(it.t==='music')h+=`<button data-a="song">곡 적기</button><button data-a="nocv">${it.nocv?'커버 보이기':'커버 숨기기'}</button>${it.nocv?'':`<button data-a="cover">커버 ${it.cover?'바꾸기':'넣기'}</button>`}${it.cover&&!it.nocv?'<button data-a="uncover">커버 빼기</button>':''}<hr>`;
   if(it.t==='aclock')h+=`<div class="cap">모양</div>${CLOCKS.map(([k,l])=>`<button data-a="acs" data-v="${k}">${(it.cs||'simple')===k?'✓ ':''}${l}</button>`).join('')}${it.cs==='flip'?`<button data-a="h24">${it.h24?'12시간으로':'24시간으로'}</button>`:''}<hr>`;
@@ -701,7 +728,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     else if(a==='tr'){['ff','fw','ls','lh'].forEach(k=>delete o[k]);}else if(a==='al')o.al=o.al==='center'?'left':'center';
     else if(a==='crop'){openCrop(id);return;}
     else if(a==='pol')o.pol=!o.pol;else if(a==='srot'){o.rot=+v;if(!o.rot)delete o.rot;}else if(a==='ital')o.ital=!o.ital;else if(a==='quote'){o.ff='is';o.ital=true;o.fw=400;o.ls=0;o.lh=1.15;if(!o.fs||o.fs<26)o.fs=34;o.al='center';}
-    else if(a==='cutbg'){cutBg(id);return;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='acs'){o.cs=v;const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230]}[v];if(sz){o.h=Math.round(o.w*sz[1]/sz[0]);}}else if(a==='h24')o.h24=!o.h24;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
+    else if(a==='cutbg'){cutBg(id);return;}else if(a==='mkclk'){openClk(id);return;}else if(a==='rmclk'){delete o.clk;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='acs'){o.cs=v;const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230]}[v];if(sz){o.h=Math.round(o.w*sz[1]/sz[0]);}}else if(a==='h24')o.h24=!o.h24;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
     else if(a==='cover'){coverFor=id;openSheet('cover');return;}else if(a==='uncover'){delete o.cover;}else if(a==='nocv'){o.nocv=!o.nocv;}else if(a==='song'){openSong(id);return;}
     else if(a==='sq')o.sq=!o.sq;else if(a==='st')o.st=v;else if(a==='lt')o.lt=!o.lt;
     else if(a==='up')o.z=topZ()+1;else if(a==='dn'){const mn=Math.min(...items().map(i=>i.z||1));o.z=mn-1;}
@@ -746,7 +773,7 @@ const GRAIN=svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='1150' height=
 const NOISE_L=svgUrl(`<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .18  0 0 0 .32 -.12'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`);
 function wood(b){return `${GRAIN} 0 0/1150px 1150px,linear-gradient(180deg,rgba(255,255,255,.07),rgba(0,0,0,.22)),${NOISE} 0 0/220px 220px,${b}`;}
 const COL_DEF=['#1B1A18','#6E5B4A','#B9A58C','#EDE5D6','#F7F2E8'];
-const BGP=[['','테마 기본'],['paper','종이'],['linen','린넨'],['grid','모눈'],['dot','점 모눈'],['lined','줄 노트'],['kraft','크라프트'],['cork','코르크'],['wood','나무'],['plain','단색'],['night','밤']];
+const BGP=[['','테마 기본'],['white','흰색'],['cream','크림'],['paper','종이'],['linen','린넨'],['grid','모눈'],['dot','점 모눈'],['lined','줄 노트'],['kraft','크라프트'],['cork','코르크'],['wood','나무'],['plain','단색'],['night','밤']];
 function bgOf(k,r){const N=`${NOISE_L} 0 0/260px 260px`;
   switch(k){
     case 'paper':return `${N},${r.paper}`;
@@ -758,12 +785,14 @@ function bgOf(k,r){const N=`${NOISE_L} 0 0/260px 260px`;
     case 'cork':return `radial-gradient(circle at 20% 30%,rgba(90,50,20,.25) 1px,transparent 2px) 0 0/9px 11px,radial-gradient(circle at 70% 60%,rgba(255,230,190,.25) 1px,transparent 2px) 0 0/13px 7px,${N},#b8895b`;
     case 'wood':return wood(r.board);
     case 'plain':return r.paper;
+    case 'white':return '#ffffff';
+    case 'cream':return '#f7f3ea';
     case 'night':return `${N},#151515`;}
   return null;}
 function applyTheme(){const t=T0();const vin=t.style==='vin',col=t.style==='col';document.body.classList.toggle('vin',vin);document.body.classList.toggle('col',col);document.body.classList.toggle('scrap',vin||col);
   const p=curPal()||(vin?VIN_DEF:col?COL_DEF:null);const d=O.theme==='dark'&&!vin&&!col&&!p;document.body.classList.toggle('dark',d);
   const db_=document.getElementById('darkBtn');db_.style.display=(vin||col||p)?'none':'';db_.textContent=d?'light':'dark';
-  const bk=t.bgp||(vin?'wood':col?'paper':'');document.body.classList.toggle('nightbg',bk==='night');
+  const bk=t.bgp||(vin?'wood':col?'white':'');document.body.classList.toggle('nightbg',bk==='night');
   const st=document.body.style;['--ink','--sub','--paper','--paper2','--acc','--board','--bgg','--tape','--skyl','--noise','--sky'].forEach(k=>st.removeProperty(k));
   st.setProperty('--noise',NOISE);
   if(p){const r=roles(p);st.setProperty('--ink',r.ink);st.setProperty('--sub',mix(r.ink,r.paper,.48));st.setProperty('--paper',r.paper);st.setProperty('--paper2',r.paper2);
@@ -867,6 +896,32 @@ function cutBg(id){const it=O.items[id];if(!it)return;const src=it.img?O.imgs[it
     const o={...O.items[id]};if(!o.orig)o.orig={img:o.img||null,url:o.url||null};o.img=key;delete o.url;o.cut=true;put('items/'+id,o);render();}
     catch(e){alert('이 사진은 주소로 넣어서 배경을 못 지워요. 사진을 복사해서 붙여넣기로 다시 넣어보세요.');}};
   im.onerror=()=>alert('사진을 못 불러왔어요.');im.src=src;}
+
+/* ───── 시계 바늘 맞추기 ───── */
+const CKM=document.getElementById('ckm'),CKS=document.getElementById('cks'),CKC=document.getElementById('ckc');let ck=null;
+function openClk(id){const it=O.items[id];if(!it)return;const el=document.querySelector(`[data-id="${id}"] .pi`);if(!el)return;
+  ck={id,k:it.clk?{...it.clk}:{x:.5,y:.5,r:.34,st:'cl',c:'#111'},asp:piAspect(it)};
+  const mw=Math.min(innerWidth*.8,760),mh=Math.min(innerHeight*.66,620);let W=mw,H=W/ck.asp;if(H>mh){H=mh;W=H*ck.asp;}
+  CKS.style.width=W+'px';CKS.style.height=H+'px';const pv=el.cloneNode(true);pv.querySelectorAll('.clko').forEach(x=>x.remove());document.getElementById('ckp').innerHTML='';document.getElementById('ckp').appendChild(pv);
+  CKM.classList.add('on');drawClk();}
+function drawClk(){const W=CKS.clientWidth,H=CKS.clientHeight,k=ck.k,R=k.r*Math.min(W,H);
+  Object.assign(CKC.style,{left:(k.x*W-R)+'px',top:(k.y*H-R)+'px',width:2*R+'px',height:2*R+'px'});
+  const VW=1000,VH=Math.round(1000/ck.asp);const sv=document.getElementById('ckh');sv.setAttribute('viewBox',`0 0 ${VW} ${VH}`);sv.setAttribute('preserveAspectRatio','none');sv.innerHTML=clkHands(k,VW,VH);
+  const b=(a,v,l,on,cl='')=>`<button class="${cl}${on?' on':''}" data-ck="${a}" data-v="${v}" ${cl==='sw'?`style="background:${v}"`:''}>${l}</button>`;
+  document.getElementById('ckopt').innerHTML=`<div class="g"><span>바늘</span>${b('st','cl','클래식',(k.st||'cl')==='cl')}${b('st','sp','장식',k.st==='sp')}${b('st','bd','굵게',k.st==='bd')}</div>
+   <div class="g"><span>색</span>${['#111111','#ffffff','#c9a35f','#7c8796'].map(c=>b('c',c,'',(k.c||'#111111').toLowerCase()===c,'sw')).join('')}</div>
+   <div class="g"><span>초침</span>${b('sec','1','있음',k.sec!==false)}${b('sec','0','없음',k.sec===false)}</div>`;}
+document.getElementById('ckopt').addEventListener('click',e=>{const t=e.target.closest('[data-ck]');if(!t)return;const a=t.dataset.ck,v=t.dataset.v;if(a==='sec')ck.k.sec=v==='1';else ck.k[a]=v;drawClk();});
+let ckd=null;
+CKS.addEventListener('pointerdown',e=>{if(!ck)return;const W=CKS.clientWidth,H=CKS.clientHeight;const rz=e.target.id==='ckr';
+  if(!rz&&!e.target.closest('#ckc')){const r=CKS.getBoundingClientRect();ck.k.x=(e.clientX-r.left)/W;ck.k.y=(e.clientY-r.top)/H;drawClk();}
+  ckd={rz,sx:e.clientX,sy:e.clientY,k0:{...ck.k},W,H};CKS.setPointerCapture(e.pointerId);e.preventDefault();});
+CKS.addEventListener('pointermove',e=>{if(!ckd)return;const dx=e.clientX-ckd.sx,dy=e.clientY-ckd.sy,k0=ckd.k0,m=Math.min(ckd.W,ckd.H);
+  if(ckd.rz)ck.k.r=Math.max(.06,Math.min(.7,k0.r+dx/m));else{ck.k.x=Math.max(0,Math.min(1,k0.x+dx/ckd.W));ck.k.y=Math.max(0,Math.min(1,k0.y+dy/ckd.H));}drawClk();});
+['pointerup','pointercancel'].forEach(ev=>CKS.addEventListener(ev,()=>{ckd=null;}));
+function closeClk(){CKM.classList.remove('on');ck=null;}
+document.getElementById('ckX').onclick=closeClk;CKM.addEventListener('pointerdown',e=>{if(e.target===CKM)closeClk();});
+document.getElementById('ckOk').onclick=()=>{const o={...O.items[ck.id]};const k=ck.k;o.clk={x:+k.x.toFixed(4),y:+k.y.toFixed(4),r:+k.r.toFixed(4),st:k.st||'cl',c:k.c||'#111111'};if(k.sec===false)o.clk.sec=false;put('items/'+ck.id,o);closeClk();render();};
 
 /* ───── 곡 적기 ───── */
 let songFor=null;const SG=document.getElementById('song');
