@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Overview</title>
+<link rel="apple-touch-icon" href="icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Overview">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Homemade+Apple&family=Reenie+Beanie&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Homemade+Apple&family=Reenie+Beanie&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap"></noscript>
 <style>
@@ -746,7 +747,10 @@ function layout(){const H=canvasH();CV.style.height=H+'px';
 let full=false;
 function setFull(on){full=on;document.documentElement.classList.toggle('full',on);WR.classList.toggle('full',on);document.getElementById('fullBtn').textContent=on?'✕':'full';
   const fr=window.frameElement;if(fr){if(on){fr.dataset.ps=fr.getAttribute('style')||'';fr.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483000;border:0;background:#000';}else if(fr.dataset.ps!=null){fr.setAttribute('style',fr.dataset.ps);delete fr.dataset.ps;}}
-  layout();}
+  wake();layout();}
+/* 전체화면일 땐 화면 안 꺼지게 */
+let WL=null;async function wake(){try{if(full&&document.visibilityState==='visible'&&navigator.wakeLock){if(!WL){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null;});}}else if(!full&&WL){const w=WL;WL=null;w.release();}}catch(e){WL=null;}}
+document.addEventListener('visibilitychange',wake);
 function fsEl(d){return d.fullscreenElement||d.webkitFullscreenElement;}
 function goFull(){const fr=window.frameElement;const tgt=fr||document.documentElement;const req=tgt.requestFullscreen||tgt.webkitRequestFullscreen;
   setFull(true);if(req){try{const p=req.call(tgt);if(p&&p.catch)p.catch(()=>{});}catch(e){}}}
@@ -985,6 +989,7 @@ T.addEventListener('pointerenter',e=>{if(e.pointerType!=='mouse'||edit)return;cl
 T.addEventListener('pointerleave',e=>{if(e.pointerType!=='mouse'||edit)return;clearTimeout(tcl);tcl=setTimeout(()=>{if(!menu)T.classList.remove('open');},350);});
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#tools'))T.classList.remove('open');});
 document.getElementById('fullBtn').onclick=()=>{full?exitFull():goFull();};
+try{if(!window.frameElement&&(navigator.standalone||matchMedia('(display-mode: standalone)').matches))setTimeout(()=>setFull(true),0);}catch(e){}
 /* ───── 컬러: 코드 붙여넣으면 밝기 순으로 알아서 배치 ───── */
 const VIN_DEF=['#2A1E15','#6B4B34','#A9825B','#E4D6BC','#F3EBDA'];
 const VIN_HER=['#1C150F','#5C6844','#D7CEAF','#B6CCCA','#67898C'];
