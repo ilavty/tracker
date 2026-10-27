@@ -3904,6 +3904,9 @@ function pl_unmergeItem() {
             if (nb) nb.className = (p === 'overview') ? 'active' : 'inactive';
         };
         if (localStorage.getItem('lastPage') === 'overview') showPage('overview');
+        // 다른 탭 보고 있어도 잠깐 뒤에 미리 불러둬서 OVERVIEW 누르면 바로 뜨게
+        const ovPre=()=>{const f=document.getElementById('overview-iframe');if(f&&!f.getAttribute('src'))f.setAttribute('src',f.dataset.src);};
+        if('requestIdleCallback' in window)requestIdleCallback(ovPre,{timeout:4000});else setTimeout(ovPre,2500);
     }, 490);
 </script>
 <!-- ========== ISSUES(논점 정리 노트) — CARDS 뒤에 탭 추가, issues.html을 iframe으로 삽입 ========== -->

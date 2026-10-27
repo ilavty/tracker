@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Overview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Homemade+Apple&family=Reenie+Beanie&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Homemade+Apple&family=Reenie+Beanie&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Instrument+Serif:ital@0;1&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Homemade+Apple&family=Reenie+Beanie&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&display=swap"></noscript>
 <style>
 @font-face{font-family:'Paperlogy';font-weight:300;src:url('fonts/Paperlogy-3Light.ttf') format('truetype')}
 @font-face{font-family:'Paperlogy';font-weight:400;src:url('fonts/Paperlogy-4Regular.ttf') format('truetype')}
@@ -412,18 +412,27 @@ function bindTheme(){const ids=Object.keys(TS.themes).sort((a,b)=>(TS.themes[a].
   if(!TS.themes[TS.cur])TS.cur=ids[0]||null;
   if(!TS.cur){TS.cur='t0';TS.themes.t0={name:'Default',style:'default',o:0};}
   const t=T0();if(!t.items||typeof t.items!=='object')t.items={};O.items=t.items;O.wall=t.wall||null;O.theme=t.dark?'dark':null;}
-function loadRaw(v){v=v||{};O.imgs=v.imgs||{};O.sw=arr(v.sw).filter(x=>/^#[0-9a-f]{6}$/i.test(x));
+function loadRaw(v){v=v||{};if(!O.imgs)O.imgs={};if(v.imgs)Object.assign(O.imgs,v.imgs);if(v.sw)O.sw=arr(v.sw).filter(x=>/^#[0-9a-f]{6}$/i.test(x));
   if(v.themes&&Object.keys(v.themes).length)TS.themes=v.themes;
   else{TS.themes={t0:{name:'Default',style:'default',o:0,items:v.items||{},wall:v.wall||null,dark:v.theme==='dark'||null}};TS.migrate=true;}   // 예전 저장 → 첫 테마로
   try{const c=localStorage.getItem(CURK);if(c&&TS.themes[c])TS.cur=c;}catch(e){}
   bindTheme();}
-try{const c=JSON.parse(localStorage.getItem(LK)||'null');if(c)loadRaw(c);else bindTheme();}catch(e){bindTheme();}
+try{const c=JSON.parse(localStorage.getItem(LK)||'null');if(c){loadRaw(c);if(c.imgs)setTimeout(()=>{Object.entries(c.imgs).forEach(([k,v])=>idbPut(k,v));},0);}else bindTheme();}catch(e){bindTheme();}
 try{const c=JSON.parse(localStorage.getItem(LK+'_study')||'null');if(c)ST=c;}catch(e){}
-function cache(){try{localStorage.setItem(LK,JSON.stringify({imgs:O.imgs,themes:TS.themes,sw:O.sw||[]}));}catch(e){try{localStorage.setItem(LK,JSON.stringify({imgs:{},themes:TS.themes,sw:O.sw||[]}));}catch(_){}}}
+function cache(){try{localStorage.setItem(LK,JSON.stringify({themes:TS.themes,sw:O.sw||[]}));}catch(e){}}
+let IDB=null;function idb(){if(IDB)return IDB;IDB=new Promise(res=>{try{const r=indexedDB.open('overview_imgs',1);r.onupgradeneeded=()=>r.result.createObjectStore('i');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);}catch(e){res(null);}});return IDB;}
+async function idbGetAll(){const d=await idb();if(!d)return {};return new Promise(res=>{const o={};try{const c=d.transaction('i').objectStore('i').openCursor();c.onsuccess=()=>{const cu=c.result;if(cu){o[cu.key]=cu.value;cu.continue();}else res(o);};c.onerror=()=>res(o);}catch(e){res(o);}});}
+async function idbPut(k,v){const d=await idb();if(!d)return;try{const tx=d.transaction('i','readwrite');if(v==null)tx.objectStore('i').delete(k);else tx.objectStore('i').put(v,k);}catch(e){}}
+function needImgs(all){const ks=new Set();const add=t=>{if(!t)return;Object.values(t.items||{}).forEach(i=>{if(!i)return;if(i.img)ks.add(i.img);if(i.cover&&i.cover.img)ks.add(i.cover.img);if(i.bgi&&i.bgi.img)ks.add(i.bgi.img);});if(t.wall&&t.wall.img)ks.add(t.wall.img);};
+  if(all)Object.values(TS.themes).forEach(t=>{if(t.wall&&t.wall.img)ks.add(t.wall.img);});add(T0());return [...ks].filter(k=>!O.imgs[k]);}
+const imgLoading=new Set();
+function fetchImgs(all){if(!db)return;const ks=needImgs(all).filter(k=>!imgLoading.has(k));if(!ks.length)return;
+  Promise.all(ks.map(k=>{imgLoading.add(k);return db.ref(ROOT+'/imgs/'+k).once('value').then(s=>{const v=s.val();if(v){O.imgs[k]=v;idbPut(k,v);}}).catch(()=>{}).finally(()=>imgLoading.delete(k));}))
+   .then(()=>{if(!drag&&!document.querySelector('.tx:focus'))render();if(thOpen)renderThemes();});}
 function wr(path,v){if(db&&ready)db.ref(ROOT+'/'+path).set(v===undefined?null:v);}
 function put(path,v){const [k,id]=path.split('/');const t=T0();
   if(k==='sw'){O.sw=v||[];wr('sw',v&&v.length?v:null);}
-  else if(k==='imgs'){if(v===null)delete O.imgs[id];else O.imgs[id]=v;wr(path,v);}
+  else if(k==='imgs'){if(v===null)delete O.imgs[id];else O.imgs[id]=v;idbPut(id,v);wr(path,v);}
   else if(k==='items'){if(v===null)delete O.items[id];else O.items[id]=v;wr('themes/'+TS.cur+'/items/'+id,v);}
   else if(k==='wall'){O.wall=v;t.wall=v;wr('themes/'+TS.cur+'/wall',v);}
   else if(k==='theme'){O.theme=v;t.dark=v==='dark'?true:null;wr('themes/'+TS.cur+'/dark',t.dark);}
@@ -535,7 +544,7 @@ function dreamTicket(p,it){const en=p?(ENM[p.city]||p.city):'—';const code=p?(
   const el=p?+((DIP.elapsed||{})[DIP.idx]||0):0,pc=Math.min(100,el/360000*100),h=Math.floor(el/3600);
   let bars='',x=0;const seed=hsh(en+code);for(let i=0;i<34;i++){const w=1+((seed>>(i%24))&3)%3;bars+=`<rect x="${x}" y="0" width="${w}" height="100%"/>`;x+=w+1+((seed>>((i+5)%24))&1);}
   const TC=(it&&it.tkc&&it.tkc[0]==='#')?(()=>{const b=it.tkc,dk=lum(b)<.3,ink=dk?'#f2efe8':'#26303a';return [b,ink,lum(b)>.85?'rgba(0,0,0,.1)':'transparent',mix(ink,b,.45),dk?'#96C7FF':ink];})():(TKC[(it&&it.tkc)||'ivory']||TKC.ivory);
-  return `<div class="tkt" style="font-size:${it?Math.max(6,Math.min(it.w/440*16,it.h/240*16)).toFixed(2):16}px;--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]};--tkpl:${TC[4]||TC[1]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
+  return `<div class="tkt" style="font-size:${it?Math.max(6,Math.min(it.w/17.5,it.h/14.5)).toFixed(2):16}px;--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]};--tkpl:${TC[4]||TC[1]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
    <div class="tk2b"><div class="tk2" style="width:100%"><div><b>MOFA</b><small>SEOUL</small></div><svg class="tkp" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg><div class="r"><b>${esc(code)}</b><small>${esc(en)}</small></div></div></div>
    <div class="tk3"><div class="tkb"><div class="tkk2">MISSION BRIEF</div><div class="tkc">${p?esc(CEN[p.country]||p.country):''}</div><div class="tkbar"><i style="width:${pc}%"></i></div><div class="tkh"><span>${h}h</span><span>${pc>=100?'COMPLETE':'IN PROGRESS'}</span><span>100h</span></div></div></div></div>`;}
 function wCycle(){const {list}=cycleEvents();const now=logicalToday();now.setHours(0,0,0,0);
@@ -940,7 +949,7 @@ document.getElementById('darkBtn').onclick=()=>{put('theme',O.theme==='dark'?nul
 /* ───── 테마 고르기 (잠금화면처럼) ───── */
 const THP=document.getElementById('thp');let thOpen=false;
 function placeThp(){let top=16;try{const fr=window.frameElement;if(fr&&!full){const r=fr.getBoundingClientRect();top=Math.max(0,-r.top)+16;}}catch(e){}THP.style.top=top+'px';}
-function openThemes(){thOpen=true;T.classList.remove('open');placeThp();THP.classList.add('on');renderThemes();}
+function openThemes(){thOpen=true;fetchImgs(true);T.classList.remove('open');placeThp();THP.classList.add('on');renderThemes();}
 function closeThemes(){thOpen=false;THP.classList.remove('on');}
 document.getElementById('thBtn').onclick=e=>{e.stopPropagation();thOpen?closeThemes():openThemes();};
 document.getElementById('thX').onclick=closeThemes;
@@ -962,7 +971,7 @@ function newTheme(style){const id='t'+Date.now().toString(36);const src=T0();
   if(style==='vin'){t.pals=[VIN_DEF,VIN_HER];t.pal=0;}
   if(style==='col'){t.name='Collage';t.pals=[COL_DEF,VIN_HER];t.pal=0;}
   TS.themes[id]=t;wr('themes/'+id,t);switchTheme(id);}
-function switchTheme(id){if(!TS.themes[id])return;TS.cur=id;try{localStorage.setItem(CURK,id);}catch(e){}randPick=null;bindTheme();cache();render();if(thOpen)renderThemes();}
+function switchTheme(id){if(!TS.themes[id])return;TS.cur=id;try{localStorage.setItem(CURK,id);}catch(e){}randPick=null;bindTheme();cache();render();fetchImgs();if(thOpen)renderThemes();}
 function themeMenu(id,x,y){const t=TS.themes[id];const many=themeIds().length>1;
   openMenu(x,y,`<button data-a="ren">이름 바꾸기</button><button data-a="dup">복제</button>${many?'<hr><button data-a="del">삭제</button>':''}`,a=>{
     if(a==='ren'){const n=prompt('테마 이름',t.name||'');if(n&&n.trim()){t.name=n.trim();wr('themes/'+id+'/name',t.name);cache();renderThemes();}}
@@ -1131,12 +1140,17 @@ function applyStudy(d){if(!d)return;ST={pData:pj(d.plannerData)||{},pTags:arr(pj
 if(window.__OV_SEED){if(window.__OV_SEED.O)loadRaw(window.__OV_SEED.O);ST=window.__OV_SEED.ST||ST;}
 if(db){
   db.ref('diplomat/diplomat_state_v1').on('value',s=>{const v=s.val();if(v&&v.idx!=null){DIP=v;if(!drag)renderLive();}});
-  db.ref(STUDY).on('value',s=>{applyStudy(s.val());studyReady=true;if(!drag)renderLive();});
-  db.ref(ROOT).on('value',s=>{const v=s.val()||{};const first=!ready;ready=true;loadRaw(v);
-    if(TS.migrate){delete TS.migrate;wr('themes/'+TS.cur,T0());}cache();if(thOpen)renderThemes();
-    if(first)seedDefault();if(!drag&&!document.querySelector('.tx:focus'))render();});
+  const SD={};['plannerData','plannerTags','trackerData'].forEach(k=>db.ref(STUDY+'/'+k).on('value',s=>{SD[k]=s.val();applyStudy(SD);studyReady=true;if(!drag)renderLive();}));
+  db.ref(ROOT+'/sw').on('value',s=>{O.sw=arr(s.val()).filter(x=>/^#[0-9a-f]{6}$/i.test(x));});
+  db.ref(ROOT+'/themes').on('value',s=>{const th=s.val();const first=!ready;
+    const go=v=>{ready=true;loadRaw(v);if(TS.migrate){delete TS.migrate;wr('themes/'+TS.cur,T0());}cache();if(thOpen)renderThemes();
+      if(first)seedDefault();if(!drag&&!document.querySelector('.tx:focus'))render();fetchImgs();};
+    if(th&&Object.keys(th).length)go({themes:th,sw:O.sw});
+    else if(first)db.ref(ROOT).once('value').then(r=>go(r.val()||{}));
+    else go({themes:{}});});
 }else{seedDefault();}
 render();
+idbGetAll().then(m=>{let n=0;for(const k in m)if(!O.imgs[k]){O.imgs[k]=m[k];n++;}if(n&&!drag)render();fetchImgs();});
 </script>
 </body>
 </html>
