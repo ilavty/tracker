@@ -1060,7 +1060,7 @@ document.getElementById('shX').onclick=closeSheet;SH.addEventListener('pointerdo
 function shrink(file,max){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
   // 투명한 부분이 있으면 PNG로 (JPG로 바꾸면 투명이 검정이 됨)
   let tr=false;if(!/jpe?g/i.test(file.type)){try{const d=x.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=16){if(d[i]<250){tr=true;break;}}}catch(e){}}
-  res({src:tr?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.82),ar:im.width/im.height,tr});};im.onerror=()=>res(null);im.src=r.result;};r.readAsDataURL(file);});}
+  res({src:tr?(()=>{const w=c.toDataURL('image/webp',.86);return /^data:image\/webp/.test(w)?w:c.toDataURL('image/png');})():c.toDataURL('image/jpeg',.82),ar:im.width/im.height,tr});};im.onerror=()=>res(null);im.src=r.result;};r.readAsDataURL(file);});}
 async function takeFile(f){if(!f||!/^image\//.test(f.type))return;const d=await shrink(f,shMode==='wall'?1800:shMode==='cover'?500:1000);if(!d)return;shData={img:d.src,ar:d.ar,tr:d.tr};PZ.innerHTML=`<img src="${d.src}">`;}
 PZ.addEventListener('paste',e=>{const cd=e.clipboardData;if(!cd)return;const f=[...cd.files||[]].find(x=>/^image\//.test(x.type))||[...cd.items||[]].map(i=>i.kind==='file'?i.getAsFile():null).find(x=>x&&/^image\//.test(x.type));
   if(f){e.preventDefault();takeFile(f);return;}
