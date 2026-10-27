@@ -206,6 +206,9 @@ body.dark .mbar{background:rgba(255,255,255,.14)}body.dark .mu .cv{background:rg
 /* 편집 버튼, 도구 */
  /* 사진 안쪽 틀 */
 .it.img .pi{position:absolute;inset:0;overflow:hidden;border-radius:inherit}
+.it.img.rnd,body.vin .it.img.rnd,body.col .it.img.rnd{background:none;box-shadow:none;border-radius:0;overflow:visible;filter:drop-shadow(0 6px 12px rgba(0,0,0,.2))}
+body.col .it.img.rnd{filter:none}
+.it.img.rnd .pi{border-radius:0}
 .clko{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 1.5px 1.2px rgba(0,0,0,.3))}
 .clko .hd,#ckh .hd{animation-name:spin;animation-timing-function:linear;animation-iteration-count:infinite}.clko .hd.sc,#ckh .hd.sc{animation-timing-function:steps(60,end)}
 .it.img.pol{background:var(--noise,none),var(--paper2,#fbf8f1);border-radius:2px;box-shadow:0 1px 1px rgba(0,0,0,.08),0 12px 26px rgba(0,0,0,.22)}
@@ -628,6 +631,8 @@ function clockDigital(it){const d=new Date();let h=d.getHours();if(!it.h24)h=h%1
   return `<svg class="acf dgt" viewBox="-6 -4 200 70" style="${glow}"><g transform="translate(4 0) skewX(-6)">${segDigit(0,H[0],on,off)}${segDigit(40,H[1],on,off)}<g class="dcol"><circle cx="88" cy="19" r="3.6" fill="${on}"/><circle cx="88" cy="41" r="3.6" fill="${on}"/></g>${segDigit(102,M[0],on,off)}${segDigit(142,M[1],on,off)}</g>${ap}</svg>`;}
 const CLOCKS=[['simple','심플'],['digital','디지털'],['alarm','민트 알람시계'],['flip','플립시계'],['brass','황동 탁상시계'],['pocket','은색 회중시계']];
 /* 사진(시계 사진) 위에 진짜로 도는 바늘 얹기 */
+function piClip(it){const k=it.clk;if(!k||!k.round)return '';const W=it.pol?it.w*.92:it.w,H=it.pol?it.h*.81:it.h;const R=k.r*Math.min(W,H)*(k.rs||1.15);
+  return ` style="clip-path:circle(${R.toFixed(1)}px at ${(k.x*W).toFixed(1)}px ${(k.y*H).toFixed(1)}px);-webkit-clip-path:circle(${R.toFixed(1)}px at ${(k.x*W).toFixed(1)}px ${(k.y*H).toFixed(1)}px)"`;}
 function piAspect(it){return it.pol?(it.w*.92)/(it.h*.81):it.w/it.h;}
 function clkHands(k,VW,VH){const {sec,min,hr}=tnow();const cx=k.x*VW,cy=k.y*VH,R=k.r*Math.min(VW,VH);const c=k.c||'#111';const st=k.st||'cl';
   const p=(len,w,tail)=>`M${cx-w} ${cy+tail} L${cx-w*.7} ${cy} L${cx-w*.35} ${cy-len*.92} L${cx} ${cy-len} L${cx+w*.35} ${cy-len*.92} L${cx+w*.7} ${cy} L${cx+w} ${cy+tail}Z`;
@@ -676,12 +681,12 @@ function exitFull(){const d=window.frameElement?parent.document:document;if(fsEl
 function wallCss(){const w=O.wall;if(!w)return '';const src=w.img?O.imgs[w.img]:w.url;return src?`url("${src}")`:'';}
 function inner(it){
   if(it.t==='img'){const src=it.img?O.imgs[it.img]:it.url;if(!src)return '';const c=it.crop;
-    if(c&&c.w>0&&c.h>0)return `<div class="pi"><img src="${esc(src)}" alt="" style="position:absolute;width:${100/c.w}%;height:${100/c.h}%;left:${-c.x/c.w*100}%;top:${-c.y/c.h*100}%;max-width:none;object-fit:fill">${it.clk?clkOverlay(it):''}</div>`;
-    return `<div class="pi"><img src="${esc(src)}" alt="">${it.clk?clkOverlay(it):''}</div>`;}
+    if(c&&c.w>0&&c.h>0)return `<div class="pi"${piClip(it)}><img src="${esc(src)}" alt="" style="position:absolute;width:${100/c.w}%;height:${100/c.h}%;left:${-c.x/c.w*100}%;top:${-c.y/c.h*100}%;max-width:none;object-fit:fill">${it.clk?clkOverlay(it):''}</div>`;
+    return `<div class="pi"${piClip(it)}><img src="${esc(src)}" alt="">${it.clk?clkOverlay(it):''}</div>`;}
   if(it.t==='stk')return stkSvg(it);
   if(it.t==='txt')return `<div class="tx" ${edit?'contenteditable="true"':''} spellcheck="false" style="font-size:${it.fs||28}px;color:${it.c||'var(--txtc)'};font-family:${FF[tv(it,'ff')]};font-weight:${tv(it,'fw')};font-style:${it.ital?'italic':'normal'};letter-spacing:${tv(it,'ls')}em;line-height:${tv(it,'lh')};text-align:${it.al||'left'}">${esc(it.text||'')}</div>`;
   const W=WG[it.t];return W?W.f(it):'';}
-function cls(it){if(it.t==='stk')return 'it stk';if(it.t==='img')return 'it img'+(it.sq?' sq':'')+(it.pol?' pol':'')+(isVin()&&!it.norot?' vr':'');if(it.t==='txt'){const bg=it.bg||'';return 'it txt'+(bg?' tb':'')+(['glass','white','dark','gray'].includes(bg)?' tb-'+bg:'')+(it.sq?' sq':'');}const W=WG[it.t];return `it w${isVin()&&!it.norot?' vr':''} ${W?W.cls:''}${it.t==='music'?(it.h>=it.w*1.05?' tall':'')+(it.nocv?' nocv':'')+(it.h<150&&it.h<it.w*1.05?' short':'')+(it.h<115&&it.h<it.w*1.05?' tiny':''):''} ${it.st||(it.t==='clock'||it.t==='aclock'?'clear':'glass')}${it.t==='clock'&&it.lt?' light':''}`;}
+function cls(it){if(it.t==='stk')return 'it stk';if(it.t==='img')return 'it img'+(it.clk&&it.clk.round?' rnd':'')+(it.sq?' sq':'')+(it.pol?' pol':'')+(isVin()&&!it.norot?' vr':'');if(it.t==='txt'){const bg=it.bg||'';return 'it txt'+(bg?' tb':'')+(['glass','white','dark','gray'].includes(bg)?' tb-'+bg:'')+(it.sq?' sq':'');}const W=WG[it.t];return `it w${isVin()&&!it.norot?' vr':''} ${W?W.cls:''}${it.t==='music'?(it.h>=it.w*1.05?' tall':'')+(it.nocv?' nocv':'')+(it.h<150&&it.h<it.w*1.05?' short':'')+(it.h<115&&it.h<it.w*1.05?' tiny':''):''} ${it.st||(it.t==='clock'||it.t==='aclock'?'clear':'glass')}${it.t==='clock'&&it.lt?' light':''}`;}
 function render(){applyTheme();const wc_=wallCss();CV.style.backgroundImage=wc_;CV.style.backgroundSize=wc_?'cover':'';CV.classList.toggle('edit',edit);
   const vin=isVin();
   CV.innerHTML=items().sort((a,b)=>(a.z||0)-(b.z||0)).map(it=>`<div class="${cls(it)}" data-id="${it.id}" style="${vin?`--rot:${rotOf(it)}deg;`:''}${it.t==='music'&&it.cc&&it.ccol?`--mcc:${it.ccol};--mct:${lum(it.ccol)>.35?'#141414':'#ffffff'};`:''}${it.t==='stk'?`color:${it.c||'var(--ink)'};`+(it.rot?`transform:rotate(${it.rot}deg);`:''):''}left:${it.x}px;top:${it.y}px;width:${it.w}px;${it.t==='txt'?'min-height':'height'}:${it.h}px;z-index:${it.z||1}${it.t==='txt'&&it.bg&&it.bg[0]==='#'?';background:'+it.bg:''}">${inner(it)}<span class="rz" data-rz="se"></span><span class="rze" data-rz="n"></span><span class="rze" data-rz="s"></span><span class="rze" data-rz="e"></span><span class="rze" data-rz="w"></span><span class="rze" data-rz="nw"></span><span class="rze" data-rz="ne"></span><span class="rze" data-rz="sw"></span></div>`).join('')+(vin||isCol()?tapes():'');
@@ -995,7 +1000,7 @@ const CKM=document.getElementById('ckm'),CKS=document.getElementById('cks'),CKC=
 function openClk(id){const it=O.items[id];if(!it)return;const el=document.querySelector(`[data-id="${id}"] .pi`);if(!el)return;
   ck={id,k:it.clk?{...it.clk}:{x:.5,y:.5,r:.34,st:'cl',c:'#111'},asp:piAspect(it)};
   const mw=Math.min(innerWidth*.8,760),mh=Math.min(innerHeight*.66,620);let W=mw,H=W/ck.asp;if(H>mh){H=mh;W=H*ck.asp;}
-  CKS.style.width=W+'px';CKS.style.height=H+'px';const pv=el.cloneNode(true);pv.querySelectorAll('.clko').forEach(x=>x.remove());document.getElementById('ckp').innerHTML='';document.getElementById('ckp').appendChild(pv);
+  CKS.style.width=W+'px';CKS.style.height=H+'px';const pv=el.cloneNode(true);pv.querySelectorAll('.clko').forEach(x=>x.remove());pv.style.clipPath=pv.style.webkitClipPath='';document.getElementById('ckp').innerHTML='';document.getElementById('ckp').appendChild(pv);
   CKM.classList.add('on');drawClk();}
 function drawClk(){const W=CKS.clientWidth,H=CKS.clientHeight,k=ck.k,R=k.r*Math.min(W,H);
   Object.assign(CKC.style,{left:(k.x*W-R)+'px',top:(k.y*H-R)+'px',width:2*R+'px',height:2*R+'px'});
@@ -1003,8 +1008,10 @@ function drawClk(){const W=CKS.clientWidth,H=CKS.clientHeight,k=ck.k,R=k.r*Math.
   const b=(a,v,l,on,cl='')=>`<button class="${cl}${on?' on':''}" data-ck="${a}" data-v="${v}" ${cl==='sw'?`style="background:${v}"`:''}>${l}</button>`;
   document.getElementById('ckopt').innerHTML=`<div class="g"><span>바늘</span>${b('st','cl','클래식',(k.st||'cl')==='cl')}${b('st','sp','장식',k.st==='sp')}${b('st','bd','굵게',k.st==='bd')}</div>
    <div class="g"><span>색</span>${['#111111','#ffffff','#c9a35f','#7c8796'].map(c=>b('c',c,'',(k.c||'#111111').toLowerCase()===c,'sw')).join('')}</div>
-   <div class="g"><span>초침</span>${b('sec','1','있음',k.sec!==false)}${b('sec','0','없음',k.sec===false)}</div>`;}
-document.getElementById('ckopt').addEventListener('click',e=>{const t=e.target.closest('[data-ck]');if(!t)return;const a=t.dataset.ck,v=t.dataset.v;if(a==='sec')ck.k.sec=v==='1';else ck.k[a]=v;drawClk();});
+   <div class="g"><span>초침</span>${b('sec','1','있음',k.sec!==false)}${b('sec','0','없음',k.sec===false)}</div>
+   <div class="g"><span>동그랗게 자르기</span>${b('round','0','안 함',!k.round)}${b('rs','1','딱 맞게',k.round&&(k.rs||1.15)==1)}${b('rs','1.15','조금 크게',k.round&&(k.rs||1.15)==1.15)}${b('rs','1.32','크게',k.round&&(k.rs||1.15)==1.32)}${b('rs','1.5','더 크게',k.round&&(k.rs||1.15)==1.5)}</div>`;
+  const pv=document.querySelector('#ckp .pi');if(pv){if(k.round){const R=k.r*Math.min(W,H)*(k.rs||1.15);pv.style.clipPath=pv.style.webkitClipPath=`circle(${R}px at ${k.x*W}px ${k.y*H}px)`;}else{pv.style.clipPath=pv.style.webkitClipPath='';}}}
+document.getElementById('ckopt').addEventListener('click',e=>{const t=e.target.closest('[data-ck]');if(!t)return;const a=t.dataset.ck,v=t.dataset.v;if(a==='sec')ck.k.sec=v==='1';else if(a==='round')ck.k.round=false;else if(a==='rs'){ck.k.round=true;ck.k.rs=+v;}else ck.k[a]=v;drawClk();});
 let ckd=null;
 CKS.addEventListener('pointerdown',e=>{if(!ck)return;const W=CKS.clientWidth,H=CKS.clientHeight;const rz=e.target.id==='ckr';
   if(!rz&&!e.target.closest('#ckc')){const r=CKS.getBoundingClientRect();ck.k.x=(e.clientX-r.left)/W;ck.k.y=(e.clientY-r.top)/H;drawClk();}
@@ -1014,7 +1021,7 @@ CKS.addEventListener('pointermove',e=>{if(!ckd)return;const dx=e.clientX-ckd.sx,
 ['pointerup','pointercancel'].forEach(ev=>CKS.addEventListener(ev,()=>{ckd=null;}));
 function closeClk(){CKM.classList.remove('on');ck=null;}
 document.getElementById('ckX').onclick=closeClk;CKM.addEventListener('pointerdown',e=>{if(e.target===CKM)closeClk();});
-document.getElementById('ckOk').onclick=()=>{const o={...O.items[ck.id]};const k=ck.k;o.clk={x:+k.x.toFixed(4),y:+k.y.toFixed(4),r:+k.r.toFixed(4),st:k.st||'cl',c:k.c||'#111111'};if(k.sec===false)o.clk.sec=false;put('items/'+ck.id,o);closeClk();render();};
+document.getElementById('ckOk').onclick=()=>{const o={...O.items[ck.id]};const k=ck.k;o.clk={x:+k.x.toFixed(4),y:+k.y.toFixed(4),r:+k.r.toFixed(4),st:k.st||'cl',c:k.c||'#111111'};if(k.sec===false)o.clk.sec=false;if(k.round){o.clk.round=true;o.clk.rs=k.rs||1.15;}put('items/'+ck.id,o);closeClk();render();};
 
 /* ───── 곡 적기 ───── */
 let songFor=null;const SG=document.getElementById('song');
