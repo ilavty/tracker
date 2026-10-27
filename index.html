@@ -3821,7 +3821,7 @@ function pl_unmergeItem() {
             showPage('tracker');
         }
         // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · CARDS (MAP은 DATABASE로 이동)
-        const __order = ['nav-planner','nav-overview','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
+        const __order = ['nav-overview','nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
@@ -3890,7 +3890,7 @@ function pl_unmergeItem() {
             b.id = 'nav-overview'; b.className = 'inactive'; b.innerText = 'OVERVIEW';
             b.onclick = () => showPage('overview');
             const pl = document.getElementById('nav-planner');
-            if (pl && pl.nextSibling) navLinks.insertBefore(b, pl.nextSibling); else navLinks.appendChild(b);
+            if (pl) navLinks.insertBefore(b, pl); else navLinks.insertBefore(b, navLinks.firstChild);
         }
         const __prevShowPageOv = window.showPage || function(){};
         window.showPage = function(p) {
