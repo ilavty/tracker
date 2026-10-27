@@ -3821,7 +3821,7 @@ function pl_unmergeItem() {
             showPage('tracker');
         }
         // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · CARDS (MAP은 DATABASE로 이동)
-        const __order = ['nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
+        const __order = ['nav-planner','nav-overview','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
@@ -3868,6 +3868,44 @@ function pl_unmergeItem() {
     }, 470);
 </script>
 
+
+<!-- ========== OVERVIEW(달력+무드보드 바탕화면) — PLANNER 옆 탭, overview.html을 iframe으로 삽입 ========== -->
+<div id="overview-view" style="display:none; width:100%;">
+    <iframe id="overview-iframe" data-src="overview.html" title="OVERVIEW" style="width:100%; height:760px; border:none; display:block; background:transparent;" allowtransparency="true" scrolling="no"></iframe>
+</div>
+<script>
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'overviewHeight') {
+            const f = document.getElementById('overview-iframe');
+            if (f) f.style.height = Math.max(300, e.data.height) + 'px';
+        }
+    });
+    setTimeout(() => {
+        const appWrapper = document.querySelector('.app-wrapper');
+        const navLinks = document.querySelector('.nav-links');
+        const ovView = document.getElementById('overview-view');
+        if (appWrapper && ovView) appWrapper.appendChild(ovView);
+        if (navLinks && !document.getElementById('nav-overview')) {
+            const b = document.createElement('span');
+            b.id = 'nav-overview'; b.className = 'inactive'; b.innerText = 'OVERVIEW';
+            b.onclick = () => showPage('overview');
+            const pl = document.getElementById('nav-planner');
+            if (pl && pl.nextSibling) navLinks.insertBefore(b, pl.nextSibling); else navLinks.appendChild(b);
+        }
+        const __prevShowPageOv = window.showPage || function(){};
+        window.showPage = function(p) {
+            __prevShowPageOv(p);
+            if (ovView) {
+                ovView.style.display = (p === 'overview') ? 'block' : 'none';
+                const f = document.getElementById('overview-iframe');
+                if (p === 'overview' && f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src);
+            }
+            const nb = document.getElementById('nav-overview');
+            if (nb) nb.className = (p === 'overview') ? 'active' : 'inactive';
+        };
+        if (localStorage.getItem('lastPage') === 'overview') showPage('overview');
+    }, 490);
+</script>
 <!-- ========== ISSUES(논점 정리 노트) — CARDS 뒤에 탭 추가, issues.html을 iframe으로 삽입 ========== -->
 <div id="issues-view" style="display:none; width:100%;">
     <iframe id="issues-iframe" data-src="issues.html" title="ISSUES" style="width:100%; height:calc(100vh - 64px); height:calc(100dvh - 64px); min-height:560px; border:none; display:block; background:#fff;"></iframe>
