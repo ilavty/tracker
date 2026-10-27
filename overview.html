@@ -21,7 +21,7 @@ html,body{margin:0;background:transparent;color:var(--ink);font-family:'Paperlog
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none}
 button{font-family:inherit;cursor:pointer}
 #wrap{position:relative;width:100%;overflow:hidden;border-radius:26px}
-#cv{position:absolute;left:0;top:0;width:1150px;transform-origin:0 0;background:var(--bgg);background-size:cover;background-position:center;overflow:hidden}
+#cv{position:absolute;left:0;top:0;width:1150px;background:var(--bgg);background-size:cover;background-position:center;overflow:hidden}
 #cv.edit{outline:0}
 #cv.edit::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(0,0,0,.12) 1px,transparent 1px);background-size:25px 25px}
 .it{position:absolute;touch-action:none}
@@ -129,7 +129,8 @@ body.dark #tools button{background:rgba(255,255,255,.1);color:var(--ink)}
 body.dark #editBtn.on{background:#f1f1ee;color:#111}
 /* 전체화면 */
 html.full,html.full body{height:100%;overflow:hidden;background:var(--bgg)}
-#wrap.full{position:fixed;inset:0;border-radius:0;height:100vh!important;background:var(--bgg)}
+#wrap.full{position:fixed;inset:0;border-radius:0;height:100vh!important;background:var(--bgg);display:flex;align-items:center;justify-content:center}
+#wrap.full #cv{position:relative;flex-shrink:0}
 #tools{position:absolute;right:16px;top:14px;z-index:20000;display:flex;gap:0;align-items:center}
 #tools button{margin-left:6px}#tools .opt{margin-left:0}#tools.open .opt,#tools.on #editBtn,html.full #tools #fullBtn{margin-left:6px}
 #tools button{border:0;background:rgba(255,255,255,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);font-family:'GM';font-weight:500;font-size:12px;letter-spacing:.04em;padding:6px 11px;border-radius:14px;opacity:.55}
@@ -317,8 +318,10 @@ let edit=false,S=1;
 function items(){return Object.entries(O.items).map(([id,v])=>({id,...v})).filter(x=>x&&x.t);}
 function canvasH(){return Math.max(760,...items().map(i=>i.y+i.h+80));}
 function layout(){const H=canvasH();CV.style.height=H+'px';
-  if(full){const W=innerWidth,VH=innerHeight;S=Math.min(W/1150,VH/H);const ox=(W-1150*S)/2,oy=Math.max(0,(VH-H*S)/2);CV.style.transform=`translate(${ox}px,${oy}px) scale(${S})`;return;}
-  S=WR.clientWidth/1150;CV.style.transform=`scale(${S})`;WR.style.height=(H*S)+'px';
+  // transform:scale은 크게 키우면 흐려져서 zoom으로 (글자·위젯을 그 크기로 다시 그림)
+  CV.style.transform='';
+  if(full){S=Math.min(innerWidth/1150,innerHeight/H);CV.style.zoom=S;return;}
+  S=WR.clientWidth/1150;CV.style.zoom=S;WR.style.height=(H*S)+'px';
   try{parent.postMessage({type:'overviewHeight',height:Math.ceil(H*S)},'*');}catch(e){}}
 /* 전체화면: 가능하면 진짜 전체화면, 안 되면(아이폰 등) 화면 꽉 채우기 */
 let full=false;
@@ -430,7 +433,8 @@ function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" s
 
 /* ───── 넣기 ───── */
 const T=document.getElementById('tools');
-document.getElementById('moreBtn').onclick=e=>{e.stopPropagation();T.classList.toggle('open');};
+let lastPT='mouse';T.addEventListener('pointerdown',e=>{lastPT=e.pointerType;},true);
+document.getElementById('moreBtn').onclick=e=>{e.stopPropagation();if(lastPT==='mouse')T.classList.add('open');else T.classList.toggle('open');};
 // 마우스 올리면 펼치고, 벗어나면 잠깐 뒤 접기 (마우스 있는 기기만)
 let tcl=null;
 T.addEventListener('pointerenter',e=>{if(e.pointerType!=='mouse')return;clearTimeout(tcl);T.classList.add('open');});
