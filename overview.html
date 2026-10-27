@@ -255,8 +255,8 @@ function wToday(){const D=weekDays();const ids=[],miss=[];const DW=['일','월',
   miss.forEach(m=>{const g=m.tag?grpOf(m.tag):null;const key=g?g.id:'_';if(!G.has(key))G.set(key,{g,pos:g?(g.id==='PSAT'?Math.min(...arr(ST.pTags).map((x,i)=>x&&mergePsat([x.id])[0]&&mergePsat([x.id])[0].id==='PSAT'?i:999)):ord.indexOf(g.id)):9999,rows:new Map()});
     const R=G.get(key).rows;const r=R.get(m.text)||{text:m.text,days:[]};const dw=DW[m.d.getDay()];if(!r.days.includes(dw))r.days.push(dw);R.set(m.text,r);});
   const groups=[...G.values()].filter(g=>g.g).sort((a,b)=>a.pos-b.pos);
-  return `<div class="wkh"><span class="lbl">THIS WEEK</span>${L.length?`<div class="wkc">${L.map(t=>`<span style="background:${t.color}">${esc(t.name)}</span>`).join('')}</div>`:''}</div>
-   ${groups.length?`<div class="mg">${groups.map(g=>`<div class="mgr"><div class="mgh"><i style="background:${g.g?g.g.color:'#c9c9c9'}"></i>${esc(g.g?g.g.name:'기타')}</div>${[...g.rows.values()].map(r=>`<div class="mrow"><span>${esc(r.text)}</span><small>${r.days.join('·')}</small></div>`).join('')}</div>`).join('')}</div>`:''}`;}
+  return `<div class="wkh"><span class="lbl">LEFTOVERS</span></div>
+   ${groups.length?`<div class="mg">${groups.map(g=>`<div class="mgr"><div class="mgh"><i style="background:${g.g?g.g.color:'#c9c9c9'}"></i>${esc(g.g?g.g.name:'기타')}</div>${[...g.rows.values()].map(r=>`<div class="mrow"><span>${esc(r.text)}</span><small>${r.days.join('·')}</small></div>`).join('')}</div>`).join('')}</div>`:'<div class="none">—</div>'}`;}
 /* 외무영사 드림: 지금 가 있는 도시 (index-2.html의 도시 목록을 그대로 읽음) */
 let POSTS=null,ENM={},DIP=null;
 try{DIP=JSON.parse(localStorage.getItem('diplomat_state_v1')||'null');}catch(e){}
@@ -282,7 +282,7 @@ function wCal(){const base=logicalToday();const m0=new Date(base.getFullYear(),b
     cells+=`<div class="dc${out?' out':''}${d.getDay()===0?' sun':''}${!out&&k===tk&&calOff===0?' today':''}"><span class="n">${d.getDate()}</span>${tags.map(t=>`<span class="bk" style="background:${t.color}">${esc(t.name)}</span>`).join('')}${cs.map(c=>`<span class="cm${c.k==='e'?' e':''}" style="color:${c.color}">${esc(c.name)} ${c.k==='s'?'시작':'끝'}</span>`).join('')}</div>`;}
   return `<div class="ch"><b>${MONS[m]}</b><small>${y}</small><span class="sp"></span>${calOff?'<button class="now" data-cal="0">today</button>':''}<button data-cal="-1">‹</button><button data-cal="1">›</button></div>
     <div class="wk">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(s=>`<span>${s}</span>`).join('')}</div><div class="gd" style="grid-template-rows:repeat(${rows},minmax(0,1fr))">${cells}</div>`;}
-const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:wDday,cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'이번 주'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'},dream:{f:wDream,cls:'dr',w:280,h:170,label:'외무영사 드림'}};
+const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:wDday,cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'못한 것'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'},dream:{f:wDream,cls:'dr',w:280,h:170,label:'외무영사 드림'}};
 
 /* ───── 그리기 ───── */
 const CV=document.getElementById('cv'),WR=document.getElementById('wrap');
