@@ -176,7 +176,10 @@ function dayTags(key){const day=ST.pData&&ST.pData[key];if(!day)return [];const 
   arr(day.items).forEach(it=>{if(!it)return;const done=it.hl||arr(it.subItems).some(s=>s&&s.hl);if(done&&it.tag&&!seen.includes(it.tag))seen.push(it.tag);});
   return mergePsat(seen);}
 const tagInfo=id=>{const t=arr(ST.pTags).find(x=>x&&x.id===id)||{name:id,color:'#bbb'};return {id,name:t.name||id,color:t.color||'#bbb'};};
-function mergePsat(ids){const L=ids.map(tagInfo);
+function mergePsat(ids){
+  // 별(☆★) 태그는 빼고, 플래너 태그 순서대로
+  const ord=arr(ST.pTags).map(x=>x&&x.id);const pos=id=>{const i=ord.indexOf(id);return i<0?999:i;};
+  const L=ids.map(tagInfo).filter(t=>!/^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(String(t.name).trim())).sort((x,y)=>pos(x.id)-pos(y.id));
   // 피셋 영역(자료·언어·상황·계산연습)은 PSAT 하나로: PSAT(상황∙자료)
   const PS=/^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i;
   const out=[];let ps=null;
