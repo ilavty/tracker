@@ -184,7 +184,6 @@ function mergePsat(ids){const L=ids.map(tagInfo);
       if(!ps){const pt=arr(ST.pTags).find(x=>x&&/^(PSAT|피셋)$/i.test(String(x.name).trim()))||arr(ST.pTags).find(x=>{if(!x)return false;const mm=String(x.name).trim().match(PS);return mm&&(mm[1]||mm[2]);});ps={id:'PSAT',name:'PSAT',color:pt?pt.color:t.color,subs:[]};out.push(ps);}
       if(sub&&!ps.subs.includes(sub))ps.subs.push(sub);}
     else out.push(t);});
-  if(ps&&ps.subs.length)ps.name='PSAT('+ps.subs.join('∙')+')';
   return out;}
 /* 트래커 사이클 시작·끝 (TRACKER 탭과 같은 계산) */
 function cycleEvents(){const ev={},list=[];const T=ST.tracker||{};const data=T.data||{};const yr=new Date().getFullYear();
