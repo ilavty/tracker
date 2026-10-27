@@ -264,11 +264,13 @@ fetch('index-2.html').then(r=>r.text()).then(t=>{const g=(n,o,c)=>{const i=t.ind
   try{POSTS=new Function('return '+g('POSTS','[','];').replace(/;$/,''))();}catch(e){}
   try{ENM=new Function('return '+g('EN_MAP','{','};').replace(/;$/,''))();}catch(e){}
   if(!drag)renderLive();}).catch(()=>{});
+const CEN={'UAE':'UAE','독일':'Germany','러시아':'Russia','미국':'USA','베트남':'Vietnam','브라질':'Brazil','스위스':'Switzerland','스페인':'Spain','싱가포르':'Singapore','아르헨티나':'Argentina','영국':'UK','오스트리아':'Austria','이탈리아':'Italy','인도':'India','인도네시아':'Indonesia','일본':'Japan','중국':'China','케냐':'Kenya','태국':'Thailand','튀르키예':'Türkiye','프랑스':'France','핀란드':'Finland','필리핀':'Philippines','호주':'Australia'};
+const TEN={'대사관':'Embassy','총영사관':'Consulate General','대표부':'Mission','유엔대표부':'UN Mission'};
 function wDream(){const p=DIP&&POSTS&&DIP.idx!=null?POSTS[DIP.idx]:null;
   if(!p)return `<div class="lbl">POSTING</div><div class="none">—</div>`;
   const el=+((DIP.elapsed||{})[DIP.idx]||0),T=360000,pc=Math.min(100,el/T*100);const h=Math.floor(el/3600);
-  return `<div class="lbl">POSTING</div><div class="dcity"><span class="fl">${p.flag||''}</span><b>${esc(p.city)}</b></div>
-   <div class="dsub">${esc(ENM[p.city]||'')}${ENM[p.city]?' · ':''}${esc(p.country)} ${esc(p.type)}</div>
+  return `<div class="lbl">POSTING</div><div class="dcity"><b>${esc(ENM[p.city]||p.city)}</b></div>
+   <div class="dsub">${esc(CEN[p.country]||p.country)} · ${esc(TEN[p.type]||p.type)}</div>
    <div class="dbar"><i style="width:${pc}%"></i></div><div class="dh"><span>${h}h</span><span>100h</span></div>`;}
 function wCycle(){const {list}=cycleEvents();const now=logicalToday();now.setHours(0,0,0,0);
   const L=list.filter(c=>!c.en).sort((a,b)=>a.st-b.st);
