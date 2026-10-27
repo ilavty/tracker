@@ -829,7 +829,11 @@ function tapes(){return items().filter(hasTape).map(it=>{const tr=rotOf(it)+(hsh
   return `<i class="tape t-${ty}" data-for="${it.id}" style="${tc}left:${Math.round(it.x+it.w/2-tw/2)}px;top:${it.y-13}px;width:${tw}px;z-index:${it.z||1};transform:rotate(${tr}deg)"></i>`;}).join('');}
 function marquee(){document.querySelectorAll('.ms .mt b').forEach(b=>{const q=b.querySelector('.mq');if(!q)return;b.classList.remove('run');const over=q.scrollWidth-b.clientWidth;
   if(over>2){b.style.setProperty('--mqw',over+'px');b.style.setProperty('--mqd',Math.max(6,over/18+4)+'s');b.classList.add('run');}});}
-function fitClk(){document.querySelectorAll('.it.clock').forEach(el=>{const tm=el.querySelector('.tm');if(!tm)return;const it=O.items[el.dataset.id]||{};const sx=it.sx||1;let fs=parseFloat(tm.style.fontSize)||0;for(let i=0;i<10&&fs>6;i++){const aw=el.clientWidth-6,ah=el.clientHeight,w=tm.scrollWidth*sx,hh=el.scrollHeight;if(w<=aw&&hh<=ah+1)break;fs=fs*Math.min(.96,aw/w,ah/hh);tm.style.fontSize=fs.toFixed(1)+'px';}});}
+function fitClk(){document.querySelectorAll('.it.clock').forEach(el=>{const tm=el.querySelector('.tm');if(!tm)return;const it=V(el.dataset.id)||{};const sx=it.sx||1;const cs=getComputedStyle(el);
+  const aw=el.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)-4,ah=el.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-2;const dt=el.querySelector('.dt');
+  const tgt=Math.min(1,it.cz||1)*.97;let fs=parseFloat(tm.style.fontSize)||0;
+  for(let i=0;i<4&&fs>4;i++){const pw=tm.style.width;tm.style.width='max-content';const w=tm.offsetWidth*sx;tm.style.width=pw;const hh=tm.offsetHeight+(dt?dt.offsetHeight+parseFloat(getComputedStyle(dt).marginBottom||0):0);
+    const k=Math.min(aw/w,ah/hh)*tgt;if(Math.abs(k-1)<.02)break;fs=Math.min(fs*k,2000);tm.style.fontSize=fs.toFixed(1)+'px';}});}
 try{document.fonts&&document.fonts.ready.then(()=>fitClk());}catch(e){}
 function renderLive(){const ae=document.activeElement;document.querySelectorAll('.it.w').forEach(el=>{const it=V(el.dataset.id);if(!it)return;if(ae&&el.contains(ae)&&ae!==el)return;if(it.t==='music')return;const W=WG[it.t];if(W){const hs=[...el.querySelectorAll('.rz,.rze,.roth')];el.innerHTML=bgLayer(it)+W.f(it);hs.forEach(h=>el.appendChild(h));}});}
 {const r0=render,r1=renderLive;render=function(){r0.apply(this,arguments);fitClk();};renderLive=function(){r1.apply(this,arguments);fitClk();};}
