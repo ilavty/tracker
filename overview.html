@@ -987,13 +987,16 @@ function toast(t){let el=document.getElementById('toast');if(!el){el=document.cr
   if(!t){el.classList.remove('on');return;}el.textContent=t;el.classList.add('on');try{const fr=window.frameElement;el.style.top=(fr&&!full?Math.max(0,-fr.getBoundingClientRect().top):0)+20+'px';}catch(e){}}
 async function aiCut(id){const it=O.items[id];if(!it)return;const src=it.img?O.imgs[it.img]:it.url;if(!src)return;
   try{toast('누끼 준비 중… 처음 한 번은 AI 모델을 받느라 조금 걸려요');
-    if(!BGR)BGR=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm');
-    let inp=src;if(!/^data:/.test(src)){const im=await loadCors(src);const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);inp=await new Promise(r=>c.toBlob(r,'image/png'));}
-    let pct=0;const blob=await BGR.removeBackground(inp,{model:'isnet_fp16',output:{format:'image/png'},progress:(k,cur,tot)=>{if(tot){const p=Math.round(cur/tot*100);if(p!==pct){pct=p;toast((/fetch/.test(k)?'모델 받는 중 ':'누끼 따는 중 ')+p+'%');}}}});
+    if(!BGR){toast('AI 불러오는 중…');BGR=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm');}
+    // 사진은 직접 Blob으로 넘김 (fetch 안 쓰게)
+    const im0=await loadCors(src);const k0=Math.min(1,1400/Math.max(im0.naturalWidth,im0.naturalHeight));const c0=document.createElement('canvas');c0.width=Math.round(im0.naturalWidth*k0);c0.height=Math.round(im0.naturalHeight*k0);c0.getContext('2d').drawImage(im0,0,0,c0.width,c0.height);
+    const inp=await new Promise(r=>c0.toBlob(r,'image/png'));
+    let last=Date.now(),stage='시작';const wd=setInterval(()=>{if(Date.now()-last>90000){clearInterval(wd);toast('');alert('누끼가 멈췄어요 ('+stage+'). 새로고침하고 다시 해보거나, 이 문구를 알려주세요.');}},5000);
+    let pct=0;const blob=await BGR.removeBackground(inp,{model:'isnet_fp16',output:{format:'image/png'},progress:(k,cur,tot)=>{last=Date.now();stage=k;if(tot){const p=Math.round(cur/tot*100);if(p!==pct){pct=p;toast((/fetch/.test(k)?'모델 받는 중 ':'누끼 따는 중 ')+p+'%');}}}}).finally(()=>clearInterval(wd));
     toast('거의 다 됐어요…');
     const url=await new Promise(res=>{const im=new Image();im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);res(c.toDataURL('image/png'));};im.src=URL.createObjectURL(blob);});
     const key=uid();put('imgs/'+key,url);const o={...O.items[id]};if(!o.orig)o.orig={img:o.img||null,url:o.url||null};o.img=key;delete o.url;o.cut=true;put('items/'+id,o);toast('');render();}
-  catch(e){console.error(e);toast('');alert('누끼를 못 땄어요. 주소로 넣은 사진이면 사진을 복사해서 붙여넣기로 다시 넣어보세요.');}}
+  catch(e){console.error(e);toast('');alert('누끼를 못 땄어요: '+(e&&e.message?e.message:e));}}
 
 /* ───── 시계 바늘 맞추기 ───── */
 const CKM=document.getElementById('ckm'),CKS=document.getElementById('cks'),CKC=document.getElementById('ckc');let ck=null;
