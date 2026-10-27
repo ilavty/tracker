@@ -107,6 +107,7 @@ button{font-family:inherit;cursor:pointer}
 .cal .gd{flex:1;min-height:0;grid-auto-rows:minmax(0,1fr);border-top:1px solid var(--line)}
 .cal .dc{border-bottom:1px solid var(--line2);padding:5px 4px 4px;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:1.5px}
 .cal .dc .n{font-family:'GM';font-weight:500;font-size:11px;padding-left:2px;line-height:1.2}
+.cal .tenh{display:inline-block;width:4px;height:4px;border-radius:50%;background:currentColor;margin-left:3px;vertical-align:middle;position:relative;top:-1px}
 .cal .dc.sun .n{color:#d0675c}
 .cal .dc.out{opacity:.28}
 .cal .dc.today .n{display:inline-block;align-self:flex-start;background:var(--ink);color:var(--paper,#fff);border-radius:9px;padding:1px 6px}
@@ -298,11 +299,14 @@ function wDream(){const p=DIP&&POSTS&&DIP.idx!=null?POSTS[DIP.idx]:null;
 function wCycle(){const {list}=cycleEvents();const now=logicalToday();now.setHours(0,0,0,0);
   const L=list.filter(c=>!c.en).sort((a,b)=>a.st-b.st);
   return `<div class="lbl">CYCLE</div>${L.length?`<ul>${L.map(c=>`<li><b style="color:${c.color}">${esc(c.sub)} ${esc(c.num)}</b><div><span>${c.st.getMonth()+1}.${c.st.getDate()} ~</span><em>${Math.floor((now-c.st)/864e5)+1}일째</em></div></li>`).join('')}</ul>`:'<div class="none">—</div>'}`;}
+function studyH(key){const day=ST.pData&&ST.pData[key];if(!day)return 0;const v=String(day.studyTime==null?'':day.studyTime).trim();
+  let m=v.match(/^(\d+):(\d{1,2})(?::(\d{1,2}))?$/);if(m)return +m[1]+(+m[2])/60+(+(m[3]||0))/3600;if(/^\d+(\.\d+)?$/.test(v))return parseFloat(v);
+  return day._savedStudyTimeSecs?day._savedStudyTimeSecs/3600:0;}
 function wCal(){const base=logicalToday();const m0=new Date(base.getFullYear(),base.getMonth()+calOff,1);const y=m0.getFullYear(),m=m0.getMonth();
   const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();const rows=Math.ceil((first+days)/7);const {ev}=cycleEvents();const tk=keyOf(base);
   let cells='';for(let i=0;i<rows*7;i++){const d=new Date(y,m,1-first+i);const k=keyOf(d);const out=d.getMonth()!==m;
     const tags=out?[]:dayTags(k);const cs=out?[]:(ev[k]||[]);
-    cells+=`<div class="dc${out?' out':''}${d.getDay()===0?' sun':''}${!out&&k===tk&&calOff===0?' today':''}"><span class="n">${d.getDate()}</span>${tags.map(t=>`<span class="bk" style="background:${t.color}">${esc(t.name)}</span>`).join('')}${cs.map(c=>`<span class="cm${c.k==='e'?' e':''}" style="color:${c.color}">${esc(c.name)} ${c.k==='s'?'시작':'끝'}</span>`).join('')}</div>`;}
+    cells+=`<div class="dc${out?' out':''}${d.getDay()===0?' sun':''}${!out&&k===tk&&calOff===0?' today':''}"><span class="n">${d.getDate()}${!out&&studyH(k)>=10?'<i class="tenh"></i>':''}</span>${tags.map(t=>`<span class="bk" style="background:${t.color}">${esc(t.name)}</span>`).join('')}${cs.map(c=>`<span class="cm${c.k==='e'?' e':''}" style="color:${c.color}">${esc(c.name)} ${c.k==='s'?'시작':'끝'}</span>`).join('')}</div>`;}
   return `<div class="ch"><b>${MONS[m]}</b><small>${y}</small><span class="sp"></span>${calOff?'<button class="now" data-cal="0">today</button>':''}<button data-cal="-1">‹</button><button data-cal="1">›</button></div>
     <div class="wk">${['SUN','MON','TUE','WED','THU','FRI','SAT'].map(s=>`<span>${s}</span>`).join('')}</div><div class="gd" style="grid-template-rows:repeat(${rows},minmax(0,1fr))">${cells}</div>`;}
 const WG={clock:{f:wClock,cls:'clock',w:520,h:200,label:'시계'},cal:{f:wCal,cls:'cal',w:620,h:520,label:'달력'},dday:{f:wDday,cls:'dd',w:170,h:170,label:'D-day'},today:{f:wToday,cls:'td',w:300,h:300,label:'못한 것'},cycle:{f:wCycle,cls:'cy',w:300,h:170,label:'사이클'},dream:{f:wDream,cls:'dr',w:280,h:170,label:'외무영사 드림'}};
