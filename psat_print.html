@@ -478,7 +478,7 @@ function layout() {
 function head(pno, center, area) {
   const t = st.title || defaultTitle();
   return `<div class="phead"><div class="tbox t1">${esc(t)}</div>${center ? `<div class="ctr">${esc(center)}</div>` : ''}<span class="sp"></span>
-    <div class="tbox t3">${center ? '답지' : pno + '쪽'}</div></div>`;
+    <div class="tbox t3">${center ? '답지' : pno}</div></div>`;
 }
 function subsOfSel() { return [...new Set(st.sel.filter(k => !isDiv(k)).map(k => itemOf(k).e.sub))]; }
 function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]].replace('영역', '') + ' 기출모음' : 'PSAT 기출모음'; }
@@ -628,7 +628,7 @@ async function buildPdf() {
     }
     for (let pi = 0; pi < pages.length; pi++) {
       const pg = out.addPage([PW, PH]);
-      drawHead(pg, F, title, '', area, (pi + 1) + '쪽');
+      drawHead(pg, F, title, '', area, String(pi + 1));
       if (pages[pi].div) {
         txt(pg, pages[pi].div, F.b, 8.5, 105, 125);
         pg.drawText(title, {x: 105 * MM - F.r.widthOfTextAtSize(title, 10) / 2, y: Y(138) - 3.5, size: 10, font: F.r, color: rgb(.4, .4, .4)});
