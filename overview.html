@@ -233,6 +233,8 @@ body.dark .mbar{background:rgba(255,255,255,.14)}body.dark .mu .cv{background:rg
 body.col .it.img.rnd{filter:none}
 .it.img.rnd .pi{border-radius:0}
 .it.w[style*="--tz"]>*:not(.rz):not(.rze):not(.roth):not(.bgl){zoom:var(--tz)}
+#msBar{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;padding:7px 8px 7px 16px;border-radius:999px;background:rgba(20,20,20,.88);color:#fff;font:500 13px 'GM',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#msBar span{margin-right:6px;white-space:nowrap}#msBar button{border:0;border-radius:999px;padding:7px 13px;background:rgba(255,255,255,.14);color:#fff;font:inherit;cursor:pointer}#msBar button[disabled]{opacity:.35}#msBar button[data-ms=done]{background:#96C7FF;color:#111}
 .it .bgl{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center;pointer-events:none}
 .it:has(> .bgl){isolation:isolate;overflow:hidden}
 .clko{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;filter:drop-shadow(0 1.5px 1.2px rgba(0,0,0,.3))}
@@ -838,13 +840,22 @@ function seedDefault(){if(Object.keys(O.items).length)return;const L=[
   {t:'cal',x:265,y:470,w:620,h:520,z:2}];L.forEach(v=>put('items/'+uid(),v));}
 
 /* ───── 편집: 끌기·크기·메뉴 ───── */
-let drag=null,sel=null,rotD=null;const SEL=new Set();
+let drag=null,sel=null,rotD=null;const SEL=new Set();let MULTI=false;
+function msBar(){let b=document.getElementById('msBar');if(!MULTI){if(b)b.remove();return;}if(!b){b=document.createElement('div');b.id='msBar';document.body.appendChild(b);
+  b.addEventListener('click',e=>{const a=(e.target.closest('[data-ms]')||{dataset:{}}).dataset.ms;if(!a)return;e.stopPropagation();
+    if(a==='grp'&&SEL.size>=2){const g='g'+Date.now().toString(36);[...SEL].forEach(i=>{const r=O.items[i];if(r)put('items/'+i,{...r,gid:g});});MULTI=false;render();}
+    else if(a==='ungrp'){[...SEL].forEach(i=>{const r=O.items[i];if(r&&r.gid){const q={...r};delete q.gid;put('items/'+i,q);}});MULTI=false;render();}
+    else if(a==='del'){[...SEL].forEach(i=>put('items/'+i,null));SEL.clear();MULTI=false;render();}
+    else if(a==='done'){MULTI=false;}
+    msBar();});}
+  const hasG=[...SEL].some(i=>O.items[i]&&O.items[i].gid);
+  b.innerHTML=`<span>${SEL.size}개 선택</span><button data-ms="grp" ${SEL.size<2?'disabled':''}>묶기</button>${hasG?'<button data-ms="ungrp">풀기</button>':''}<button data-ms="del" ${SEL.size?'':'disabled'}>삭제</button><button data-ms="done">완료</button>`;}
 function grpIds(id){const it=O.items[id];if(!it||!it.gid)return [id];return rawItems().filter(i=>i.gid===it.gid).map(i=>i.id);}
 function selSync(){CV.querySelectorAll('.it').forEach(el=>el.classList.toggle('sel',SEL.has(el.dataset.id)));}
 const topZ=()=>Math.max(1,...items().map(i=>i.z||1));
-CV.addEventListener('pointerdown',e=>{if(!edit)return;try{window.focus();}catch(_){}const el=e.target.closest('.it');closeMenu();if(!el){SEL.clear();selSync();return;}
+CV.addEventListener('pointerdown',e=>{if(!edit)return;try{window.focus();}catch(_){}const el=e.target.closest('.it');closeMenu();if(!el){if(!MULTI){SEL.clear();selSync();}return;}
   if((e.target.closest('.tx')||e.target.closest('[data-mf]'))&&el.classList.contains('sel')&&SEL.size<=1)return;   // 글 고치는 중
-  if((e.shiftKey||e.metaKey)&&e.button!==2){const g=grpIds(el.dataset.id);const on=SEL.has(el.dataset.id);g.forEach(i=>on?SEL.delete(i):SEL.add(i));selSync();e.preventDefault();return;}
+  if((e.shiftKey||e.metaKey||MULTI)&&e.button!==2){if(MULTI){const g=grpIds(el.dataset.id);const on=SEL.has(el.dataset.id);g.forEach(i=>on?SEL.delete(i):SEL.add(i));selSync();msBar();e.preventDefault();return;}const g=grpIds(el.dataset.id);const on=SEL.has(el.dataset.id);g.forEach(i=>on?SEL.delete(i):SEL.add(i));selSync();e.preventDefault();return;}
   if(e.button===2)return;const it=V(el.dataset.id);if(!it)return;e.preventDefault();
   if(e.target.closest('.roth')){e.preventDefault();const r=el.getBoundingClientRect();rotD={el,id:el.dataset.id,cx:r.left+r.width/2,cy:r.top+r.height/2};el.setPointerCapture(e.pointerId);return;}
   if(!SEL.has(el.dataset.id)){SEL.clear();grpIds(el.dataset.id).forEach(i=>SEL.add(i));}selSync();
@@ -929,6 +940,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
   if(it.t==='stk'){const pc=curPal()||[];h+=`<div class="cap">색</div><div class="row" style="flex-wrap:wrap;max-width:220px">${[...new Set([...SW,...pc])].map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${swRow('c',it.c)}<div class="cap">기울기</div><div class="row">${[-20,-10,0,10,20].map(d=>`<button data-a="srot" data-v="${d}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.rot||0)==d?'background:var(--skyl)':''}">${d}°</button>`).join('')}</div><hr>`;}
   if(isVin()||isCol())h+=`<button data-a="tape">${hasTape(it)?'테이프 떼기':'테이프 붙이기'}</button>${hasTape(it)?`<div class="cap">테이프 모양</div><div class="row" style="flex-wrap:wrap;gap:4px;max-width:240px">${[['mask','마스킹'],['dot','동그라미'],['clear','투명'],['stripe','줄무늬'],['grid','격자'],['dots','도트'],['corner','양쪽 모서리']].map(([k,l])=>`<button data-a="tts" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.tts||'mask')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">테이프 색</div><div class="row">${['#e7b9b4','#b9cfe0','#d9d1b9','#c8d8b9','#f2d48a','#ffffff'].map(c=>`<button data-a="tpc" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${swRow('tpc',it.tpc)}`:''}${isVin()?`<button data-a="rot">${it.norot?'살짝 기울이기':'똑바로 놓기'}</button>`:''}<hr>`;
   if(WG[it.t]||it.t==='txt')h+=`<div class="cap">종이 무늬</div><div class="row" style="flex-wrap:wrap;gap:4px;max-width:240px">${[['','없음'],['grid','모눈'],['lined','줄'],['dot','점'],['check','체크']].map(([k,l])=>`<button data-a="pp" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.pp||'')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div>${it.pp?`<div class="cap">무늬 크기</div><div class="row">${[[.6,'촘촘'],[1,'보통'],[1.5,'넓게'],[2.2,'아주 넓게']].map(([k,l])=>`<button data-a="pps" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.pps||1)==k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">무늬 색</div><div class="row">${['#6b88a8','#555555','#c94c4c','#8a6a4f','#5C6844'].map(c=>`<button data-a="ppc" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${swRow('ppc',it.ppc)}`:''}<button data-a="bgi">${it.bgi?'뒤 사진 바꾸기':'뒤에 사진 깔기'}</button>${it.bgi?`<button data-a="bgix">뒤 사진 빼기</button><div class="cap">뒤 사진 흐리게 <b id="bgbN">${it.bgb||0}</b></div><input id="bgbR" type="range" min="0" max="20" step="1" value="${it.bgb||0}" style="width:200px;accent-color:#7fb3d9"><div class="cap">뒤 사진 가리기</div><div class="row" style="flex-wrap:wrap;gap:4px;max-width:240px">${[[0,'그대로'],[.35,'밝게 조금'],[.55,'밝게'],[.75,'밝게 많이'],[-.35,'어둡게'],[-.6,'어둡게 많이']].map(([k,l])=>`<button data-a="bgv" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.bgv||0)==k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div>`:''}<hr>`;
+  h+=`<button data-a="multi">여러 개 고르기</button>`;
   if(SEL.size>=2&&SEL.has(id))h+=`<button data-a="grp">선택한 ${SEL.size}개 그룹으로 묶기</button>`;
   if(it.gid)h+=`<button data-a="ungrp">그룹 풀기</button>`;
   if((SEL.size>=2&&SEL.has(id))||it.gid)h+='<hr>';
@@ -946,6 +958,7 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     else if(a==='up')o.z=topZ()+1;else if(a==='dn'){const mn=Math.min(...items().map(i=>i.z||1));o.z=mn-1;}
     else if(a==='dup'){put('items/'+uid(),{...o,x:o.x+24,y:o.y+24,z:topZ()+1});render();return;}
     else if(a==='wall'){put('wall',o.img?{img:o.img}:{url:o.url});render();return;}
+    else if(a==='multi'){MULTI=true;if(!SEL.has(id)){SEL.clear();grpIds(id).forEach(i=>SEL.add(i));}selSync();msBar();return;}
     else if(a==='grp'){const g='g'+Date.now().toString(36);[...SEL].forEach(i=>{const r=O.items[i];if(r)put('items/'+i,{...r,gid:g});});render();return;}
     else if(a==='ungrp'){const g=o.gid;rawItems().filter(i=>i.gid===g).forEach(i=>{const r={...O.items[i.id]};delete r.gid;put('items/'+i.id,r);});render();return;}
     else if(a==='del'){const ids=SEL.has(id)&&SEL.size>1?[...SEL]:[id];ids.forEach(i=>put('items/'+i,null));SEL.clear();render();return;}
@@ -1060,7 +1073,7 @@ THP.addEventListener('keydown',e=>{if(e.target.id==='palTx'&&e.key==='Enter'&&!e
 THP.addEventListener('contextmenu',e=>{const c=e.target.closest('.tc');if(!c||c.dataset.tid==='+')return;e.preventDefault();themeMenu(c.dataset.tid,e.clientX,e.clientY);});
 let tclp=null;THP.addEventListener('pointerdown',e=>{const c=e.target.closest('.tc');if(!c||c.dataset.tid==='+'||e.pointerType==='mouse')return;tclp=setTimeout(()=>{themeMenu(c.dataset.tid,e.clientX,e.clientY);},550);});
 ['pointerup','pointercancel','pointermove'].forEach(ev=>THP.addEventListener(ev,()=>clearTimeout(tclp)));
-document.getElementById('editBtn').onclick=()=>{T.classList.remove('open');if(edit)items().forEach(i=>{if(i.t==='txt'&&!String(i.text||'').trim())put('items/'+i.id,null);});edit=!edit;T.classList.toggle('on',edit);document.getElementById('editBtn').classList.toggle('on',edit);document.getElementById('editBtn').textContent=edit?'done':'edit';closeMenu();render();};
+document.getElementById('editBtn').onclick=()=>{T.classList.remove('open');if(edit)items().forEach(i=>{if(i.t==='txt'&&!String(i.text||'').trim())put('items/'+i.id,null);});edit=!edit;if(!edit){MULTI=false;msBar();}T.classList.toggle('on',edit);document.getElementById('editBtn').classList.toggle('on',edit);document.getElementById('editBtn').textContent=edit?'done':'edit';closeMenu();render();};
 function freeSpot(w,h){let top=window.scrollY||0,vh=innerHeight;try{const fr=window.frameElement;if(fr){const r=fr.getBoundingClientRect();top=Math.max(0,-r.top);vh=parent.innerHeight;}}catch(e){}
   return {x:Math.round((1150-w)/2),y:PORT?Math.max(20,canvasH()):Math.max(20,Math.round((top+vh/2)/S-h/2))};}
 T.addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(!b)return;
