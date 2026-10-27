@@ -93,25 +93,25 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 .td .none,.cy .none{font-family:'GM';font-weight:300;color:var(--sub);font-size:22px}
 .cy{padding:18px 20px;gap:10px}
 .dr{padding:18px 20px;gap:4px}
-.dr:has(.tkt){filter:drop-shadow(0 8px 18px rgba(0,0,0,.12));padding:0;background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;overflow:visible}
-.tkt{width:100%;height:100%;background:#fff;color:#2a3540;display:flex;flex-direction:column;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);
+.dr:has(.tkt){padding:0;background:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;overflow:visible}
+.tkt{width:100%;height:100%;background:var(--tkb,#f3efe6);color:var(--tki,#2a3540);display:flex;flex-direction:column;border-radius:10px;box-shadow:inset 0 0 0 1px var(--tkl,transparent);
   -webkit-mask:radial-gradient(circle at 0 64%,transparent 10px,#000 10.5px) left/51% 100% no-repeat,radial-gradient(circle at 100% 64%,transparent 10px,#000 10.5px) right/51% 100% no-repeat;
   mask:radial-gradient(circle at 0 64%,transparent 10px,#000 10.5px) left/51% 100% no-repeat,radial-gradient(circle at 100% 64%,transparent 10px,#000 10.5px) right/51% 100% no-repeat}
 .tk1{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 18px 8px;gap:10px}
-.tkk{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.22em;color:#a3a7ad}
+.tkk{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.22em;color:var(--tkm,#a3a7ad)}
 .tks{font-family:'Courier Prime',monospace;font-size:9.5px;color:#96C7FF;margin-top:2px}
 .tkr{font-family:'Libre Baskerville','Playfair Display',serif;font-size:15px;white-space:nowrap}
 .tk2{display:flex;align-items:flex-start;justify-content:space-between;padding:6px 18px 12px}
 .tk2 b{display:block;font-family:'Libre Baskerville','Playfair Display',serif;font-weight:400;font-size:34px;line-height:1;letter-spacing:-.01em}
-.tk2 small{display:block;font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.14em;color:#aaa;margin-top:3px;text-transform:uppercase}
+.tk2 small{display:block;font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.14em;color:var(--tkm,#aaa);margin-top:3px;text-transform:uppercase}
 .tk2 .r{text-align:right}.tkp{width:34px;height:34px;fill:#96C7FF;transform:rotate(90deg);flex-shrink:0}
 .tk2{margin-top:auto;margin-bottom:auto}.tk2{flex:none}.tkt .tk1{flex:none}.tkt .tk2b{flex:1;display:flex;align-items:center}
-.tk3{display:flex;border-top:1.5px dashed #d4d4d4;padding:10px 18px 8px;gap:14px;align-items:center}
-.tkb{flex:1;min-width:0}.tkc{font-family:'Libre Baskerville',serif;font-size:13px;color:#111;margin:2px 0 6px}
-.tkbar{height:4px;border-radius:2px;background:#eef0f3;overflow:hidden}.tkbar i{display:block;height:100%;background:#96C7FF}
-.tkh{display:flex;justify-content:space-between;font-family:'Courier Prime',monospace;font-size:8.5px;letter-spacing:.08em;color:#aaa;margin-top:4px}
-.tkbc{width:74px;height:40px;fill:#2a3540;flex-shrink:0}
-.tkf{text-align:center;font-family:'Courier Prime',monospace;font-size:8px;letter-spacing:.26em;color:#bbb;border-top:1px solid #f0f0f0;padding:5px 0 6px}
+.tk3{display:flex;border-top:1.5px dashed color-mix(in srgb,var(--tki) 22%,transparent);padding:10px 18px 8px;gap:14px;align-items:center}
+.tkb{flex:1;min-width:0}.tkc{font-family:'Libre Baskerville',serif;font-size:13px;color:var(--tki);margin:2px 0 6px}
+.tkbar{height:4px;border-radius:2px;background:color-mix(in srgb,var(--tki) 10%,transparent);overflow:hidden}.tkbar i{display:block;height:100%;background:#96C7FF}
+.tkh{display:flex;justify-content:space-between;font-family:'Courier Prime',monospace;font-size:8.5px;letter-spacing:.08em;color:var(--tkm,#aaa);margin-top:4px}
+.tkbc{width:74px;height:40px;fill:var(--tki);flex-shrink:0}
+.tkf{text-align:center;font-family:'Courier Prime',monospace;font-size:8px;letter-spacing:.26em;color:var(--tkm,#bbb);border-top:1px solid color-mix(in srgb,var(--tki) 8%,transparent);padding:5px 0 6px}
 .ac{align-items:center;justify-content:center;padding:4px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.16))}
 .ac .acf{width:100%;height:100%;overflow:visible;--fc:var(--paper,#fbfaf7);--fi:var(--ink,#151515)}
 .ac .acf.fw{--fc:#fbfaf7;--fi:#151515}.ac .acf.fb{--fc:#161616;--fi:#f3efe6}
@@ -124,6 +124,9 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 .ac .hd.sc{animation-timing-function:steps(60,end)}.ac .hd.sc line{stroke:#b3423a;stroke-width:.7}
 .ac .pin{fill:var(--fi)}.ac .pin2{fill:#b3423a}
 @keyframes spin{to{transform:rotate(360deg)}}
+.ac .dgt .dap{font-family:'GM','Courier Prime',monospace;font-size:9px;font-weight:700;text-anchor:end}
+.ac .dgt .dcol{animation:blink 2s steps(1) infinite}@keyframes blink{50%{opacity:.15}}
+.ac:has(.dgt){filter:none}
 .ac .alm .anm text{font-family:'GM','Paperlogy',sans-serif;font-weight:700;font-size:15px;fill:#1f1f1f;text-anchor:middle;dominant-baseline:central}
 .ac .alm .asm{font-family:'GM',sans-serif;font-weight:700;font-size:6.4px;letter-spacing:.06em;fill:#2b2b2b;text-anchor:middle;dominant-baseline:central}
 .ac .flp .fpn{font-family:'GM','Paperlogy',sans-serif;font-weight:700;font-size:50px;letter-spacing:-.03em;fill:#151515;text-anchor:middle;dominant-baseline:central}
@@ -510,10 +513,13 @@ function wDream(it){const p=DIP&&POSTS&&DIP.idx!=null?POSTS[DIP.idx]:null;
    <div class="dbar"><i style="width:${pc}%"></i></div><div class="dh"><span>${h}h</span><span>100h</span></div>`;}
 /* 외무영사 드림 보딩패스 (비행기 화면 발권표 모양) */
 const TEN2={'대사관':'Embassy of the Republic of Korea','총영사관':'Consulate General of the Republic of Korea','대표부':'Mission of the Republic of Korea','유엔대표부':'Permanent Mission to the UN'};
+const TKC={white:['#ffffff','#2a3540','rgba(0,0,0,.1)','#a3a7ad'],ivory:['#f3efe6','#2a3540','transparent','#a39e93'],sky:['#e4edf7','#22364d','transparent','#8ea3bb'],gray:['#e9e8e5','#262626','transparent','#9a9894'],kraft:['#d8c3a0','#3a2c1c','transparent','#8a7459'],mint:['#dfece6','#24403a','transparent','#86a39a'],black:['#1c1c1c','#f2efe8','transparent','#8a8a8a']};
+const TKN={white:'흰색',ivory:'아이보리',sky:'하늘',gray:'연회색',kraft:'크라프트',mint:'민트',black:'검정'};
 function dreamTicket(p,it){const en=p?(ENM[p.city]||p.city):'—';const code=p?(IATA[p.city]||en.slice(0,3).toUpperCase()):'—';
   const el=p?+((DIP.elapsed||{})[DIP.idx]||0):0,pc=Math.min(100,el/360000*100),h=Math.floor(el/3600);
   let bars='',x=0;const seed=hsh(en+code);for(let i=0;i<34;i++){const w=1+((seed>>(i%24))&3)%3;bars+=`<rect x="${x}" y="0" width="${w}" height="100%"/>`;x+=w+1+((seed>>((i+5)%24))&1);}
-  return `<div class="tkt"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
+  const TC=TKC[(it&&it.tkc)||'ivory']||TKC.ivory;
+  return `<div class="tkt" style="--tkb:${TC[0]};--tki:${TC[1]};--tkl:${TC[2]};--tkm:${TC[3]}"><div class="tk1"><div class="tkk">KOREAN FOREIGN SERVICE</div></div>
    <div class="tk2b"><div class="tk2" style="width:100%"><div><b>MOFA</b><small>SEOUL</small></div><svg class="tkp" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg><div class="r"><b>${esc(code)}</b><small>${esc(en)}</small></div></div></div>
    <div class="tk3"><div class="tkb"><div class="tkk">MISSION BRIEF</div><div class="tkc">${p?esc(CEN[p.country]||p.country):''}</div><div class="tkbar"><i style="width:${pc}%"></i></div><div class="tkh"><span>${h}h</span><span>${pc>=100?'COMPLETE':'IN PROGRESS'}</span><span>100h</span></div></div>
    <svg class="tkbc" viewBox="0 0 ${x} 40" preserveAspectRatio="none">${bars}</svg></div><div class="tkf">OVERSEAS POSTING RECORD</div></div>`;}
@@ -604,7 +610,19 @@ function clockPocket(it){const {sec,min,hr}=tnow();const cx=100,cy=128;const RN=
    ${hd(cx,cy,43200,hr,orn(44,3.4))}${hd(cx,cy,3600,min,orn(66,2.6))}
    ${it.nosec?'':hd(cx,cy,60,sec,`<line x1="${cx}" y1="${cy+18}" x2="${cx}" y2="${cy-74}" stroke="#111" stroke-width=".55"/>`,'sc')}
    <circle cx="${cx}" cy="${cy}" r="4" fill="#111"/></svg>`;}
-const CLOCKS=[['simple','심플'],['alarm','민트 알람시계'],['flip','플립시계'],['brass','황동 탁상시계'],['pocket','은색 회중시계']];
+/* 디지털 (7세그먼트) */
+const SEG={0:'abcdef',1:'bc',2:'abged',3:'abgcd',4:'fgbc',5:'afgcd',6:'afgedc',7:'abc',8:'abcdefg',9:'abcdfg'};
+function segDigit(x,ch,on,off){const w=34,h=60,t=6.5,g=1.6;const P={a:[[x+g+t/2,0],[x+w-g-t/2,0],[x+w-g-t,t],[x+g+t,t]],d:[[x+g+t,h-t],[x+w-g-t,h-t],[x+w-g-t/2,h],[x+g+t/2,h]],
+  g:[[x+g+t/2,h/2],[x+g+t,h/2-t/2],[x+w-g-t,h/2-t/2],[x+w-g-t/2,h/2],[x+w-g-t,h/2+t/2],[x+g+t,h/2+t/2]],
+  f:[[x,g+t/2],[x+t,g+t],[x+t,h/2-g-t/2],[x,h/2-g]],b:[[x+w,g+t/2],[x+w,h/2-g],[x+w-t,h/2-g-t/2],[x+w-t,g+t]],
+  e:[[x,h/2+g],[x+t,h/2+g+t/2],[x+t,h-g-t],[x,h-g-t/2]],c:[[x+w,h/2+g],[x+w,h-g-t/2],[x+w-t,h-g-t],[x+w-t,h/2+g+t/2]]};
+  const lit=ch===' '?'':SEG[ch]||'';return Object.keys(P).map(k=>`<polygon points="${P[k].map(p=>p.join(',')).join(' ')}" fill="${lit.includes(k)?on:off}"/>`).join('');}
+const DGC={red:'#e5483d',amber:'#f2a531',green:'#5fd38a',blue:'#64b5ff',ink:'var(--ink,#151515)',white:'#f5f2ea'};
+function clockDigital(it){const d=new Date();let h=d.getHours();if(!it.h24)h=h%12||12;const H=it.h24?String(h).padStart(2,'0'):String(h).padStart(2,' '),M=String(d.getMinutes()).padStart(2,'0');
+  const on=DGC[it.dgc||'ink']||DGC.ink,off=it.dgoff===false?'transparent':`color-mix(in srgb,${on} 9%,transparent)`;const glow=['red','amber','green','blue'].includes(it.dgc)?`filter:drop-shadow(0 0 4px ${on})`:'';
+  const ap=it.h24?'':`<text x="192" y="64" class="dap" fill="${on}">${d.getHours()<12?'AM':'PM'}</text>`;
+  return `<svg class="acf dgt" viewBox="-6 -4 200 70" style="${glow}"><g transform="translate(4 0) skewX(-6)">${segDigit(0,H[0],on,off)}${segDigit(40,H[1],on,off)}<g class="dcol"><circle cx="88" cy="19" r="3.6" fill="${on}"/><circle cx="88" cy="41" r="3.6" fill="${on}"/></g>${segDigit(102,M[0],on,off)}${segDigit(142,M[1],on,off)}</g>${ap}</svg>`;}
+const CLOCKS=[['simple','심플'],['digital','디지털'],['alarm','민트 알람시계'],['flip','플립시계'],['brass','황동 탁상시계'],['pocket','은색 회중시계']];
 /* 사진(시계 사진) 위에 진짜로 도는 바늘 얹기 */
 function piAspect(it){return it.pol?(it.w*.92)/(it.h*.81):it.w/it.h;}
 function clkHands(k,VW,VH){const {sec,min,hr}=tnow();const cx=k.x*VW,cy=k.y*VH,R=k.r*Math.min(VW,VH);const c=k.c||'#111';const st=k.st||'cl';
@@ -614,7 +632,7 @@ function clkHands(k,VW,VH){const {sec,min,hr}=tnow();const cx=k.x*VW,cy=k.y*VH,R
   const M=st==='sp'?spade(R*.8,R*.026):st==='bd'?`<path d="${p(R*.78,R*.042,R*.12)}" fill="${c}"/>`:`<path d="${p(R*.8,R*.022,R*.14)}" fill="${c}"/>`;
   return hd(cx,cy,43200,hr,H)+hd(cx,cy,3600,min,M)+(k.sec===false?'':hd(cx,cy,60,sec,`<line x1="${cx}" y1="${cy+R*.2}" x2="${cx}" y2="${cy-R*.88}" stroke="${k.sc||'#b3423a'}" stroke-width="${Math.max(1.2,R*.008)}" stroke-linecap="round"/>`,'sc'))+`<circle cx="${cx}" cy="${cy}" r="${R*.045}" fill="${c}"/>`;}
 function clkOverlay(it){const VW=1000,VH=Math.round(1000/piAspect(it));return `<svg class="clko" viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">${clkHands(it.clk,VW,VH)}</svg>`;}
-function wAclock(it){if(it.cs==='alarm')return clockAlarm(it);if(it.cs==='flip')return clockFlip(it);if(it.cs==='brass')return clockBrass(it);if(it.cs==='pocket')return clockPocket(it);return wAclockSimple(it);}
+function wAclock(it){if(it.cs==='digital')return clockDigital(it);if(it.cs==='alarm')return clockAlarm(it);if(it.cs==='flip')return clockFlip(it);if(it.cs==='brass')return clockBrass(it);if(it.cs==='pocket')return clockPocket(it);return wAclockSimple(it);}
 function wAclockSimple(it){const d=new Date();const sec=d.getSeconds()+d.getMilliseconds()/1000,min=d.getMinutes()+sec/60,hr=(d.getHours()%12)+min/60;
   const RN=['XII','I','II','III','IIII','V','VI','VII','VIII','IX','X','XI'];const mode=it.num||'roman';
   let marks='';for(let i=0;i<60;i++){const big=i%5===0;marks+=`<line x1="100" y1="${big?9:9.5}" x2="100" y2="${big?15:12}" stroke-width="${big?1.3:.55}" transform="rotate(${i*6} 100 100)"/>`;}
@@ -764,9 +782,9 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     ${typeRows(it)}<button data-a="al">${it.al==='center'?'왼쪽 정렬':'가운데 정렬'}</button><hr>`;
   if(it.t==='img')h+=`<button data-a="aicut">자동 누끼 (AI)</button><button data-a="mkclk">${it.clk?'시계 바늘 맞추기':'시계로 만들기 (바늘 얹기)'}</button>${it.clk?'<button data-a="rmclk">시계 바늘 빼기</button>':''}<button data-a="cutbg">단색 배경 지우기</button>${it.orig?'<button data-a="uncut">원래 사진으로</button>':''}<button data-a="cut">${it.cut?'그림자 모양 끄기':'오려낸 사진처럼 (투명 PNG)'}</button><button data-a="pol">${it.pol?'폴라로이드 빼기':'폴라로이드'}</button><button data-a="crop">자르기</button><button data-a="sq">${it.sq?'둥근 모서리':'각진 모서리'}</button><button data-a="wall">배경으로 쓰기</button><hr>`;
   if(WG[it.t]&&it.t!=='clock')h+=`<div class="cap">바탕</div>${[['glass','유리'],['white','흰색'],['gray','회색'],['dark','어둡게'],['clear','투명']].map(([k,l])=>`<button data-a="st" data-v="${k}">${(it.st||(it.t==='aclock'?'clear':'glass'))===k?'✓ ':''}${l}</button>`).join('')}<hr>`;
-  if(it.t==='dream')h+=`<button data-a="tk">${(it.tk!=null?it.tk:isCol())?'티켓 모양 끄기':'티켓 모양'}</button><hr>`;
+  if(it.t==='dream'){const on=(it.tk!=null?it.tk:isCol());h+=`<button data-a="tk">${on?'티켓 모양 끄기':'티켓 모양'}</button>${on?`<div class="cap">티켓 색</div><div class="row" style="flex-wrap:wrap;max-width:230px">${Object.keys(TKC).map(k=>`<button data-a="tkc" data-v="${k}" title="${TKN[k]}" style="background:${TKC[k][0]};${((it.tkc||'ivory')===k)?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div>`:''}<hr>`;}
   if(it.t==='music')h+=`<button data-a="song">곡 적기</button>${it.cover?`<button data-a="cc">${it.cc?'커버 색 따라가기 끄기':'커버 색 따라가기'}</button>`:''}<button data-a="nocv">${it.nocv?'커버 보이기':'커버 숨기기'}</button>${it.nocv?'':`<button data-a="cover">커버 ${it.cover?'바꾸기':'넣기'}</button>`}${it.cover&&!it.nocv?'<button data-a="uncover">커버 빼기</button>':''}<hr>`;
-  if(it.t==='aclock')h+=`<div class="cap">모양</div>${CLOCKS.map(([k,l])=>`<button data-a="acs" data-v="${k}">${(it.cs||'simple')===k?'✓ ':''}${l}</button>`).join('')}${it.cs==='flip'?`<button data-a="h24">${it.h24?'12시간으로':'24시간으로'}</button>`:''}<hr>`;
+  if(it.t==='aclock')h+=`<div class="cap">모양</div>${CLOCKS.map(([k,l])=>`<button data-a="acs" data-v="${k}">${(it.cs||'simple')===k?'✓ ':''}${l}</button>`).join('')}${it.cs==='digital'?`<div class="cap">색</div><div class="row">${Object.keys(DGC).map(k=>`<button data-a="dgc" data-v="${k}" style="background:${DGC[k]};${(it.dgc||'ink')===k?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div><button data-a="dgoff">${it.dgoff===false?'꺼진 칸 보이기':'꺼진 칸 숨기기'}</button>`:''}${it.cs==='flip'||it.cs==='digital'?`<button data-a="h24">${it.h24?'12시간으로':'24시간으로'}</button>`:''}<hr>`;
   if(it.t==='aclock'&&(!it.cs||it.cs==='simple'))h+=`<div class="cap">숫자</div><div class="row">${[['roman','로마자'],['arabic','숫자'],['none','눈금만']].map(([k,l])=>`<button data-a="anum" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.num||'roman')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><div class="cap">판</div><div class="row">${[['w','흰색'],['b','검정'],['','테마색']].map(([k,l])=>`<button data-a="aface" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.face||'')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><button data-a="asec">${it.nosec?'초침 보이기':'초침 숨기기'}</button><hr>`;
   if(it.t==='clock')h+=`<div class="cap">색</div><div class="row">${SW.map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${typeRows(it)}<hr>`;
   if(it.t==='stk'){const pc=curPal()||[];h+=`<div class="cap">색</div><div class="row" style="flex-wrap:wrap;max-width:220px">${[...new Set([...SW,...pc])].map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div><div class="cap">기울기</div><div class="row">${[-20,-10,0,10,20].map(d=>`<button data-a="srot" data-v="${d}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${(it.rot||0)==d?'background:var(--skyl)':''}">${d}°</button>`).join('')}</div><hr>`;}
@@ -777,15 +795,15 @@ function openItemMenu(id,x,y){const it=O.items[id];if(!it)return;let h='';
     else if(a==='ls'){o.ls=Math.round((tv(o,'ls')+(+v))*100)/100;}else if(a==='lh'){o.lh=Math.max(.6,Math.round((tv(o,'lh')+(+v))*100)/100);}
     else if(a==='tr'){['ff','fw','ls','lh'].forEach(k=>delete o[k]);}else if(a==='al')o.al=o.al==='center'?'left':'center';
     else if(a==='crop'){openCrop(id);return;}
-    else if(a==='pol')o.pol=!o.pol;else if(a==='cc'){if(o.cc){delete o.cc;delete o.ccol;}else{setCoverColor(id);return;}}else if(a==='tk')o.tk=!(o.tk!=null?o.tk:isCol());else if(a==='srot'){o.rot=+v;if(!o.rot)delete o.rot;}else if(a==='ital')o.ital=!o.ital;else if(a==='quote'){o.ff='is';o.ital=true;o.fw=400;o.ls=0;o.lh=1.15;if(!o.fs||o.fs<26)o.fs=34;o.al='center';}
-    else if(a==='cutbg'){cutBg(id);return;}else if(a==='aicut'){aiCut(id);return;}else if(a==='mkclk'){openClk(id);return;}else if(a==='rmclk'){delete o.clk;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='acs'){o.cs=v;const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230]}[v];if(sz){o.h=Math.round(o.w*sz[1]/sz[0]);}}else if(a==='h24')o.h24=!o.h24;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
+    else if(a==='pol')o.pol=!o.pol;else if(a==='cc'){if(o.cc){delete o.cc;delete o.ccol;}else{setCoverColor(id);return;}}else if(a==='tk')o.tk=!(o.tk!=null?o.tk:isCol());else if(a==='tkc')o.tkc=v;else if(a==='srot'){o.rot=+v;if(!o.rot)delete o.rot;}else if(a==='ital')o.ital=!o.ital;else if(a==='quote'){o.ff='is';o.ital=true;o.fw=400;o.ls=0;o.lh=1.15;if(!o.fs||o.fs<26)o.fs=34;o.al='center';}
+    else if(a==='cutbg'){cutBg(id);return;}else if(a==='aicut'){aiCut(id);return;}else if(a==='mkclk'){openClk(id);return;}else if(a==='rmclk'){delete o.clk;}else if(a==='uncut'){if(o.orig){o.img=o.orig.img;o.url=o.orig.url;if(!o.url)delete o.url;if(!o.img)delete o.img;delete o.orig;}delete o.cut;}else if(a==='cut')o.cut=!o.cut;else if(a==='anum')o.num=v;else if(a==='acs'){o.cs=v;const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230],digital:[300,110]}[v];if(sz){o.h=Math.round(o.w*sz[1]/sz[0]);}}else if(a==='h24')o.h24=!o.h24;else if(a==='dgc')o.dgc=v;else if(a==='dgoff')o.dgoff=o.dgoff===false?true:false;else if(a==='aface'){if(v)o.face=v;else delete o.face;}else if(a==='asec')o.nosec=!o.nosec;else if(a==='tape')o.tape=!hasTape(o);else if(a==='rot')o.norot=!o.norot;
     else if(a==='cover'){coverFor=id;openSheet('cover');return;}else if(a==='uncover'){delete o.cover;}else if(a==='nocv'){o.nocv=!o.nocv;}else if(a==='song'){openSong(id);return;}
     else if(a==='sq')o.sq=!o.sq;else if(a==='st')o.st=v;else if(a==='lt')o.lt=!o.lt;
     else if(a==='up')o.z=topZ()+1;else if(a==='dn'){const mn=Math.min(...items().map(i=>i.z||1));o.z=mn-1;}
     else if(a==='dup'){put('items/'+uid(),{...o,x:o.x+24,y:o.y+24,z:topZ()+1});render();return;}
     else if(a==='wall'){put('wall',o.img?{img:o.img}:{url:o.url});render();return;}
     else if(a==='del'){put('items/'+id,null);render();return;}
-    put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c','bg','anum','aface','srot','ital','acs','h24'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}},document.querySelector(`[data-id="${id}"]`));}
+    put('items/'+id,o);render();if(['ff','fw','ls','lh','tr','fs','c','bg','anum','aface','srot','ital','acs','h24','tkc','dgc','dgoff'].includes(a)){setTimeout(()=>openItemMenu(id,x,y),0);return true;}},document.querySelector(`[data-id="${id}"]`));}
 function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" style="width:auto;height:auto;border-radius:6px;padding:2px 7px;font-size:11px;${on?'background:var(--skyl)':''}">${l}</button>`;
   const ls=tv(it,'ls'),lh=tv(it,'lh');
   return `<div class="cap">폰트</div><div class="row fonts">${FONTS.map(f=>`<button data-a="ff" data-v="${f[0]}" style="width:auto;height:auto;border-radius:6px;padding:3px 7px;font-size:13px;font-family:${f[2].replace(/"/g,'&quot;')};${tv(it,'ff')===f[0]?'background:var(--skyl)':''}">${f[1]}</button>`).join('')}</div>
@@ -912,7 +930,7 @@ document.getElementById('wallBtn').onclick=e=>{const r=e.target.getBoundingClien
   ci.addEventListener('input',()=>{ct.value=ci.value;CV.style.background=ci.value;});ct.addEventListener('input',()=>{if(/^#?[0-9a-f]{6}$/i.test(ct.value.trim()))ci.value=(ct.value.trim()[0]==='#'?'':'#')+ct.value.trim();});
   ct.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();menu.querySelector('[data-a=bgc]').click();}});};
 document.getElementById('stkBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.keys(STK).map(k=>`<button data-a="${k}"><svg viewBox="0 0 100 100" style="width:18px;height:18px;color:#111">${STK[k]}</svg>${STKN[k]}</button>`).join(''),k=>{const sz=k==='check'?110:k==='arrow'||k==='circle'?120:70;const p=freeSpot(sz,sz);put('items/'+uid(),{t:'stk',kind:k,x:p.x,y:p.y,w:sz,h:sz,z:topZ()+1});render();});};
-document.getElementById('wgBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.entries(WG).filter(([k])=>k!=='aclock').map(([k,v])=>`<button data-a="${k}">${v.label}</button>`).join('')+'<hr><div class="cap">시계</div>'+CLOCKS.map(([k,l])=>`<button data-a="ac:${k}">${l}</button>`).join(''),k=>{if(k.startsWith('ac:')){const cs=k.slice(3);const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230]}[cs];const p=freeSpot(sz[0],sz[1]);put('items/'+uid(),{t:'aclock',cs,x:p.x,y:p.y,w:sz[0],h:sz[1],z:topZ()+1});render();return;}const W=WG[k];const p=freeSpot(W.w,W.h);const nid=uid();put('items/'+nid,{t:k,x:p.x,y:p.y,w:W.w,h:W.h,z:topZ()+1});render();if(k==='music')openSong(nid);});};
+document.getElementById('wgBtn').onclick=e=>{const r=e.target.getBoundingClientRect();openMenu(r.left,r.bottom+8,Object.entries(WG).filter(([k])=>k!=='aclock').map(([k,v])=>`<button data-a="${k}">${v.label}</button>`).join('')+'<hr><div class="cap">시계</div>'+CLOCKS.map(([k,l])=>`<button data-a="ac:${k}">${l}</button>`).join(''),k=>{if(k.startsWith('ac:')){const cs=k.slice(3);const sz={alarm:[220,254],flip:[300,180],brass:[220,220],pocket:[220,250],simple:[230,230],digital:[300,110]}[cs];const p=freeSpot(sz[0],sz[1]);put('items/'+uid(),{t:'aclock',cs,x:p.x,y:p.y,w:sz[0],h:sz[1],z:topZ()+1});render();return;}const W=WG[k];const p=freeSpot(W.w,W.h);const nid=uid();put('items/'+nid,{t:k,x:p.x,y:p.y,w:W.w,h:W.h,z:topZ()+1});render();if(k==='music')openSong(nid);});};
 
 /* 사진: 주소 붙여넣기 / 이미지 붙여넣기 / 파일 */
 const SH=document.getElementById('sheet'),PZ=document.getElementById('pz'),PU=document.getElementById('pu');
