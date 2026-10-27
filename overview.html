@@ -315,7 +315,8 @@ function wDday(){let v=null;try{v=localStorage.getItem('myDday');}catch(e){}
 function weekDays(){const t=logicalToday();t.setHours(0,0,0,0);const mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));
   return [...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;}).filter(d=>d<=t);}
 function grpOf(tagId){const t=tagInfo(tagId);const r=mergePsat([tagId]);return r.length?r[0]:null;}
-function wToday(){const D=weekDays();const ids=[],miss=[];const DW=['일','월','화','수','목','금','토'];
+function wToday(){const tk0=keyOf(logicalToday());const D=weekDays().filter(d=>keyOf(d)!==tk0);   // 오늘 건 아직 진행 중이라 빼기
+  const ids=[],miss=[];const DW=['일','월','화','수','목','금','토'];
   D.forEach(d=>{const day=ST.pData&&ST.pData[keyOf(d)];if(!day)return;
     arr(day.items).forEach(it=>{if(!it)return;const subs=arr(it.subItems).filter(Boolean);const done=it.hl||subs.some(s=>s.hl);
       if(done){if(it.tag&&!ids.includes(it.tag))ids.push(it.tag);if(!it.hl)subs.filter(s=>!s.hl&&s.text).forEach(s=>miss.push({d,tag:it.tag,text:(it.text?it.text+' · ':'')+s.text}));}
