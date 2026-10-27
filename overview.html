@@ -427,6 +427,10 @@ function typeRows(it){const b=(a,v,l,on)=>`<button data-a="${a}" data-v="${v}" s
 /* ───── 넣기 ───── */
 const T=document.getElementById('tools');
 document.getElementById('moreBtn').onclick=e=>{e.stopPropagation();T.classList.toggle('open');};
+// 마우스 올리면 펼치고, 벗어나면 잠깐 뒤 접기 (마우스 있는 기기만)
+let tcl=null;
+T.addEventListener('pointerenter',e=>{if(e.pointerType!=='mouse')return;clearTimeout(tcl);T.classList.add('open');});
+T.addEventListener('pointerleave',e=>{if(e.pointerType!=='mouse')return;clearTimeout(tcl);tcl=setTimeout(()=>{if(!menu)T.classList.remove('open');},350);});
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#tools'))T.classList.remove('open');});
 document.getElementById('fullBtn').onclick=()=>{full?exitFull():goFull();};
 function applyTheme(){const d=O.theme==='dark';document.body.classList.toggle('dark',d);document.getElementById('darkBtn').textContent=d?'light':'dark';}
