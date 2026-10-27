@@ -104,7 +104,7 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 .tk2{display:flex;align-items:flex-start;justify-content:space-between;padding:6px 18px 12px}
 .tk2 b{display:block;font-family:'Libre Baskerville','Playfair Display',serif;font-weight:400;font-size:34px;line-height:1;letter-spacing:-.01em}
 .tk2 small{display:block;font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.14em;color:var(--tkm,#aaa);margin-top:3px;text-transform:uppercase}
-.tk2 .r{text-align:right}.tkp{width:34px;height:34px;fill:#96C7FF;transform:rotate(90deg);flex-shrink:0}
+.tk2 .r{text-align:right}.tkp{width:34px;height:34px;fill:var(--tki,#2a3540);transform:rotate(90deg);flex-shrink:0}
 .tk2{margin-top:auto;margin-bottom:auto}.tk2{flex:none}.tkt .tk1{flex:none}.tkt .tk2b{flex:1;display:flex;align-items:center}
 .tk3{display:flex;border-top:1.5px dashed color-mix(in srgb,var(--tki) 22%,transparent);padding:10px 18px 8px;gap:14px;align-items:center}
 .tkb{flex:1;min-width:0}.tkc{font-family:'Libre Baskerville',serif;font-size:13px;color:var(--tki);margin:2px 0 6px}
@@ -113,7 +113,7 @@ body.vin .w.gray,body.col .w.gray{border-radius:2px}
 .tkbc{width:74px;height:40px;fill:var(--tki);flex-shrink:0}
 .tkf{text-align:center;font-family:'Courier Prime',monospace;font-size:8px;letter-spacing:.26em;color:var(--tkm,#bbb);border-top:1px solid color-mix(in srgb,var(--tki) 8%,transparent);padding:5px 0 6px}
 .ac{align-items:center;justify-content:center;padding:4px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.16))}
-.ac .acf{width:100%;height:100%;overflow:visible;--fc:var(--paper,#fbfaf7);--fi:var(--ink,#151515)}
+.ac .acf{-webkit-user-select:none;user-select:none;width:100%;height:100%;overflow:visible;--fc:var(--paper,#fbfaf7);--fi:var(--ink,#151515)}
 .ac .acf.fw{--fc:#fbfaf7;--fi:#151515}.ac .acf.fb{--fc:#161616;--fi:#f3efe6}
 .ac .face{fill:var(--fc)}.ac .rim{fill:none;stroke:var(--fi);stroke-width:1.1;opacity:.85}.ac .ring{fill:none;stroke:var(--fi);stroke-width:.35;opacity:.45}
 .ac .mk line{stroke:var(--fi)}
@@ -577,7 +577,7 @@ function clockAlarm(it){const {sec,min,hr}=tnow();const cx=100,cy=124;let t='';
    ${hd(cx,cy,43200,hr,`<path d="M${cx} ${cy+6} L${cx-2.4} ${cy} L${cx-1.2} ${cy-30} L${cx} ${cy-36} L${cx+1.2} ${cy-30} L${cx+2.4} ${cy}Z" fill="#1c1c1c"/>`)}
    ${hd(cx,cy,3600,min,`<path d="M${cx} ${cy+8} L${cx-1.8} ${cy} L${cx-.8} ${cy-50} L${cx} ${cy-57} L${cx+.8} ${cy-50} L${cx+1.8} ${cy}Z" fill="#1c1c1c"/>`)}
    <circle cx="${cx}" cy="${cy}" r="3" fill="#1c1c1c"/><circle cx="${cx}" cy="${cy+26}" r="1.6" fill="#b3423a"/></svg>`;}
-function clockFlip(it){const d=new Date();let h=d.getHours();if(!it.h24){h=h%12||12;}const H=it.h24?String(h).padStart(2,'0'):String(h),M=String(d.getMinutes()).padStart(2,'0');
+function clockFlip(it){const d=new Date();let h=d.getHours();if(!it.h24){h=h%12||12;}const H=String(h).padStart(2,'0'),M=String(d.getMinutes()).padStart(2,'0');
   const card=(x,txt)=>`<g><rect x="${x}" y="30" width="96" height="92" rx="5" fill="#2a2926"/><rect x="${x+5}" y="35" width="86" height="82" rx="3" fill="#f7f5ef"/>
     <rect x="${x+5}" y="35" width="86" height="41" rx="3" fill="#fdfcf8"/><text x="${x+48}" y="78" class="fpn">${txt}</text>
     <line x1="${x+5}" y1="76" x2="${x+91}" y2="76" stroke="#1d1c1a" stroke-width="1.6"/><rect x="${x+1}" y="72" width="5" height="8" rx="1" fill="#2a2926"/><rect x="${x+90}" y="72" width="5" height="8" rx="1" fill="#2a2926"/></g>`;
