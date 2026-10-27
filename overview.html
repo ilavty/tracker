@@ -412,7 +412,7 @@ function bindTheme(){const ids=Object.keys(TS.themes).sort((a,b)=>(TS.themes[a].
   if(!TS.themes[TS.cur])TS.cur=ids[0]||null;
   if(!TS.cur){TS.cur='t0';TS.themes.t0={name:'Default',style:'default',o:0};}
   const t=T0();if(!t.items||typeof t.items!=='object')t.items={};O.items=t.items;O.wall=t.wall||null;O.theme=t.dark?'dark':null;}
-function loadRaw(v){v=v||{};if(!O.imgs)O.imgs={};if(v.imgs)Object.assign(O.imgs,v.imgs);if(v.sw)O.sw=arr(v.sw).filter(x=>/^#[0-9a-f]{6}$/i.test(x));
+function loadRaw(v){v=v||{};if(!O.imgs)O.imgs={};if(v.imgs)Object.assign(O.imgs,v.imgs);if(v.sw)O.sw=(Array.isArray(v.sw)?v.sw:Object.values(v.sw)).filter(x=>/^#[0-9a-f]{6}$/i.test(x));
   if(v.themes&&Object.keys(v.themes).length)TS.themes=v.themes;
   else{TS.themes={t0:{name:'Default',style:'default',o:0,items:v.items||{},wall:v.wall||null,dark:v.theme==='dark'||null}};TS.migrate=true;}   // 예전 저장 → 첫 테마로
   try{const c=localStorage.getItem(CURK);if(c&&TS.themes[c])TS.cur=c;}catch(e){}
