@@ -11,7 +11,7 @@ let ERR = '';
 async function getJSON(path, key) {
   try {
     const r = new Request(DB + path + '.json'); r.timeoutInterval = 30;
-    const v = await r.loadJSON();
+    const v = JSON.parse(await r.loadString());
     if (v && typeof v === 'object' && v.error) throw new Error(String(v.error));
     if (v != null) fm.writeString(cachePath(key), JSON.stringify(v));
     return v;
