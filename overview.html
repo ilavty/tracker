@@ -1268,6 +1268,22 @@ if(db){
     else go({themes:{}});});
 }else{seedDefault();}
 render();
+/* 위젯 사진용: 판에 실제로 쓰인 폰트·글자만 골라서 폰트를 사진에 넣기 */
+async function snapFontCSS(){
+  const fams=new Set();CV.querySelectorAll('*').forEach(el=>{String(getComputedStyle(el).fontFamily||'').split(',').forEach(f=>{f=f.trim().replace(/^["']|["']$/g,'');if(f)fams.add(f.toLowerCase());});});
+  const chars=new Set([...(CV.innerText||'')].map(c=>c.codePointAt(0)));
+  const blocks=[];
+  for(const sh of [...document.styleSheets]){let txt='';try{txt=[...sh.cssRules].map(r=>r.cssText).join('\n');}catch(e){if(sh.href){try{txt=await (await fetch(sh.href)).text();}catch(_){}}}
+    (txt.match(/@font-face\s*\{[^}]*\}/g)||[]).forEach(b=>blocks.push({b,base:sh.href||location.href}));}
+  const hit=b=>{const m=b.match(/font-family:\s*["']?([^;"']+)["']?/i);if(!m||!fams.has(m[1].trim().toLowerCase()))return false;
+    const u=b.match(/unicode-range:\s*([^;}]+)/i);if(!u)return true;
+    return u[1].split(',').some(r=>{r=r.trim().replace(/^U\+/i,'');let [a,z]=r.split('-');if(a.includes('?')){z=a.replace(/\?/g,'F');a=a.replace(/\?/g,'0');}const lo=parseInt(a,16),hi=parseInt(z||a,16);for(const c of chars)if(c>=lo&&c<=hi)return true;return false;});};
+  const toData=async u=>{const r=await fetch(u);const bl=await r.blob();return await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(bl);});};
+  const out=[];
+  for(const {b,base} of blocks.filter(x=>hit(x.b))){let nb=b;const urls=[...b.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)].map(m=>m[1]);
+    for(const u of urls){if(u.startsWith('data:'))continue;try{const d=await toData(new URL(u,base).href);if(d)nb=nb.split(u).join(d);}catch(e){}}
+    out.push(nb);}
+  return out.join('\n');}
 if(SNAP){document.documentElement.classList.add('snap');window.__wbResult='';
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
   (async()=>{try{const t0=Date.now();
@@ -1278,9 +1294,13 @@ if(SNAP){document.documentElement.classList.add('snap');window.__wbResult='';
     render();try{await document.fonts.ready;}catch(e){}
     await Promise.all([...CV.querySelectorAll('img')].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;setTimeout(r,6000);})));
     await wait(700);
+    CV.querySelectorAll('img').forEach(im=>{if(!im.naturalWidth)im.remove();});
     if(!window.htmlToImage)await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc);});
     const pr=+(QS.get('pr')||1.8);
-    window.__wbResult=await htmlToImage.toPng(CV,{width:WBW,height:WBH,pixelRatio:pr,style:{zoom:'1',left:'0',top:'0',borderRadius:'0',boxShadow:'none'}});
+    let fcss='';try{fcss=await snapFontCSS();}catch(e){}
+    const opt={width:WBW,height:WBH,pixelRatio:pr,imagePlaceholder:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',style:{zoom:'1',left:'0',top:'0',borderRadius:'0',boxShadow:'none'}};
+    try{window.__wbResult=await htmlToImage.toPng(CV,{...opt,fontEmbedCSS:fcss||undefined,skipFonts:!fcss});}
+    catch(e){try{window.__wbResult=await htmlToImage.toPng(CV,{...opt,skipFonts:true});}catch(e2){CV.querySelectorAll('img').forEach(im=>{if(!/^data:/.test(im.src))im.remove();});window.__wbResult=await htmlToImage.toPng(CV,{...opt,skipFonts:true});}}
   }catch(e){window.__wbResult='ERR:'+(e&&e.message||e);}})();}
 idbGetAll().then(m=>{let n=0;for(const k in m)if(!O.imgs[k]){O.imgs[k]=m[k];n++;}if(n&&!drag)render();fetchImgs();});
 </script>
