@@ -38,10 +38,11 @@ async function snapBoard() {
   await wv.loadURL(SITE + 'overview.html?snap=1&pr=4&t=' + Date.now());
   const r = await wv.evaluateJavaScript(`(function(){var t0=Date.now();(function chk(){if(window.__wbResult)return completion(window.__wbResult);if(Date.now()-t0>110000)return completion('ERR:timeout');setTimeout(chk,300);})();})()`, true);
   if (!r || String(r).startsWith('ERR')) return String(r || 'ERR');
+  try { DIAG = String(await wv.evaluateJavaScript('window.__wbDiag||""') || ''); } catch (e) {}
   const img = Image.fromData(Data.fromBase64String(String(r).split(',')[1]));
   fm.writeImage(BOARD, img); return '';
 }
-let SNAPERR = '';
+let SNAPERR = '', DIAG = '';
 if (!config.runsInWidget) { try { SNAPERR = await snapBoard(); } catch (e) { SNAPERR = String(e && e.message || e); } }
 
 const w = new ListWidget();
@@ -51,6 +52,7 @@ if (MODE === 'board') {
   w.setPadding(0, 0, 0, 0); w.url = SITE + 'overview.html';
   if (fm.fileExists(BOARD)) w.backgroundImage = fm.readImage(BOARD);
   else { w.setPadding(14, 15, 12, 15); const t = w.addText(SNAPERR ? '찍기 실패 · ' + SNAPERR : '—'); t.font = F(11); t.textColor = SUB; }
+  if (DIAG && !config.runsInWidget) { w.addSpacer(); const t = w.addText('빠진 사진\n' + DIAG); t.font = F(8); t.textColor = new Color('#c94c4c'); }
   if (SNAPERR && fm.fileExists(BOARD) && !config.runsInWidget) { w.addSpacer(); const t = w.addText('찍기 실패 · ' + SNAPERR); t.font = F(9); t.textColor = new Color('#c94c4c'); }
 } else if (MODE === 'ov') {
   const B = 'study_records/my_study_data_final10/';

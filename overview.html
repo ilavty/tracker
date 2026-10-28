@@ -1296,15 +1296,18 @@ if(SNAP){document.documentElement.classList.add('snap');window.__wbResult='';
     const PX=u=>'https://images.weserv.nl/?url='+encodeURIComponent(u.replace(/^https?:\/\//,''))+'&output=png&n=-1';
     const ext=u=>/^https?:/i.test(u)&&!u.startsWith(location.origin)&&!/images\.weserv\.nl/.test(u);
     // 바깥 주소 사진은 미리 데이터로 바꿔둠 (바로 → 안 되면 중계 서버)
-    const toD=async u=>{for(const x of [u,PX(u)]){try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),20000);const r=await fetch(x,{mode:'cors',signal:ctl.signal});clearTimeout(tm);if(!r.ok)continue;const bl=await r.blob();if(!bl.size||!/^image\//.test(bl.type||'image/'))continue;
-      const d=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(bl);});if(d)return d;}catch(e){}}return null;};
+    const DIAG=[];window.__wbDiag='';
+    const PXS=u=>[u,PX(u),'https://wsrv.nl/?url='+encodeURIComponent(u)+'&output=png','https://corsproxy.io/?url='+encodeURIComponent(u),'https://api.allorigins.win/raw?url='+encodeURIComponent(u)];
+    const toD=async u=>{const why=[];for(const x of PXS(u)){try{const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),20000);const r=await fetch(x,{mode:'cors',signal:ctl.signal});clearTimeout(tm);if(!r.ok){why.push(r.status);continue;}const bl=await r.blob();if(!bl.size||!/^image\//.test(bl.type||'image/')){why.push('type:'+bl.type);continue;}
+      const d=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(bl);});if(d)return d;}catch(e){why.push(String(e&&e.name||e).slice(0,12));}}let h='';try{h=new URL(u).host;}catch(e){}DIAG.push(h+' '+why.join('/'));return null;};
     const DC={};const conv=u=>DC[u]||(DC[u]=toD(u));
     const jobs=[];
     CV.querySelectorAll('img').forEach(im=>{const u=im.currentSrc||im.src||'';if(ext(u))jobs.push(conv(u).then(d=>{if(d){im.removeAttribute('srcset');return new Promise(r=>{im.onload=im.onerror=r;im.src=d;setTimeout(r,8000);});}}));});
     CV.querySelectorAll('[style*="url("]').forEach(el=>{const bg=el.style.backgroundImage||'';const us=[...bg.matchAll(/url\(\s*['"]?(https?:[^'")]+)['"]?\s*\)/gi)].map(m=>m[1]).filter(ext);
       us.forEach(u=>jobs.push(conv(u).then(d=>{if(d)el.style.backgroundImage=el.style.backgroundImage.split(u).join(d);})));});
     await Promise.all(jobs);await wait(400);
-    CV.querySelectorAll('img').forEach(im=>{if(!im.naturalWidth)im.remove();});
+    CV.querySelectorAll('img').forEach(im=>{if(!im.naturalWidth){DIAG.push('안 뜸 '+String(im.src).slice(0,40));im.remove();}});
+    window.__wbDiag=DIAG.join('\n');
     if(!window.htmlToImage)await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js';sc.onload=res;sc.onerror=()=>rej(new Error('lib'));document.head.appendChild(sc);});
     const pr=+(QS.get('pr')||1.8);
     let fcss='';try{fcss=await snapFontCSS();}catch(e){}
