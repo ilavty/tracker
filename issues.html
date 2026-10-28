@@ -376,6 +376,14 @@ body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!impo
 @media print{body.hideans .paper td.a{color:inherit!important;background:none!important}}
 .ftools{position:fixed;right:18px;bottom:96px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .ftools[hidden]{display:none}
+.ftools.dk{bottom:40px}
+.ftools.dk .ftmore{display:none;flex-direction:column;align-items:flex-end;gap:8px}
+.ftools.dk:hover .ftmore,.ftools.dk.open .ftmore{display:flex}
+.ftools.dk .ftrow{display:flex;gap:8px;align-items:center}
+.ftools.dk .ftop,.ftools.dk .fab{width:42px;height:42px;min-width:0;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600}
+.ftools.dk .fab{font-size:14px;letter-spacing:1px}
+.ftools.dk .fab.act{border-color:var(--acc);color:var(--acc)}
+.ftools .ftop{font-size:16px}
 .tl{font-family:var(--tf);font-size:13px;letter-spacing:-.01em;padding:9px 10px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.10);width:128px;box-sizing:border-box}
 .tl:hover{border-color:var(--acc);color:var(--acc)}
 .tl.on{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -1043,21 +1051,25 @@ function toolsBar() {
     b.addEventListener('mousedown', e => { if (e.target.closest('[data-pgo]')) e.preventDefault(); });
     b.addEventListener('touchstart', e => { if (e.target.closest('[data-pgo]')) { e.preventDefault(); if (!punchWrap()) toast('Select a word in the text first'); } }, { passive: false });
     b.addEventListener('click', e => { if (e.target.closest('[data-pgo]') && !punchWrap()) toast('Select a word in the text first'); });
-    b.addEventListener('click', e => { if (e.target.closest('[data-ftog]')) { e.stopPropagation(); fabOpen = !fabOpen; toolsBar(); } });
+    b.addEventListener('click', e => { if (e.target.closest('[data-ftog]')) { e.stopPropagation(); fabOpen = !fabOpen; toolsBar(); } if (e.target.closest('[data-top]')) { e.stopPropagation(); scrollTo({ top: 0, behavior: 'smooth' }); } });
   }
   b.hidden = editing;
   const sm = matchMedia('(max-width:760px)').matches;   // 폰: 짧은 글자 버튼
   b.classList.toggle('sm', sm);
+  if (sm) b.classList.remove('dk');
   if (sm) {
     // 폰: 처음엔 동그라미 하나로 닫혀 있고, 누르면 위로 펼쳐짐. B/F는 버튼 하나를 누를 때마다 바뀜
     b.classList.toggle('open', fabOpen);
     b.innerHTML = (fabOpen ? `<button class="tl" data-fill="${filled ? '0' : '1'}" title="Blank / Filled">${filled ? 'F' : 'B'}</button>` +
       `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">${hideAns ? 'OFF' : 'ON'}</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">B</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">H</button>` : '') +
-      `<button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button>`;
+      `<button class="tl ftop" data-top title="맨 위로">↑</button><button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button>`;
     return;
   }
-  b.innerHTML = `<div class="tlseg"><button class="${filled ? '' : 'on'}" data-fill="0" title="Blank">Blank</button><button class="${filled ? 'on' : ''}" data-fill="1" title="Filled">Filled</button></div>` + 
-    `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">Hide Answer</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">Highlight</button>`;
+  // 데스크톱: 평소엔 ••• 하나, 마우스를 올리면 위로 펼쳐짐
+  b.classList.add('dk'); b.classList.toggle('open', fabOpen);
+  b.innerHTML = `<div class="ftmore"><div class="tlseg"><button class="${filled ? '' : 'on'}" data-fill="0" title="Blank">Blank</button><button class="${filled ? 'on' : ''}" data-fill="1" title="Filled">Filled</button></div>` +
+    `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">Hide Answer</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">Make Blank</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">Highlight</button></div>` +
+    `<div class="ftrow"><button class="tl ftop" data-top title="맨 위로">↑</button><button class="tl fab${(punch || hlMode || hideAns) ? ' act' : ''}" data-ftog title="도구">•••</button></div>`;
 }
 
 /* 형광펜 */
