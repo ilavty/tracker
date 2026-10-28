@@ -7,14 +7,17 @@ const ACC = FAM.startsWith('accessory');
 const fm = FileManager.local();
 const cachePath = n => fm.joinPath(fm.cacheDirectory(), 'desk_w_' + n + '.json');
 
+let ERR = '';
 async function getJSON(path, key) {
   try {
-    const r = new Request(DB + path + '.json'); r.timeoutInterval = 12;
+    const r = new Request(DB + path + '.json'); r.timeoutInterval = 30;
     const v = await r.loadJSON();
+    if (v && typeof v === 'object' && v.error) throw new Error(String(v.error));
     if (v != null) fm.writeString(cachePath(key), JSON.stringify(v));
     return v;
   } catch (e) {
-    try { return JSON.parse(fm.readString(cachePath(key))); } catch (_) { return null; }
+    ERR = String(e && e.message || e);
+    try { const c = JSON.parse(fm.readString(cachePath(key))); if (c != null) ERR = ''; return c; } catch (_) { return null; }
   }
 }
 const parse = v => { if (v == null) return null; if (typeof v === 'string') { try { return JSON.parse(v); } catch (e) { return null; } } return v; };
@@ -56,7 +59,7 @@ if (MODE === 'plan') {
     if (day.studyTime) { const st = head.addText(String(day.studyTime)); st.font = F(12, 'm'); st.textColor = SUB; }
     w.addSpacer(9);
     const max = FAM === 'small' ? 5 : FAM === 'medium' ? 5 : FAM === 'extraLarge' ? 14 : 12;
-    if (!rows.length) { const n = w.addText('—'); n.font = F(18); n.textColor = SUB; }
+    if (!rows.length) { const n = w.addText(ERR ? '불러오기 실패 · ' + ERR : (pd == null ? '데이터 없음' : '—')); n.font = F(ERR || pd == null ? 11 : 18); n.textColor = SUB; }
     rows.slice(0, max).forEach((r, i) => {
       const s = w.addStack(); s.centerAlignContent(); s.spacing = 6;
       if (FAM !== 'small') {
@@ -82,7 +85,7 @@ if (MODE === 'plan') {
   const subs = arr(S.subjects);
   const cards = arr(S.cards).filter(c => !del[c.id] && (strip(c.title) || arr(c.items).length));
   w.url = SITE + 'cards.html';
-  if (!cards.length) { const n = w.addText('—'); n.font = F(18); n.textColor = SUB; }
+  if (!cards.length) { const n = w.addText(ERR ? '불러오기 실패 · ' + ERR : '—'); n.font = F(ERR ? 11 : 18); n.textColor = SUB; }
   else {
     const c = cards[Math.floor(Math.random() * cards.length)];
     const sub = subs.find(s => s.id === c.subjectId);
