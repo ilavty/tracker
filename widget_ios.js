@@ -35,8 +35,8 @@ function lum(h) { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) 
 const BOARD = fm.joinPath(fm.documentsDirectory(), 'desk_board.png');
 async function snapBoard() {
   const wv = new WebView();
-  await wv.loadURL(SITE + 'overview.html?snap=1&pr=3&t=' + Date.now());
-  const r = await wv.evaluateJavaScript(`(function(){var t0=Date.now();(function chk(){if(window.__wbResult)return completion(window.__wbResult);if(Date.now()-t0>55000)return completion('ERR:timeout');setTimeout(chk,300);})();})()`, true);
+  await wv.loadURL(SITE + 'overview.html?snap=1&pr=4&t=' + Date.now());
+  const r = await wv.evaluateJavaScript(`(function(){var t0=Date.now();(function chk(){if(window.__wbResult)return completion(window.__wbResult);if(Date.now()-t0>110000)return completion('ERR:timeout');setTimeout(chk,300);})();})()`, true);
   if (!r || String(r).startsWith('ERR')) return String(r || 'ERR');
   const img = Image.fromData(Data.fromBase64String(String(r).split(',')[1]));
   fm.writeImage(BOARD, img); return '';
