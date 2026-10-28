@@ -1,7 +1,8 @@
-// DESK 아이폰 위젯 (Scriptable). 위젯 설정의 Parameter: plan(기본) / card
+// DESK 아이폰 위젯 (Scriptable). 위젯 설정의 Parameter: plan(기본) / card / overview
 const DB = "https://tracker-d3a39-default-rtdb.firebaseio.com/";
 const SITE = "https://tracker-tau-seven.vercel.app/";
-const MODE = String((args.widgetParameter || (typeof WMODE !== 'undefined' ? WMODE : '') || 'plan')).trim().toLowerCase().startsWith('c') ? 'card' : 'plan';
+const _P = String((args.widgetParameter || (typeof WMODE !== 'undefined' ? WMODE : '') || 'plan')).trim().toLowerCase();
+const MODE = _P.startsWith('c') ? 'card' : _P.startsWith('o') ? 'ov' : 'plan';
 const FAM = config.widgetFamily || 'large';
 const ACC = FAM.startsWith('accessory');
 const fm = FileManager.local();
@@ -33,7 +34,93 @@ function lum(h) { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) 
 const w = new ListWidget();
 if (!ACC) { w.backgroundColor = BG; w.setPadding(14, 15, 12, 15); }
 
-if (MODE === 'plan') {
+if (MODE === 'ov') {
+  const B = 'study_records/my_study_data_final10/';
+  const [pd, tg, trk, dd] = await Promise.all([getJSON(B + 'plannerData', 'pd'), getJSON(B + 'plannerTags', 'tg'), getJSON(B + 'trackerData', 'trk'), getJSON(B + 'myDday', 'dd')]);
+  const P = parse(pd) || {}, TAGS = arr(parse(tg)), TR = parse(trk) || {};
+  const now = new Date(); if (now.getHours() < 5) now.setDate(now.getDate() - 1); now.setHours(0, 0, 0, 0);
+  const keyOf = d => (d.getMonth() + 1) + '.' + d.getDate();
+  const MON = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  // D-day
+  let ddTxt = '';
+  if (dd && typeof dd === 'string') { const t = new Date(dd); if (!isNaN(t)) { t.setHours(0, 0, 0, 0); const df = Math.round((t - now) / 864e5); ddTxt = df > 0 ? 'D-' + df : df === 0 ? 'D-Day' : 'D+' + (-df); } }
+  // 사이클 (진행 중)
+  const THEMES = ['#5a97eb', '#ff6b6b', '#4ecdc4', '#ffa62b', '#9b5de5'];
+  const yr = now.getFullYear();
+  const pdt = x => { const q = String(x || '').trim().split('.'); if (q.length !== 2) return null; const m = +q[0], d = +q[1]; return isNaN(m) || isNaN(d) ? null : new Date(yr, m - 1, d); };
+  const data = (TR && TR.data) || {}; const cyc = [];
+  Object.keys(data).forEach(sub => arr(data[sub] && data[sub].cycles).forEach(cy => {
+    if (!cy) return; const cats = arr(cy.cats); const all = [];
+    cats.forEach(c => arr(c && c.sessions).forEach(se => arr(se && se.bars).forEach(b => { const d = pdt(b && b.text); if (d) all.push(d); })));
+    if (!all.length) return; const st = new Date(Math.min(...all)); let en = null;
+    const last = cats[cats.length - 1]; if (last) { const N = arr(last.topics).length; const f = arr(last.sessions)[0]; const eb = f && arr(f.bars).find(b => b.end === N - 1); if (eb) en = pdt(eb.text); }
+    if (!en) cyc.push({ name: sub + ' ' + (cy.num != null ? cy.num : ''), color: THEMES[cy.palIdx || 0] || THEMES[0], st, n: Math.floor((now - st) / 864e5) + 1 });
+  }));
+  cyc.sort((a, b) => a.st - b.st);
+  // 못한 것 (이번 주 월요일 ~ 어제)
+  const ord = TAGS.map(t => t.id);
+  const PS = /^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i;
+  const grp = id => { const t = TAGS.find(x => x.id === id) || { name: id, color: '#bbb' }; const nm = String(t.name || id).trim(); if (/^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(nm)) return null; const m = nm.match(PS);
+    if (m && (m[1] || m[2])) { const pt = TAGS.find(x => /^(PSAT|피셋)$/i.test(String(x.name).trim())); return { id: 'PSAT', name: 'PSAT', color: hexOk(pt ? pt.color : t.color) || '#bbb', pos: Math.min(...TAGS.map((x, i) => { const mm = String(x.name).trim().match(PS); return mm && (mm[1] || mm[2]) ? i : 999; })) }; }
+    return { id, name: nm, color: hexOk(t.color) || '#bbb', pos: ord.indexOf(id) }; };
+  const DW = ['일', '월', '화', '수', '목', '금', '토'];
+  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const G = new Map();
+  for (let d = new Date(mon); d < now; d.setDate(d.getDate() + 1)) {
+    const day = P[keyOf(d)]; if (!day) continue;
+    arr(day.items).forEach(it => { if (!it) return; const subs = arr(it.subItems); const done = it.hl || subs.some(x => x.hl); const miss = [];
+      if (done) { if (!it.hl) subs.filter(x => !x.hl && x.text).forEach(x => miss.push((it.text ? strip(it.text) + ' · ' : '') + strip(x.text))); }
+      else if (it.text) miss.push(strip(it.text));
+      if (!miss.length) return; const g = it.tag ? grp(it.tag) : null; if (!g) return;
+      if (!G.has(g.id)) G.set(g.id, { g, rows: new Map() });
+      const Rw = G.get(g.id).rows; miss.forEach(tx => { const r = Rw.get(tx) || { tx, days: [] }; const dw = DW[d.getDay()]; if (!r.days.includes(dw)) r.days.push(dw); Rw.set(tx, r); }); });
+  }
+  const groups = [...G.values()].sort((a, b) => a.g.pos - b.g.pos);
+  w.url = SITE;
+  const lbl = (st, t) => { const x = st.addText(t); x.font = F(9.5, 'm'); x.textColor = SUB; return x; };
+  const cycRow = (st, c, sz) => { const r = st.addStack(); r.centerAlignContent(); r.spacing = 6; const a = r.addText(c.name.trim()); a.font = F(sz, 'b'); a.textColor = new Color(c.color); a.lineLimit = 1; a.minimumScaleFactor = .7;
+    const b = r.addText(`${c.st.getMonth() + 1}.${c.st.getDate()} ~ ${c.n}일째`); b.font = F(sz - 2); b.textColor = SUB; b.lineLimit = 1; };
+  if (ACC) {
+    const t = w.addText(ddTxt || keyOf(now)); t.font = F(14, 'b');
+    cyc.slice(0, 2).forEach(c => { const x = w.addText(`${c.name.trim()} · ${c.n}일째`); x.font = F(11); x.lineLimit = 1; });
+  } else if (FAM === 'small') {
+    if (ddTxt) { const t = w.addText(ddTxt); t.font = F(28, 'b'); t.textColor = INK; t.minimumScaleFactor = .6; t.lineLimit = 1; }
+    const dt = w.addText(`${MON[now.getMonth()].slice(0, 3)} ${now.getDate()} ${DOW[now.getDay()]}`); dt.font = F(10, 'm'); dt.textColor = SUB;
+    w.addSpacer(8);
+    cyc.slice(0, 3).forEach(c => { const x = w.addText(`${c.name.trim()}`); x.font = F(11, 'b'); x.textColor = new Color(c.color); x.lineLimit = 1; const y = w.addText(`${c.n}일째`); y.font = F(10); y.textColor = SUB; w.addSpacer(3); });
+    w.addSpacer();
+  } else {
+    const head = w.addStack(); head.bottomAlignContent();
+    const a = head.addText(`${MON[now.getMonth()]} ${now.getDate()}`); a.font = F(FAM === 'medium' ? 16 : 19, 'b'); a.textColor = INK;
+    head.addSpacer(6); const b = head.addText(DOW[now.getDay()]); b.font = F(10, 'm'); b.textColor = SUB;
+    head.addSpacer();
+    if (ddTxt) { const c = head.addText(ddTxt); c.font = F(FAM === 'medium' ? 20 : 24, 'b'); c.textColor = INK; }
+    w.addSpacer(FAM === 'medium' ? 8 : 12);
+    if (FAM === 'medium') {
+      const row = w.addStack(); row.topAlignContent(); row.spacing = 14;
+      const L = row.addStack(); L.layoutVertically(); lbl(L, 'CYCLE'); L.addSpacer(4);
+      if (!cyc.length) lbl(L, '—'); cyc.slice(0, 3).forEach(c => { cycRow(L, c, 12); L.addSpacer(3); });
+      const Rr = row.addStack(); Rr.layoutVertically(); lbl(Rr, 'UNFINISHED'); Rr.addSpacer(4);
+      let n = 0; if (!groups.length) lbl(Rr, '—');
+      groups.forEach(g => { if (n >= 4) return; const h = Rr.addStack(); h.centerAlignContent(); h.spacing = 5; const dot = h.addStack(); dot.size = new Size(6, 6); dot.cornerRadius = 3; dot.backgroundColor = new Color(g.g.color);
+        const t = h.addText(`${g.g.name} ${g.rows.size}`); t.font = F(11, 'b'); t.textColor = INK; n++; Rr.addSpacer(2); });
+    } else {
+      lbl(w, 'CYCLE'); w.addSpacer(5);
+      if (!cyc.length) lbl(w, '—'); cyc.forEach(c => { cycRow(w, c, 13); w.addSpacer(4); });
+      w.addSpacer(8); lbl(w, 'UNFINISHED'); w.addSpacer(5);
+      if (!groups.length) { const n = w.addText('—'); n.font = F(14); n.textColor = SUB; }
+      let lines = 0; const MAXL = FAM === 'extraLarge' ? 16 : 10;
+      groups.forEach(g => { if (lines >= MAXL) return;
+        const h = w.addStack(); h.centerAlignContent(); h.spacing = 6; const dot = h.addStack(); dot.size = new Size(7, 7); dot.cornerRadius = 3.5; dot.backgroundColor = new Color(g.g.color);
+        const t = h.addText(g.g.name); t.font = F(12, 'b'); t.textColor = INK; lines++; w.addSpacer(2);
+        [...g.rows.values()].forEach(r => { if (lines >= MAXL) return; const rw = w.addStack(); rw.setPadding(0, 13, 0, 0); rw.centerAlignContent();
+          const x = rw.addText(r.tx); x.font = F(12); x.textColor = INK; x.lineLimit = 1; rw.addSpacer(); const y = rw.addText(r.days.join('·')); y.font = F(10); y.textColor = SUB; lines++; w.addSpacer(2); });
+        w.addSpacer(4); });
+    }
+    w.addSpacer();
+  }
+  w.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000);
+} else if (MODE === 'plan') {
   const [pd, tg] = await Promise.all([getJSON('study_records/my_study_data_final10/plannerData', 'pd'), getJSON('study_records/my_study_data_final10/plannerTags', 'tg')]);
   const P = parse(pd) || {}, TAGS = arr(parse(tg));
   const d = new Date(); if (d.getHours() < 5) d.setDate(d.getDate() - 1);

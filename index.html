@@ -1188,7 +1188,7 @@
         function stripLeadingZero(timeStr) { if(!timeStr) return timeStr; let parts = timeStr.split(':'); if(parts.length < 2) return timeStr; return `${parseInt(parts[0], 10)}:${parts[1]}`; }
 
         function initPlanner() { const rows = document.getElementById('planner-rows'); if(!rows) return; rows.innerHTML = ''; for(let i=0; i<24; i++) { const hRaw = (i+5)%24; const hDisplay = hRaw; const hStr = String(hRaw).padStart(2,'0'); rows.innerHTML += `<div class="hour-row"><div class="hour-label">${hDisplay}</div><div class="minute-track-wrapper" id="track-${hStr}"><div class="minute-grid">${'<div class="minute-cell"></div>'.repeat(6)}</div></div></div>`; } calcDday(); updateGoalTimeUI(); }
-        function setDday() { let d = prompt("D-Day 날짜를 입력하세요 (예: 2026-08-30)"); if(d) { localStorage.setItem('myDday', d); calcDday(); } }
+        function setDday() { let d = prompt("D-Day 날짜를 입력하세요 (예: 2026-08-30)"); if(d) { localStorage.setItem('myDday', d); calcDday(); try { if(db) db.ref("study_records/" + USER_DOC_ID + "/myDday").set(d); } catch(e){} } }
         function calcDday() { 
     // 로컬스토리지가 비어있을 때의 기본 디폴트 타겟 날짜를 설정하여 고정 버그 해결
     let d = localStorage.getItem('myDday'); if(!d){ document.getElementById('dday-display').innerText = 'D-Day 설정'; return; } 
@@ -1247,6 +1247,7 @@
                         if(data.plannerMemo) { try { pTopMemo = typeof data.plannerMemo === 'string' ? JSON.parse(data.plannerMemo) : toArray(data.plannerMemo); } catch(e){} }
                         if(data.plannerMemoCfg) { try { let parsedCfg = typeof data.plannerMemoCfg === 'string' ? JSON.parse(data.plannerMemoCfg) : data.plannerMemoCfg; if(Array.isArray(parsedCfg) && parsedCfg.length > 0 && typeof pMemos !== 'undefined') { pMemos.length = 0; parsedCfg.forEach(m => pMemos.push(m)); } } catch(e){} }
                         if(data.plannerHls) { try { pHighlighters = typeof data.plannerHls === 'string' ? JSON.parse(data.plannerHls) : toArray(data.plannerHls); } catch(e){} }
+                        if(data.myDday && !localStorage.getItem('myDday')) { try { localStorage.setItem('myDday', data.myDday); if(typeof calcDday === 'function') calcDday(); } catch(e){} }
                         if(data.plannerLastTags) { try { pLastTags = typeof data.plannerLastTags === 'string' ? JSON.parse(data.plannerLastTags) : data.plannerLastTags; } catch(e){} }
 
                         // 다운받은 즉시 모바일 로컬에 강제 덮어쓰기
@@ -1290,7 +1291,8 @@
                 plannerMemo: typeof pTopMemo !== 'undefined' ? JSON.stringify(pTopMemo) : "[]",
                 plannerMemoCfg: typeof pMemos !== 'undefined' ? JSON.stringify(pMemos) : "[]",
                 plannerHls: typeof pHighlighters !== 'undefined' ? JSON.stringify(pHighlighters) : "[]",
-                plannerLastTags: typeof pLastTags !== 'undefined' ? JSON.stringify(pLastTags) : "{}"
+                plannerLastTags: typeof pLastTags !== 'undefined' ? JSON.stringify(pLastTags) : "{}",
+                myDday: localStorage.getItem('myDday') || ""
             };
         }
         
