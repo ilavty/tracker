@@ -1384,6 +1384,7 @@ function openImport() {
   ${lastFd(doc()) ? `<div class="fld"><label>마지막으로 올린 파일</label><div class="lastfd"><b>${fdLabel(lastFd(doc()), true)}</b></div></div>` : ''}
   <label class="drop" id="drop"><input type="file" id="impFile" multiple accept=".pdf,.docx,.txt,.md" hidden>
     Drop or click to choose <b>PDF · Word (.docx) · text files</b><br><span>Multiple files OK · 【 】《 》〔 〕 blanks are matched to ‘정답’ lines automatically</span></label>
+  <label class="drop" id="fdDrop" style="padding:12px"><input type="file" id="fdFile" multiple accept=".pdf,.docx,.txt,.md" hidden>이미 올린 파일 다시 고르기 → <b>날짜만 넣기</b> (내용은 안 더해짐)</label>
   <details class="pastebox"><summary>Or paste text directly</summary><textarea id="impText" placeholder="1. 문장 【 】 ...\n2. ...\n정답 ①... ②..."></textarea><button class="btn" id="impTextGo">Read</button></details>
   <div id="impOut"></div>
   <div class="mfoot"><span class="sp2"></span><button class="btn" data-x="cancel">Close</button><button class="btn pri" data-x="add" id="impAdd" disabled>Add selected</button></div>`;
@@ -1398,6 +1399,26 @@ function openImport() {
     }
     showSheets(sheets);
   };
+  const fdGo = async files => {
+    const norm = x => String(x || '').replace(/\[\[(.*?)\]\]/g, '').replace(/<[^>]+>/g, '').replace(/[\s【】《》〔〕\[\]()（）·,.?]/g, '');
+    const d = doc(), idx = new Map(), secOf = new Map();
+    const keys = [];
+    d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(sc => sc.items.forEach(it => { const k = norm(it.t).slice(0, 40); if (k.length >= 10) { keys.push([k, it]); secOf.set(it, sc); } }))));
+    let hit = 0, fl = 0; const touched = new Set(), rep = [];
+    for (const f of files) {
+      try {
+        const base = f.name.replace(/\.[^.]+$/, ''), fd = guessFd(base, f.lastModified); let n = 0;
+        const blob = toSheets(await readFile(f)).map(sh => sh.items.map(x => norm(x.t)).join('')).join('');
+        keys.forEach(([k, it]) => { if (blob.includes(k)) { if (!it.fd || it.fd < fd) it.fd = fd; touched.add(secOf.get(it)); n++; } });
+        d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(sc => { if (sc.title.replace(/\s/g, '') === base.replace(/\s/g, '') && (!sc.fd || sc.fd < fd)) { sc.fd = fd; touched.add(sc); } })));
+        hit += n; fl++; rep.push(`${base} → ${fdLabel(fd)} (${n})`);
+      } catch (e) { toast(f.name + ': ' + e.message); }
+    }
+    touched.forEach(sc => { const m = secDate(sc); if (m) sc.fd = m; });
+    commit(); out.innerHTML = `<div class="imp-tip">날짜 넣음 · 파일 ${fl}개 · 항목 ${hit}개<br>${rep.map(esc).join('<br>')}</div>`;
+  };
+  $('#fdFile').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) fdGo(f); };
+  { const fdd = $('#fdDrop'); fdd.ondragover = e => { e.preventDefault(); fdd.classList.add('over'); }; fdd.ondragleave = () => fdd.classList.remove('over'); fdd.ondrop = e => { e.preventDefault(); fdd.classList.remove('over'); const f = [...e.dataTransfer.files]; if (f.length) fdGo(f); }; }
   $('#impFile').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) go(f); };
   const dr = $('#drop');
   dr.ondragover = e => { e.preventDefault(); dr.classList.add('over'); };
