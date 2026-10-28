@@ -1,8 +1,9 @@
-// DESK 아이폰 위젯 (Scriptable). 위젯 설정의 Parameter: plan(기본) / card / overview
+// DESK 아이폰 위젯 (Scriptable). 위젯 설정의 Parameter: plan(기본) / card / overview / board(꾸민 위젯 판)
+// 앱(또는 단축어 '앱에서 실행')으로 돌리면 꾸민 위젯 판 사진을 새로 찍어둠
 const DB = "https://tracker-d3a39-default-rtdb.firebaseio.com/";
 const SITE = "https://tracker-tau-seven.vercel.app/";
-const _P = String((args.widgetParameter || (typeof WMODE !== 'undefined' ? WMODE : '') || 'plan')).trim().toLowerCase();
-const MODE = _P.startsWith('c') ? 'card' : _P.startsWith('o') ? 'ov' : 'plan';
+const _P = String((args.widgetParameter || (typeof WMODE !== 'undefined' ? WMODE : '') || (config.runsInWidget ? 'plan' : 'board'))).trim().toLowerCase();
+const MODE = _P.startsWith('c') ? 'card' : _P.startsWith('o') ? 'ov' : _P.startsWith('b') ? 'board' : 'plan';
 const FAM = config.widgetFamily || 'large';
 const ACC = FAM.startsWith('accessory');
 const fm = FileManager.local();
@@ -31,10 +32,27 @@ const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 function hexOk(h) { return /^#?[0-9a-f]{6}$/i.test(String(h || '')) ? (h[0] === '#' ? h : '#' + h) : null; }
 function lum(h) { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
 
+const BOARD = fm.joinPath(fm.documentsDirectory(), 'desk_board.png');
+async function snapBoard() {
+  const wv = new WebView();
+  await wv.loadURL(SITE + 'overview.html?snap=1&pr=3&t=' + Date.now());
+  const r = await wv.evaluateJavaScript(`(function(){var t0=Date.now();(function chk(){if(window.__wbResult)return completion(window.__wbResult);if(Date.now()-t0>55000)return completion('ERR:timeout');setTimeout(chk,300);})();})()`, true);
+  if (!r || String(r).startsWith('ERR')) return String(r || 'ERR');
+  const img = Image.fromData(Data.fromBase64String(String(r).split(',')[1]));
+  fm.writeImage(BOARD, img); return '';
+}
+let SNAPERR = '';
+if (!config.runsInWidget) { try { SNAPERR = await snapBoard(); } catch (e) { SNAPERR = String(e && e.message || e); } }
+
 const w = new ListWidget();
 if (!ACC) { w.backgroundColor = BG; w.setPadding(14, 15, 12, 15); }
 
-if (MODE === 'ov') {
+if (MODE === 'board') {
+  w.setPadding(0, 0, 0, 0); w.url = SITE + 'overview.html';
+  if (fm.fileExists(BOARD)) w.backgroundImage = fm.readImage(BOARD);
+  else { w.setPadding(14, 15, 12, 15); const t = w.addText(SNAPERR ? '찍기 실패 · ' + SNAPERR : '—'); t.font = F(11); t.textColor = SUB; }
+  if (SNAPERR && fm.fileExists(BOARD) && !config.runsInWidget) { w.addSpacer(); const t = w.addText('찍기 실패 · ' + SNAPERR); t.font = F(9); t.textColor = new Color('#c94c4c'); }
+} else if (MODE === 'ov') {
   const B = 'study_records/my_study_data_final10/';
   const [pd, tg, trk, dd] = await Promise.all([getJSON(B + 'plannerData', 'pd'), getJSON(B + 'plannerTags', 'tg'), getJSON(B + 'trackerData', 'trk'), getJSON(B + 'myDday', 'dd')]);
   const P = parse(pd) || {}, TAGS = arr(parse(tg)), TR = parse(trk) || {};
@@ -199,4 +217,5 @@ if (MODE === 'ov') {
 
 if (config.runsInWidget) Script.setWidget(w);
 else if (MODE === 'card') await w.presentMedium(); else await w.presentLarge();
+if (!config.runsInWidget && !config.runsInApp) Script.setWidget(w);
 Script.complete();
