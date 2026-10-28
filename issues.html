@@ -66,6 +66,10 @@ body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .tyr:hover{color:#55555a}
 .tyr.on{background:#ececee;color:#3a3a3c}
 .tyr.add{color:#b0b0b5}
+.dochead.srt{border-bottom:0;padding-bottom:2px;align-items:center}.lastfd{font-family:var(--tf);font-size:12px;color:var(--sub)}.lastfd b{color:var(--ink);font-weight:600}
+.fdate{font-family:var(--tf);font-size:11px;font-weight:500;color:var(--sub);background:#f2f2f4;border-radius:10px;padding:1px 8px;margin-left:8px;white-space:nowrap}.fdate.ed{cursor:pointer}.fdate.none{opacity:.6}.shpre{font-family:var(--tf);font-size:11px;color:var(--sub);margin-right:8px}
+.fdgrp{font-family:var(--tf);font-size:13px;font-weight:700;margin:26px 0 6px;padding-bottom:4px;border-bottom:1.5px solid var(--ink)}
+@media print{.dochead.srt{display:none}}
 .dochead.ed{justify-content:flex-end;align-items:center;border-bottom:0;padding-bottom:4px}
 .olsw{display:flex;background:#f2f2f4;border-radius:16px;padding:2px;margin-right:auto}
 .olsw button{font-family:var(--tf);font-size:12px;border:0;background:none;border-radius:14px;padding:5px 12px;color:var(--sub);cursor:pointer}
@@ -789,6 +793,21 @@ document.addEventListener('click', e => {
 });
 let hideAns = (() => { try { return localStorage.getItem(KEY + ':hideans') === '1'; } catch (e) { return false; } })();
 let HL = { c: 'y', erase: false };
+let srt = (() => { try { return localStorage.getItem(KEY + ':srt') || 'toc'; } catch (e) { return 'toc'; } })();
+const secDate = s => { let m = s.fd || ''; (s.items || []).forEach(it => { if (it.fd && it.fd > m) m = it.fd; }); return m; };
+const lastFd = d => { let m = ''; d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => { const x = secDate(s); if (x > m) m = x; }))); return m; };
+const fdLabel = (v, long) => { const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/); if (!m) return esc(v); const dt = new Date(+m[1], +m[2] - 1, +m[3]); return long ? `${+m[2]}.${+m[3]} ${'일월화수목금토'[dt.getDay()]}` : `${+m[2]}.${+m[3]}`; };
+const todayFd = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function guessFd(name, lm) {
+  const y0 = new Date().getFullYear(); let m;
+  const ok = (y, mo, d) => mo >= 1 && mo <= 12 && d >= 1 && d <= 31 ? `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
+  if ((m = name.match(/(20\d{2})[.\-_ ]?(\d{1,2})[.\-_ ]?(\d{1,2})/))) { const r = ok(+m[1], +m[2], +m[3]); if (r) return r; }
+  if ((m = name.match(/(?:^|\D)(\d{2})[.\-_](\d{1,2})[.\-_](\d{1,2})(?:\D|$)/))) { const r = ok(2000 + +m[1], +m[2], +m[3]); if (r) return r; }
+  if ((m = name.match(/(?:^|\D)(\d{1,2})[.\-_/월 ]\s*(\d{1,2})(?:일|\D|$)/))) { const r = ok(y0, +m[1], +m[2]); if (r) return r; }
+  if ((m = name.match(/(?:^|\D)(\d{2})(\d{2})(?:\D|$)/))) { const r = ok(y0, +m[1], +m[2]); if (r) return r; }
+  if (lm) { const d = new Date(lm); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+  return todayFd();
+}
 let filled = (() => { try { return localStorage.getItem(KEY + ':filled') === '1'; } catch (e) { return false; } })();
 const dispOf = t => t.replace(/\[\[(.+?)\]\]/g, '$1');
 function hlHtmlT(t, hl, ul, blankFn) {
@@ -857,8 +876,41 @@ function ec(id, rename = true) {
 }
 function renderMain() {
   const d = doc(); let n = 0, h = '';
+  const secBlock = (s, ol, pre) => {
+    let h = '';
+        const its = visItems(s);
+    if (ol) { h += `<div class="sec ols"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span><small class="olcnt">${its.length}</small>${ec(s.id)}</div></div>`; return h; }
+    h += `<div class="sec"><div class="sh" data-anc="s-${s.id}">${pre ? `<span class="shpre">${esc(pre)}</span>` : ''}<span>${esc(s.title)}</span>${secDate(s) ? `<span class="fdate${editing ? ' ed' : ''}" data-fdate="${s.id}">${fdLabel(secDate(s))}</span>` : (editing ? `<span class="fdate ed none" data-fdate="${s.id}">날짜</span>` : '')}${editing ? '' : `<button class="shmk${s.mk ? ' has' : ''}" data-shmk="${s.id}" title="Bookmark · Star · Clip this page">${s.mk ? MKS.filter(m => s.mk.includes(m[0])).map(m => mkIcon(m[0])).join('') : mkIcon('b', 'ghost')}</button>`}${ec(s.id)}</div>`;
+    if (s.note) { const nh = hlHtmlT(s.note, s.nhl, s.nul, x => x); h += `<div class="note">${hlMode && !editing ? `<span class="hbed" data-hid="${s.id}" data-k="n">${nh}</span>` : nh}</div>`; }
+    if (its.length) {
+      h += `<table><colgroup><col class="cn"><col class="cq"><col class="ca">${editing ? '<col class="cc">' : ''}</colgroup>`;
+      its.forEach((it, k) => {
+        const a = ansOf(it);
+        const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
+        const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
+        if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
+        if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
+        h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}${mkMini(it)}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
+      });
+      h += `</table>`;
+    }
+    h += `<button class="addrow" data-act="addItem" data-id="${s.id}">+ Add item</button></div>`;
+    return h;
+  };
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
   if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Drag titles to reorder (hold on iPad) · click a chapter to open' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  if (!editing) { const ld = lastFd(d); h += `<div class="dochead srt"><span class="olsw"><button class="${srt === 'date' ? '' : 'on'}" data-srt="toc">목차순</button><button class="${srt === 'date' ? 'on' : ''}" data-srt="date">날짜순</button></span>${ld ? `<span class="lastfd">마지막 파일 <b>${fdLabel(ld)}</b></span>` : ''}</div>`; }
+  if (!editing && srt === 'date') {
+    const all = [];
+    d.parts.forEach(p => p.chapters.forEach(c => { if (!showCh(c)) return; c.secs.forEach(s => { if (showSec(s) && visItems(s).length) all.push({ s, c }); }); }));
+    all.sort((a, b) => (secDate(b.s) || '').localeCompare(secDate(a.s) || ''));
+    let cur = null;
+    all.forEach(({ s, c }) => { const dt = secDate(s) || ''; if (dt !== cur) { cur = dt; h += `<div class="fdgrp">${dt ? fdLabel(dt, true) : '날짜 없음'}</div>`; } n++; h += secBlock(s, false, c.title); });
+    if (!all.length) h += `<div class="empty" style="padding:40px 0;text-align:center">—</div>`;
+    $('#paper').innerHTML = h;
+    document.body.classList.toggle('edit', editing); document.body.classList.toggle('punch', punch && !editing); document.body.classList.toggle('hlon', hlMode && !editing); document.body.classList.toggle('hideans', hideAns && !editing);
+    toolsBar(); document.body.classList.toggle('hlerase', HL.erase); observe(); return;
+  }
   for (const p of d.parts) {
     h += `<div class="partbar"><span>Part</span><b>${esc(p.title)}</b>${ec(p.id)}<button class="btn" data-act="addCh" data-id="${p.id}">+ Chapter</button></div>`;
     if (editing && outline) h += `<div class="olpart" data-pid="${p.id}">`;
@@ -871,23 +923,7 @@ function renderMain() {
       if (olm) h += `<div class="olsecs" data-cid="${c.id}">`;
       for (const s of c.secs) {
         if (!showSec(s)) continue;
-        const its = visItems(s);
-        if (ol) { h += `<div class="sec ols"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span><small class="olcnt">${its.length}</small>${ec(s.id)}</div></div>`; continue; }
-        h += `<div class="sec"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span>${editing ? '' : `<button class="shmk${s.mk ? ' has' : ''}" data-shmk="${s.id}" title="Bookmark · Star · Clip this page">${s.mk ? MKS.filter(m => s.mk.includes(m[0])).map(m => mkIcon(m[0])).join('') : mkIcon('b', 'ghost')}</button>`}${ec(s.id)}</div>`;
-        if (s.note) { const nh = hlHtmlT(s.note, s.nhl, s.nul, x => x); h += `<div class="note">${hlMode && !editing ? `<span class="hbed" data-hid="${s.id}" data-k="n">${nh}</span>` : nh}</div>`; }
-        if (its.length) {
-          h += `<table><colgroup><col class="cn"><col class="cq"><col class="ca">${editing ? '<col class="cc">' : ''}</colgroup>`;
-          its.forEach((it, k) => {
-            const a = ansOf(it);
-            const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
-            const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
-            if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
-            if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
-            h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}${mkMini(it)}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
-          });
-          h += `</table>`;
-        }
-        h += `<button class="addrow" data-act="addItem" data-id="${s.id}">+ Add item</button></div>`;
+        h += secBlock(s, ol);
       }
       h += (olm ? `</div>` : '') + (ol ? `</section>` : `<button class="addrow" data-act="addSec" data-id="${c.id}">+ Add section</button></section>`);
     }
@@ -1345,6 +1381,7 @@ function openImport() {
   const m = $('#mod'); m.classList.add('wide');
   m.innerHTML = `<h2>Import from document · ${esc(doc().name)}</h2>
   <div class="fld"><label>Year</label><div class="yrsel" id="impYr">${DB.years.map(y => `<label><input type="radio" name="impyr" value="${esc(y)}"${y === defYear() ? ' checked' : ''}>${esc(yrLabel(y))}</label>`).join('')}</div></div>
+  ${lastFd(doc()) ? `<div class="fld"><label>마지막으로 올린 파일</label><div class="lastfd"><b>${fdLabel(lastFd(doc()), true)}</b></div></div>` : ''}
   <label class="drop" id="drop"><input type="file" id="impFile" multiple accept=".pdf,.docx,.txt,.md" hidden>
     Drop or click to choose <b>PDF · Word (.docx) · text files</b><br><span>Multiple files OK · 【 】《 》〔 〕 blanks are matched to ‘정답’ lines automatically</span></label>
   <details class="pastebox"><summary>Or paste text directly</summary><textarea id="impText" placeholder="1. 문장 【 】 ...\n2. ...\n정답 ①... ②..."></textarea><button class="btn" id="impTextGo">Read</button></details>
@@ -1356,7 +1393,7 @@ function openImport() {
     out.innerHTML = '<div class="empty">Reading…</div>';
     const sheets = [];
     for (const f of files) {
-      try { const ss = toSheets(await readFile(f)); ss.forEach(s => { if (!s.theme) s.theme = f.name.replace(/\.[^.]+$/, ''); }); sheets.push(...ss); }
+      try { const ss = toSheets(await readFile(f)); const fd = guessFd(f.name.replace(/\.[^.]+$/, ''), f.lastModified); ss.forEach(s => { if (!s.theme) s.theme = f.name.replace(/\.[^.]+$/, ''); s.fd = fd; }); sheets.push(...ss); }
       catch (e) { toast(f.name + ': ' + e.message); }
     }
     showSheets(sheets);
@@ -1375,6 +1412,7 @@ function openImport() {
         const g = guessCh(s.theme);
         return `<div class="imp-sheet" data-si="${si}">
         <div class="imp-head"><span class="imp-k">Section</span><input class="imp-title" value="${esc(s.theme)}"></div>
+        <div class="imp-head"><span class="imp-k">파일 날짜</span><input type="date" class="imp-fd" value="${esc(s.fd || todayFd())}"></div>
         <div class="imp-head"><span class="imp-k">Place in</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
         <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">New chapter</span><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select><input class="imp-chname" value="${esc(s.theme)}" placeholder="Chapter name"></div>
         ${s.note ? `<div class="imp-noterow"><label><input type="checkbox" class="imp-noteon" checked> Add as note box</label><textarea class="imp-note">${esc(s.note)}</textarea></div>` : ''}
@@ -1400,7 +1438,8 @@ function openImport() {
     const impY = ($('#impYr input:checked') || {}).value || defYear();
     out.querySelectorAll('.imp-sheet').forEach(sh => {
       const picked = [...sh.querySelectorAll('.imp-it')].filter(r => r.querySelector('.imp-on').checked);
-      const items = picked.map(r => { const t = serBed(r.querySelector('.bed')); const tag = r.querySelector('.imp-tag').value.trim(); if (t.includes('[[??]]')) warn++; return t ? Object.assign({ id: nid(), t, y: impY }, tag ? { tag } : {}) : null; }).filter(Boolean);
+      const fd = (sh.querySelector('.imp-fd') || {}).value || '';
+      const items = picked.map(r => { const t = serBed(r.querySelector('.bed')); const tag = r.querySelector('.imp-tag').value.trim(); if (t.includes('[[??]]')) warn++; return t ? Object.assign({ id: nid(), t, y: impY }, tag ? { tag } : {}, fd ? { fd } : {}) : null; }).filter(Boolean);
       const noteOn = sh.querySelector('.imp-noteon')?.checked, note = noteOn ? sh.querySelector('.imp-note').value.trim() : '';
       if (!items.length && !note) return;
       let chId = sh.querySelector('.imp-ch').value, chObj;
@@ -1414,7 +1453,7 @@ function openImport() {
       const secId = sh.querySelector('.imp-sec').value; let sec;
       if (secId === '__new__') { const st = sh.querySelector('.imp-title').value.trim() || 'More issues'; sec = chObj.secs.find(x => nk(x.title) === nk(st)); if (sec) { if (note) sec.note = sec.note ? sec.note + '\n' + note : note; } else { sec = { id: nid(), title: st, note, items: [] }; chObj.secs.push(sec); } }
       else { sec = locate(secId).obj; if (note) sec.note = sec.note ? sec.note + '\n' + note : note; }
-      sec.items.push(...items); n += items.length; firstCh ||= chObj.id;
+      sec.items.push(...items); if (fd && (!sec.fd || fd > sec.fd)) sec.fd = fd; n += items.length; firstCh ||= chObj.id;
     });
     if (!n) { toast('Select items to add'); return; }
     if (yr !== 'all' && yr !== impY) { yr = impY; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} }
@@ -1591,6 +1630,8 @@ document.addEventListener('click', e => {
   const t = e.target;
   const tab = t.closest('[data-doc]');
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
+  const srb = t.closest('[data-srt]'); if (srb) { srt = srb.dataset.srt; try { localStorage.setItem(KEY + ':srt', srt); } catch (x) {} renderKeep(); return; }
+  const fdb = editing && t.closest('[data-fdate]'); if (fdb) { const L = locate(fdb.dataset.fdate); if (L) { const cur = secDate(L.obj) || todayFd(); const v = prompt('파일 날짜 (예: 2026-10-24, 비우면 지우기)', cur); if (v !== null) { const g = v.trim() ? guessFd(v.trim()) : ''; if (g) { L.obj.fd = g; L.obj.items.forEach(it => it.fd = g); } else { delete L.obj.fd; L.obj.items.forEach(it => delete it.fd); } commit(); } } return; }
   const olb = t.closest('[data-ol]'); if (olb) { outline = olb.dataset.ol === '1'; openCh.clear(); try { localStorage.setItem(KEY + ':outline', outline ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const olt = editing && outline && !t.closest('button') && t.closest('[data-olt]'); if (olt) { const id = olt.dataset.olt; openCh.has(id) ? openCh.delete(id) : openCh.add(id); renderKeep(); return; }
   const tdn = !editing && t.closest('#paper tr.it td.n'); if (tdn) { mkPop(tdn); return; }
