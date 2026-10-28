@@ -597,7 +597,7 @@ const idbReady = IDBS.get(KEY).then(rec => {
 let cur = (() => { try { return localStorage.getItem(KEY + ':cur'); } catch (e) { return null; } })() || DB.docs[0].id;
 let editing = false;
 /* 연도 */
-function migrate() { if (!Array.isArray(DB.years) || !DB.years.length) DB.years = ['26', '27']; DB.docs.forEach(d => d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => s.items.forEach(it => { if (!it.y) it.y = DB.years[0]; }))))); }
+function migrate() { if (!Array.isArray(DB.years) || !DB.years.length) DB.years = ['26', '27']; DB.docs.forEach(d => d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => { if (s.fd) return; let m = String(s.id || '').match(/^k27s_(\d{2})(\d{2})(\d{2})_/), fd = ''; if (m) fd = `20${m[1]}-${m[2]}-${m[3]}`; else if ((m = String(s.title || '').match(/\((\d{1,2})\.(\d{1,2})\)\s*$/))) fd = `${new Date().getFullYear()}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`; if (fd) s.fd = fd; })))); DB.docs.forEach(d => d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => s.items.forEach(it => { if (!it.y) it.y = DB.years[0]; }))))); }
 migrate();
 
 /* 한 번만 넣는 자료 묶음 (기기·클라우드 어느 쪽에 먼저 들어가도 id로 합쳐져서 중복 안 됨) */
@@ -794,7 +794,8 @@ document.addEventListener('click', e => {
 let hideAns = (() => { try { return localStorage.getItem(KEY + ':hideans') === '1'; } catch (e) { return false; } })();
 let HL = { c: 'y', erase: false };
 let srt = (() => { try { return localStorage.getItem(KEY + ':srt') || 'toc'; } catch (e) { return 'toc'; } })();
-const secDate = s => { let m = s.fd || ''; (s.items || []).forEach(it => { if (it.fd && it.fd > m) m = it.fd; }); return m; };
+const autoFd = s => { let m = String(s.id || '').match(/^k27s_(\d{2})(\d{2})(\d{2})_/); if (m) return `20${m[1]}-${m[2]}-${m[3]}`; if ((m = String(s.title || '').match(/\((\d{1,2})\.(\d{1,2})\)\s*$/))) return `${new Date().getFullYear()}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`; return ''; };
+const secDate = s => { let m = s.fd || autoFd(s); (s.items || []).forEach(it => { if (it.fd && it.fd > m) m = it.fd; }); return m; };
 const lastFd = d => { let m = ''; d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => { const x = secDate(s); if (x > m) m = x; }))); return m; };
 const fdLabel = (v, long) => { const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/); if (!m) return esc(v); const dt = new Date(+m[1], +m[2] - 1, +m[3]); return long ? `${+m[2]}.${+m[3]} ${'일월화수목금토'[dt.getDay()]}` : `${+m[2]}.${+m[3]}`; };
 const todayFd = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
