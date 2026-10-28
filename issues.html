@@ -106,7 +106,7 @@ body.edit .olpart .chh,body.edit .olsecs .sh{cursor:grab;-webkit-user-select:non
 
 /* layout */
 .wrap{display:flex;gap:22px;max-width:1240px;margin:0 auto;padding:20px 16px 80px}
-.side{width:250px;flex-shrink:0;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 12px}
+.side{width:250px;flex-shrink:0;position:sticky;top:calc(var(--toph, 54px) + 12px);max-height:calc(100vh - var(--toph, 54px) - 24px);overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 12px}
 .side h3{margin:0 0 6px;font-size:15px;font-weight:700}
 .side .tot{font-size:11.5px;color:var(--sub);margin-bottom:8px}
 .tp{font-weight:700;font-size:11.5px;color:var(--brown);margin:12px 0 4px;letter-spacing:.4px}
@@ -137,7 +137,14 @@ body.edit .olpart .chh,body.edit .olsecs .sh{cursor:grab;-webkit-user-select:non
 .partbar{display:none}
 .edit .partbar{display:flex;align-items:center;gap:8px;margin:26px 0 4px;padding:8px 12px;border:1px dashed var(--acc);border-radius:8px;background:#f6fafd;font-size:13px}
 .partbar b{color:var(--brown)}
-.ch{margin-top:34px;scroll-margin-top:72px}
+.ch{margin-top:34px;scroll-margin-top:calc(var(--toph, 54px) + 14px)}
+.fmon{font-family:var(--tf);font-size:17px;font-weight:700;margin:38px 0 2px;scroll-margin-top:calc(var(--toph, 54px) + 14px)}
+.fmon:first-of-type{margin-top:16px}
+.monchips{display:flex;gap:4px;margin-left:12px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.monchips::-webkit-scrollbar{display:none}
+.monchips button{font-family:var(--tf);font-size:12px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:3px 10px;color:var(--sub);white-space:nowrap;cursor:pointer}
+.monchips button:hover{color:var(--ink);border-color:#bbb}
+@media print{.monchips{display:none}}
 .chh{display:flex;align-items:baseline;gap:9px;border-bottom:1.5px solid var(--ink);padding-bottom:5px;margin-bottom:10px}
 .chp{font-size:10.5px;font-weight:700;color:var(--acc);border:1px solid var(--acc);border-radius:20px;padding:1px 8px;letter-spacing:.4px;align-self:center;white-space:nowrap}
 .chn{font-weight:500;color:var(--sub);font-size:15px}
@@ -868,9 +875,16 @@ function tocHtml(d, cls) {
   }
   return h;
 }
+function monthsOf(d) {
+  const M = {}; d.parts.forEach(p => p.chapters.forEach(c => { if (!showCh(c)) return; c.secs.forEach(s => { if (!showSec(s) || !visItems(s).length) return; const dt = secDate(s); const k = dt ? dt.slice(0, 7) : 'none'; M[k] = (M[k] || 0) + 1; }); }));
+  return Object.keys(M).sort((a, b) => a === 'none' ? 1 : b === 'none' ? -1 : b.localeCompare(a)).map(k => [k, M[k]]);
+}
+const monLabel = k => k === 'none' ? '날짜 없음' : `${+k.slice(0, 4) % 100}.${+k.slice(5, 7)}월`;
 function renderSide() {
   const d = doc();
-  $('#side').innerHTML = `<h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)} chapters · ${docCnt(d)} items</div>` + tocHtml(d);
+  const head = `<h3>${esc(d.name)}</h3><div class="tot">${yr === 'all' ? '' : yrLabel(yr) + ' · '}${d.parts.reduce((n, p) => n + p.chapters.filter(showCh).length, 0)} chapters · ${docCnt(d)} items</div>`;
+  if (!editing && srt === 'date') { $('#side').innerHTML = head + `<div class="tp">월별</div>` + monthsOf(d).map(([k, n]) => `<div class="tc" data-gomon="${k}"><span>${monLabel(k)}</span><span class="tcc">${n}</span></div>`).join(''); return; }
+  $('#side').innerHTML = head + tocHtml(d);
 }
 function ec(id, rename = true) {
   const k = (locate(id) || {}).kind, merge = k === 'ch' || k === 'sec';
@@ -901,13 +915,13 @@ function renderMain() {
   };
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
   if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Drag titles to reorder (hold on iPad) · click a chapter to open' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
-  if (!editing) { const ld = lastFd(d); h += `<div class="dochead srt"><span class="olsw"><button class="${srt === 'date' ? '' : 'on'}" data-srt="toc">목차순</button><button class="${srt === 'date' ? 'on' : ''}" data-srt="date">날짜순</button></span>${ld ? `<span class="lastfd">마지막 파일 <b>${fdLabel(ld)}</b></span>` : ''}</div>`; }
+  if (!editing) { const ld = lastFd(d); h += `<div class="dochead srt"><span class="olsw"><button class="${srt === 'date' ? '' : 'on'}" data-srt="toc">목차순</button><button class="${srt === 'date' ? 'on' : ''}" data-srt="date">날짜순</button></span>${ld ? `<span class="lastfd">마지막 파일 <b>${fdLabel(ld)}</b></span>` : ''}${srt === 'date' ? `<span class="monchips">${monthsOf(d).map(([k]) => `<button data-gomon="${k}">${monLabel(k)}</button>`).join('')}</span>` : ''}</div>`; }
   if (!editing && srt === 'date') {
     const all = [];
     d.parts.forEach(p => p.chapters.forEach(c => { if (!showCh(c)) return; c.secs.forEach(s => { if (showSec(s) && visItems(s).length) all.push({ s, c }); }); }));
     all.sort((a, b) => (secDate(b.s) || '').localeCompare(secDate(a.s) || ''));
-    let cur = null;
-    all.forEach(({ s, c }) => { const dt = secDate(s) || ''; if (dt !== cur) { cur = dt; h += `<div class="fdgrp">${dt ? fdLabel(dt, true) : '날짜 없음'}</div>`; } n++; h += secBlock(s, false, c.title); });
+    let cur = null, curM = null;
+    all.forEach(({ s, c }) => { const dt = secDate(s) || ''; const mo = dt ? dt.slice(0, 7) : 'none'; if (mo !== curM) { curM = mo; h += `<div class="fmon" id="mon-${mo}">${dt ? `${+dt.slice(0, 4)}년 ${+dt.slice(5, 7)}월` : '날짜 없음'}</div>`; } if (dt !== cur) { cur = dt; if (dt) h += `<div class="fdgrp">${fdLabel(dt, true)}</div>`; } n++; h += secBlock(s, false, c.title); });
     if (!all.length) h += `<div class="empty" style="padding:40px 0;text-align:center">—</div>`;
     $('#paper').innerHTML = h;
     document.body.classList.toggle('edit', editing); document.body.classList.toggle('punch', punch && !editing); document.body.classList.toggle('hlon', hlMode && !editing); document.body.classList.toggle('hideans', hideAns && !editing);
@@ -1635,6 +1649,8 @@ function dragDone(ev) {
   document.querySelectorAll('#paper .olsecs').forEach(el => { const c = chMap[el.dataset.cid]; if (c) c.secs = [...el.children].filter(x => x.classList.contains('sec')).map(x => secMap[(x.querySelector('.sh') || {}).dataset?.anc?.slice(2)]).filter(Boolean); });
   save(); renderKeep(); toast('Order saved');
 }
+/* 위쪽 바 높이(줄바꿈되면 커짐)에 맞춰 목차 고정 위치 조정 */
+(() => { const t = document.querySelector('.top'); if (!t) return; const set = () => document.documentElement.style.setProperty('--toph', t.getBoundingClientRect().height + 'px'); set(); if (window.ResizeObserver) new ResizeObserver(set).observe(t); addEventListener('resize', set); })();
 /* 다시 그려도 지금 보고 있는 문항이 화면 같은 위치에 오게 */
 function renderKeep() {
   const top = ($('.top') ? $('.top').getBoundingClientRect().bottom : 0) + 4;
@@ -1672,6 +1688,7 @@ document.addEventListener('click', e => {
   if (fb) { filled = fb.dataset.fill === '1'; try { localStorage.setItem(KEY + ':filled', filled ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const yb = t.closest('[data-yr]');
   if (yb) { yr = yb.dataset.yr; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} render(); scrollTo(0, 0); return; }
+  const gm = t.closest('[data-gomon]'); if (gm) { const el = document.getElementById('mon-' + gm.dataset.gomon); if (el) el.scrollIntoView({ behavior: 'smooth' }); $('#side').classList.remove('open'); return; }
   const go = t.closest('[data-go]');
   if (go) { const el = document.getElementById('ch-' + go.dataset.go); if (el) el.scrollIntoView({ behavior: 'smooth' }); $('#side').classList.remove('open'); return; }
   const ab = t.closest('[data-act]');
