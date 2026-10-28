@@ -318,7 +318,7 @@ html,body{overflow-x:clip}
 #toTop{position:fixed;right:20px;bottom:24px;z-index:90;width:42px;height:42px;border-radius:50%;background:#fff;border:1.5px solid var(--navy);color:var(--navy);font-size:1.1rem;font-weight:600;box-shadow:0 4px 14px rgba(30,50,80,.15);opacity:0;pointer-events:none;transition:opacity .2s}
 #toTop.on{opacity:1;pointer-events:auto}
 #toTop:hover{background:var(--navy);color:#fff}
-.inframe-top #toTop{display:none}
+.inframe-top #toTop{right:34px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.85rem;z-index:500;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{opacity:1}
 
@@ -587,7 +587,7 @@ function placeTopBtn() {
   let vt = window.scrollY, vb = window.scrollY + window.innerHeight;
   if (IN_FRAME) { try { const r = window.frameElement.getBoundingClientRect(); vt = -r.top; vb = -r.top + window.parent.innerHeight; } catch (e) { } }
   b.classList.toggle('on', vt > 250);
-  if (IN_FRAME) b.style.top = Math.max(0, Math.min(document.documentElement.scrollHeight - 60, vb - 66)) + 'px';
+  if (IN_FRAME) { b.style.position = 'absolute'; b.style.bottom = 'auto'; b.style.top = Math.max(0, Math.min(document.documentElement.scrollHeight - 60, vb - 66 - 74)) + 'px'; } // DESK 안에선 오른쪽 아래 비행기 버튼 위쪽
 }
 window.addEventListener('scroll', placeTopBtn, { passive: true });
 try { if (IN_FRAME) { window.parent.addEventListener('scroll', placeTopBtn, { passive: true }); window.parent.addEventListener('resize', placeTopBtn); } } catch (e) { }
@@ -1995,13 +1995,6 @@ renderAll();
 initSync();
 window.addEventListener('resize', reportHeight);
 </script>
-<button id="toTop" aria-label="위로" title="위로">↑</button>
-<style>
-#toTop{display:none;position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:90;width:42px;height:42px;border-radius:50%;border:1px solid var(--bd,#ddd);background:#fff;color:#3d6fa8;font-size:19px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.14);cursor:pointer}
-@media (max-width:760px){#toTop.show{display:block}}
-</style>
-<script>
-(function(){const b=document.getElementById('toTop');const f=()=>b.classList.toggle('show',scrollY>300);addEventListener('scroll',f,{passive:true});f();b.onclick=()=>scrollTo({top:0,behavior:'smooth'});})();
-</script>
+
 </body>
 </html>
