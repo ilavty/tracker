@@ -206,10 +206,9 @@ if (MODE === 'board') {
       w.addSpacer(8);
       const max = FAM === 'small' ? 2 : FAM === 'medium' ? 2 : 7;
       items.slice(0, max).forEach(i => {
-        const st = w.addStack(); st.spacing = 6;
-        if (strip(i.label) && strip(i.label) !== strip(c.title)) { const l = st.addText(strip(i.label)); l.font = F(11, 'b'); l.textColor = new Color('#5b8fc7'); l.lineLimit = 1; }
-        const x = st.addText(strip(i.text)); x.font = F(12); x.textColor = INK; x.lineLimit = FAM === 'large' ? 3 : 2;
-        w.addSpacer(4);
+        if (strip(i.label) && strip(i.label) !== strip(c.title)) { const l = w.addText(strip(i.label)); l.font = F(11.5, 'b'); l.textColor = C('#4a7fb8', '#8ec0f0'); l.lineLimit = 2; w.addSpacer(2); }
+        const x = w.addText(strip(i.text)); x.font = F(12.5); x.textColor = INK; x.lineLimit = FAM === 'large' ? 4 : 2;
+        w.addSpacer(7);
       });
       w.addSpacer();
     }
