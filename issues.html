@@ -71,7 +71,10 @@ body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .skind{font-family:var(--tf);font-size:11px;font-weight:600;border-radius:10px;padding:1px 7px;margin-left:2px;white-space:nowrap}
 .skind.k-issue{background:#f6ebe1;color:var(--brown)}
 .skind.k-prog{background:var(--sky3, #eaf5fd);color:var(--acc)}
-.skind.ed{cursor:pointer}.skind.none{color:#b0b0b5;border:1px dashed #d6d6da;background:none}
+.skind,.fdate{cursor:pointer}
+.fbanner{font-family:var(--tf);font-size:12.5px;color:var(--brown);background:#faf3ec;border:1px solid #efdfcf;border-radius:10px;padding:7px 12px;margin:4px 0 8px;display:flex;align-items:center;gap:10px}
+.fbanner button{border:0;background:none;color:var(--acc);font-family:var(--tf);font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline}
+@media print{.fbanner{display:none}}.skind.ed{cursor:pointer}.skind.none{color:#b0b0b5;border:1px dashed #d6d6da;background:none}
 @media print{.skind{background:none!important;border:1px solid #999;color:#000!important}}
 .fdgrp{font-family:var(--tf);font-size:13px;font-weight:700;margin:26px 0 6px;padding-bottom:4px;border-bottom:1.5px solid var(--ink)}
 @media print{.dochead.srt{display:none}}
@@ -956,6 +959,7 @@ function renderMain() {
   };
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
   if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Drag titles to reorder (hold on iPad) · click a chapter to open' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  if (!editing && (kindF || mkF)) h += `<div class="fbanner">${[kindF ? (KINDS.find(k => k[0] === kindF) || [, ''])[1] : '', mkF ? MKS.find(m => m[0] === mkF)[1] : ''].filter(Boolean).join(' · ')}만 보는 중 <button data-fclear>전체 보기</button></div>`;
   if (!editing) { const ld = lastFd(d); h += `<div class="dochead srt"><span class="olsw"><button class="${srt === 'date' ? '' : 'on'}" data-srt="toc">목차순</button><button class="${srt === 'date' ? 'on' : ''}" data-srt="date">날짜순</button></span>${srt === 'date' ? `<span class="srtdir"><button class="${srtDir === 'desc' ? 'on' : ''}" data-srtdir="desc" title="최신순">↓</button><button class="${srtDir === 'asc' ? 'on' : ''}" data-srtdir="asc" title="오래된순">↑</button></span>` : ''}${ld ? `<span class="lastfd">마지막 파일 <b>${fdLabel(ld)}</b></span>` : ''}${srt === 'date' ? `<span class="monchips">${monthsOf(d).map(([k]) => `<button data-gomon="${k}">${monLabel(k)}</button>`).join('')}</span>` : ''}</div>`; }
   if (!editing && srt === 'date') {
     const all = [];
@@ -1024,7 +1028,8 @@ function openModal({ title, fields, onSave, onDelete, again }) {
   for (const f of fields) {
     h += `<div class="fld"><label>${esc(f.label)}</label>`;
     if (f.type === 'textarea') h += `<textarea data-k="${f.key}" placeholder="${esc(f.ph || '')}">${esc(f.value || '')}</textarea>`;
-    else if (f.type === 'select') h += `<select data-k="${f.key}">${f.options.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>`;
+    else if (f.type === 'select') h += `<select data-k="${f.key}">${f.options.map(([v, l]) => `<option value="${esc(v)}"${f.value !== undefined && String(f.value) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+    else if (f.type === 'date') h += `<input type="date" data-k="${f.key}" value="${esc(f.value || '')}">`;
     else if (f.type === 'year') h += `<div class="yrsel" data-k="${f.key}" data-year>${DB.years.map(y => `<label><input type="radio" name="yr_${f.key}" value="${esc(y)}"${y === f.value ? ' checked' : ''}>${esc(yrLabel(y))}</label>`).join('')}</div>`;
     else if (f.type === 'blank') h += `<div class="bed" contenteditable="true" data-k="${f.key}" data-ph="${esc(f.ph || '')}"></div><div class="hint"><span>Paste a sentence, <b>drag</b> to blank · <b>click</b> a blank to undo</span><button class="btn" type="button" data-blankbtn>Selection → Blank</button></div><div class="prev" data-prev></div>`;
     else h += `<input data-k="${f.key}" value="${esc(f.value || '')}" placeholder="${esc(f.ph || '')}">`;
@@ -1696,6 +1701,25 @@ function dragDone(ev) {
 }
 /* 위쪽 바 높이(줄바꿈되면 커짐)에 맞춰 목차 고정 위치 조정 */
 (() => { const t = document.querySelector('.top'); if (!t) return; const set = () => document.documentElement.style.setProperty('--toph', t.getBoundingClientRect().height + 'px'); set(); if (window.ResizeObserver) new ResizeObserver(set).observe(t); addEventListener('resize', set); })();
+/* 소제목 날짜·구분·이름 바로 고치기 (팝업) */
+function secQuick(id) {
+  const L = locate(id); if (!L || L.kind !== 'sec') return; const o = L.obj;
+  const cur = secDate(o) || '';
+  openModal({ title: '소제목 정보', fields: [
+    { key: 'title', label: '소제목 이름', value: o.title },
+    { key: 'fd', label: '파일 날짜', type: 'date', value: cur },
+    { key: 'kind', label: '구분', type: 'select', value: o.kind || '', options: [['prog', '진도'], ['issue', '이슈'], ['', '없음']] }
+  ], onSave: v => {
+    let title = v.title || o.title;
+    if (v.fd !== cur) {
+      if (v.fd) { o.fd = v.fd; o.items.forEach(it => it.fd = v.fd); const md = `(${v.fd.slice(5, 7)}.${v.fd.slice(8, 10)})`; if (title === o.title) title = title.replace(/\(\d{1,2}\.\d{1,2}\)\s*$/, md); }
+      else { delete o.fd; o.items.forEach(it => delete it.fd); }
+    }
+    o.title = title;
+    if (v.kind) o.kind = v.kind; else delete o.kind;
+    commit(); toast('저장됨');
+  } });
+}
 /* 다시 그려도 지금 보고 있는 문항이 화면 같은 위치에 오게 */
 function renderKeep() {
   const top = ($('.top') ? $('.top').getBoundingClientRect().bottom : 0) + 4;
@@ -1716,6 +1740,7 @@ document.addEventListener('click', e => {
   if (tab) { cur = tab.dataset.doc; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} render(); scrollTo(0, 0); return; }
   const sdb = t.closest('[data-srtdir]'); if (sdb) { srtDir = sdb.dataset.srtdir; try { localStorage.setItem(KEY + ':srtDir', srtDir); } catch (x) {} render(); scrollTo(0, 0); return; }
   const srb = t.closest('[data-srt]'); if (srb) { srt = srb.dataset.srt; try { localStorage.setItem(KEY + ':srt', srt); } catch (x) {} renderKeep(); return; }
+  const fdq = t.closest('[data-fdate], [data-skind]'); if (fdq) { secQuick(fdq.dataset.fdate || fdq.dataset.skind); return; }
   const fdb = editing && t.closest('[data-fdate]'); if (fdb) { const L = locate(fdb.dataset.fdate); if (L) { const cur = secDate(L.obj) || todayFd(); const v = prompt('파일 날짜 (예: 2026-10-24, 비우면 지우기)', cur); if (v !== null) { const g = v.trim() ? guessFd(v.trim()) : ''; if (g) { L.obj.fd = g; L.obj.items.forEach(it => it.fd = g); } else { delete L.obj.fd; L.obj.items.forEach(it => delete it.fd); } commit(); } } return; }
   const olb = t.closest('[data-ol]'); if (olb) { outline = olb.dataset.ol === '1'; openCh.clear(); try { localStorage.setItem(KEY + ':outline', outline ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const olt = editing && outline && !t.closest('button') && t.closest('[data-olt]'); if (olt) { const id = olt.dataset.olt; openCh.has(id) ? openCh.delete(id) : openCh.add(id); renderKeep(); return; }
@@ -1734,6 +1759,7 @@ document.addEventListener('click', e => {
   if (fb) { filled = fb.dataset.fill === '1'; try { localStorage.setItem(KEY + ':filled', filled ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const yb = t.closest('[data-yr]');
   if (yb) { yr = yb.dataset.yr; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} render(); scrollTo(0, 0); return; }
+  if (t.closest('[data-fclear]')) { kindF = ''; mkF = null; try { localStorage.setItem(KEY + ':kindF', ''); } catch (x) {} render(); return; }
   const kf = t.closest('[data-kindf]'); if (kf) { kindF = kindF === kf.dataset.kindf ? '' : kf.dataset.kindf; try { localStorage.setItem(KEY + ':kindF', kindF); } catch (x) {} render(); scrollTo(0, 0); return; }
   const skb = editing && t.closest('[data-skind]'); if (skb) { const L = locate(skb.dataset.skind); if (L) { const o = L.obj, order = ['', 'prog', 'issue']; const nx = order[(order.indexOf(o.kind || '') + 1) % 3]; if (nx) o.kind = nx; else delete o.kind; commit(); } return; }
   const gm = t.closest('[data-gomon]'); if (gm) { const el = document.getElementById('mon-' + gm.dataset.gomon); if (el) el.scrollIntoView({ behavior: 'smooth' }); $('#side').classList.remove('open'); return; }
