@@ -423,7 +423,7 @@ body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!impo
 .tlseg button.on{background:var(--acc);color:#fff}
 .ftools.sm{bottom:calc(28px + env(safe-area-inset-bottom,0px));right:14px;gap:7px}
 .ftools.sm .tl{width:44px;height:44px;min-width:0;padding:0;border-radius:50%;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
-.ftools.sm .tl.fab{font-size:15px;letter-spacing:1px}.ftools.sm .tl.nv{font-size:11px}
+.ftools.sm .tl.fab{font-size:15px;letter-spacing:1px}.ftools.sm .nvp{width:44px;display:flex;flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}.ftools.sm .nvp button{height:38px;border:0;background:none;font-size:11px;color:var(--ink);cursor:pointer;padding:0}.ftools.sm .nvp button:active{background:#f2f2f4}.ftools.sm .nvp i{display:block;height:1px;margin:0 10px;background:var(--line)}
 .ftools.sm .tl.fab.on{background:#fff;color:var(--ink);border-color:var(--line)}
 .ftools.sm .tlseg{width:auto;min-width:40px;padding:7px 10px;font-size:12px}
 .ftools.sm .tlseg{padding:2px}
@@ -1116,7 +1116,7 @@ function toolsBar() {
     b.classList.toggle('open', fabOpen);
     b.innerHTML = (fabOpen ? `<button class="tl" data-fill="${filled ? '0' : '1'}" title="Blank / Filled">${filled ? 'F' : 'B'}</button>` +
       `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">${hideAns ? 'OFF' : 'ON'}</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">B</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">H</button>` : '') +
-      `<button class="tl ftop" data-top title="맨 위로">↑</button><button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button><button class="tl nv" data-inav="-1" title="이전 소제목">▲</button><button class="tl nv" data-inav="1" title="다음 소제목">▼</button>`;
+      `<button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button><div class="nvp"><button data-inav="-1" title="이전 소제목">▲</button><i></i><button data-inav="1" title="다음 소제목">▼</button></div><button class="tl ftop" data-top title="맨 위로">↑</button>`;
     return;
   }
   // 데스크톱: 평소엔 ••• 하나, 마우스를 올리면 위로 펼쳐짐
