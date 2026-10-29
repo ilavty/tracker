@@ -195,6 +195,7 @@ if (MODE === 'board') {
   if (!cards.length) { const n = w.addText(ERR ? '불러오기 실패 · ' + ERR : '—'); n.font = F(ERR ? 11 : 18); n.textColor = SUB; }
   else {
     const c = cards[Math.floor(Math.random() * cards.length)];
+    w.url = SITE + 'cards.html?card=' + encodeURIComponent(c.id);
     const sub = subs.find(s => s.id === c.subjectId);
     const items = arr(c.items).filter(i => strip(i.text) || strip(i.label));
     if (ACC) {

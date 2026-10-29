@@ -1994,6 +1994,13 @@ if (!UI.view || (UI.view.type === 'folder' && !F(UI.view.id))) UI.view = { type:
 renderAll();
 initSync();
 window.addEventListener('resize', reportHeight);
+/* 위젯에서 누르면 그 카드 바로 열기: cards.html?card=ID */
+(() => { let cid = null; try { cid = new URLSearchParams(location.search).get('card') || (location.hash.match(/card=([^&]+)/) || [])[1]; } catch (e) { }
+  if (!cid) return; const t0 = Date.now();
+  const tryOpen = () => { const c = (S.cards || []).find(x => x.id === cid && !(S.deleted || {})[x.id]);
+    if (c) { if (c.subjectId && UI.subject !== c.subjectId) { UI.subject = c.subjectId; try { renderAll(); } catch (e) { } } const u0 = CFG.unit; CFG.unit = 'card'; startStudy('flash', [{ card: c, items: c.items }]); CFG.unit = u0; try { history.replaceState(null, '', location.pathname); } catch (e) { } return; }
+    if (Date.now() - t0 < 12000) setTimeout(tryOpen, 400); };
+  setTimeout(tryOpen, 300); })();
 </script>
 
 </body>
