@@ -183,6 +183,7 @@ td.a{background:var(--soft);color:var(--ans);font-weight:500;font-size:13px;word
 td.ctl{display:none}
 .bl{color:var(--acc);font-weight:500}
 .sp{display:inline-block;width:2.6em}
+.bk{cursor:pointer;-webkit-tap-highlight-color:transparent}.bk .bka{display:none}.bk.rv .sp{width:auto!important;padding:0 .25em}.bk.rv .bka{display:inline;color:var(--acc);font-weight:600}@media print{.bk.rv .sp{width:calc(2.6em*var(--bw,1))!important;padding:0}.bk.rv .bka{display:none}}
 .tag{color:var(--acc);font-weight:500}
 col.cn{width:30px} col.ca{width:110px} col.cc{width:0}
 
@@ -914,7 +915,7 @@ function qHtml(it, fill, noFront) {
     else if (it.a) h += ` <span class="fill ox">(${esc(it.a)})</span>`;
     return tag + h;
   }
-  return tag + hlHtml(it, () => B);
+  return tag + hlHtml(it, a => `<span class="bk"><span class="bl">【</span><span class="sp"><span class="bka">${a}</span></span><span class="bl">】</span></span>`);
 }
 const ansOf = it => it.a || blanks(it.t).join(' / ');
 const cnt = c => c.secs.reduce((n, s) => n + visItems(s).length, 0);
@@ -1726,10 +1727,10 @@ function dragDone(ev) {
 }
 /* 위쪽 바 높이(줄바꿈되면 커짐)에 맞춰 목차 고정 위치 조정 */
 (() => { const t = document.querySelector('.top'); if (!t) return; const set = () => document.documentElement.style.setProperty('--toph', t.getBoundingClientRect().height + 'px'); set(); if (window.ResizeObserver) new ResizeObserver(set).observe(t); addEventListener('resize', set); })();
-document.addEventListener('dblclick', e => {
+document.addEventListener('contextmenu', e => {
   if (editing || punch || hlMode) return;
   const row = e.target.closest && e.target.closest('#paper tr.it'); if (!row || e.target.closest('td.n')) return;
-  getSelection().removeAllRanges(); act('editItem', row.dataset.item);
+  e.preventDefault(); getSelection().removeAllRanges(); act('editItem', row.dataset.item);
 });
 /* 소제목 통째로 고치기 (팝업): 이름·날짜·구분·안내 박스·문항 전부 한 화면에서 */
 function secEdit(id) {
@@ -1830,6 +1831,7 @@ document.addEventListener('click', e => {
   const shb = t.closest('[data-shmk]'); if (shb) { mkPop(shb, shb.dataset.shmk); return; }
   const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
   if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
+  const bk = !editing && !punch && !hlMode && t.closest('#paper .bk'); if (bk) { bk.classList.toggle('rv'); return; }
   const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
   if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; renderKeep(); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
