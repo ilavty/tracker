@@ -60,6 +60,8 @@ body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .mkpop .mki{width:17px;height:17px;fill:none;stroke:#b0b0b5;stroke-width:1.6}
 .mkpop button.on .mki{stroke:none}.mkpop button.on .mk-b{fill:var(--acc)}.mkpop button.on .mk-s{fill:var(--brown)}.mkpop button.on .mk-c{fill:none;stroke:#e8862a}
 .mkpop button:hover{background:#f3f3f5}
+.mksep{width:1px;background:var(--line);margin:4px 2px}
+.mkedit{font-size:14px;color:#888;padding:4px 7px!important}
 @media print{.mkm,.mkpop{display:none!important}}
 .tyrs{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line);flex:none}
 .tyr{font-family:var(--tf);border:0;background:none;border-radius:14px;padding:5px 11px;font-size:12.5px;color:#9a9a9f;white-space:nowrap;cursor:pointer}
@@ -830,7 +832,7 @@ function mkPop(td, sid) {
   const id = sid || td.closest('tr.it').dataset.item, L = locate(id); if (!L) return;
   if (p.dataset.id === id && !p.hidden) { p.hidden = true; return; }
   p.dataset.id = id; p.hidden = false;
-  p.innerHTML = MKS.map(([k, l]) => `<button class="${(L.obj.mk || '').includes(k) ? 'on' : ''}" data-mkt="${k}" title="${l}">${mkIcon(k)}</button>`).join('');
+  p.innerHTML = MKS.map(([k, l]) => `<button class="${(L.obj.mk || '').includes(k) ? 'on' : ''}" data-mkt="${k}" title="${l}">${mkIcon(k)}</button>`).join('') + (L.kind === 'item' ? `<span class="mksep"></span><button class="mkedit" data-mkedit="${id}" title="이 문항 고치기">✎</button>` : `<span class="mksep"></span><button class="mkedit" data-mkedit="${id}" title="소제목 정보">✎</button>`);
   const r = td.getBoundingClientRect(); p.style.left = (r.right + 4 + scrollX) + 'px'; p.style.top = (r.top + scrollY - 2) + 'px';
 }
 document.addEventListener('click', e => {
@@ -1701,6 +1703,11 @@ function dragDone(ev) {
 }
 /* 위쪽 바 높이(줄바꿈되면 커짐)에 맞춰 목차 고정 위치 조정 */
 (() => { const t = document.querySelector('.top'); if (!t) return; const set = () => document.documentElement.style.setProperty('--toph', t.getBoundingClientRect().height + 'px'); set(); if (window.ResizeObserver) new ResizeObserver(set).observe(t); addEventListener('resize', set); })();
+document.addEventListener('dblclick', e => {
+  if (editing || punch || hlMode) return;
+  const row = e.target.closest && e.target.closest('#paper tr.it'); if (!row || e.target.closest('td.n')) return;
+  getSelection().removeAllRanges(); act('editItem', row.dataset.item);
+});
 /* 소제목 날짜·구분·이름 바로 고치기 (팝업) */
 function secQuick(id) {
   const L = locate(id); if (!L || L.kind !== 'sec') return; const o = L.obj;
@@ -1744,6 +1751,7 @@ document.addEventListener('click', e => {
   const fdb = editing && t.closest('[data-fdate]'); if (fdb) { const L = locate(fdb.dataset.fdate); if (L) { const cur = secDate(L.obj) || todayFd(); const v = prompt('파일 날짜 (예: 2026-10-24, 비우면 지우기)', cur); if (v !== null) { const g = v.trim() ? guessFd(v.trim()) : ''; if (g) { L.obj.fd = g; L.obj.items.forEach(it => it.fd = g); } else { delete L.obj.fd; L.obj.items.forEach(it => delete it.fd); } commit(); } } return; }
   const olb = t.closest('[data-ol]'); if (olb) { outline = olb.dataset.ol === '1'; openCh.clear(); try { localStorage.setItem(KEY + ':outline', outline ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const olt = editing && outline && !t.closest('button') && t.closest('[data-olt]'); if (olt) { const id = olt.dataset.olt; openCh.has(id) ? openCh.delete(id) : openCh.add(id); renderKeep(); return; }
+  const mke = t.closest('[data-mkedit]'); if (mke) { const id = mke.dataset.mkedit, L = locate(id); $('#mkpop').hidden = true; if (L && L.kind === 'item') act('editItem', id); else secQuick(id); return; }
   const tdn = !editing && t.closest('#paper tr.it td.n'); if (tdn) { mkPop(tdn); return; }
   const shb = t.closest('[data-shmk]'); if (shb) { mkPop(shb, shb.dataset.shmk); return; }
   const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
