@@ -60,6 +60,19 @@ body:not(.edit) .paper tr.it td.n:hover{color:var(--acc)}
 .mkpop .mki{width:17px;height:17px;fill:none;stroke:#b0b0b5;stroke-width:1.6}
 .mkpop button.on .mki{stroke:none}.mkpop button.on .mk-b{fill:var(--acc)}.mkpop button.on .mk-s{fill:var(--brown)}.mkpop button.on .mk-c{fill:none;stroke:#e8862a}
 .mkpop button:hover{background:#f3f3f5}
+.shedit{border:0;background:none;color:#c4c4c8;font-size:13px;padding:2px 4px;cursor:pointer;border-radius:6px}
+.shedit:hover{color:var(--ink);background:#f3f3f5}
+@media print{.shedit{display:none!important}}
+.se-head{display:grid;grid-template-columns:1fr 170px 110px;gap:10px}
+.se-hint{font-size:11.5px;color:#a0a0a5;margin:2px 0 8px}
+.se-list{display:flex;flex-direction:column;gap:8px}
+.se-it{display:grid;grid-template-columns:22px 1fr 26px;gap:6px;align-items:start}
+.se-n{font-size:12px;color:#aaa;padding-top:9px;text-align:right}
+.se-body{display:flex;flex-direction:column;gap:4px}
+.se-al{display:flex;align-items:center;gap:6px}.se-al span{font-size:11px;color:#aaa;flex:none}.se-al .se-a{flex:1}
+.se-a{font-family:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:7px;padding:5px 9px;color:var(--ink)}
+.se-del{margin-top:6px}
+@media (max-width:640px){.se-head{grid-template-columns:1fr}}
 .mksep{width:1px;background:var(--line);margin:4px 2px}
 .mkedit{font-size:14px;color:#888;padding:4px 7px!important}
 @media print{.mkm,.mkpop{display:none!important}}
@@ -942,7 +955,7 @@ function renderMain() {
     let h = '';
         const its = visItems(s);
     if (ol) { h += `<div class="sec ols"><div class="sh" data-anc="s-${s.id}"><span>${esc(s.title)}</span><small class="olcnt">${its.length}</small>${ec(s.id)}</div></div>`; return h; }
-    h += `<div class="sec"><div class="sh" data-anc="s-${s.id}">${pre ? `<span class="shpre">${esc(pre)}</span>` : ''}<span>${esc(s.title)}</span>${s.kind ? `<span class="skind k-${s.kind}${editing ? ' ed' : ''}" data-skind="${s.id}">${KINDS.find(k => k[0] === s.kind)[1]}</span>` : (editing ? `<span class="skind ed none" data-skind="${s.id}">구분</span>` : '')}${secDate(s) ? `<span class="fdate${editing ? ' ed' : ''}" data-fdate="${s.id}">${fdLabel(secDate(s))}</span>` : (editing ? `<span class="fdate ed none" data-fdate="${s.id}">날짜</span>` : '')}${editing ? '' : `<button class="shmk${s.mk ? ' has' : ''}" data-shmk="${s.id}" title="Bookmark · Star · Clip this page">${s.mk ? MKS.filter(m => s.mk.includes(m[0])).map(m => mkIcon(m[0])).join('') : mkIcon('b', 'ghost')}</button>`}${ec(s.id)}</div>`;
+    h += `<div class="sec"><div class="sh" data-anc="s-${s.id}">${pre ? `<span class="shpre">${esc(pre)}</span>` : ''}<span>${esc(s.title)}</span>${s.kind ? `<span class="skind k-${s.kind}${editing ? ' ed' : ''}" data-skind="${s.id}">${KINDS.find(k => k[0] === s.kind)[1]}</span>` : (editing ? `<span class="skind ed none" data-skind="${s.id}">구분</span>` : '')}${secDate(s) ? `<span class="fdate${editing ? ' ed' : ''}" data-fdate="${s.id}">${fdLabel(secDate(s))}</span>` : (editing ? `<span class="fdate ed none" data-fdate="${s.id}">날짜</span>` : '')}${editing ? '' : `<button class="shedit" data-shedit="${s.id}" title="이 소제목 통째로 고치기">✎</button>`}${editing ? '' : `<button class="shmk${s.mk ? ' has' : ''}" data-shmk="${s.id}" title="Bookmark · Star · Clip this page">${s.mk ? MKS.filter(m => s.mk.includes(m[0])).map(m => mkIcon(m[0])).join('') : mkIcon('b', 'ghost')}</button>`}${ec(s.id)}</div>`;
     if (s.note) { const nh = hlHtmlT(s.note, s.nhl, s.nul, x => x); h += `<div class="note">${hlMode && !editing ? `<span class="hbed" data-hid="${s.id}" data-k="n">${nh}</span>` : nh}</div>`; }
     if (its.length) {
       h += `<table><colgroup><col class="cn"><col class="cq"><col class="ca">${editing ? '<col class="cc">' : ''}</colgroup>`;
@@ -1708,6 +1721,56 @@ document.addEventListener('dblclick', e => {
   const row = e.target.closest && e.target.closest('#paper tr.it'); if (!row || e.target.closest('td.n')) return;
   getSelection().removeAllRanges(); act('editItem', row.dataset.item);
 });
+/* 소제목 통째로 고치기 (팝업): 이름·날짜·구분·안내 박스·문항 전부 한 화면에서 */
+function secEdit(id) {
+  const L = locate(id); if (!L || L.kind !== 'sec') return; const o = L.obj;
+  const cur = secDate(o) || '';
+  const m = $('#mod'); m.classList.add('wide');
+  const row = (it, k) => `<div class="se-it" data-id="${it ? it.id : ''}"><span class="se-n">${k}</span><div class="se-body"><div class="bed sm" contenteditable="true"></div><label class="se-al"><span>정답</span><input class="se-a" value="${esc(it && it.a || '')}"></label></div><button class="ib x se-del" type="button" title="이 문항 지우기">✕</button></div>`;
+  m.innerHTML = `<h2>소제목 편집</h2>
+    <div class="se-head"><div class="fld"><label>소제목 이름</label><input class="se-title" value="${esc(o.title)}"></div><div class="fld"><label>파일 날짜</label><input type="date" class="se-fd" value="${esc(cur)}"></div><div class="fld"><label>구분</label><select class="se-kind">${[['prog', '진도'], ['issue', '이슈'], ['', '없음']].map(([v, l]) => `<option value="${v}"${(o.kind || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>
+    <div class="fld"><label>안내 박스</label><textarea class="se-note">${esc(o.note || '')}</textarea></div>
+    <div class="se-list">${o.items.map((it, k) => row(it, k + 1)).join('')}</div>
+    <button class="addrow" type="button" data-se="add" style="display:block">+ 문항 추가</button>
+    <div class="mfoot"><span class="sp2"></span><button class="btn" data-se="cancel">취소</button><button class="btn pri" data-se="save">저장</button></div>`;
+  $('#ov').classList.add('open');
+  const init = (el, it) => { const ed = el.querySelector('.bed'); setBed(ed, it ? it.t : ''); initBed(ed, null, null); };
+  [...m.querySelectorAll('.se-it')].forEach((el, k) => init(el, o.items[k]));
+  const renum = () => m.querySelectorAll('.se-it .se-n').forEach((n, k) => n.textContent = k + 1);
+  m.onclick = e => {
+    const b = e.target.closest('[data-se], .se-del'); if (!b) return;
+    if (b.classList.contains('se-del')) { b.closest('.se-it').remove(); renum(); return; }
+    const a = b.dataset.se;
+    if (a === 'cancel') return closeModal();
+    if (a === 'add') { const list = m.querySelector('.se-list'); list.insertAdjacentHTML('beforeend', row(null, list.children.length + 1)); const el = list.lastElementChild; init(el, null); el.querySelector('.bed').focus(); return; }
+    if (a === 'save') {
+      const byId = Object.fromEntries(o.items.map(it => [it.id, it]));
+      const ys = {}; o.items.forEach(it => ys[it.y] = (ys[it.y] || 0) + 1); const yy = Object.keys(ys).sort((p, q) => ys[q] - ys[p])[0] || defYear();
+      const fd = m.querySelector('.se-fd').value;
+      const keep = [];
+      m.querySelectorAll('.se-it').forEach(el => {
+        const t = serBed(el.querySelector('.bed')), av = el.querySelector('.se-a').value.trim();
+        if (!t) return;
+        let it = byId[el.dataset.id];
+        if (it) { if (dispOf(it.t) !== dispOf(t)) { delete it.hl; delete it.ul; } it.t = t; }
+        else it = { id: nid(), t, y: yy };
+        if (av) it.a = av; else delete it.a;
+        keep.push(it);
+      });
+      o.items.forEach(it => { if (!keep.includes(it)) tomb(it); });
+      o.items = keep;
+      let title = m.querySelector('.se-title').value.trim() || o.title;
+      if (fd !== cur) {
+        if (fd) { o.fd = fd; o.items.forEach(it => it.fd = fd); if (title === o.title) title = title.replace(/\(\d{1,2}\.\d{1,2}\)\s*$/, `(${fd.slice(5, 7)}.${fd.slice(8, 10)})`); }
+        else { delete o.fd; o.items.forEach(it => delete it.fd); }
+      } else if (fd) o.items.forEach(it => { if (!it.fd) it.fd = fd; });
+      o.title = title;
+      const kd = m.querySelector('.se-kind').value; if (kd) o.kind = kd; else delete o.kind;
+      const nt = m.querySelector('.se-note').value.trim(); if ((o.note || '') !== nt) { delete o.nhl; delete o.nul; } if (nt) o.note = nt; else delete o.note;
+      closeModal(); commit(); toast('저장됨');
+    }
+  };
+}
 /* 소제목 날짜·구분·이름 바로 고치기 (팝업) */
 function secQuick(id) {
   const L = locate(id); if (!L || L.kind !== 'sec') return; const o = L.obj;
@@ -1751,7 +1814,8 @@ document.addEventListener('click', e => {
   const fdb = editing && t.closest('[data-fdate]'); if (fdb) { const L = locate(fdb.dataset.fdate); if (L) { const cur = secDate(L.obj) || todayFd(); const v = prompt('파일 날짜 (예: 2026-10-24, 비우면 지우기)', cur); if (v !== null) { const g = v.trim() ? guessFd(v.trim()) : ''; if (g) { L.obj.fd = g; L.obj.items.forEach(it => it.fd = g); } else { delete L.obj.fd; L.obj.items.forEach(it => delete it.fd); } commit(); } } return; }
   const olb = t.closest('[data-ol]'); if (olb) { outline = olb.dataset.ol === '1'; openCh.clear(); try { localStorage.setItem(KEY + ':outline', outline ? '1' : '0'); } catch (x) {} renderKeep(); return; }
   const olt = editing && outline && !t.closest('button') && t.closest('[data-olt]'); if (olt) { const id = olt.dataset.olt; openCh.has(id) ? openCh.delete(id) : openCh.add(id); renderKeep(); return; }
-  const mke = t.closest('[data-mkedit]'); if (mke) { const id = mke.dataset.mkedit, L = locate(id); $('#mkpop').hidden = true; if (L && L.kind === 'item') act('editItem', id); else secQuick(id); return; }
+  const she = t.closest('[data-shedit]'); if (she) { secEdit(she.dataset.shedit); return; }
+  const mke = t.closest('[data-mkedit]'); if (mke) { const id = mke.dataset.mkedit, L = locate(id); $('#mkpop').hidden = true; if (L && L.kind === 'item') act('editItem', id); else secEdit(id); return; }
   const tdn = !editing && t.closest('#paper tr.it td.n'); if (tdn) { mkPop(tdn); return; }
   const shb = t.closest('[data-shmk]'); if (shb) { mkPop(shb, shb.dataset.shmk); return; }
   const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
