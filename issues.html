@@ -423,10 +423,10 @@ body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!impo
 .tlseg button.on{background:var(--acc);color:#fff}
 .ftools.sm{bottom:calc(46px + env(safe-area-inset-bottom,0px));right:14px;gap:7px}
 .ftools.sm .tl{width:44px;height:44px;min-width:0;padding:0;border-radius:50%;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
-.ftools.sm .tl.fab{font-size:15px;letter-spacing:1px}.ftools.sm .ftm{display:flex;flex-direction:column;align-items:flex-end;gap:7px;max-height:0;opacity:0;pointer-events:none;transform:translateY(10px);transition:max-height .28s ease,opacity .22s ease,transform .28s cubic-bezier(.2,.8,.2,1),margin .28s ease;margin-bottom:-7px}
-.ftools.sm.open .ftm{max-height:260px;opacity:1;pointer-events:auto;transform:none;margin-bottom:0}
-.ftools.sm .ftm .tl{transition:transform .28s cubic-bezier(.2,.8,.2,1);transform:scale(.85)}.ftools.sm.open .ftm .tl{transform:none}
-.ftools.sm .tl.ftop{font-size:19px;font-weight:500}.ftools.sm .nvp{width:44px;display:flex;flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}.ftools.sm .nvp button{height:28px;border:0;background:none;font-size:9.9px;color:#8a8a8f;cursor:pointer;padding:0}.ftools.sm .nvp button:active{background:#f2f2f4}.ftools.sm .nvp i{display:block;height:1px;margin:0 12px;background:var(--line)}
+.ftools.sm .tl.fab{font-size:15px;letter-spacing:1px}.ftools.sm .ftm{display:flex;flex-direction:column;align-items:flex-end;gap:7px;max-height:0;opacity:0;pointer-events:none;transform:translateY(10px);transition:max-height .34s cubic-bezier(.4,0,.2,1),opacity .3s ease,transform .34s cubic-bezier(.4,0,.2,1),margin .34s cubic-bezier(.4,0,.2,1);margin-bottom:-7px}
+.ftools.sm.open .ftm{max-height:200px;opacity:1;pointer-events:auto;transform:none;margin-bottom:0}
+.ftools.sm .ftm .tl{transition:transform .34s cubic-bezier(.4,0,.2,1);transform:scale(.85)}.ftools.sm.open .ftm .tl{transform:none}
+.ftools.sm .tl.ftop{font-size:19px;font-weight:500}.ftools.sm .nvp{width:44px;display:flex;flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}.ftools.sm .nvp button{height:24px;border:0;background:none;font-size:9.9px;color:#8a8a8f;cursor:pointer;padding:0}.ftools.sm .nvp button:active{background:#f2f2f4}.ftools.sm .nvp i{display:block;height:1px;margin:0 13px;background:var(--line)}
 .ftools.sm .tl.fab.on{background:#fff;color:var(--ink);border-color:var(--line)}
 .ftools.sm .tlseg{width:auto;min-width:40px;padding:7px 10px;font-size:12px}
 .ftools.sm .tlseg{padding:2px}
@@ -1113,7 +1113,7 @@ function toolsBar() {
     b.addEventListener('click', e => { if (e.target.closest('[data-ftog]')) { e.stopPropagation(); setFab(!fabOpen); } if (e.target.closest('[data-top]')) { e.stopPropagation(); scrollTo({ top: 0, behavior: 'smooth' }); } });
     if (matchMedia('(hover:hover)').matches) {   // 마우스: ••• 에 올리면 열리고, 도구 밖으로 나가면 닫힘
       let lt; b.addEventListener('mouseover', e => { clearTimeout(lt); if (e.target.closest('[data-ftog]') && !fabOpen) setFab(true); });
-      b.addEventListener('mouseleave', () => { clearTimeout(lt); lt = setTimeout(() => { if (fabOpen) setFab(false); }, 350); });
+      b.addEventListener('mouseleave', () => { clearTimeout(lt); lt = setTimeout(() => { if (fabOpen) setFab(false); }, 60); });
     }
   }
   b.hidden = editing;
