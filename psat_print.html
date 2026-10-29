@@ -133,7 +133,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .q img,.q .ph-img{display:block;width:100%}
 .q .ph-img{background:#f6f6f6}
 .atbl{position:absolute;top:2mm;border-collapse:collapse;font-size:8.5pt}
-.atbl th,.atbl td{border:.2mm solid #555;text-align:center;height:6.6mm;padding:0 1mm;font-weight:400;white-space:nowrap}
+.atbl th,.atbl td{border:.2mm solid #555;text-align:center;height:6.6mm;padding:0;overflow:hidden;font-weight:400;white-space:nowrap}
 .atbl th{background:#f2f2f2;font-weight:600}
 .atbl td.a{background:#f0f0f0}
 
@@ -484,13 +484,15 @@ function subsOfSel() { return [...new Set(st.sel.filter(k => !isDiv(k)).map(k =>
 function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]].replace('영역', '') + ' 기출모음' : 'PSAT 기출모음'; }
 function areaName() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]] : 'PSAT'; }
 
+// 정답지 칸 너비(mm): 구분·연도·문번·정답 — 정답 칸 오른쪽은 채점 표시용 여백
+const ANS_W = [13, 13, 10, 7.5];
 function answerRows() {
   const mixed = subsOfSel().length > 1;
   const rows = [];
   for (const k of st.sel) {
     if (isDiv(k)) continue;
     const {e, it} = itemOf(k);
-    it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '근로감독' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
+    it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
   }
   return rows;
 }
@@ -507,7 +509,7 @@ function answerPages() {
         if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
         body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
       });
-      return `<table class="atbl" style="left:${ci * 66}mm;width:62mm"><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
+      return `<table class="atbl" style="left:${ci * 66}mm;width:${ANS_W.reduce((a, b) => a + b)}mm;table-layout:fixed"><colgroup>${ANS_W.map(w => `<col style="width:${w}mm">`).join('')}</colgroup><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
     }).join('');
     out.push(`<div class="page">${head(0, '<정답지>', 'PSAT')}<div class="pbody">${tbls}</div></div>`);
   }
@@ -657,7 +659,7 @@ async function buildPdf() {
     }
     if (st.ans) {
       const rows = answerRows();
-      const W = [18, 15, 14, 15], RH = 6.6, PER = Math.floor((COL_H - 4) / RH) - 1;
+      const W = ANS_W, RH = 6.6, PER = Math.floor((COL_H - 4) / RH) - 1;
       const chunks = []; for (let i = 0; i < rows.length; i += PER) chunks.push(rows.slice(i, i + PER));
       for (let p = 0; p < chunks.length; p += 3) {
         const pg = out.addPage([PW, PH]);
