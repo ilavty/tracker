@@ -183,6 +183,7 @@ td.a{background:var(--soft);color:var(--ans);font-weight:500;font-size:13px;word
 td.ctl{display:none}
 .bl{color:var(--acc);font-weight:500}
 .sp{display:inline-block;width:2.6em}
+.hbk{white-space:nowrap}.hbk::before{content:'【';color:var(--acc);font-weight:500}.hbk::after{content:'】';color:var(--acc);font-weight:500;margin-left:calc(2.6em*var(--bw,1))}.hbk .hbt{display:none}.hbk.rv::after{margin-left:.25em}.hbk.rv .hbt{display:inline;color:var(--acc);font-weight:600;margin-left:.25em}.hbk{cursor:pointer}
 .bk{cursor:pointer;-webkit-tap-highlight-color:transparent}.bk .bka{display:none}.bk.rv .sp{width:auto!important;padding:0 .25em}.bk.rv .bka{display:inline;color:var(--acc);font-weight:600}@media print{.bk.rv .sp{width:calc(2.6em*var(--bw,1))!important;padding:0}.bk.rv .bka{display:none}}
 .tag{color:var(--acc);font-weight:500}
 col.cn{width:30px} col.ca{width:110px} col.cc{width:0}
@@ -906,7 +907,7 @@ function hlHtmlT(t, hl, ul, blankFn) {
   return h;
 }
 const hlHtml = (it, blankFn) => hlHtmlT(it.t, it.hl, it.ul, blankFn);
-const FILLF = x => `<span class="fill">${x}</span>`;
+const FILLF = x => filled ? `<span class="fill">${x}</span>` : `<span class="hbk"><span class="hbt">${x}</span></span>`;   // 형광펜 모드: 빈칸 유지(괄호는 CSS라 글자 위치 계산에 안 끼어듦)
 function qHtml(it, fill, noFront) {
   const tag = (!noFront && it.q ? `<div class="qfront">Q. ${esc(it.q)}</div>` : '') + (it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : '');
   if (fill) {
@@ -970,7 +971,7 @@ function renderMain() {
         const a = ansOf(it);
         const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
         const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
-        if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, a => `<span class="fill">${a}</span>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
+        if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, FILLF)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
         if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
         h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}${mkMini(it)}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
       });
@@ -1832,6 +1833,7 @@ document.addEventListener('click', e => {
   const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
   if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
   const bk = !editing && !punch && !hlMode && t.closest('#paper .bk'); if (bk) { bk.classList.toggle('rv'); return; }
+  const hbk = hlMode && !editing && !HL.erase && getSelection().isCollapsed && t.closest('#paper .hbk'); if (hbk) { hbk.classList.toggle('rv'); return; }
   const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
   if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; renderKeep(); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
