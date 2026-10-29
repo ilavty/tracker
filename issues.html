@@ -423,7 +423,7 @@ body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!impo
 .tlseg button.on{background:var(--acc);color:#fff}
 .ftools.sm{bottom:calc(28px + env(safe-area-inset-bottom,0px));right:14px;gap:7px}
 .ftools.sm .tl{width:44px;height:44px;min-width:0;padding:0;border-radius:50%;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
-.ftools.sm .tl.fab{font-size:15px;letter-spacing:1px}
+.ftools.sm .tl.fab{font-size:15px;letter-spacing:1px}.ftools.sm .tl.nv{font-size:11px}
 .ftools.sm .tl.fab.on{background:#fff;color:var(--ink);border-color:var(--line)}
 .ftools.sm .tlseg{width:auto;min-width:40px;padding:7px 10px;font-size:12px}
 .ftools.sm .tlseg{padding:2px}
@@ -1108,7 +1108,7 @@ function toolsBar() {
     b.addEventListener('click', e => { if (e.target.closest('[data-ftog]')) { e.stopPropagation(); fabOpen = !fabOpen; toolsBar(); } if (e.target.closest('[data-top]')) { e.stopPropagation(); scrollTo({ top: 0, behavior: 'smooth' }); } });
   }
   b.hidden = editing;
-  const sm = matchMedia('(max-width:760px)').matches;   // 폰: 짧은 글자 버튼
+  const sm = true;   // 폰·데스크톱 모두 간략한 동그라미 버튼
   b.classList.toggle('sm', sm);
   if (sm) b.classList.remove('dk');
   if (sm) {
@@ -1116,7 +1116,7 @@ function toolsBar() {
     b.classList.toggle('open', fabOpen);
     b.innerHTML = (fabOpen ? `<button class="tl" data-fill="${filled ? '0' : '1'}" title="Blank / Filled">${filled ? 'F' : 'B'}</button>` +
       `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">${hideAns ? 'OFF' : 'ON'}</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">B</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">H</button>` : '') +
-      `<button class="tl ftop" data-top title="맨 위로">↑</button><button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button>`;
+      `<button class="tl ftop" data-top title="맨 위로">↑</button><button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button><button class="tl nv" data-inav="-1" title="이전 소제목">▲</button><button class="tl nv" data-inav="1" title="다음 소제목">▼</button>`;
     return;
   }
   // 데스크톱: 평소엔 ••• 하나, 마우스를 올리면 위로 펼쳐짐
@@ -2223,19 +2223,17 @@ $('#quizBtn').onclick = () => openQuiz();
 render();
 /* 위아래 넘기기: 다음/이전 문항으로 스크롤 */
 (() => {
-  const nav = document.createElement('div'); nav.id = 'inav'; nav.innerHTML = '<button data-inav="-1" aria-label="이전">▲</button><button data-inav="1" aria-label="다음">▼</button>'; document.body.appendChild(nav);
+
   const topOff = () => { const t = document.querySelector('.top'); return (t ? t.getBoundingClientRect().bottom : 0) + 10; };
   const go = dir => {
-    const off = topOff(), rows = [...document.querySelectorAll('#paper tr.it, #paper .sh')].filter(r => r.offsetParent);
+    const off = topOff(), rows = [...document.querySelectorAll('#paper .sh')].filter(r => r.offsetParent);
     let tgt = null;
     if (dir > 0) tgt = rows.find(r => r.getBoundingClientRect().top > off + 6);
     else { for (const r of rows) { if (r.getBoundingClientRect().top < off - 6) tgt = r; else break; } }
     if (!tgt) { if (dir < 0) scrollTo({ top: 0, behavior: 'smooth' }); return; }
     scrollTo({ top: scrollY + tgt.getBoundingClientRect().top - off, behavior: 'smooth' });
   };
-  nav.addEventListener('click', e => { const b = e.target.closest('[data-inav]'); if (b) go(+b.dataset.inav); });
-  const vis = () => { nav.hidden = editing || !!document.querySelector('.ov.open'); };
-  setInterval(vis, 500); vis();
+  document.addEventListener('click', e => { const b = e.target.closest('[data-inav]'); if (b) { e.stopPropagation(); go(+b.dataset.inav); } }, true);
 })();
 </script>
 </body>
