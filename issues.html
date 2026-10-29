@@ -485,6 +485,8 @@ body.hlon .hlbar{display:flex}
 .addrow.big{margin-top:14px;padding:10px;font-weight:500}
 .empty{color:var(--sub);font-size:12.5px;padding:8px 0}
 .print-only{display:none}
+#inav{position:fixed;right:16px;bottom:128px;z-index:30;display:flex;flex-direction:column;gap:8px}#inav[hidden]{display:none}#inav button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--ink);font-size:12px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08);-webkit-tap-highlight-color:transparent}#inav button:active{transform:scale(.92)}
+@media print{#inav{display:none!important}}
 
 /* modal */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
@@ -2219,6 +2221,22 @@ $('#quiz').addEventListener('click', e => {
 
 $('#quizBtn').onclick = () => openQuiz();
 render();
+/* 위아래 넘기기: 다음/이전 문항으로 스크롤 */
+(() => {
+  const nav = document.createElement('div'); nav.id = 'inav'; nav.innerHTML = '<button data-inav="-1" aria-label="이전">▲</button><button data-inav="1" aria-label="다음">▼</button>'; document.body.appendChild(nav);
+  const topOff = () => { const t = document.querySelector('.top'); return (t ? t.getBoundingClientRect().bottom : 0) + 10; };
+  const go = dir => {
+    const off = topOff(), rows = [...document.querySelectorAll('#paper tr.it, #paper .sh')].filter(r => r.offsetParent);
+    let tgt = null;
+    if (dir > 0) tgt = rows.find(r => r.getBoundingClientRect().top > off + 6);
+    else { for (const r of rows) { if (r.getBoundingClientRect().top < off - 6) tgt = r; else break; } }
+    if (!tgt) { if (dir < 0) scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    scrollTo({ top: scrollY + tgt.getBoundingClientRect().top - off, behavior: 'smooth' });
+  };
+  nav.addEventListener('click', e => { const b = e.target.closest('[data-inav]'); if (b) go(+b.dataset.inav); });
+  const vis = () => { nav.hidden = editing || !!document.querySelector('.ov.open'); };
+  setInterval(vis, 500); vis();
+})();
 </script>
 </body>
 </html>
