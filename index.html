@@ -800,18 +800,17 @@
         }
     </style>
 <style>
-.plc-wrap{display:flex;flex-direction:column;gap:26px;padding-bottom:30px}
-.plc-mh{display:flex;align-items:baseline;gap:8px;margin:0 0 6px 2px}.plc-mh b{font-size:1.05rem;font-weight:800}.plc-mh small{font-size:.72rem;color:#9a9a9a}
-.plc-wk{display:grid;grid-template-columns:repeat(7,1fr);font-size:.66rem;color:#9a9a9a;text-align:center;padding:2px 0 4px;border-bottom:1px solid #e4e4e4}
-.plc-row{display:grid;grid-template-columns:repeat(7,1fr);position:relative;border-bottom:1px solid #eee}
-.plc-d{min-height:64px;padding:4px 3px 3px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}.plc-d.out{cursor:default}.plc-d:hover{background:rgba(90,151,235,.05)}
-.plc-top{display:flex;justify-content:space-between;align-items:baseline;gap:2px}.plc-n{font-size:.68rem;color:#666;line-height:1.2}.plc-d.sun .plc-n{color:#d9534f}.plc-d.today .plc-n{background:#111;color:#fff;border-radius:3px;padding:0 4px}
-.plc-t{font-size:.6rem;color:var(--primary-blue);font-weight:600;white-space:nowrap}
-.plc-tags{display:flex;flex-direction:column;gap:1.5px}.plc-tg{display:block;font-size:.55rem;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.45}
-.plc-bars{grid-column:1/-1;position:relative;margin:0 0 4px}
-.plc-bar{position:absolute;height:12px;border-radius:0;overflow:hidden}.plc-bar.hd{border-top-left-radius:3px;border-bottom-left-radius:3px}.plc-bar.tl{border-top-right-radius:3px;border-bottom-right-radius:3px}
+.plc-wrap{display:flex;flex-direction:column;gap:26px;padding:14px 14px 18px;border-radius:14px;border:1px solid #e3e8ef;background-color:#fff;background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px);background-size:14px 14px}
+.plc-wk{display:grid;grid-template-columns:repeat(7,1fr);font-size:.68rem;font-weight:600;color:#8d96a3;text-align:center;padding:2px 0 8px;border-bottom:1.5px solid #c9d3df;letter-spacing:.04em}
+.plc-row{display:grid;grid-template-columns:repeat(7,1fr);position:relative;border-bottom:1px solid #dfe5ec}
+.plc-d{min-height:84px;padding:7px 6px 6px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0;border-right:1px solid #eef1f5}.plc-d:nth-child(7){border-right:0}.plc-d.out{cursor:default}.plc-d:hover{background:rgba(90,151,235,.06)}
+.plc-top{display:flex;justify-content:space-between;align-items:center;gap:3px}.plc-n{font-size:.82rem;font-weight:600;color:#3a3f47;line-height:1.2}.plc-d.sun .plc-n{color:#d9534f}.plc-d.today .plc-n{background:#111;color:#fff;border-radius:4px;padding:0 5px}
+.plc-t{font-size:.74rem;color:var(--primary-blue);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.plc-tags{display:flex;flex-direction:column;gap:2.5px}.plc-tg{display:block;font-size:.58rem;font-weight:500;color:#fff;border-radius:4px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.plc-bars{grid-column:1/-1;position:relative;margin:2px 0 6px}
+.plc-bar{position:absolute;height:10px;border-radius:0;overflow:hidden}.plc-bar.hd{border-top-left-radius:5px;border-bottom-left-radius:5px}.plc-bar.tl{border-top-right-radius:5px;border-bottom-right-radius:5px}
 .plc-bar.open{-webkit-mask:linear-gradient(90deg,#000 80%,transparent);mask:linear-gradient(90deg,#000 80%,transparent)}
-.plc-bar em{display:block;font-style:normal;font-size:.55rem;font-weight:700;white-space:nowrap;line-height:12px;padding-left:5px;opacity:.9}
+.plc-bar em{display:block;font-style:normal;font-size:.52rem;font-weight:600;white-space:nowrap;line-height:10px;padding-left:6px;opacity:.85}
 </style>
 </head>
 <body>
@@ -3239,7 +3238,7 @@
     function pl_updateMonthNav() {
         let l = document.getElementById('pl-month-label'); if (l) l.textContent = window.plViewMonth + '월';
         let c = document.getElementById('pl-cal-toggle'); if (c) { c.textContent = window.plCalMode ? '카드' : '달력'; }
-        let cs = document.getElementById('pl-cal-simple'); if (cs) { cs.style.display = window.plCalMode ? '' : 'none'; cs.textContent = window.plCalSimple ? '과목까지' : '시간만'; }
+        let cs = document.getElementById('pl-cal-simple'); if (cs) { cs.style.display = window.plCalMode ? '' : 'none'; cs.innerHTML = window.plCalSimple ? '<span style="opacity:.5">FULL</span> · <b style="color:#333">SIMPLE</b>' : '<b style="color:#333">FULL</b> · <span style="opacity:.5">SIMPLE</span>'; }
     }
     function pl_shiftMonth(d) {
         let m = (window.plViewMonth == null ? Number(pl_getLogicalDateStr().split('.')[0]) : window.plViewMonth) + d;
@@ -3316,7 +3315,7 @@
                     const t = pl_fmtStudy(pData[key] && pData[key].studyTime), tags = pl_calTags(key);
                     h += `<div class="plc-d${key === todayStr && y === yr ? ' today' : ''}${d.getDay() === 0 ? ' sun' : ''}" onclick="pl_calGoto('${key}')"><div class="plc-top"><span class="plc-n">${d.getDate()}</span>${t ? `<span class="plc-t">${t}</span>` : ''}</div><div class="plc-tags">${tags.map(g => `<span class="plc-tg" style="background:${g.color}">${g.name}</span>`).join('')}</div></div>`;
                 }
-                h += `<div class="plc-bars" style="height:${segs.length * 14}px">${segs.map((sg, k) => `<span class="plc-bar${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 14}px;background:rgba(${sg.c.rgb},.2)"><em style="color:${sg.c.color}">${sg.c.name}</em></span>`).join('')}</div></div>`;
+                h += `<div class="plc-bars" style="height:${segs.length * 12}px">${segs.map((sg, k) => `<span class="plc-bar${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 12}px;background:rgba(${sg.c.rgb},.16)"><em style="color:${sg.c.color}">${sg.c.name}</em></span>`).join('')}</div></div>`;
             }
             h += '</div>';
         });

@@ -627,8 +627,11 @@ document.addEventListener('keydown', keyEsc);
 /* 글칸에서 Tab → 칸에서 빠져나오기 (공부 화면·검색칸 등). 카드 편집창 안에서는 원래대로 다음 칸으로 */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Tab' || e.shiftKey || e.isComposing) return;
-  const t = e.target; if (!t || !t.closest || !t.closest('input,textarea,[contenteditable="true"]')) return;
-  if (modalStack.length) return;
+  const t = e.target; if (modalStack.length) return;
+  if (!t || !t.closest || !t.closest('input,textarea,[contenteditable="true"]')) {   // 글칸 밖에서 Tab → 플래시카드 글칸으로
+    const w = studyActive && document.getElementById('fcwrite'); if (w) { e.preventDefault(); w.focus(); const n = w.value.length; try { w.setSelectionRange(n, n); } catch (x) { } }
+    return;
+  }
   e.preventDefault(); t.blur(); try { window.focus(); } catch (x) { }
 });
 
