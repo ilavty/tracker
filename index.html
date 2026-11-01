@@ -851,6 +851,33 @@
 .plc-bar.open{-webkit-mask:linear-gradient(90deg,#000 80%,transparent);mask:linear-gradient(90deg,#000 80%,transparent)}
 .plc-bar em{display:block;font-style:normal;font-size:.58rem;font-weight:400;white-space:nowrap;line-height:15px;padding-left:7px}
 </style>
+<style>
+.pn-box{position:relative;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;color:#2b2f36;overflow:hidden;font-family:'Paperlogy',sans-serif}
+.pn-box.dk{color:#eef0f3}.pn-box.ed{outline:1.5px dashed rgba(90,151,235,.5);outline-offset:2px}
+.pn-tool{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.pn-tool button,.pn-wt button,.pn-per button{border:0;background:rgba(127,127,127,.18);color:inherit;font:inherit;font-size:.62rem;padding:3px 8px;border-radius:6px;cursor:pointer;opacity:.8}.pn-sep{width:8px}
+.pn-o{width:90px;accent-color:#5a97eb}
+.pn-ws{flex:1;min-height:0;display:flex;gap:18px}
+.pn-w{min-width:0;display:flex;flex-direction:column;min-height:0}
+.pn-wh{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex:0 0 auto}
+.pn-lbl{font-size:.66rem;font-weight:700;letter-spacing:.1em;opacity:.65}
+.pn-cnt{font-size:.62rem;font-weight:700;background:rgba(127,127,127,.22);border-radius:9px;padding:1px 7px}
+.pn-per{display:flex;gap:2px}.pn-per button{padding:1px 6px;font-size:.58rem;opacity:.5;background:transparent}.pn-per button.on{opacity:1;background:rgba(127,127,127,.22)}
+.pn-wt{margin-left:auto;display:flex;gap:2px}.pn-wt button{padding:1px 6px}
+.pn-bd{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}.pn-bd::-webkit-scrollbar{display:none}
+.pn-bd{column-gap:18px}.pn-w[style*="flex:2"] .pn-bd,.pn-w[style*="flex:3"] .pn-bd{columns:2}.pn-w[style*="flex:4"] .pn-bd,.pn-w[style*="flex:5"] .pn-bd,.pn-w[style*="flex:6"] .pn-bd{columns:3}
+.pn-g{break-inside:avoid;margin-bottom:10px}
+.pn-gh{display:flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;margin-bottom:3px}.pn-gh i{width:7px;height:7px;border-radius:2px}.pn-gh small{font-size:.58rem;opacity:.5;font-weight:500}
+.pn-r{display:flex;gap:6px;align-items:baseline;font-size:.66rem;line-height:1.45;padding-left:12px}
+.pn-rt{flex:1;min-width:0;font-weight:300}
+.pn-ds{flex:0 0 auto;display:flex;gap:3px}.pn-ds em{font-style:normal;font-size:.56rem;opacity:.5;cursor:pointer}.pn-ds em:hover{opacity:1;text-decoration:underline}
+.pn-td{display:flex;align-items:center;gap:7px;font-size:.7rem;line-height:1.4;padding:2px 0}
+.pn-ck{flex:0 0 auto;width:12px;height:12px;border-radius:3px;border:1.3px solid currentColor;background:transparent;opacity:.6;cursor:pointer;padding:0;color:inherit}
+.pn-td.d .pn-ck{background:currentColor}.pn-td.d .pn-tt{text-decoration:line-through;opacity:.4}
+.pn-tt{flex:1;min-width:0;outline:none}
+.pn-tx{border:0;background:none;color:inherit;opacity:0;cursor:pointer;font-size:.7rem}.pn-td:hover .pn-tx{opacity:.4}
+.pn-in{width:100%;border:0;border-bottom:1px solid rgba(127,127,127,.3);background:transparent;color:inherit;font:inherit;font-size:.7rem;padding:4px 0;outline:none;margin-top:3px}
+.pn-rz{position:absolute;left:50%;bottom:3px;width:44px;height:6px;margin-left:-22px;border-radius:3px;background:rgba(127,127,127,.5);cursor:ns-resize;touch-action:none}
+</style>
 </head>
 <body>
 
@@ -3369,7 +3396,58 @@
             }
             h += '</div>';
         });
-        container.innerHTML = h + '</div>'; plDecoMount(container.querySelector('.plc-wrap'), vy + '-' + vm);
+        h += '<div class="pn-slot"></div>';
+        container.innerHTML = h + '</div>'; plDecoMount(container.querySelector('.plc-wrap'), vy + '-' + vm); pnDraw(vy, vm);
+    }
+
+    /* ── 달력 아래 칸: 달마다 (_pnl/{달}), 안 정한 달은 가장 최근 달 모양 그대로. 위젯 = 못한 것 / 투두 (투두 내용은 위젯별 _todo/{id}) ── */
+    const PN = { cfg: (() => { try { return JSON.parse(localStorage.getItem('pl_pnl') || '{}') || {}; } catch (e) { return {}; } })(), todo: (() => { try { return JSON.parse(localStorage.getItem('pl_todo') || '{}') || {}; } catch (e) { return {}; } })() };
+    const pnIdx = k => { const [y, m] = k.split('-').map(Number); return y * 12 + m; };
+    function pnCfg(k) { if (!k) return null; const v = PN.cfg[k]; if (v === false) return null; if (v) return v; let best = null, bi = -1; Object.keys(PN.cfg).forEach(x => { const i = pnIdx(x); if (PN.cfg[x] && i < pnIdx(k) && i > bi) { bi = i; best = PN.cfg[x]; } }); return best; }
+    const pnRef = p => (typeof db !== 'undefined' && db) ? db.ref('planner_deco_v1/' + p) : null;
+    function pnPut(k, v) { PN.cfg[k] = v; try { localStorage.setItem('pl_pnl', JSON.stringify(PN.cfg)); } catch (e) { } const r = pnRef('_pnl/' + k); if (r) r.set(v); }
+    function pnSave(v) { pnPut(PD.key, JSON.parse(JSON.stringify(v))); }
+    function pnTodoPut(id, list) { PN.todo[id] = list; try { localStorage.setItem('pl_todo', JSON.stringify(PN.todo)); } catch (e) { } const r = pnRef('_todo/' + id); if (r) r.set(list.length ? list : null); }
+    (() => { const r1 = pnRef('_pnl'), r2 = pnRef('_todo'); const busy = () => { const a = document.activeElement; return a && a.closest && a.closest('.pn-box'); };
+        if (r1) r1.on('value', sn => { PN.cfg = sn.val() || {}; try { localStorage.setItem('pl_pnl', JSON.stringify(PN.cfg)); } catch (e) { } if (!busy() && !PN.rz && PN.vy) pnDraw(PN.vy, PN.vm); });
+        if (r2) r2.on('value', sn => { const v = sn.val() || {}; PN.todo = {}; Object.keys(v).forEach(k => PN.todo[k] = Object.values(v[k] || {}).filter(Boolean)); try { localStorage.setItem('pl_todo', JSON.stringify(PN.todo)); } catch (e) { } if (!busy() && PN.vy) pnDraw(PN.vy, PN.vm); }); })();
+    const pnEsc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const pnTxt = h => { const d = document.createElement('div'); d.innerHTML = String(h || '').replace(/<br\s*\/?>/gi, ' '); return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
+    function pnGroups() { const byC = new Map(), of = {}; pTags.forEach((t, i) => { if (!t) return; const c = String(t.color || '#bbb').toLowerCase(); if (!byC.has(c)) byC.set(c, { m: [], pos: i, color: t.color || '#bbb' }); byC.get(c).m.push(t); });
+        byC.forEach(g => { g.name = g.m.some(t => /^(PSAT|피셋)/i.test(String(t.name).trim())) ? 'PSAT' : g.m[0].name; g.m.forEach(t => of[t.id] = g); }); return of; }
+    function pnUnf(per, vy, vm) {
+        const now = new Date(); if (now.getHours() < 5) now.setDate(now.getDate() - 1); now.setHours(0, 0, 0, 0); const yr = now.getFullYear();
+        const keys = Object.keys(pData || {}).filter(k => { const q = k.split('.'); if (q.length !== 2) return false; let d = new Date(yr, +q[0] - 1, +q[1]); if (isNaN(d)) return false; if (d > now) d = new Date(yr - 1, +q[0] - 1, +q[1]); if (!(d < now)) return false; if (per === 'all') return true; return d.getFullYear() === vy && d.getMonth() + 1 === vm; })
+            .map(k => { const q = k.split('.'); let d = new Date(yr, +q[0] - 1, +q[1]); if (d > now) d = new Date(yr - 1, +q[0] - 1, +q[1]); return { k, d }; }).sort((a, b) => a.d - b.d);
+        const of = pnGroups(), G = new Map();
+        keys.forEach(({ k }) => { const day = pData[k]; (day && day.items || []).forEach(it => { if (!it) return; const subs = (it.subItems || []).filter(Boolean); const done = it.hl || subs.some(x => x.hl); const add = text => { text = pnTxt(text); if (!text) return; const g = it.tag && of[it.tag]; const gk = g ? g.color : '_'; if (!G.has(gk)) G.set(gk, { g, rows: new Map() }); const R = G.get(gk).rows; const r = R.get(text) || { text, ks: [] }; if (!r.ks.includes(k)) r.ks.push(k); R.set(text, r); };
+            if (done) { if (!it.hl) subs.filter(x => !x.hl && pnTxt(x.text)).forEach(x => add((pnTxt(it.text) ? pnTxt(it.text) + ' · ' : '') + pnTxt(x.text))); } else add(it.text); }); });
+        return [...G.values()].sort((a, b) => (a.g ? a.g.pos : 9999) - (b.g ? b.g.pos : 9999));
+    }
+    function pnW(w, vy, vm) {
+        const ed = PD.edit, head = (lbl, extra) => `<div class="pn-wh"><span class="pn-lbl">${lbl}</span>${extra || ''}${ed ? `<span class="pn-wt"><button data-pw="l">‹</button><button data-pw="r">›</button><button data-pw="n">−</button><button data-pw="w">+</button><button data-pw="x">×</button></span>` : ''}</div>`;
+        if (w.t === 'unf') { const per = w.per || 'month', G = pnUnf(per, vy, vm), tot = G.reduce((n, g) => n + g.rows.size, 0);
+            return head('UNFINISHED', `<span class="pn-per"><button data-pw="per" data-v="month" class="${per === 'month' ? 'on' : ''}">${vm}월</button><button data-pw="per" data-v="all" class="${per === 'all' ? 'on' : ''}">ALL</button></span><span class="pn-cnt">${tot}</span>`) +
+                `<div class="pn-bd">${G.map(g => `<div class="pn-g"><div class="pn-gh"><i style="background:${g.g ? g.g.color : '#c9c9c9'}"></i>${pnEsc(g.g ? g.g.name : '기타')}<small>${g.rows.size}</small></div>${[...g.rows.values()].map(r => `<div class="pn-r"><span class="pn-rt">${pnEsc(r.text)}</span><span class="pn-ds">${r.ks.map(k => `<em onclick="pl_calGoto('${k}')">${k.replace('.', '/')}</em>`).join('')}</span></div>`).join('')}</div>`).join('')}</div>`; }
+        if (w.t === 'todo') { const L = PN.todo[w.id] || [], left = L.filter(x => !x.d).length;
+            return head(pnEsc(w.name || 'TO DO'), `<span class="pn-cnt">${left}</span>`) + `<div class="pn-bd">${L.map((x, i) => `<div class="pn-td${x.d ? ' d' : ''}"><button class="pn-ck" data-td="ck" data-i="${i}"></button><span class="pn-tt">${pnEsc(x.t)}</span><button class="pn-tx" data-td="x" data-i="${i}">×</button></div>`).join('')}<input class="pn-in" data-td="add" enterkeyhint="done"></div>`; }
+        return '';
+    }
+    function pnDraw(vy, vm) {
+        PN.vy = vy; PN.vm = vm; const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const slot = wrap.querySelector('.pn-slot'); if (!slot) return;
+        const c = pnCfg(PD.key); if (!c) { slot.innerHTML = ''; return; }
+        const ws = Object.entries(c.ws || {}).map(([id, w]) => ({ ...w, id })).sort((a, b) => (a.ord || 0) - (b.ord || 0)), o = c.o == null ? .8 : c.o, dk = c.c !== 'w';
+        slot.innerHTML = `<div class="pn-box${dk ? ' dk' : ''}${PD.edit ? ' ed' : ''}" style="height:${c.h || 260}px;background:${dk ? `rgba(18,19,22,${o})` : `rgba(255,255,255,${o})`}">${PD.edit ? `<div class="pn-tool"><button data-pn="unf">＋ 못한 것</button><button data-pn="todo">＋ 투두</button><span class="pn-sep"></span><button data-pn="c">${dk ? '검정' : '흰색'}</button><input class="pn-o" type="range" min="0" max="1" step="0.05" value="${o}" title="박스 투명도"></div>` : ''}<div class="pn-ws">${ws.map(w => `<div class="pn-w" data-w="${w.id}" style="flex:${w.f || 1} 1 0">${pnW(w, vy, vm)}</div>`).join('')}</div>${PD.edit ? '<div class="pn-rz" title="높이"></div>' : ''}</div>`;
+        const box = slot.firstElementChild;
+        const edit = fn => { const v = JSON.parse(JSON.stringify(pnCfg(PD.key))); v.ws = v.ws || {}; fn(v); pnSave(v); pnDraw(vy, vm); };
+        box.onclick = e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); const wEl = b.closest('.pn-w'), wid = wEl && wEl.dataset.w;
+            if (b.dataset.pn) { const a = b.dataset.pn; if (a === 'c') edit(v => v.c = v.c === 'w' ? 'k' : 'w'); else edit(v => { const id = 'w' + Date.now().toString(36); const mx = Math.max(0, ...Object.values(v.ws).map(x => x.ord || 0)); v.ws[id] = a === 'unf' ? { t: 'unf', per: 'month', f: 2, ord: mx + 1 } : { t: 'todo', f: 1, ord: mx + 1 }; }); return; }
+            if (b.dataset.pw) { const a = b.dataset.pw; edit(v => { const w = v.ws[wid]; if (!w) return; if (a === 'x') { if (w.t === 'todo' && (PN.todo[wid] || []).length && !confirm('투두 위젯 지울까?')) return; delete v.ws[wid]; } else if (a === 'per') w.per = b.dataset.v; else if (a === 'n') w.f = Math.max(1, (w.f || 1) - 1); else if (a === 'w') w.f = Math.min(6, (w.f || 1) + 1); else { const arr = Object.entries(v.ws).sort((x, y) => (x[1].ord || 0) - (y[1].ord || 0)); const i = arr.findIndex(x => x[0] === wid), j = a === 'l' ? i - 1 : i + 1; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; arr.forEach((x, n) => x[1].ord = n); } }); return; }
+            if (b.dataset.td) { const L = (PN.todo[wid] || []).slice(), i = +b.dataset.i; if (b.dataset.td === 'ck') L[i] = { ...L[i], d: L[i].d ? 0 : 1 }; else L.splice(i, 1); pnTodoPut(wid, L); pnDraw(vy, vm); } };
+        box.querySelectorAll('.pn-in').forEach(inp => { inp.onkeydown = e => { if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const t = inp.value.trim(); if (!t) return; const wid = inp.closest('.pn-w').dataset.w; pnTodoPut(wid, [...(PN.todo[wid] || []), { t }]); inp.value = ''; pnDraw(vy, vm); const n = PD.wrap.querySelector(`.pn-w[data-w="${wid}"] .pn-in`); if (n) n.focus(); }; });
+        box.querySelectorAll('.pn-tt').forEach(sp => { sp.ondblclick = () => { const wid = sp.closest('.pn-w').dataset.w, i = [...sp.closest('.pn-bd').querySelectorAll('.pn-tt')].indexOf(sp); sp.contentEditable = 'true'; sp.focus(); const fin = () => { sp.contentEditable = 'false'; const L = (PN.todo[wid] || []).slice(), t = sp.innerText.trim(); if (!L[i]) return; if (t) L[i] = { ...L[i], t }; else L.splice(i, 1); pnTodoPut(wid, L); pnDraw(vy, vm); }; sp.onblur = fin; sp.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sp.blur(); } }; }; });
+        const ro = box.querySelector('.pn-o'); if (ro) { ro.onpointerdown = e => e.stopPropagation(); ro.oninput = () => { const v = +ro.value; box.style.background = dk ? `rgba(18,19,22,${v})` : `rgba(255,255,255,${v})`; }; ro.onchange = () => edit(v => v.o = +ro.value); }
+        const rz = box.querySelector('.pn-rz'); if (rz) rz.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); const y0 = e.clientY, h0 = box.offsetHeight; PN.rz = true; const mv = ev => { box.style.height = Math.max(80, h0 + ev.clientY - y0) + 'px'; }; const up = () => { document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); PN.rz = false; edit(v => v.h = box.offsetHeight); }; document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up); };
     }
     /* ── 달력 꾸미기: 달마다 따로, 사진·글을 달력 위 아무 데나 (위치·크기는 달력 너비 기준 비율) ── */
     const PD = { cache: {}, edit: false, key: null, wrap: null, sel: null };
@@ -3384,12 +3462,12 @@
         if (!wrap) return; PD.wrap = wrap; PD.key = key; pdItems(key);
         wrap.style.position = 'relative';
         const bar = document.createElement('div'); bar.className = 'pd-bar';
-        bar.innerHTML = PD.edit ? `<button data-pd="img">＋ 사진</button><button data-pd="txt">＋ 글</button><button data-pd="bg">배경</button><button data-pd="bgu">배경 주소</button>${PD.bg && PD.bg.src ? `<span class="pd-veil"><input type="range" min="0" max="0.9" step="0.05" value="${PD.bg.v == null ? .55 : PD.bg.v}" title="배경 흐리게"></span> <button data-pd="bgth">${PD.bg.th === 'dark' ? '어둡게 ▸ 밝게' : '밝게 ▸ 어둡게'}</button><button data-pd="bgadj" class="${PD.bgAdj ? 'on2' : ''}">배경 옮기기</button>${PD.bgAdj ? `<span class="pd-veil" title="배경 크기"><input class="pd-bs" type="range" min="100" max="400" step="5" value="${PD.bg.s || 100}"></span>` : ''}<button data-pd="bgx">배경 빼기</button>` : ''}<span class="pd-veil" title="과목 색 진하게 ↔ 차분하게"><span style="font-size:.6rem;color:inherit;opacity:.8;margin:0 3px">과목색</span><input class="pd-tone" type="range" min="-40" max="50" step="2" value="${PL_TONE}"></span><button data-pd="done" class="on">완료</button><input type="file" accept="image/*" hidden class="pd-f1"><input type="file" accept="image/*" hidden class="pd-f2">` : '<button data-pd="edit">꾸미기</button>';
+        bar.innerHTML = PD.edit ? `<button data-pd="img">＋ 사진</button><button data-pd="txt">＋ 글</button><button data-pd="bg">배경</button><button data-pd="bgu">배경 주소</button>${PD.bg && PD.bg.src ? `<span class="pd-veil"><input type="range" min="0" max="0.9" step="0.05" value="${PD.bg.v == null ? .55 : PD.bg.v}" title="배경 흐리게"></span> <button data-pd="bgth">${PD.bg.th === 'dark' ? '어둡게 ▸ 밝게' : '밝게 ▸ 어둡게'}</button><button data-pd="bgadj" class="${PD.bgAdj ? 'on2' : ''}">배경 옮기기</button>${PD.bgAdj ? `<span class="pd-veil" title="배경 크기"><input class="pd-bs" type="range" min="100" max="400" step="5" value="${PD.bg.s || 100}"></span>` : ''}<button data-pd="bgx">배경 빼기</button>` : ''}<span class="pd-veil" title="과목 색 진하게 ↔ 차분하게"><span style="font-size:.6rem;color:inherit;opacity:.8;margin:0 3px">과목색</span><input class="pd-tone" type="range" min="-40" max="50" step="2" value="${PL_TONE}"></span><button data-pd="pnl">${pnCfg(PD.key) ? '아래 칸 빼기' : '＋ 아래 칸'}</button><button data-pd="done" class="on">완료</button><input type="file" accept="image/*" hidden class="pd-f1"><input type="file" accept="image/*" hidden class="pd-f2">` : '<button data-pd="edit">꾸미기</button>';
         wrap.appendChild(bar);
         const L = document.createElement('div'); L.className = 'pd-layer' + (PD.edit ? ' ed' : ''); wrap.appendChild(L);
         bar.onclick = e => { const b = e.target.closest('[data-pd]'); if (!b) return; e.stopPropagation(); const a = b.dataset.pd;
             if (a === 'edit') { PD.edit = true; pl_renderPlanner(); } else if (a === 'done') { pdFlush(); PD.edit = false; PD.bgAdj = false; PD.sel = null; pl_renderPlanner(); }
-            else if (a === 'img') bar.querySelector('.pd-f1').click(); else if (a === 'bg') bar.querySelector('.pd-f2').click(); else if (a === 'bgu') { const u = prompt('배경 사진 주소', PD.bg && /^https?:/.test(PD.bg.src || '') ? PD.bg.src : ''); if (u && /^https?:\/\//.test(u.trim())) { pdBgSet({ src: u.trim(), v: (PD.bg && PD.bg.v != null) ? PD.bg.v : .45 }); pl_renderPlanner(); } } else if (a === 'bgx') { PD.bgAdj = false; pdBgSet(null); pl_renderPlanner(); } else if (a === 'bgth') { pdBgSet({ ...PD.bg, th: PD.bg.th === 'dark' ? 'light' : 'dark' }); pl_renderPlanner(); } else if (a === 'bgadj') { PD.bgAdj = !PD.bgAdj; PD.sel = null; pl_renderPlanner(); } else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
+            else if (a === 'img') bar.querySelector('.pd-f1').click(); else if (a === 'bg') bar.querySelector('.pd-f2').click(); else if (a === 'bgu') { const u = prompt('배경 사진 주소', PD.bg && /^https?:/.test(PD.bg.src || '') ? PD.bg.src : ''); if (u && /^https?:\/\//.test(u.trim())) { pdBgSet({ src: u.trim(), v: (PD.bg && PD.bg.v != null) ? PD.bg.v : .45 }); pl_renderPlanner(); } } else if (a === 'bgx') { PD.bgAdj = false; pdBgSet(null); pl_renderPlanner(); } else if (a === 'bgth') { pdBgSet({ ...PD.bg, th: PD.bg.th === 'dark' ? 'light' : 'dark' }); pl_renderPlanner(); } else if (a === 'bgadj') { PD.bgAdj = !PD.bgAdj; PD.sel = null; pl_renderPlanner(); } else if (a === 'pnl') { pnPut(PD.key, pnCfg(PD.key) ? false : { h: 260, c: 'k', o: .8, ws: {} }); pl_renderPlanner(); } else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
         const f1 = bar.querySelector('.pd-f1'), f2 = bar.querySelector('.pd-f2'), vr = bar.querySelector('.pd-veil input');
         if (f1) f1.onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdAddImg(f); };
         if (f2) f2.onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdBgPick(f); };
@@ -3537,7 +3615,7 @@
         if (mode !== 'mv' || !tx) e.preventDefault();
     }, true);
     document.addEventListener('pointerdown', e => {
-        if (!PD.edit || !PD.bgAdj || !PD.wrap || !PD.wrap.contains(e.target) || (e.target.closest && e.target.closest('.pd-bar,.pd-tb'))) return;
+        if (!PD.edit || !PD.bgAdj || !PD.wrap || !PD.wrap.contains(e.target) || (e.target.closest && e.target.closest('.pd-bar,.pd-tb,.pn-box'))) return;
         e.preventDefault(); e.stopPropagation(); const r = PD.wrap.getBoundingClientRect();
         PD.bgDrag = { sx: e.clientX, sy: e.clientY, px: PD.bg.px == null ? 50 : PD.bg.px, py: PD.bg.py == null ? 50 : PD.bg.py, w: r.width, h: r.height };
     }, true);
