@@ -91,6 +91,10 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 #pages .q.flash,#pages .page.flash{outline:1.2mm solid rgba(90,174,224,.55);outline-offset:1mm;transition:outline-color .3s}
 .page.blank .blankmsg{position:absolute;inset:0;display:grid;place-items:center;color:#c9c3bd;font-size:12pt}
 @media print{.page.blank .blankmsg{display:none}}
+.seg{display:flex;gap:4px;align-items:center;font-size:12px}
+.seg span{padding:4px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;user-select:none}
+.seg span.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.seg button{margin-left:auto;padding:3px 7px;font-size:11px}
 .sl.drag{opacity:.4}
 .sl.over{border-color:var(--sky)}
 .sl{position:relative}
@@ -137,7 +141,9 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .atbl{position:absolute;top:2mm;border-collapse:collapse;font-size:8.5pt}
 .atbl th,.atbl td{border:.2mm solid #555;text-align:center;height:6.6mm;padding:0;overflow:hidden;font-weight:400;white-space:nowrap}
 .atbl th{background:#f2f2f2;font-weight:600}
-.atbl td.a{background:#f0f0f0}
+.atbl td.a{background:#f0f0f0;font-size:9.9pt}
+.atbl td.sm{font-size:7.4pt}
+.q .lab .sqn{font-size:9pt;margin-right:1.6mm;text-decoration:none;display:inline-block}
 .atbl tr.sec td{background:#f4ede7;font-weight:600}
 .atbl tr.gap td{height:2.6mm;border-left:0;border-right:0;background:none}
 
@@ -160,6 +166,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
     <div class="settings">
       <div><label>머리말 제목</label><input type="text" id="title"></div>
       <div class="tog" id="tCompact"><span class="sw"></span>짧은 문제는 한 칸에 이어서</div>
+      <div class="seg" id="numMode"><span data-m="orig">원래 번호</span><span data-m="seq">1, 2, 3…</span><button id="renum" title="지금 순서대로 1부터 다시 매기기">다시 매기기</button></div>
       <div class="tog" id="tAns"><span class="sw"></span>마지막 장에 정답지</div>
       <div style="display:flex;gap:6px"><button class="primary" id="print" style="flex:1">프린트</button><button id="printAns" style="flex:none">정답지만</button></div>
     </div>
@@ -194,10 +201,31 @@ const RS = 2;                         // 미리보기 렌더 배율
 
 let st = {sel: [], hidden: [], sub: '상황', open: null, title: '', compact: false, ans: true, z: .62, sets: {}, cur: null, link: {}};
 try { Object.assign(st, JSON.parse(localStorage.getItem(LS) || '{}')); } catch (e) {}
+/* ───── 문제 번호: 원래 번호 / 1,2,3… 순번 ─────
+   순번은 한 번 붙으면 고정 — 나중에 담은 문제는 맨 뒤 번호, 숨겨도 번호 유지 */
+st.numMode = st.numMode || 'orig';
+st.seq = st.seq || {};
+function ensureSeq() {
+  let next = 1;
+  Object.entries(st.seq).forEach(([k, v]) => { const x = itemOf(k); if (x) next = Math.max(next, v + x.it.n.length); });
+  st.sel.forEach(k => {
+    if (isDiv(k) || st.seq[k]) return;
+    const x = itemOf(k); if (!x) return;
+    st.seq[k] = next; next += x.it.n.length;
+  });
+}
+function renumberSeq() {   // 지금 순서대로 1부터 다시
+  st.seq = {}; let next = 1;
+  st.sel.forEach(k => { if (isDiv(k)) return; const x = itemOf(k); if (!x) return; st.seq[k] = next; next += x.it.n.length; });
+}
+const seqNums = k => { const x = itemOf(k), s0 = st.seq[k]; return x.it.n.map((_, i) => s0 + i); };
+const numLabel = k => { const ns = seqNums(k); return ns.length > 1 ? ns[0] + '-' + ns[ns.length - 1] : '' + ns[0]; };
+const isSeq = () => st.numMode === 'seq';
 const save = () => {
   st.hidden = st.hidden.filter(k => st.sel.includes(k));
-  if (st.cur && st.sets[st.cur]) Object.assign(st.sets[st.cur], {sel: [...st.sel], hidden: [...st.hidden], title: st.title});
-  if (isLinked()) st.link[st.cur] = {order: [...st.sel], hidden: [...st.hidden], title: st.title};
+  ensureSeq();
+  if (st.cur && st.sets[st.cur]) Object.assign(st.sets[st.cur], {sel: [...st.sel], hidden: [...st.hidden], title: st.title, seq: {...st.seq}});
+  if (isLinked()) st.link[st.cur] = {order: [...st.sel], hidden: [...st.hidden], title: st.title, seq: {...st.seq}};
   try { localStorage.setItem(LS, JSON.stringify(st)); } catch (e) {}
 };
 
@@ -442,7 +470,7 @@ function renderSel() {
     no++;
     const {e, it} = itemOf(k);
     const on = isOn(k);
-    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${no}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
+    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${isSeq() ? numLabel(k) : no}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
   }).join('') : '<div class="empty">왼쪽에서 시험 → 번호를 눌러 담아줘<br>드래그로 순서 바꾸기</div>';
 }
 
@@ -497,7 +525,8 @@ function answerRows() {
     // 구분 페이지(주제) 단위로 정답지도 나눔: 빈 줄 + 주제 이름 줄
     if (isDiv(k)) { if (rows.length) rows.push({gap: true}); rows.push({sec: divName(k)}); continue; }
     const {e, it} = itemOf(k);
-    it.n.forEach((n, i) => { rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind === '민경채' ? '민' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
+    const sq = isSeq() ? seqNums(k) : null;
+    it.n.forEach((n, i) => { rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind === '민경채' ? '민' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n: sq ? sq[i] : n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
   }
   return rows;
 }
@@ -520,7 +549,7 @@ function answerPages() {
         if (r.sec) { body += `<tr class="sec"><td colspan="4">${esc(r.sec)}</td></tr>`; return; }
         let kc = '';
         if (i === 0 || rs[i - 1].k !== r.k || rs[i - 1].sec) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k && !rs[i + sp].sec) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
-        body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
+        body += `<tr>${kc}<td class="sm">${esc(r.y)}</td><td class="sm">${r.n}</td><td class="a">${r.a}</td></tr>`;
       });
       return `<table class="atbl" style="left:${ci * ANS_STEP}mm;width:${ANS_W.reduce((a, b) => a + b)}mm;table-layout:fixed"><colgroup>${ANS_W.map(w => `<col style="width:${w}mm">`).join('')}</colgroup>${body}</table>`;
     }).join('');
@@ -536,7 +565,7 @@ function renderPages() {
   const area = areaName();
   let html = pages.map((p, i) => p.div ? `<div class="page" data-idx="${p.idx}">${head(i + 1, '', area)}<div class="divt">${esc(p.div)}</div><div class="divs">${esc(st.title || defaultTitle())}</div></div>` : `<div class="page">${head(i + 1, '', area)}<div class="pbody"><div class="vline"></div>` +
     p.cols.map((col, ci) => `<div class="col ${ci ? 'r' : 'l'}">` + col.map(b =>
-      `<div class="q" ${b.si === 0 ? `data-idx="${b.idx}"` : ''}>${b.si === 0 ? `<div class="lab">${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
+      `<div class="q" ${b.si === 0 ? `data-idx="${b.idx}"` : ''}>${b.si === 0 ? `<div class="lab">${isSeq() ? `<b class="sqn">${numLabel(st.sel[b.idx])}</b>` : ''}${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
     ).join('') + '</div>').join('') + '</div></div>');
   if (st.ans && st.sel.length) {
     // 양면 인쇄: 문제가 홀수 장이면 빈 장 하나 넣어서 정답지는 새 종이에서 시작
@@ -576,6 +605,9 @@ function loadFail(err) {
 }
 
 function renderAll() {
+  ensureSeq();
+  document.querySelectorAll('#numMode span').forEach(x => x.classList.toggle('on', x.dataset.m === st.numMode));
+  $('renum').style.display = isSeq() ? '' : 'none';
   renderSets(); renderTabs(); renderBank(); renderSel(); renderPages();
   $('title').value = st.title; $('title').placeholder = defaultTitle();
   $('tCompact').classList.toggle('on', st.compact);
@@ -659,8 +691,10 @@ async function buildPdf(ansOnly) {
         let y = BT; const x0 = ML + (ci ? COL_W + 4 : 0);
         for (const b of pages[pi].cols[ci]) {
           if (b.si === 0) {
-            const w = txt(pg, srcLabel(b.e, b.it), F.r, 2.65, x0 + 1, y + 1.5, 'left');
-            pg.drawLine({start: {x: (x0 + 1) * MM, y: Y(y + 2.95)}, end: {x: (x0 + 1 + w) * MM, y: Y(y + 2.95)}, thickness: .2 * MM, color: rgb(0, 0, 0)});
+            let lx = x0 + 1;
+            if (isSeq()) lx += txt(pg, numLabel(st.sel[b.idx]) + '.', F.b, 3.2, lx, y + 1.5, 'left') + 1.6;
+            const w = txt(pg, srcLabel(b.e, b.it), F.r, 2.65, lx, y + 1.5, 'left');
+            pg.drawLine({start: {x: lx * MM, y: Y(y + 2.95)}, end: {x: (lx + w) * MM, y: Y(y + 2.95)}, thickness: .2 * MM, color: rgb(0, 0, 0)});
             y += LAB_H;
           }
           // 원본 페이지는 한 번만 넣고, 필요한 영역만 잘라서(clip) 보여줌 → 파일 크기 작게
@@ -685,18 +719,18 @@ async function buildPdf(ansOnly) {
         drawHead(pg, F, title, '<정답지>', 'PSAT', '답지');
         chunks.slice(p, p + ANS_COLS).forEach((rs, ci) => {
           const tx = ML + ci * ANS_STEP, ty = BT + 2;
-          const cell = (cx, cy, w, h, t, fill, bold) => {
+          const cell = (cx, cy, w, h, t, fill, bold, size = 3) => {
             rect(pg, cx, cy, w, h, {fill, sc: [.33, .33, .33], bw: .2});
-            if (t !== '' && t != null) txt(pg, t, bold ? F.b : F.r, 3, cx + w / 2, cy + h / 2, 'center', w - 1);
+            if (t !== '' && t != null) txt(pg, t, bold ? F.b : F.r, size, cx + w / 2, cy + h / 2, 'center', w - 1);
           };
           let cy = ty;
           rs.forEach((r, i) => {
             if (r.gap) { cy += GAP_H; return; }
             if (r.sec) { cell(tx, cy, W[0] + W[1] + W[2] + W[3], RH, r.sec, [.96, .93, .9], true); cy += RH; return; }
             if (i === 0 || rs[i - 1].k !== r.k || rs[i - 1].sec) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k && !rs[i + sp].sec) sp++; cell(tx, cy, W[0], RH * sp, r.k); }
-            cell(tx + W[0], cy, W[1], RH, r.y);
-            cell(tx + W[0] + W[1], cy, W[2], RH, r.n);
-            cell(tx + W[0] + W[1] + W[2], cy, W[3], RH, r.a, [.94, .94, .94]);
+            cell(tx + W[0], cy, W[1], RH, r.y, null, false, 2.6);
+            cell(tx + W[0] + W[1], cy, W[2], RH, r.n, null, false, 2.6);
+            cell(tx + W[0] + W[1] + W[2], cy, W[3], RH, r.a, [.94, .94, .94], false, 3.5);
             cy += RH;
           });
         });
@@ -757,9 +791,9 @@ $('clear').onclick = () => { if (lockLinked()) return; if (st.sel.length && conf
 $('setSel').onchange = e => {
   save();
   const id = e.target.value;
-  if (!id) { st.cur = null; st.sel = []; st.hidden = []; st.title = ''; }
-  else if (isLinked(id)) { st.cur = id; Object.assign(st, linkedSel(id)); }
-  else { const s = st.sets[id]; st.cur = id; st.sel = s.sel.filter(okKey); st.hidden = (s.hidden || []).filter(k => st.sel.includes(k)); st.title = s.title || ''; }
+  if (!id) { st.cur = null; st.sel = []; st.hidden = []; st.title = ''; st.seq = {}; }
+  else if (isLinked(id)) { st.cur = id; Object.assign(st, linkedSel(id)); st.seq = {...((st.link[id] || {}).seq || {})}; }
+  else { const s = st.sets[id]; st.cur = id; st.sel = s.sel.filter(okKey); st.hidden = (s.hidden || []).filter(k => st.sel.includes(k)); st.title = s.title || ''; st.seq = {...(s.seq || {})}; }
   renderAll();
 };
 $('setSave').onclick = () => {
@@ -807,6 +841,10 @@ $('selList').onclick = e => {
 $('title').oninput = e => { st.title = e.target.value; document.querySelectorAll('.phead .t1').forEach(b => b.textContent = st.title || defaultTitle()); save(); };
 $('tCompact').onclick = () => { st.compact = !st.compact; renderAll(); };
 $('tAns').onclick = () => { st.ans = !st.ans; renderAll(); };
+$('numMode').onclick = e => {
+  const m = e.target.dataset.m; if (m) { st.numMode = m; renderAll(); }
+};
+$('renum').onclick = () => { if (confirm('지금 목록 순서대로 1번부터 다시 매길까?')) { renumberSeq(); renderAll(); } };
 $('zi').onclick = () => { st.z = Math.min(1.2, +(st.z + .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
 $('zo').onclick = () => { st.z = Math.max(.3, +(st.z - .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
 $('print').onclick = () => buildPdf(false);
