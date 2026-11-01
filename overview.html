@@ -493,19 +493,15 @@ function dayTags(key){const day=ST.pData&&ST.pData[key];if(!day)return [];const 
   arr(day.items).forEach(it=>{if(!it)return;const done=it.hl||arr(it.subItems).some(s=>s&&s.hl);if(done&&it.tag&&!seen.includes(it.tag))seen.push(it.tag);});
   return mergePsat(seen);}
 const tagInfo=id=>{const t=arr(ST.pTags).find(x=>x&&x.id===id)||{name:id,color:'#bbb'};return {id,name:t.name||id,color:t.color||'#bbb'};};
-function mergePsat(ids){
-  // 별(☆★) 태그는 빼고, 플래너 태그 순서대로
-  const ord=arr(ST.pTags).map(x=>x&&x.id);const pos=id=>{const i=ord.indexOf(id);return i<0?999:i;};
-  const L=ids.map(tagInfo).filter(t=>!/^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(String(t.name).trim())).sort((x,y)=>pos(x.id)-pos(y.id));
-  // 피셋 영역(자료·언어·상황·계산연습)은 PSAT 하나로: PSAT(상황∙자료)
-  const PS=/^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i;
-  const out=[];let ps=null;
-  L.forEach(t=>{const m=String(t.name).trim().match(PS);
-    if(m&&(m[1]||m[2])){const sub=m[2]?(m[2]==='계산연습'?'계산':m[2]):'';
-      if(!ps){const pt=arr(ST.pTags).find(x=>x&&/^(PSAT|피셋)$/i.test(String(x.name).trim()))||arr(ST.pTags).find(x=>{if(!x)return false;const mm=String(x.name).trim().match(PS);return mm&&(mm[1]||mm[2]);});ps={id:'PSAT',name:'PSAT',color:pt?pt.color:t.color,subs:[]};out.push(ps);}
-      if(sub&&!ps.subs.includes(sub))ps.subs.push(sub);}
-    else out.push(t);});
-  return out;}
+// 색이 같은 과목은 하나로 묶음 (피셋 영역들처럼). 피셋 계열이 섞이면 이름은 PSAT
+const PS_RE=/^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i;
+const isStar=n=>/^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(String(n).trim());
+function tagGroups(){const T=arr(ST.pTags).filter(x=>x&&x.id&&!isStar(x.name));const byC=new Map(),of={};
+  T.forEach((t,i)=>{const c=String(t.color||'#bbb').toLowerCase();if(!byC.has(c))byC.set(c,{members:[],pos:i,color:t.color||'#bbb'});byC.get(c).members.push(t);});
+  byC.forEach(g=>{const ps=g.members.some(t=>/^(PSAT|피셋)$/i.test(String(t.name).trim()))||(g.members.length>1&&g.members.some(t=>{const m=String(t.name).trim().match(PS_RE);return m&&(m[1]||m[2]);}));const f=g.members[0];
+    g.id=ps?'PSAT':f.id;g.name=ps?'PSAT':(f.name||f.id);g.members.forEach(t=>of[t.id]=g);});
+  return {of,list:[...byC.values()].sort((a,b)=>a.pos-b.pos)};}
+function mergePsat(ids){const {of}=tagGroups();const out=[];ids.forEach(id=>{const g=of[id];if(g&&!out.includes(g))out.push(g);});return out.sort((a,b)=>a.pos-b.pos);}
 /* 트래커 사이클 시작·끝 (TRACKER 탭과 같은 계산) */
 function cycleEvents(){const ev={},list=[];const T=ST.tracker||{};const data=T.data||{};const yr=new Date().getFullYear();
   const pd=txt=>{const p=String(txt||'').trim().split('.');if(p.length!==2)return null;const m=+p[0],d=+p[1];return isNaN(m)||isNaN(d)?null:new Date(yr,m-1,d);};
@@ -549,7 +545,7 @@ function wDday(it){it=it||{};let v=null;try{v=localStorage.getItem('myDday');}ca
 /* 이번 주 (월~일): 칠한 과목 합쳐서 + 아래에 못한 것 */
 function weekDays(){const t=logicalToday();t.setHours(0,0,0,0);const mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));
   return [...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;}).filter(d=>d<=t);}
-function grpOf(tagId){const t=tagInfo(tagId);const r=mergePsat([tagId]);return r.length?r[0]:null;}
+function grpOf(tagId){return tagGroups().of[tagId]||null;}
 function perDays(per){const t=logicalToday();t.setHours(0,0,0,0);if(per==='month'){const out=[];for(let d=new Date(t.getFullYear(),t.getMonth(),1);d<t;d.setDate(d.getDate()+1))out.push(new Date(d));return out;}
   if(per==='all'){const out=[];Object.keys(ST.pData||{}).forEach(k=>{const q=k.split('.');if(q.length!==2)return;let d=new Date(t.getFullYear(),+q[0]-1,+q[1]);if(isNaN(d))return;if(d>t)d=new Date(t.getFullYear()-1,+q[0]-1,+q[1]);if(d<t)out.push(d);});return out.sort((a,b)=>a-b);}
   return weekDays().filter(d=>keyOf(d)!==keyOf(t));}
@@ -562,7 +558,7 @@ function wToday(it){const per=(it&&it.per)||'week';const D=perDays(per);   // �
   const L=mergePsat(ids);
   // 못한 것: 과목별로 묶고, 같은 항목은 한 줄에 요일만 이어서
   const G=new Map();const ord=arr(ST.pTags).map(x=>x&&x.id);
-  miss.forEach(m=>{const g=m.tag?grpOf(m.tag):null;const key=g?g.id:'_';if(!G.has(key))G.set(key,{g,pos:g?(g.id==='PSAT'?Math.min(...arr(ST.pTags).map((x,i)=>x&&mergePsat([x.id])[0]&&mergePsat([x.id])[0].id==='PSAT'?i:999)):ord.indexOf(g.id)):9999,rows:new Map()});
+  miss.forEach(m=>{const g=m.tag?grpOf(m.tag):null;const key=g?g.id:'_';if(!G.has(key))G.set(key,{g,pos:g?g.pos:9999,rows:new Map()});
     const R=G.get(key).rows;const r=R.get(m.text)||{text:m.text,days:[]};const dw=per==='week'?DW[m.d.getDay()]:`${m.d.getMonth()+1}/${m.d.getDate()}`;if(!r.days.includes(dw))r.days.push(dw);R.set(m.text,r);});
   const groups=[...G.values()].filter(g=>g.g).sort((a,b)=>a.pos-b.pos);
   const tot=groups.reduce((n,g)=>n+g.rows.size,0);
@@ -988,7 +984,7 @@ function openItemMenu(id,x,y){const it=pzM(O.items[id]);if(!it)return;let h='';
   if(it.t==='dream'&&it.dv!=='arr'){const on=(it.tk!=null?it.tk:isCol());h+=`<button data-a="tk">${on?'티켓 모양 끄기':'티켓 모양'}</button>${on?`<div class="cap">티켓 색</div><div class="row" style="flex-wrap:wrap;max-width:230px">${Object.keys(TKC).map(k=>`<button data-a="tkc" data-v="${k}" title="${TKN[k]}" style="background:${TKC[k][0]};${((it.tkc||'ivory')===k)?'box-shadow:0 0 0 2px #111':''}"></button>`).join('')}</div>${swRow('tkc',it.tkc&&it.tkc[0]==='#'?it.tkc:'')}`:''}<hr>`;}
   if(it.t==='web')h+=`<button data-a="weburl">주소 바꾸기</button><button data-a="webre">새로고침</button><hr>`;
   if(it.t==='today')h+=`<div class="cap">기간</div><div class="row" style="gap:4px">${[['week','이번 주'],['month','이번 달'],['all','전체']].map(([k,l])=>`<button data-a="per" data-v="${k}" style="width:auto;height:auto;border-radius:6px;padding:2px 8px;font-size:11px;${(it.per||'week')===k?'background:var(--skyl)':''}">${l}</button>`).join('')}</div><hr>`;
-  if(it.t==='cal'){const all=mergePsat(arr(ST.pTags).map(x=>x&&x.id).filter(Boolean)),cx=it.cx||[];h+=`<div class="cap">달력에 보일 과목</div><div class="row" style="flex-wrap:wrap;gap:4px;max-width:260px">${all.map(t=>`<button data-a="cx" data-v="${esc(t.id)}" style="width:auto;height:auto;border-radius:6px;padding:2px 8px;font-size:11px;${cx.includes(t.id)?'opacity:.35;text-decoration:line-through':`background:${t.color};color:#fff`}">${esc(t.name)}</button>`).join('')}</div><hr>`;}
+  if(it.t==='cal'){const all=tagGroups().list,cx=it.cx||[];h+=`<div class="cap">달력에 보일 과목</div><div class="row" style="flex-wrap:wrap;gap:4px;max-width:260px">${all.map(t=>`<button data-a="cx" data-v="${esc(t.id)}" style="width:auto;height:auto;border-radius:6px;padding:2px 8px;font-size:11px;${cx.includes(t.id)?'opacity:.35;text-decoration:line-through':`background:${t.color};color:#fff`}">${esc(t.name)}</button>`).join('')}</div><hr>`;}
   if(it.t==='daycal')h+=`<div class="cap">숫자 색</div><div class="row">${['#1f2b5e','#6e2a2c','#2f4a3a','#111111','#c94c4c'].map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${swRow('c',it.c)}<div class="cap">달력 글자 색</div><div class="row">${['#6e2a2c','#1f2b5e','#111111','#7c8796'].map(c=>`<button data-a="c2" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${swRow('c2',it.c2)}<div class="cap">아래 문구</div><div class="row"><input id="dyFoot" value="${esc(it.foot!=null?it.foot:'one day at a time.')}" spellcheck="false" style="width:170px;border:0;background:#f1f1f1;border-radius:7px;padding:5px 8px;font-size:12px"><button data-a="dyfoot" style="width:auto;height:auto;border-radius:7px;padding:4px 9px;font-size:11.5px;background:#111;color:#fff">적용</button></div>${typeRows(it)}<hr>`;
   if(it.t==='dday')h+=`<button data-a="ddfull">${it.ddfull?'숫자만':'D-DAY 글자·날짜 보이기'}</button><div class="cap">색</div><div class="row">${SW.map(c=>`<button data-a="c" data-v="${c}" style="background:${c}"></button>`).join('')}</div>${swRow('c',it.c)}${typeRows(it)}<button data-a="ital">${it.ital?'기울임 끄기':'기울임'}</button><hr>`;
   if(it.t==='music')h+=`<button data-a="song">곡 적기</button>${it.cover?`<button data-a="cc">${it.cc?'커버 색 따라가기 끄기':'커버 색 따라가기'}</button>`:''}<button data-a="nocv">${it.nocv?'커버 보이기':'커버 숨기기'}</button>${it.nocv?'':`<button data-a="cover">커버 ${it.cover?'바꾸기':'넣기'}</button>`}${it.cover&&!it.nocv?'<button data-a="uncover">커버 빼기</button>':''}<hr>`;

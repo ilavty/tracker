@@ -3256,12 +3256,12 @@
         const day = pData[key]; if (!day) return [];
         const ord = pTags.map(t => t.id), seen = [];
         (day.items || []).forEach(it => { if (!it) return; const done = it.hl || (it.subItems || []).some(s => s && s.hl); if (done && it.tag && !seen.includes(it.tag)) seen.push(it.tag); });
-        const PS = /^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i;
-        const out = []; let ps = null;
-        seen.map(id => pTags.find(t => t.id === id) || { id, name: id, color: '#bbb' })
-            .filter(t => !/^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(String(t.name).trim()))
-            .sort((a, b) => (ord.indexOf(a.id) + 1 || 999) - (ord.indexOf(b.id) + 1 || 999))
-            .forEach(t => { const m = String(t.name).trim().match(PS); if (m && (m[1] || m[2])) { if (!ps) { const pt = pTags.find(x => /^(PSAT|피셋)$/i.test(String(x.name).trim())); ps = { id: 'PSAT', name: 'PSAT', color: pt ? pt.color : t.color }; out.push(ps); } } else out.push(t); });
+        const PS = /^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i, star = n => /^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(String(n).trim());
+        // 색이 같은 과목은 하나로 (피셋 계열이 섞이면 이름 PSAT)
+        const byC = new Map(), of = {};
+        pTags.filter(t => t && !star(t.name)).forEach((t, i) => { const c = String(t.color || '#bbb').toLowerCase(); if (!byC.has(c)) byC.set(c, { m: [], pos: i, color: t.color }); byC.get(c).m.push(t); });
+        byC.forEach(g => { const ps = g.m.some(t => /^(PSAT|피셋)$/i.test(String(t.name).trim())) || (g.m.length > 1 && g.m.some(t => { const x = String(t.name).trim().match(PS); return x && (x[1] || x[2]); })); g.name = ps ? 'PSAT' : g.m[0].name; g.m.forEach(t => of[t.id] = g); });
+        const out = []; seen.forEach(id => { const g = of[id]; if (g && !out.includes(g)) out.push(g); }); out.sort((a, b) => a.pos - b.pos);
         return out;
     }
     function pl_calCycles(yr) {
