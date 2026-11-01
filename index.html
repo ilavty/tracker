@@ -801,7 +801,7 @@
     </style>
 <style>
 .plc-wrap{position:relative;display:flex;flex-direction:column;gap:26px;padding:30px 14px 18px;border-radius:14px;border:1px solid #e3e8ef;background-color:#fff;background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px);background-size:14px 14px}
-.plc-wk{display:grid;grid-template-columns:repeat(7,1fr);font-size:.68rem;font-weight:600;color:#8d96a3;text-align:center;padding:2px 0 8px;border-bottom:1.5px solid #c9d3df;letter-spacing:.04em}
+.plc-wk span{padding-left:6px}.plc-wk{display:grid;grid-template-columns:repeat(7,1fr);font-size:.62rem;font-weight:600;color:#8d96a3;text-align:left;padding:6px 0 7px;border-bottom:1.5px solid #c9d3df;letter-spacing:.04em}
 .plc-row{display:grid;grid-template-columns:repeat(7,1fr);position:relative;border-bottom:1px solid var(--plc-line2,#dfe5ec);background-image:linear-gradient(90deg,transparent calc(100% - 1px),var(--plc-line,#eef1f5) calc(100% - 1px));background-size:calc(100% / 7) 100%}
 .plc-d{min-height:68px;padding:12px 6px 6px;cursor:pointer;display:flex;flex-direction:column;gap:9px;min-width:0}.plc-d.out{cursor:default}.plc-d:hover{background:rgba(90,151,235,.06)}
 .plc-top{display:flex;justify-content:space-between;align-items:center;gap:3px}.plc-n{font-size:.82rem;font-weight:600;color:#3a3f47;line-height:1.2}.plc-d.sun .plc-n{color:#d9534f}.plc-d.today .plc-n{display:inline-flex;align-items:center;justify-content:center;min-width:1.7em;height:1.45em;background:#111;color:#fff;border-radius:5px;padding:0 4px;line-height:1;box-sizing:border-box}
@@ -813,7 +813,7 @@
 .plc-wrap.has-bg{background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px),var(--pbg);background-size:14px 14px,14px 14px,var(--pbs,100% 100%, cover);background-position:0 0,0 0,var(--pbp,0 0, center);background-repeat:repeat,repeat,no-repeat,no-repeat}
 .has-bg.bgadj{cursor:move;outline:2px dashed #5a97eb!important}.has-bg.bgadj .pd-layer{pointer-events:none}
 .has-bg:not(.plc-wrap){background-image:var(--pbg);background-size:var(--pbs,100% 100%, cover);background-position:var(--pbp,0 0, center);background-repeat:no-repeat;border-radius:14px;padding:22px 8px 8px}
-.plc-wrap.has-bg{--plc-line:rgba(255,255,255,.28);--plc-line2:rgba(255,255,255,.35)}.plc-wrap.has-bg .plc-d{background:rgba(255,255,255,.18)}.plc-wrap.has-bg .plc-wk{border-bottom-color:rgba(255,255,255,.45);background:rgba(255,255,255,.78);color:#4a515b}.has-bg .plc-n,.has-bg .plc-t{text-shadow:0 0 3px rgba(255,255,255,.95),0 0 6px rgba(255,255,255,.8)}.has-bg .plc-n{color:#22262c}.has-bg .plc-d.sun .plc-n{color:#c9302c}.has-bg .plc-sw,.has-bg .pd-bar button{background:rgba(255,255,255,.72);color:#6b7480}.plc-wrap.has-bg .plc-wk{background:rgba(255,255,255,.55);border-radius:8px 8px 0 0}
+.plc-wrap.has-bg{--plc-line:rgba(255,255,255,.28);--plc-line2:rgba(255,255,255,.35)}.plc-wrap.has-bg .plc-row{background-color:rgba(255,255,255,.2)}.plc-wrap.has-bg .plc-wk{border-bottom-color:rgba(255,255,255,.45);background:rgba(255,255,255,.78);color:#4a515b}.has-bg .plc-n,.has-bg .plc-t{text-shadow:0 0 3px rgba(255,255,255,.95),0 0 6px rgba(255,255,255,.8)}.has-bg .plc-n{color:#22262c}.has-bg .plc-d.sun .plc-n{color:#c9302c}.has-bg .plc-sw,.has-bg .pd-bar button{background:rgba(255,255,255,.72);color:#6b7480}.plc-wrap.has-bg .plc-wk{background:rgba(255,255,255,.55);border-radius:8px 8px 0 0}
 .pd-veil{display:inline-flex;align-items:center}.pd-veil input{width:70px;accent-color:#5a97eb}
 .pd-bar{position:absolute;top:6px;right:70px;display:flex;gap:4px;z-index:30}.pd-bar button{border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.06em;padding:3px 8px;border-radius:8px;cursor:pointer}.pd-bar button:hover{color:#8d96a3;background:#f4f6f9}.pd-bar button.on{color:#fff;background:#3a3f47}.pd-bar button.on2{color:#1f3b63;background:#e3edf9}.pd-bar:has(.on) button:not(.on){color:#5c6672;background:#f1f4f8}
 .pd-layer{position:absolute;inset:0;pointer-events:none;z-index:20}.pd-layer.ed{outline:1.5px dashed rgba(90,151,235,.35);outline-offset:-3px;border-radius:14px}
@@ -3334,7 +3334,7 @@
         }
         const months = new Set([vy * 12 + vm - 1]);
         const cyc = pl_calCycles(yr);
-        const W = ['일', '월', '화', '수', '목', '금', '토'];
+        const W = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
         let h = '<div class="plc-wrap" style="grid-column:1/-1"><button class="plc-sw" onclick="pl_toggleCalSimple()">SIMPLE</button>';
         [...months].sort((a, b) => b - a).forEach(mi => {
             const y = Math.floor(mi / 12), m = mi % 12, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), rows = Math.ceil((first + days) / 7);
