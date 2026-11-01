@@ -825,7 +825,7 @@
 .pd-tb button{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:.68rem;color:#4a515b;cursor:pointer;line-height:1.2}.pd-tb button:hover{background:#f1f4f8}.pd-tb button.on{background:#e3edf9;color:#1f3b63}
 .pd-tb .sw{width:15px;height:15px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}.pd-tb .sw.on{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #5a97eb}
 .pd-tb label.cus{position:relative;display:inline-block;width:15px;height:15px;border-radius:50%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);cursor:pointer;overflow:hidden}.pd-tb label.cus input{position:absolute;inset:0;opacity:0;cursor:pointer}
-.pd-stamp{width:100%;height:100%;box-sizing:border-box;background-size:cover;background-position:center;background-origin:border-box;padding:var(--r);-webkit-mask:radial-gradient(var(--r) at 50% 50%,#0000 96%,#000) calc(var(--r)*-1.5) calc(var(--r)*-1.5)/calc(var(--r)*3) calc(var(--r)*3) round,linear-gradient(#000 0 0) content-box;mask:radial-gradient(var(--r) at 50% 50%,#0000 96%,#000) calc(var(--r)*-1.5) calc(var(--r)*-1.5)/calc(var(--r)*3) calc(var(--r)*3) round,linear-gradient(#000 0 0) content-box}
+.pd-stamp{width:100%;height:100%;box-sizing:border-box;background-size:cover;background-position:center}
 .pd-it.stampw{filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}.pd-it.img .pd-stamp img{width:100%;height:100%;object-fit:cover;filter:none}
 .pd-crop{position:fixed;inset:0;z-index:99999;background:rgba(20,22,26,.55);display:flex;align-items:center;justify-content:center;padding:20px}
 .pd-cbox{background:#fff;border-radius:14px;padding:14px;max-width:min(92vw,820px);box-shadow:0 20px 50px rgba(0,0,0,.3)}
@@ -3414,6 +3414,15 @@
                 let src = cv.toDataURL('image/webp', .88); if (!src.startsWith('data:image/webp')) src = cv.toDataURL('image/png');
                 const it = { ...pdItems(PD.key)[id] }; if (!it.orig) { it.orig = it.src; it.oar = it.ar; } it.src = src; it.ar = ch / cw; pdPut(id, it); ov.remove(); pdDraw(); } });
     }
+    // 우표 톱니: 네 변에 같은 간격 반원 구멍 (모서리에 하나씩), 실제 크기로 계산한 마스크
+    function pdStampMask(w, h, r) {
+        w = Math.max(10, w); h = Math.max(10, h); const gap = r * 3.1; const nx = Math.max(2, Math.round(w / gap)), ny = Math.max(2, Math.round(h / gap)); const sx = w / nx, sy = h / ny; let c = '';
+        for (let i = 0; i <= nx; i++) { const x = (i * sx).toFixed(1); c += `<circle cx='${x}' cy='0' r='${r}'/><circle cx='${x}' cy='${h.toFixed(1)}' r='${r}'/>`; }
+        for (let j = 1; j < ny; j++) { const y = (j * sy).toFixed(1); c += `<circle cx='0' cy='${y}' r='${r}'/><circle cx='${w.toFixed(1)}' cy='${y}' r='${r}'/>`; }
+        const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w.toFixed(1)}' height='${h.toFixed(1)}' viewBox='0 0 ${w.toFixed(1)} ${h.toFixed(1)}'><defs><mask id='m'><rect width='100%' height='100%' fill='white'/><g fill='black'>${c}</g></mask></defs><rect width='100%' height='100%' fill='black' mask='url(#m)'/></svg>`;
+        const u = `url('data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg).replace(/'/g, '%27')}')`;
+        return `-webkit-mask:${u} 0 0/100% 100% no-repeat;mask:${u} 0 0/100% 100% no-repeat`;
+    }
     const pdTop = () => Math.max(0, ...Object.values(pdItems(PD.key)).map(i => i.z || 0));
     function pdAddImg(file) {
         const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => {
@@ -3428,7 +3437,7 @@
         const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const L = wrap.querySelector('.pd-layer'); if (!L) return; const W = wrap.clientWidth;
         const its = Object.entries(pdItems(PD.key)).sort((a, b) => (a[1].z || 0) - (b[1].z || 0));
         L.innerHTML = its.map(([id, it]) => { const st = `left:${it.x * W}px;top:${it.y * W}px;width:${it.w * W}px;${it.t === 'img' ? `height:${it.w * W * (it.ar || 1)}px;` : ''}${it.rot ? `transform:rotate(${it.rot}deg);` : ''}${it.t === 'txt' && it.al ? `text-align:${it.al};` : ''}z-index:${it.z || 1}`;
-            const inner = it.t === 'img' ? (it.fr === 'stamp' ? `<div class="pd-stamp" style="--r:${Math.max(1.5, it.w * W * .022 * (it.sr || 1)).toFixed(1)}px;background-image:url('${it.src}')"></div>` : `<img src="${it.src}" alt="" draggable="false">`) : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px;${it.ff ? `font-family:${PD_FF[it.ff]};` : ''}${it.c ? `color:${it.c};` : ''}${it.fw ? `font-weight:${it.fw};` : ''}${it.ital ? 'font-style:italic;' : ''}${it.al ? `text-align:${it.al};` : ''}${it.bg ? `background:${it.bg === 'hl' ? 'linear-gradient(transparent 55%,rgba(255,226,80,.6) 55%)' : it.bg === 'w' ? 'rgba(255,255,255,.85);padding:.15em .4em;border-radius:.25em' : it.bg === 'k' ? '#1d1d1f;padding:.15em .4em;border-radius:.25em' : 'none'};` : ''}${it.ls ? `letter-spacing:${it.ls}em;` : ''}">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
+            const inner = it.t === 'img' ? (it.fr === 'stamp' ? `<div class="pd-stamp" style="${pdStampMask(it.w * W, it.w * W * (it.ar || 1), Math.max(1.5, it.w * W * .022 * (it.sr || 1)))};background-image:url('${it.src}')"></div>` : `<img src="${it.src}" alt="" draggable="false">`) : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px;${it.ff ? `font-family:${PD_FF[it.ff]};` : ''}${it.c ? `color:${it.c};` : ''}${it.fw ? `font-weight:${it.fw};` : ''}${it.ital ? 'font-style:italic;' : ''}${it.al ? `text-align:${it.al};` : ''}${it.bg ? `background:${it.bg === 'hl' ? 'linear-gradient(transparent 55%,rgba(255,226,80,.6) 55%)' : it.bg === 'w' ? 'rgba(255,255,255,.85);padding:.15em .4em;border-radius:.25em' : it.bg === 'k' ? '#1d1d1f;padding:.15em .4em;border-radius:.25em' : 'none'};` : ''}${it.ls ? `letter-spacing:${it.ls}em;` : ''}">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
             return `<div class="pd-it ${it.t}${it.fr === 'stamp' ? ' stampw' : ''}${PD.sel === id && PD.edit ? ' sel' : ''}" data-id="${id}" style="${st}">${inner}${PD.edit ? '<span class="pd-x" title="지우기">×</span><span class="pd-rz"></span><span class="pd-ro" title="돌리기">↻</span>' : ''}</div>`; }).join('');
         if (Object.values(pdItems(PD.key)).some(i => i.ff)) pdFonts();
         wrap.querySelectorAll('.pd-tb').forEach(x => x.remove());
