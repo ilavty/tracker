@@ -810,6 +810,10 @@
 .plc-bars{grid-column:1/-1;position:relative;margin:2px 0 6px}
 .plc-bar{position:absolute;height:15px;border-radius:0;overflow:visible;background:var(--bg);cursor:pointer;transition:background .15s}.plc-bar.hi{background:var(--bgh)}.plc-bar.hd{border-top-left-radius:5px;border-bottom-left-radius:5px}.plc-bar.tl{border-top-right-radius:5px;border-bottom-right-radius:5px}
 
+.plc-wrap.has-bg{background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px),var(--pbg);background-size:14px 14px,14px 14px,cover;background-position:0 0,0 0,center}
+.has-bg:not(.plc-wrap){background-image:var(--pbg);background-size:cover;background-position:center;border-radius:14px;padding:22px 8px 8px}
+.plc-wrap.has-bg .plc-d{background:rgba(255,255,255,.18)}.plc-wrap.has-bg .plc-wk{background:rgba(255,255,255,.55);border-radius:8px 8px 0 0}
+.pd-veil{display:inline-flex;align-items:center}.pd-veil input{width:70px;accent-color:#5a97eb}
 .pd-bar{position:absolute;top:6px;right:70px;display:flex;gap:4px;z-index:30}.pd-bar button{border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.06em;padding:3px 8px;border-radius:8px;cursor:pointer}.pd-bar button:hover{color:#8d96a3;background:#f4f6f9}.pd-bar button.on{color:#fff;background:#3a3f47}.pd-bar:has(.on) button:not(.on){color:#5c6672;background:#f1f4f8}
 .pd-layer{position:absolute;inset:0;pointer-events:none;z-index:20}.pd-layer.ed{outline:1.5px dashed rgba(90,151,235,.35);outline-offset:-3px;border-radius:14px}
 .pd-it{position:absolute;pointer-events:none;transform-origin:50% 50%}.pd-layer.ed .pd-it{pointer-events:auto;cursor:grab;touch-action:none}.pd-it.img img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.12))}
@@ -3354,15 +3358,27 @@
         if (!wrap) return; PD.wrap = wrap; PD.key = key; pdItems(key);
         wrap.style.position = 'relative';
         const bar = document.createElement('div'); bar.className = 'pd-bar';
-        bar.innerHTML = PD.edit ? '<button data-pd="img">＋ 사진</button><button data-pd="txt">＋ 글</button><button data-pd="done" class="on">완료</button><input type="file" accept="image/*" hidden>' : '<button data-pd="edit">꾸미기</button>';
+        bar.innerHTML = PD.edit ? `<button data-pd="img">＋ 사진</button><button data-pd="txt">＋ 글</button><button data-pd="bg">배경</button>${PD.bg && PD.bg.src ? `<span class="pd-veil"><input type="range" min="0" max="0.9" step="0.05" value="${PD.bg.v == null ? .55 : PD.bg.v}" title="배경 흐리게"></span><button data-pd="bgx">배경 빼기</button>` : ''}<button data-pd="done" class="on">완료</button><input type="file" accept="image/*" hidden class="pd-f1"><input type="file" accept="image/*" hidden class="pd-f2">` : '<button data-pd="edit">꾸미기</button>';
         wrap.appendChild(bar);
         const L = document.createElement('div'); L.className = 'pd-layer' + (PD.edit ? ' ed' : ''); wrap.appendChild(L);
         bar.onclick = e => { const b = e.target.closest('[data-pd]'); if (!b) return; e.stopPropagation(); const a = b.dataset.pd;
             if (a === 'edit') { PD.edit = true; pl_renderPlanner(); } else if (a === 'done') { pdFlush(); PD.edit = false; PD.sel = null; pl_renderPlanner(); }
-            else if (a === 'img') bar.querySelector('input').click(); else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
-        bar.querySelector('input') && (bar.querySelector('input').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdAddImg(f); });
+            else if (a === 'img') bar.querySelector('.pd-f1').click(); else if (a === 'bg') bar.querySelector('.pd-f2').click(); else if (a === 'bgx') { pdBgSet(null); pl_renderPlanner(); } else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
+        const f1 = bar.querySelector('.pd-f1'), f2 = bar.querySelector('.pd-f2'), vr = bar.querySelector('.pd-veil input');
+        if (f1) f1.onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdAddImg(f); };
+        if (f2) f2.onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdBgPick(f); };
+        if (vr) { vr.oninput = () => { PD.bg.v = +vr.value; pdBgApply(); }; vr.onchange = () => pdBgSet({ ...PD.bg, v: +vr.value }); vr.onpointerdown = e => e.stopPropagation(); }
+        pdBgApply();
         pdDraw();
     }
+    // 달력 배경 사진 (모든 달 공통) + 가리기 정도
+    PD.bg = (() => { try { return JSON.parse(localStorage.getItem('pl_deco_bg') || 'null'); } catch (e) { return null; } })();
+    (() => { const r = (typeof db !== 'undefined' && db) ? db.ref('planner_deco_v1/_bg') : null; if (r) r.on('value', sn => { PD.bg = sn.val(); try { localStorage.setItem('pl_deco_bg', JSON.stringify(PD.bg)); } catch (e) { } pdBgApply(); }); })();
+    function pdBgSet(v) { PD.bg = v; try { localStorage.setItem('pl_deco_bg', JSON.stringify(v)); } catch (e) { } const r = (typeof db !== 'undefined' && db) ? db.ref('planner_deco_v1/_bg') : null; if (r) r.set(v || null); pdBgApply(); }
+    function pdBgApply() { const w = PD.wrap; if (!w || !document.body.contains(w)) return; const b = PD.bg;
+        if (!b || !b.src) { w.style.removeProperty('--pbg'); w.classList.remove('has-bg'); return; }
+        const v = b.v == null ? .45 : b.v; w.style.setProperty('--pbg', `linear-gradient(rgba(255,255,255,${v}),rgba(255,255,255,${v})),url('${b.src}')`); w.classList.add('has-bg'); }
+    function pdBgPick(file) { const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => { const M = 1800, sc = Math.min(1, M / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); let src = c.toDataURL('image/webp', .82); if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/jpeg', .82); pdBgSet({ src, v: (PD.bg && PD.bg.v != null) ? PD.bg.v : .55 }); pl_renderPlanner(); }; im.src = fr.result; }; fr.readAsDataURL(file); }
     const pdTop = () => Math.max(0, ...Object.values(pdItems(PD.key)).map(i => i.z || 0));
     function pdAddImg(file) {
         const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => {
