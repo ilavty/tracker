@@ -489,7 +489,7 @@ function defaultTitle() { const s = subsOfSel(); return s.length === 1 ? SUB_FUL
 function areaName() { const s = subsOfSel(); return s.length === 1 ? SUB_FULL[s[0]] : 'PSAT'; }
 
 // 정답지 칸 너비(mm): 구분·연도·문번·정답 — 정답 칸 오른쪽은 채점 표시용 여백
-const ANS_W = [13, 13, 10, 7.5];
+const ANS_W = [8, 10, 7.5, 6.5], ANS_COLS = 4, ANS_STEP = 48.5;   // 한 장에 4줄, 표 오른쪽은 채점 여백
 function answerRows() {
   const mixed = subsOfSel().length > 1;
   const rows = [];
@@ -497,14 +497,14 @@ function answerRows() {
     // 구분 페이지(주제) 단위로 정답지도 나눔: 빈 줄 + 주제 이름 줄
     if (isDiv(k)) { if (rows.length) rows.push({gap: true}); rows.push({sec: divName(k)}); continue; }
     const {e, it} = itemOf(k);
-    it.n.forEach((n, i) => { rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
+    it.n.forEach((n, i) => { rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind === '민경채' ? '민' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
   }
   return rows;
 }
 const GAP_H = 2.6;
 // 높이에 맞춰 정답지 표 나누기 (구분 사이 틈 포함, 칸 맨 앞의 틈은 버림)
 function ansChunks(rows) {
-  const cap = COL_H - 4 - 6.6, out = []; let cur = [], h = 0;
+  const cap = COL_H - 4, out = []; let cur = [], h = 0;
   rows.forEach(r => { const rh = r.gap ? GAP_H : 6.6; if (h + rh > cap && cur.length) { out.push(cur); cur = []; h = 0; } if (r.gap && !cur.length) return; cur.push(r); h += rh; });
   while (cur.length && cur[cur.length - 1].gap) cur.pop(); if (cur.length) out.push(cur); return out;
 }
@@ -512,8 +512,8 @@ function answerPages() {
   const rows = answerRows();
   const chunks = ansChunks(rows);
   const out = [];
-  for (let p = 0; p < chunks.length; p += 3) {
-    const tbls = chunks.slice(p, p + 3).map((rs, ci) => {
+  for (let p = 0; p < chunks.length; p += ANS_COLS) {
+    const tbls = chunks.slice(p, p + ANS_COLS).map((rs, ci) => {
       let body = '';
       rs.forEach((r, i) => {
         if (r.gap) { body += '<tr class="gap"><td colspan="4"></td></tr>'; return; }
@@ -522,7 +522,7 @@ function answerPages() {
         if (i === 0 || rs[i - 1].k !== r.k || rs[i - 1].sec) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k && !rs[i + sp].sec) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
         body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
       });
-      return `<table class="atbl" style="left:${ci * 66}mm;width:${ANS_W.reduce((a, b) => a + b)}mm;table-layout:fixed"><colgroup>${ANS_W.map(w => `<col style="width:${w}mm">`).join('')}</colgroup><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
+      return `<table class="atbl" style="left:${ci * ANS_STEP}mm;width:${ANS_W.reduce((a, b) => a + b)}mm;table-layout:fixed"><colgroup>${ANS_W.map(w => `<col style="width:${w}mm">`).join('')}</colgroup>${body}</table>`;
     }).join('');
     out.push(`<div class="page">${head(0, '<정답지>', 'PSAT')}<div class="pbody">${tbls}</div></div>`);
   }
@@ -680,17 +680,16 @@ async function buildPdf(ansOnly) {
       const rows = answerRows();
       const W = ANS_W, RH = 6.6;
       const chunks = ansChunks(rows);
-      for (let p = 0; p < chunks.length; p += 3) {
+      for (let p = 0; p < chunks.length; p += ANS_COLS) {
         const pg = out.addPage([PW, PH]);
         drawHead(pg, F, title, '<정답지>', 'PSAT', '답지');
-        chunks.slice(p, p + 3).forEach((rs, ci) => {
-          const tx = ML + ci * 66, ty = BT + 2;
+        chunks.slice(p, p + ANS_COLS).forEach((rs, ci) => {
+          const tx = ML + ci * ANS_STEP, ty = BT + 2;
           const cell = (cx, cy, w, h, t, fill, bold) => {
             rect(pg, cx, cy, w, h, {fill, sc: [.33, .33, .33], bw: .2});
             if (t !== '' && t != null) txt(pg, t, bold ? F.b : F.r, 3, cx + w / 2, cy + h / 2, 'center', w - 1);
           };
-          let cx = tx; ['구분', '연도', '문번', '정답'].forEach((h, i) => { cell(cx, ty, W[i], RH, h, [.95, .95, .95], true); cx += W[i]; });
-          let cy = ty + RH;
+          let cy = ty;
           rs.forEach((r, i) => {
             if (r.gap) { cy += GAP_H; return; }
             if (r.sec) { cell(tx, cy, W[0] + W[1] + W[2] + W[3], RH, r.sec, [.96, .93, .9], true); cy += RH; return; }
