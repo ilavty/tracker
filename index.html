@@ -3278,12 +3278,15 @@
         const pd = x => { const q = String(x || '').trim().split('.'); if (q.length !== 2) return null; const m = +q[0], d = +q[1]; return isNaN(m) || isNaN(d) ? null : new Date(yr, m - 1, d); };
         const arr = x => Array.isArray(x) ? x.filter(Boolean) : (x && typeof x === 'object' ? Object.values(x).filter(Boolean) : []);
         Object.keys(data).forEach(sub => arr(data[sub] && data[sub].cycles).forEach(cy => {
-            const cats = arr(cy.cats), all = [];
-            cats.forEach(c => arr(c.sessions).forEach(se => arr(se.bars).forEach(b => { const d = pd(b && b.text); if (d) all.push(d); })));
-            if (!all.length) return; const st = new Date(Math.min(...all)); let en = null;
-            const last = cats[cats.length - 1]; if (last) { const N = arr(last.topics).length; const f = arr(last.sessions)[0]; const eb = f && arr(f.bars).find(b => b.end === N - 1); if (eb) en = pd(eb.text); }
+            const cats = arr(cy.cats);
             const th = (typeof trackerThemes !== 'undefined' && trackerThemes[cy.palIdx || 0]) || { text: '#5a97eb', rgb: '90,151,235' };
-            out.push({ name: sub + ' ' + (cy.num != null ? cy.num : ''), st, en, open: !en, color: th.text, rgb: th.rgb });
+            // 사이클 안 분류(cat)마다 따로: 그 분류 첫 기록 ~ 그 분류 마지막 주제 끝낸 날
+            cats.forEach(c => {
+                const all = []; arr(c.sessions).forEach(se => arr(se.bars).forEach(b => { const d = pd(b && b.text); if (d) all.push(d); }));
+                if (!all.length) return; const st = new Date(Math.min(...all)); let en = null;
+                const N = arr(c.topics).length, f = arr(c.sessions)[0], eb = f && arr(f.bars).find(b => b.end === N - 1); if (eb) en = pd(eb.text);
+                out.push({ name: sub + ' ' + (cy.num != null ? cy.num : '') + (cats.length > 1 && c.name ? ' · ' + c.name : ''), st, en, open: !en, color: th.text, rgb: th.rgb });
+            });
         }));
         return out.sort((a, b) => a.st - b.st);
     }
