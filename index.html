@@ -2711,6 +2711,7 @@
             <span id="pl-month-label" style="min-width:34px; text-align:center;"></span>
             <span onclick="pl_shiftMonth(1)" style="cursor:pointer; padding:4px 6px;">›</span>
             <span id="pl-cal-toggle" onclick="pl_toggleCal()" style="cursor:pointer; padding:4px 6px; margin-left:4px; border-left:1px solid #ddd;">달력</span>
+            <span id="pl-cal-simple" onclick="pl_toggleCalSimple()" style="cursor:pointer; padding:4px 6px; border-left:1px solid #ddd; display:none;">시간만</span>
         </div>
         <button id="pl-select-mode-btn" onclick="pl_toggleSelectMode()" title="항목 선택(통합하기)" class="pl-select-mode-btn-mobile-only" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid var(--primary-blue); border-radius:50%; background:rgba(255,255,255,0.8); box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; box-sizing:border-box;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l3.5-1L20 6.5a1.5 1.5 0 0 0 0-2.1l-1.4-1.4a1.5 1.5 0 0 0-2.1 0L3 16.5 2 20l1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 5.5l4 4" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -3238,12 +3239,15 @@
     function pl_updateMonthNav() {
         let l = document.getElementById('pl-month-label'); if (l) l.textContent = window.plViewMonth + '월';
         let c = document.getElementById('pl-cal-toggle'); if (c) { c.textContent = window.plCalMode ? '카드' : '달력'; }
+        let cs = document.getElementById('pl-cal-simple'); if (cs) { cs.style.display = window.plCalMode ? '' : 'none'; cs.textContent = window.plCalSimple ? '과목까지' : '시간만'; }
     }
     function pl_shiftMonth(d) {
         let m = (window.plViewMonth == null ? Number(pl_getLogicalDateStr().split('.')[0]) : window.plViewMonth) + d;
         if (m < 1) m = 12; if (m > 12) m = 1;
         window.plViewMonth = m; pl_renderPlanner();
     }
+    try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
+    function pl_toggleCalSimple() { window.plCalSimple = !window.plCalSimple; try { localStorage.setItem('pl_cal_simple', window.plCalSimple ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
     function pl_toggleCal() { window.plCalMode = !window.plCalMode; pl_renderPlanner(); }
     function pl_fmtStudy(v) {
         v = String(v == null ? '' : v).trim(); if (!v) return '';
@@ -3281,15 +3285,26 @@
     function pl_renderCalendar(container) {
         const now = new Date(); if (now.getHours() < 5) now.setDate(now.getDate() - 1); now.setHours(0, 0, 0, 0);
         const todayStr = pl_getLogicalDateStr(), yr = now.getFullYear();
-        // 기록 있는 달 (최근 12달 안), 최신 달부터
-        const months = new Set([now.getFullYear() * 12 + now.getMonth()]);
-        Object.keys(pData).forEach(k => { const m = +k.split('.')[0]; if (!m) return; let y = yr; if (new Date(yr, m - 1, 1) > now) y = yr - 1; months.add(y * 12 + m - 1); });
+        // 고른 달 하나만 (‹ › 로 이동). 지금보다 뒤 달이면 작년
+        const vm = window.plViewMonth || (now.getMonth() + 1), vy = new Date(yr, vm - 1, 1) > now ? yr - 1 : yr;
+        if (window.plCalSimple) {
+            const first = new Date(vy, vm - 1, 1).getDay(), days = new Date(vy, vm, 0).getDate();
+            let h = '<div style="grid-column:1/-1; display:grid; grid-template-columns:repeat(7,1fr); gap:6px;">';
+            ['일','월','화','수','목','금','토'].forEach(w => h += `<div style="text-align:center; font-size:0.7rem; color:#9a9a9a; padding:2px 0;">${w}</div>`);
+            for (let i = 0; i < first; i++) h += '<div></div>';
+            for (let d = 1; d <= days; d++) {
+                const key = vm + '.' + d, t = pl_fmtStudy(pData[key] && pData[key].studyTime), isToday = key === todayStr && vy === yr;
+                h += `<div onclick="pl_calGoto('${key}')" style="cursor:pointer; position:relative; border:1px solid ${isToday ? 'var(--primary-blue)' : '#e4e4e4'}; border-radius:10px; background:rgba(255,255,255,0.85); height:54px; display:flex; align-items:center; justify-content:center;"><div style="position:absolute; top:5px; left:8px; font-size:0.7rem; color:#9a9a9a; line-height:1;">${d}</div><div style="font-size:0.9rem; font-weight:600; color:${t ? 'var(--primary-blue)' : '#ccc'}; padding-top:6px;">${t || '–'}</div></div>`;
+            }
+            container.innerHTML = h + '</div>'; return;
+        }
+        const months = new Set([vy * 12 + vm - 1]);
         const cyc = pl_calCycles(yr);
         const W = ['일', '월', '화', '수', '목', '금', '토'];
         let h = '<div class="plc-wrap" style="grid-column:1/-1">';
         [...months].sort((a, b) => b - a).forEach(mi => {
             const y = Math.floor(mi / 12), m = mi % 12, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), rows = Math.ceil((first + days) / 7);
-            h += `<div class="plc-month" id="plc-${m + 1}"><div class="plc-mh"><b>${m + 1}월</b><small>${y}</small></div><div class="plc-wk">${W.map(w => `<span>${w}</span>`).join('')}</div>`;
+            h += `<div class="plc-month" id="plc-${m + 1}"><div class="plc-wk">${W.map(w => `<span>${w}</span>`).join('')}</div>`;
             for (let r = 0; r < rows; r++) {
                 const wkStart = new Date(y, m, 1 - first + r * 7), wkEnd = new Date(y, m, 1 - first + r * 7 + 6);
                 // 이 주에 걸친 사이클 막대
@@ -3306,7 +3321,6 @@
             h += '</div>';
         });
         container.innerHTML = h + '</div>';
-        const cur = document.getElementById('plc-' + window.plViewMonth); if (cur && window.plViewMonth !== now.getMonth() + 1) setTimeout(() => cur.scrollIntoView({ block: 'start' }), 0);
     }
     function pl_calGoto(key) {
         window.plCalMode = false; window.plViewMonth = Number(key.split('.')[0]); pl_renderPlanner();

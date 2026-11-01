@@ -624,6 +624,13 @@ const keyEsc = e => {
   if (e.key === 'Escape') { if (document.querySelector('.pop,.cmenu')) { closePop(); return; } if (modalStack.length) { closeModal(); return; } if (studyActive) { e.preventDefault(); endStudy(); } }
 };
 document.addEventListener('keydown', keyEsc);
+/* 글칸에서 Tab → 칸에서 빠져나오기 (공부 화면·검색칸 등). 카드 편집창 안에서는 원래대로 다음 칸으로 */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab' || e.shiftKey || e.isComposing) return;
+  const t = e.target; if (!t || !t.closest || !t.closest('input,textarea,[contenteditable="true"]')) return;
+  if (modalStack.length) return;
+  e.preventDefault(); t.blur(); try { window.focus(); } catch (x) { }
+});
 
 /* ---------------- popover / context menu ---------------- */
 function closePop() { document.querySelectorAll('.pop,.cmenu').forEach(p => p.remove()); }
