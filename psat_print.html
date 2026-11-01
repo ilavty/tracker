@@ -89,6 +89,8 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .sl{cursor:pointer}
 .sl.cur{border-color:var(--sky)}
 #pages .q.flash,#pages .page.flash{outline:1.2mm solid rgba(90,174,224,.55);outline-offset:1mm;transition:outline-color .3s}
+.page.blank .blankmsg{position:absolute;inset:0;display:grid;place-items:center;color:#c9c3bd;font-size:12pt}
+@media print{.page.blank .blankmsg{display:none}}
 .sl.drag{opacity:.4}
 .sl.over{border-color:var(--sky)}
 .sl{position:relative}
@@ -533,7 +535,11 @@ function renderPages() {
     p.cols.map((col, ci) => `<div class="col ${ci ? 'r' : 'l'}">` + col.map(b =>
       `<div class="q" ${b.si === 0 ? `data-idx="${b.idx}"` : ''}>${b.si === 0 ? `<div class="lab">${esc(srcLabel(b.e, b.it))}</div>` : ''}<img class="ph-img" data-e="${b.e.id}" data-seg="${b.seg.join(',')}" style="width:${b.wmm.toFixed(2)}mm;height:${b.hmm.toFixed(2)}mm" alt=""></div>`
     ).join('') + '</div>').join('') + '</div></div>');
-  if (st.ans && st.sel.length) html = html.concat(answerPages());
+  if (st.ans && st.sel.length) {
+    // 양면 인쇄: 문제가 홀수 장이면 빈 장 하나 넣어서 정답지는 새 종이에서 시작
+    if (pages.length % 2) html.push('<div class="page blank"><div class="blankmsg">(빈 면)</div></div>');
+    html = html.concat(answerPages());
+  }
   $('pages').innerHTML = html.join('');
   $('pages').style.setProperty('--z', st.z);
   $('msg').innerHTML = st.sel.length ? '' : '담은 문제가 여기 미리보기로 떠요';
@@ -666,6 +672,7 @@ async function buildPdf() {
       }
     }
     if (st.ans) {
+      if (pages.length % 2) out.addPage([PW, PH]);   // 정답지는 항상 새 종이(앞면)에서 시작
       const rows = answerRows();
       const W = ANS_W, RH = 6.6;
       const chunks = ansChunks(rows);
