@@ -3259,7 +3259,8 @@
     }
     try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
     function pl_toggleCalSimple() { window.plCalSimple = !window.plCalSimple; try { localStorage.setItem('pl_cal_simple', window.plCalSimple ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
-    function pl_toggleCal() { window.plCalMode = !window.plCalMode; pl_renderPlanner(); }
+    try { window.plCalMode = localStorage.getItem('pl_cal_mode') === '1'; } catch (e) {}
+    function pl_toggleCal() { window.plCalMode = !window.plCalMode; try { localStorage.setItem('pl_cal_mode', window.plCalMode ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
     function pl_fmtStudy(v) {
         v = String(v == null ? '' : v).trim(); if (!v) return '';
         if (/^\d+:\d{1,2}(:\d{1,2})?$/.test(v)) { let [h, m] = v.split(':'); return h + ':' + m.padStart(2, '0'); }
@@ -3429,7 +3430,7 @@
     window.addEventListener('resize', () => { if (PD.wrap) pdDraw(); });
     function pl_calGoto(key) {
         if (PD.edit) return;
-        window.plCalMode = false; window.plViewMonth = Number(key.split('.')[0]); pl_renderPlanner();
+        window.plCalMode = false; try { localStorage.setItem('pl_cal_mode', '0'); } catch (e) {} window.plViewMonth = Number(key.split('.')[0]); pl_renderPlanner();
         setTimeout(() => { let el = document.getElementById('card-' + key); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
     }
 
