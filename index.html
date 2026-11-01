@@ -824,6 +824,15 @@
 .pd-tb button{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:.68rem;color:#4a515b;cursor:pointer;line-height:1.2}.pd-tb button:hover{background:#f1f4f8}.pd-tb button.on{background:#e3edf9;color:#1f3b63}
 .pd-tb .sw{width:15px;height:15px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}.pd-tb .sw.on{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #5a97eb}
 .pd-tb label.cus{position:relative;display:inline-block;width:15px;height:15px;border-radius:50%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);cursor:pointer;overflow:hidden}.pd-tb label.cus input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.pd-stamp{width:100%;height:100%;box-sizing:border-box;background:#fff;padding:calc(var(--r)*2.6);-webkit-mask:radial-gradient(var(--r) at 50% 50%,#0000 96%,#000) calc(var(--r)*-1.5) calc(var(--r)*-1.5)/calc(var(--r)*3) calc(var(--r)*3) round,linear-gradient(#000 0 0) content-box;mask:radial-gradient(var(--r) at 50% 50%,#0000 96%,#000) calc(var(--r)*-1.5) calc(var(--r)*-1.5)/calc(var(--r)*3) calc(var(--r)*3) round,linear-gradient(#000 0 0) content-box}
+.pd-it.stampw{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.25)) drop-shadow(0 4px 10px rgba(0,0,0,.12))}.pd-it.img .pd-stamp img{width:100%;height:100%;object-fit:cover;filter:none}
+.pd-crop{position:fixed;inset:0;z-index:99999;background:rgba(20,22,26,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.pd-cbox{background:#fff;border-radius:14px;padding:14px;max-width:min(92vw,820px);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.pd-cstage{position:relative;line-height:0;user-select:none}.pd-cstage img{max-width:min(86vw,790px);max-height:70vh;display:block}
+.pd-cr{position:absolute;box-shadow:0 0 0 9999px rgba(0,0,0,.45);outline:1.5px solid #fff;cursor:move;touch-action:none}
+.pd-cr .h{position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.35)}.pd-cr .tl{left:-7px;top:-7px;cursor:nwse-resize}.pd-cr .tr{right:-7px;top:-7px;cursor:nesw-resize}.pd-cr .bl{left:-7px;bottom:-7px;cursor:nesw-resize}.pd-cr .br{right:-7px;bottom:-7px;cursor:nwse-resize}
+.pd-cstage{overflow:hidden}
+.pd-cbt{display:flex;gap:6px;align-items:center;margin-top:12px}.pd-cbt button{border:1px solid #e1e6ec;background:#fff;border-radius:8px;padding:6px 12px;font-size:.78rem;cursor:pointer;color:#4a515b}.pd-cbt button.on{background:#e3edf9;border-color:#c5d8f2}.pd-cbt button.pri{background:#1f3b63;color:#fff;border-color:#1f3b63}
 .pd-tb i{width:1px;height:14px;background:#e1e6ec;margin:0 3px}.pd-x,.pd-rz,.pd-ro{display:none;position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #c9d3df;font-size:12px;line-height:16px;text-align:center;color:#5c6672;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .pd-it.sel .pd-x,.pd-it.sel .pd-rz,.pd-it.sel .pd-ro{display:block}.pd-x{top:-12px;right:-12px}.pd-rz{bottom:-12px;right:-12px;cursor:nwse-resize}.pd-ro{top:-12px;left:-12px;cursor:grab;font-size:10px}
 .plc-sw{position:absolute;top:6px;right:10px;border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.08em;padding:3px 8px;border-radius:8px;cursor:pointer;z-index:2}.plc-sw:hover{color:#8d96a3;background:#f4f6f9}
@@ -3358,12 +3367,12 @@
         if (!wrap) return; PD.wrap = wrap; PD.key = key; pdItems(key);
         wrap.style.position = 'relative';
         const bar = document.createElement('div'); bar.className = 'pd-bar';
-        bar.innerHTML = PD.edit ? `<button data-pd="img">＋ 사진</button><button data-pd="txt">＋ 글</button><button data-pd="bg">배경</button>${PD.bg && PD.bg.src ? `<span class="pd-veil"><input type="range" min="0" max="0.9" step="0.05" value="${PD.bg.v == null ? .55 : PD.bg.v}" title="배경 흐리게"></span><button data-pd="bgx">배경 빼기</button>` : ''}<button data-pd="done" class="on">완료</button><input type="file" accept="image/*" hidden class="pd-f1"><input type="file" accept="image/*" hidden class="pd-f2">` : '<button data-pd="edit">꾸미기</button>';
+        bar.innerHTML = PD.edit ? `<button data-pd="img">＋ 사진</button><button data-pd="txt">＋ 글</button><button data-pd="bg">배경</button><button data-pd="bgu">배경 주소</button>${PD.bg && PD.bg.src ? `<span class="pd-veil"><input type="range" min="0" max="0.9" step="0.05" value="${PD.bg.v == null ? .55 : PD.bg.v}" title="배경 흐리게"></span><button data-pd="bgx">배경 빼기</button>` : ''}<button data-pd="done" class="on">완료</button><input type="file" accept="image/*" hidden class="pd-f1"><input type="file" accept="image/*" hidden class="pd-f2">` : '<button data-pd="edit">꾸미기</button>';
         wrap.appendChild(bar);
         const L = document.createElement('div'); L.className = 'pd-layer' + (PD.edit ? ' ed' : ''); wrap.appendChild(L);
         bar.onclick = e => { const b = e.target.closest('[data-pd]'); if (!b) return; e.stopPropagation(); const a = b.dataset.pd;
             if (a === 'edit') { PD.edit = true; pl_renderPlanner(); } else if (a === 'done') { pdFlush(); PD.edit = false; PD.sel = null; pl_renderPlanner(); }
-            else if (a === 'img') bar.querySelector('.pd-f1').click(); else if (a === 'bg') bar.querySelector('.pd-f2').click(); else if (a === 'bgx') { pdBgSet(null); pl_renderPlanner(); } else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
+            else if (a === 'img') bar.querySelector('.pd-f1').click(); else if (a === 'bg') bar.querySelector('.pd-f2').click(); else if (a === 'bgu') { const u = prompt('배경 사진 주소', PD.bg && /^https?:/.test(PD.bg.src || '') ? PD.bg.src : ''); if (u && /^https?:\/\//.test(u.trim())) { pdBgSet({ src: u.trim(), v: (PD.bg && PD.bg.v != null) ? PD.bg.v : .45 }); pl_renderPlanner(); } } else if (a === 'bgx') { pdBgSet(null); pl_renderPlanner(); } else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
         const f1 = bar.querySelector('.pd-f1'), f2 = bar.querySelector('.pd-f2'), vr = bar.querySelector('.pd-veil input');
         if (f1) f1.onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdAddImg(f); };
         if (f2) f2.onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdBgPick(f); };
@@ -3379,6 +3388,29 @@
         if (!b || !b.src) { w.style.removeProperty('--pbg'); w.classList.remove('has-bg'); return; }
         const v = b.v == null ? .45 : b.v; w.style.setProperty('--pbg', `linear-gradient(rgba(255,255,255,${v}),rgba(255,255,255,${v})),url('${b.src}')`); w.classList.add('has-bg'); }
     function pdBgPick(file) { const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => { const M = 1800, sc = Math.min(1, M / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); let src = c.toDataURL('image/webp', .82); if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/jpeg', .82); pdBgSet({ src, v: (PD.bg && PD.bg.v != null) ? PD.bg.v : .55 }); pl_renderPlanner(); }; im.src = fr.result; }; fr.readAsDataURL(file); }
+    function pdCrop(id) {
+        const it0 = pdItems(PD.key)[id]; if (!it0) return; const srcO = it0.orig || it0.src;
+        const ov = document.createElement('div'); ov.className = 'pd-crop';
+        ov.innerHTML = `<div class="pd-cbox"><div class="pd-cstage"><img src="${srcO}" alt=""><div class="pd-cr"><span class="h tl"></span><span class="h tr"></span><span class="h bl"></span><span class="h br"></span></div></div><div class="pd-cbt"><button data-c="sq">정사각형</button><button data-c="free" class="on">자유</button><span style="flex:1"></span><button data-c="x">취소</button><button data-c="ok" class="pri">자르기</button></div></div>`;
+        document.body.appendChild(ov);
+        const img = ov.querySelector('img'), cr = ov.querySelector('.pd-cr'); let R_ = { x: .08, y: .08, w: .84, h: .84 }, sq = false;
+        const draw = () => { cr.style.left = R_.x * 100 + '%'; cr.style.top = R_.y * 100 + '%'; cr.style.width = R_.w * 100 + '%'; cr.style.height = R_.h * 100 + '%'; };
+        img.onload = draw; if (img.complete) draw();
+        let dg = null;
+        cr.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); const r = img.getBoundingClientRect(); const h = e.target.closest('.h'); dg = { m: h ? [...h.classList].find(c => c !== 'h') : 'mv', sx: e.clientX, sy: e.clientY, r, o: { ...R_ } }; cr.setPointerCapture(e.pointerId); });
+        cr.addEventListener('pointermove', e => { if (!dg) return; const dx = (e.clientX - dg.sx) / dg.r.width, dy = (e.clientY - dg.sy) / dg.r.height, o = dg.o; let n = { ...o };
+            if (dg.m === 'mv') { n.x = Math.min(1 - o.w, Math.max(0, o.x + dx)); n.y = Math.min(1 - o.h, Math.max(0, o.y + dy)); }
+            else { if (dg.m.includes('l')) { n.x = Math.max(0, Math.min(o.x + o.w - .05, o.x + dx)); n.w = o.x + o.w - n.x; } if (dg.m.includes('r')) n.w = Math.max(.05, Math.min(1 - o.x, o.w + dx)); if (dg.m.includes('t')) { n.y = Math.max(0, Math.min(o.y + o.h - .05, o.y + dy)); n.h = o.y + o.h - n.y; } if (dg.m.includes('b')) n.h = Math.max(.05, Math.min(1 - o.y, o.h + dy));
+                if (sq) { const ar = dg.r.width / dg.r.height, s_ = Math.min(n.w, n.h / ar * 1); n.w = s_; n.h = s_ * ar; if (n.y + n.h > 1) { n.h = 1 - n.y; n.w = n.h / ar; } } }
+            R_ = n; draw(); });
+        cr.addEventListener('pointerup', () => { dg = null; });
+        ov.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (!b) { if (e.target === ov) ov.remove(); return; } const c = b.dataset.c;
+            if (c === 'x') ov.remove();
+            else if (c === 'sq' || c === 'free') { sq = c === 'sq'; ov.querySelectorAll('[data-c=sq],[data-c=free]').forEach(x => x.classList.toggle('on', x === b)); if (sq) { const r = img.getBoundingClientRect(), ar = r.width / r.height, s_ = Math.min(R_.w, R_.h / ar); R_.w = s_; R_.h = s_ * ar; draw(); } }
+            else if (c === 'ok') { const nw = img.naturalWidth, nh = img.naturalHeight, cw = Math.max(1, Math.round(R_.w * nw)), ch = Math.max(1, Math.round(R_.h * nh)); const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; cv.getContext('2d').drawImage(img, R_.x * nw, R_.y * nh, cw, ch, 0, 0, cw, ch);
+                let src = cv.toDataURL('image/webp', .88); if (!src.startsWith('data:image/webp')) src = cv.toDataURL('image/png');
+                const it = { ...pdItems(PD.key)[id] }; if (!it.orig) { it.orig = it.src; it.oar = it.ar; } it.src = src; it.ar = ch / cw; pdPut(id, it); ov.remove(); pdDraw(); } });
+    }
     const pdTop = () => Math.max(0, ...Object.values(pdItems(PD.key)).map(i => i.z || 0));
     function pdAddImg(file) {
         const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => {
@@ -3393,12 +3425,20 @@
         const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const L = wrap.querySelector('.pd-layer'); if (!L) return; const W = wrap.clientWidth;
         const its = Object.entries(pdItems(PD.key)).sort((a, b) => (a[1].z || 0) - (b[1].z || 0));
         L.innerHTML = its.map(([id, it]) => { const st = `left:${it.x * W}px;top:${it.y * W}px;width:${it.w * W}px;${it.t === 'img' ? `height:${it.w * W * (it.ar || 1)}px;` : ''}${it.rot ? `transform:rotate(${it.rot}deg);` : ''}${it.t === 'txt' && it.al ? `text-align:${it.al};` : ''}z-index:${it.z || 1}`;
-            const inner = it.t === 'img' ? `<img src="${it.src}" alt="" draggable="false">` : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px;${it.ff ? `font-family:${PD_FF[it.ff]};` : ''}${it.c ? `color:${it.c};` : ''}${it.fw ? `font-weight:${it.fw};` : ''}${it.ital ? 'font-style:italic;' : ''}${it.al ? `text-align:${it.al};` : ''}${it.bg ? `background:${it.bg === 'hl' ? 'linear-gradient(transparent 55%,rgba(255,226,80,.6) 55%)' : it.bg === 'w' ? 'rgba(255,255,255,.85);padding:.15em .4em;border-radius:.25em' : it.bg === 'k' ? '#1d1d1f;padding:.15em .4em;border-radius:.25em' : 'none'};` : ''}${it.ls ? `letter-spacing:${it.ls}em;` : ''}">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
-            return `<div class="pd-it ${it.t}${PD.sel === id && PD.edit ? ' sel' : ''}" data-id="${id}" style="${st}">${inner}${PD.edit ? '<span class="pd-x" title="지우기">×</span><span class="pd-rz"></span><span class="pd-ro" title="돌리기">↻</span>' : ''}</div>`; }).join('');
+            const inner = it.t === 'img' ? (it.fr === 'stamp' ? `<div class="pd-stamp" style="--r:${Math.max(2.5, it.w * W * .02).toFixed(1)}px"><img src="${it.src}" alt="" draggable="false"></div>` : `<img src="${it.src}" alt="" draggable="false">`) : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px;${it.ff ? `font-family:${PD_FF[it.ff]};` : ''}${it.c ? `color:${it.c};` : ''}${it.fw ? `font-weight:${it.fw};` : ''}${it.ital ? 'font-style:italic;' : ''}${it.al ? `text-align:${it.al};` : ''}${it.bg ? `background:${it.bg === 'hl' ? 'linear-gradient(transparent 55%,rgba(255,226,80,.6) 55%)' : it.bg === 'w' ? 'rgba(255,255,255,.85);padding:.15em .4em;border-radius:.25em' : it.bg === 'k' ? '#1d1d1f;padding:.15em .4em;border-radius:.25em' : 'none'};` : ''}${it.ls ? `letter-spacing:${it.ls}em;` : ''}">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
+            return `<div class="pd-it ${it.t}${it.fr === 'stamp' ? ' stampw' : ''}${PD.sel === id && PD.edit ? ' sel' : ''}" data-id="${id}" style="${st}">${inner}${PD.edit ? '<span class="pd-x" title="지우기">×</span><span class="pd-rz"></span><span class="pd-ro" title="돌리기">↻</span>' : ''}</div>`; }).join('');
         if (Object.values(pdItems(PD.key)).some(i => i.ff)) pdFonts();
         wrap.querySelectorAll('.pd-tb').forEach(x => x.remove());
         if (!PD.edit) return;
         const si = PD.sel && pdItems(PD.key)[PD.sel];
+        if (si && si.t === 'img') {
+            const tb = document.createElement('div'); tb.className = 'pd-tb';
+            tb.innerHTML = `<button data-ia="crop">자르기</button><i></i><button data-ia="fr" data-v="" class="${!si.fr ? 'on' : ''}">기본</button><button data-ia="fr" data-v="stamp" class="${si.fr === 'stamp' ? 'on' : ''}">우표</button>${si.orig ? '<i></i><button data-ia="orig">원래 사진</button>' : ''}`;
+            tb.style.left = '10px'; tb.style.top = Math.max(-8, (si.y * W) - 46) + 'px'; wrap.appendChild(tb);
+            tb.onclick = e => { const x = e.target.closest('[data-ia]'); if (!x) return; const id = PD.sel, it = { ...pdItems(PD.key)[id] }; const a = x.dataset.ia;
+                if (a === 'crop') { pdCrop(id); return; } if (a === 'fr') { if (x.dataset.v) it.fr = x.dataset.v; else delete it.fr; } if (a === 'orig') { it.src = it.orig; it.ar = it.oar || it.ar; delete it.orig; delete it.oar; }
+                pdPut(id, it); pdDraw(); };
+        }
         if (si && si.t === 'txt') {
             pdFonts();
             const tb = document.createElement('div'); tb.className = 'pd-tb';
@@ -3423,7 +3463,7 @@
         L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, k = PD.key; if (!pdItems(k)[id]) return; pdItems(k)[id].text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => { const cur = pdItems(k)[id]; if (cur) pdPut(id, { ...cur }); }, 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
     }
     document.addEventListener('pointerdown', e => {
-        if (!PD.edit || (e.target.closest && e.target.closest('.pd-tb'))) return; const el = e.target.closest && e.target.closest('.pd-it'); if (!el || !PD.wrap || !PD.wrap.contains(el)) { if (PD.sel && !(e.target.closest && e.target.closest('.pd-bar'))) { PD.sel = null; pdDraw(); } return; }
+        if (!PD.edit || (e.target.closest && e.target.closest('.pd-tb,.pd-crop'))) return; const el = e.target.closest && e.target.closest('.pd-it'); if (!el || !PD.wrap || !PD.wrap.contains(el)) { if (PD.sel && !(e.target.closest && e.target.closest('.pd-bar'))) { PD.sel = null; pdDraw(); } return; }
         const id = el.dataset.id, it = { ...pdItems(PD.key)[id] }; if (!it) return; const W = PD.wrap.clientWidth;
         if (e.target.closest('.pd-x')) { e.preventDefault(); pdPut(id, null); PD.sel = null; pdDraw(); return; }
         if (PD.sel !== id) { PD.sel = id; it.z = pdTop() + 1; pdPut(id, it); pdDraw(); }
