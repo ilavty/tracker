@@ -799,6 +799,20 @@
             .d-day-box { padding: 4px 6px !important; }
         }
     </style>
+<style>
+.plc-wrap{display:flex;flex-direction:column;gap:26px;padding-bottom:30px}
+.plc-mh{display:flex;align-items:baseline;gap:8px;margin:0 0 6px 2px}.plc-mh b{font-size:1.05rem;font-weight:800}.plc-mh small{font-size:.72rem;color:#9a9a9a}
+.plc-wk{display:grid;grid-template-columns:repeat(7,1fr);font-size:.66rem;color:#9a9a9a;text-align:center;padding:2px 0 4px;border-bottom:1px solid #e4e4e4}
+.plc-row{display:grid;grid-template-columns:repeat(7,1fr);position:relative;border-bottom:1px solid #eee}
+.plc-d{min-height:64px;padding:4px 3px 3px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}.plc-d.out{cursor:default}.plc-d:hover{background:rgba(90,151,235,.05)}
+.plc-top{display:flex;justify-content:space-between;align-items:baseline;gap:2px}.plc-n{font-size:.68rem;color:#666;line-height:1.2}.plc-d.sun .plc-n{color:#d9534f}.plc-d.today .plc-n{background:#111;color:#fff;border-radius:3px;padding:0 4px}
+.plc-t{font-size:.6rem;color:var(--primary-blue);font-weight:600;white-space:nowrap}
+.plc-tags{display:flex;flex-direction:column;gap:1.5px}.plc-tg{display:block;font-size:.55rem;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.45}
+.plc-bars{grid-column:1/-1;position:relative;margin:0 0 4px}
+.plc-bar{position:absolute;height:12px;border-radius:0;overflow:hidden}.plc-bar.hd{border-top-left-radius:3px;border-bottom-left-radius:3px}.plc-bar.tl{border-top-right-radius:3px;border-bottom-right-radius:3px}
+.plc-bar.open{-webkit-mask:linear-gradient(90deg,#000 80%,transparent);mask:linear-gradient(90deg,#000 80%,transparent)}
+.plc-bar em{display:block;font-style:normal;font-size:.55rem;font-weight:700;white-space:nowrap;line-height:12px;padding-left:5px;opacity:.9}
+</style>
 </head>
 <body>
 
@@ -3237,21 +3251,62 @@
         if (/^\d+(\.\d+)?$/.test(v)) { let mins = Math.round(parseFloat(v) * 60); return Math.floor(mins / 60) + ':' + String(mins % 60).padStart(2, '0'); }
         return v;
     }
+    // 달력 모아보기: 기록 있는 달을 최신부터 쭉. 칸마다 칠한 과목 + 공부시간(작게), 트래커 사이클은 연한 막대로 쭉
+    function pl_calTags(key) {
+        const day = pData[key]; if (!day) return [];
+        const ord = pTags.map(t => t.id), seen = [];
+        (day.items || []).forEach(it => { if (!it) return; const done = it.hl || (it.subItems || []).some(s => s && s.hl); if (done && it.tag && !seen.includes(it.tag)) seen.push(it.tag); });
+        const PS = /^(PSAT|피셋)?\s*[(\[]?\s*(자료|언어|상황|계산연습|계산)?\s*[)\]]?$/i;
+        const out = []; let ps = null;
+        seen.map(id => pTags.find(t => t.id === id) || { id, name: id, color: '#bbb' })
+            .filter(t => !/^[☆★✩✪✫✬✭✮✯⭐\s*]+$/.test(String(t.name).trim()))
+            .sort((a, b) => (ord.indexOf(a.id) + 1 || 999) - (ord.indexOf(b.id) + 1 || 999))
+            .forEach(t => { const m = String(t.name).trim().match(PS); if (m && (m[1] || m[2])) { if (!ps) { const pt = pTags.find(x => /^(PSAT|피셋)$/i.test(String(x.name).trim())); ps = { id: 'PSAT', name: 'PSAT', color: pt ? pt.color : t.color }; out.push(ps); } } else out.push(t); });
+        return out;
+    }
+    function pl_calCycles(yr) {
+        const out = [], data = (typeof trackerData !== 'undefined' && trackerData && trackerData.data) || {};
+        const pd = x => { const q = String(x || '').trim().split('.'); if (q.length !== 2) return null; const m = +q[0], d = +q[1]; return isNaN(m) || isNaN(d) ? null : new Date(yr, m - 1, d); };
+        const arr = x => Array.isArray(x) ? x.filter(Boolean) : (x && typeof x === 'object' ? Object.values(x).filter(Boolean) : []);
+        Object.keys(data).forEach(sub => arr(data[sub] && data[sub].cycles).forEach(cy => {
+            const cats = arr(cy.cats), all = [];
+            cats.forEach(c => arr(c.sessions).forEach(se => arr(se.bars).forEach(b => { const d = pd(b && b.text); if (d) all.push(d); })));
+            if (!all.length) return; const st = new Date(Math.min(...all)); let en = null;
+            const last = cats[cats.length - 1]; if (last) { const N = arr(last.topics).length; const f = arr(last.sessions)[0]; const eb = f && arr(f.bars).find(b => b.end === N - 1); if (eb) en = pd(eb.text); }
+            const th = (typeof trackerThemes !== 'undefined' && trackerThemes[cy.palIdx || 0]) || { text: '#5a97eb', rgb: '90,151,235' };
+            out.push({ name: sub + ' ' + (cy.num != null ? cy.num : ''), st, en, open: !en, color: th.text, rgb: th.rgb });
+        }));
+        return out.sort((a, b) => a.st - b.st);
+    }
     function pl_renderCalendar(container) {
-        let year = new Date().getFullYear(), m = window.plViewMonth;
-        let first = new Date(year, m - 1, 1).getDay(), days = new Date(year, m, 0).getDate();
-        let todayStr = pl_getLogicalDateStr();
-        let h = '<div style="grid-column:1/-1; display:grid; grid-template-columns:repeat(7,1fr); gap:6px;">';
-        ['일','월','화','수','목','금','토'].forEach(w => h += `<div style="text-align:center; font-size:0.7rem; color:#9a9a9a; padding:2px 0;">${w}</div>`);
-        for (let i = 0; i < first; i++) h += '<div></div>';
-        for (let d = 1; d <= days; d++) {
-            let key = m + '.' + d, t = pl_fmtStudy(pData[key] && pData[key].studyTime);
-            let isToday = key === todayStr;
-            h += `<div onclick="pl_calGoto('${key}')" style="cursor:pointer; position:relative; border:1px solid ${isToday ? 'var(--primary-blue)' : '#e4e4e4'}; border-radius:10px; background:rgba(255,255,255,0.85); height:54px; display:flex; align-items:center; justify-content:center;">
-                <div style="position:absolute; top:5px; left:8px; font-size:0.7rem; color:#9a9a9a; line-height:1;">${d}</div>
-                <div style="font-size:0.9rem; font-weight:600; color:${t ? 'var(--primary-blue)' : '#ccc'}; padding-top:6px;">${t || '–'}</div></div>`;
-        }
+        const now = new Date(); if (now.getHours() < 5) now.setDate(now.getDate() - 1); now.setHours(0, 0, 0, 0);
+        const todayStr = pl_getLogicalDateStr(), yr = now.getFullYear();
+        // 기록 있는 달 (최근 12달 안), 최신 달부터
+        const months = new Set([now.getFullYear() * 12 + now.getMonth()]);
+        Object.keys(pData).forEach(k => { const m = +k.split('.')[0]; if (!m) return; let y = yr; if (new Date(yr, m - 1, 1) > now) y = yr - 1; months.add(y * 12 + m - 1); });
+        const cyc = pl_calCycles(yr);
+        const W = ['일', '월', '화', '수', '목', '금', '토'];
+        let h = '<div class="plc-wrap" style="grid-column:1/-1">';
+        [...months].sort((a, b) => b - a).forEach(mi => {
+            const y = Math.floor(mi / 12), m = mi % 12, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), rows = Math.ceil((first + days) / 7);
+            h += `<div class="plc-month" id="plc-${m + 1}"><div class="plc-mh"><b>${m + 1}월</b><small>${y}</small></div><div class="plc-wk">${W.map(w => `<span>${w}</span>`).join('')}</div>`;
+            for (let r = 0; r < rows; r++) {
+                const wkStart = new Date(y, m, 1 - first + r * 7), wkEnd = new Date(y, m, 1 - first + r * 7 + 6);
+                // 이 주에 걸친 사이클 막대
+                const segs = []; cyc.forEach(c => { const e = c.en || now; if (c.st > wkEnd || e < wkStart) return; const a = c.st < wkStart ? 0 : c.st.getDay(), b = e > wkEnd ? 6 : e.getDay(); segs.push({ c, a, b, head: c.st >= wkStart, tail: !c.open && c.en <= wkEnd, fade: c.open && now <= wkEnd }); });
+                h += `<div class="plc-row">`;
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(y, m, 1 - first + r * 7 + i), out = d.getMonth() !== m, key = (d.getMonth() + 1) + '.' + d.getDate();
+                    if (out) { h += '<div class="plc-d out"></div>'; continue; }
+                    const t = pl_fmtStudy(pData[key] && pData[key].studyTime), tags = pl_calTags(key);
+                    h += `<div class="plc-d${key === todayStr && y === yr ? ' today' : ''}${d.getDay() === 0 ? ' sun' : ''}" onclick="pl_calGoto('${key}')"><div class="plc-top"><span class="plc-n">${d.getDate()}</span>${t ? `<span class="plc-t">${t}</span>` : ''}</div><div class="plc-tags">${tags.map(g => `<span class="plc-tg" style="background:${g.color}">${g.name}</span>`).join('')}</div></div>`;
+                }
+                h += `<div class="plc-bars" style="height:${segs.length * 14}px">${segs.map((sg, k) => `<span class="plc-bar${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 14}px;background:rgba(${sg.c.rgb},.2)"><em style="color:${sg.c.color}">${sg.c.name}</em></span>`).join('')}</div></div>`;
+            }
+            h += '</div>';
+        });
         container.innerHTML = h + '</div>';
+        const cur = document.getElementById('plc-' + window.plViewMonth); if (cur && window.plViewMonth !== now.getMonth() + 1) setTimeout(() => cur.scrollIntoView({ block: 'start' }), 0);
     }
     function pl_calGoto(key) {
         window.plCalMode = false; window.plViewMonth = Number(key.split('.')[0]); pl_renderPlanner();
