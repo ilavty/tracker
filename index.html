@@ -3400,9 +3400,9 @@
                 if (a === 'ff') it.ff = v; else if (a === 'fw') { if (+v === 400) delete it.fw; else it.fw = +v; } else if (a === 'ital') { if (+v) it.ital = 1; else delete it.ital; }
                 else if (a === 'al') it.al = v; else if (a === 'ls') { it.ls = Math.round(((it.ls || 0) + (+v)) * 100) / 100; if (!it.ls) delete it.ls; } else if (a === 'c' || a === 'cc') it.c = v; else if (a === 'bg') { if (v) it.bg = v; else delete it.bg; }
                 pdPut(PD.sel, it); pdDraw(); };
-            tb.addEventListener('pointerdown', e => e.stopPropagation(), true);
             tb.onclick = e => { const x = e.target.closest('button[data-ta]'); if (x) { e.preventDefault(); apply(x.dataset.ta, x.dataset.tv); } };
-            tb.onchange = e => { const x = e.target.closest('[data-ta]'); if (x && (x.tagName === 'SELECT' || x.type === 'color')) apply(x.dataset.ta, x.value); };
+            const onSel = e => { const x = e.target.closest('[data-ta]'); if (x && (x.tagName === 'SELECT' || x.type === 'color') && x.value !== x.dataset.last) { x.dataset.last = x.value; apply(x.dataset.ta, x.value); } };
+            tb.addEventListener('change', onSel); tb.addEventListener('input', onSel);
         }
         L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, k = PD.key; if (!pdItems(k)[id]) return; pdItems(k)[id].text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => { const cur = pdItems(k)[id]; if (cur) pdPut(id, { ...cur }); }, 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
     }
