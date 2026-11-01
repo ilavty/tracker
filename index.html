@@ -800,17 +800,19 @@
         }
     </style>
 <style>
-.plc-wrap{display:flex;flex-direction:column;gap:26px;padding:14px 14px 18px;border-radius:14px;border:1px solid #e3e8ef;background-color:#fff;background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px);background-size:14px 14px}
+.plc-wrap{position:relative;display:flex;flex-direction:column;gap:26px;padding:30px 14px 18px;border-radius:14px;border:1px solid #e3e8ef;background-color:#fff;background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px);background-size:14px 14px}
 .plc-wk{display:grid;grid-template-columns:repeat(7,1fr);font-size:.68rem;font-weight:600;color:#8d96a3;text-align:center;padding:2px 0 8px;border-bottom:1.5px solid #c9d3df;letter-spacing:.04em}
 .plc-row{display:grid;grid-template-columns:repeat(7,1fr);position:relative;border-bottom:1px solid #dfe5ec}
-.plc-d{min-height:84px;padding:7px 6px 6px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0;border-right:1px solid #eef1f5}.plc-d:nth-child(7){border-right:0}.plc-d.out{cursor:default}.plc-d:hover{background:rgba(90,151,235,.06)}
+.plc-d{min-height:68px;padding:7px 6px 6px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0;border-right:1px solid #eef1f5}.plc-d:nth-child(7){border-right:0}.plc-d.out{cursor:default}.plc-d:hover{background:rgba(90,151,235,.06)}
 .plc-top{display:flex;justify-content:space-between;align-items:center;gap:3px}.plc-n{font-size:.82rem;font-weight:600;color:#3a3f47;line-height:1.2}.plc-d.sun .plc-n{color:#d9534f}.plc-d.today .plc-n{background:#111;color:#fff;border-radius:4px;padding:0 5px}
 .plc-t{font-size:.74rem;color:var(--primary-blue);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
-.plc-tags{display:flex;flex-direction:column;gap:2.5px}.plc-tg{display:block;font-size:.58rem;font-weight:500;color:#fff;border-radius:4px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.plc-tags{display:grid;grid-template-columns:1fr 1fr;gap:2.5px}.plc-tg{display:block;font-size:.58rem;font-weight:500;color:#fff;border-radius:4px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
 .plc-bars{grid-column:1/-1;position:relative;margin:2px 0 6px}
-.plc-bar{position:absolute;height:10px;border-radius:0;overflow:hidden}.plc-bar.hd{border-top-left-radius:5px;border-bottom-left-radius:5px}.plc-bar.tl{border-top-right-radius:5px;border-bottom-right-radius:5px}
+.plc-bar{position:absolute;height:15px;border-radius:0;overflow:hidden}.plc-bar.hd{border-top-left-radius:5px;border-bottom-left-radius:5px}.plc-bar.tl{border-top-right-radius:5px;border-bottom-right-radius:5px}
+
+.plc-sw{position:absolute;top:6px;right:10px;border:0;background:rgba(255,255,255,.7);color:#a3abb6;font-size:.62rem;font-weight:600;letter-spacing:.08em;padding:3px 8px;border-radius:8px;cursor:pointer;z-index:2}.plc-sw:hover{color:#5c6672;background:#f1f4f8}
 .plc-bar.open{-webkit-mask:linear-gradient(90deg,#000 80%,transparent);mask:linear-gradient(90deg,#000 80%,transparent)}
-.plc-bar em{display:block;font-style:normal;font-size:.52rem;font-weight:600;white-space:nowrap;line-height:10px;padding-left:6px;opacity:.85}
+.plc-bar em{display:block;font-style:normal;font-size:.58rem;font-weight:600;white-space:nowrap;line-height:15px;padding-left:7px}
 </style>
 </head>
 <body>
@@ -2710,7 +2712,6 @@
             <span id="pl-month-label" style="min-width:34px; text-align:center;"></span>
             <span onclick="pl_shiftMonth(1)" style="cursor:pointer; padding:4px 6px;">›</span>
             <span id="pl-cal-toggle" onclick="pl_toggleCal()" style="cursor:pointer; padding:4px 6px; margin-left:4px; border-left:1px solid #ddd;">달력</span>
-            <span id="pl-cal-simple" onclick="pl_toggleCalSimple()" style="cursor:pointer; padding:4px 6px; border-left:1px solid #ddd; display:none;">시간만</span>
         </div>
         <button id="pl-select-mode-btn" onclick="pl_toggleSelectMode()" title="항목 선택(통합하기)" class="pl-select-mode-btn-mobile-only" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid var(--primary-blue); border-radius:50%; background:rgba(255,255,255,0.8); box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; box-sizing:border-box;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l3.5-1L20 6.5a1.5 1.5 0 0 0 0-2.1l-1.4-1.4a1.5 1.5 0 0 0-2.1 0L3 16.5 2 20l1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 5.5l4 4" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -3238,7 +3239,6 @@
     function pl_updateMonthNav() {
         let l = document.getElementById('pl-month-label'); if (l) l.textContent = window.plViewMonth + '월';
         let c = document.getElementById('pl-cal-toggle'); if (c) { c.textContent = window.plCalMode ? '카드' : '달력'; }
-        let cs = document.getElementById('pl-cal-simple'); if (cs) { cs.style.display = window.plCalMode ? '' : 'none'; cs.innerHTML = window.plCalSimple ? '<span style="opacity:.5">FULL</span> · <b style="color:#333">SIMPLE</b>' : '<b style="color:#333">FULL</b> · <span style="opacity:.5">SIMPLE</span>'; }
     }
     function pl_shiftMonth(d) {
         let m = (window.plViewMonth == null ? Number(pl_getLogicalDateStr().split('.')[0]) : window.plViewMonth) + d;
@@ -3288,7 +3288,7 @@
         const vm = window.plViewMonth || (now.getMonth() + 1), vy = new Date(yr, vm - 1, 1) > now ? yr - 1 : yr;
         if (window.plCalSimple) {
             const first = new Date(vy, vm - 1, 1).getDay(), days = new Date(vy, vm, 0).getDate();
-            let h = '<div style="grid-column:1/-1; display:grid; grid-template-columns:repeat(7,1fr); gap:6px;">';
+            let h = '<div style="grid-column:1/-1; position:relative; display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding-top:22px;"><button class="plc-sw" onclick="pl_toggleCalSimple()">FULL</button>';
             ['일','월','화','수','목','금','토'].forEach(w => h += `<div style="text-align:center; font-size:0.7rem; color:#9a9a9a; padding:2px 0;">${w}</div>`);
             for (let i = 0; i < first; i++) h += '<div></div>';
             for (let d = 1; d <= days; d++) {
@@ -3300,7 +3300,7 @@
         const months = new Set([vy * 12 + vm - 1]);
         const cyc = pl_calCycles(yr);
         const W = ['일', '월', '화', '수', '목', '금', '토'];
-        let h = '<div class="plc-wrap" style="grid-column:1/-1">';
+        let h = '<div class="plc-wrap" style="grid-column:1/-1"><button class="plc-sw" onclick="pl_toggleCalSimple()">SIMPLE</button>';
         [...months].sort((a, b) => b - a).forEach(mi => {
             const y = Math.floor(mi / 12), m = mi % 12, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), rows = Math.ceil((first + days) / 7);
             h += `<div class="plc-month" id="plc-${m + 1}"><div class="plc-wk">${W.map(w => `<span>${w}</span>`).join('')}</div>`;
@@ -3315,7 +3315,7 @@
                     const t = pl_fmtStudy(pData[key] && pData[key].studyTime), tags = pl_calTags(key);
                     h += `<div class="plc-d${key === todayStr && y === yr ? ' today' : ''}${d.getDay() === 0 ? ' sun' : ''}" onclick="pl_calGoto('${key}')"><div class="plc-top"><span class="plc-n">${d.getDate()}</span>${t ? `<span class="plc-t">${t}</span>` : ''}</div><div class="plc-tags">${tags.map(g => `<span class="plc-tg" style="background:${g.color}">${g.name}</span>`).join('')}</div></div>`;
                 }
-                h += `<div class="plc-bars" style="height:${segs.length * 12}px">${segs.map((sg, k) => `<span class="plc-bar${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 12}px;background:rgba(${sg.c.rgb},.16)"><em style="color:${sg.c.color}">${sg.c.name}</em></span>`).join('')}</div></div>`;
+                h += `<div class="plc-bars" style="height:${segs.length * 17}px">${segs.map((sg, k) => `<span class="plc-bar${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 17}px;background:rgba(${sg.c.rgb},.16)"><em style="color:color-mix(in srgb, ${sg.c.color} 55%, #1d1d1f)">${sg.c.name}</em></span>`).join('')}</div></div>`;
             }
             h += '</div>';
         });
