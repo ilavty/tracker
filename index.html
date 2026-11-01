@@ -813,8 +813,14 @@
 .pd-bar{position:absolute;top:6px;right:70px;display:flex;gap:4px;z-index:30}.pd-bar button{border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.06em;padding:3px 8px;border-radius:8px;cursor:pointer}.pd-bar button:hover{color:#8d96a3;background:#f4f6f9}.pd-bar button.on{color:#fff;background:#3a3f47}.pd-bar:has(.on) button:not(.on){color:#5c6672;background:#f1f4f8}
 .pd-layer{position:absolute;inset:0;pointer-events:none;z-index:20}.pd-layer.ed{outline:1.5px dashed rgba(90,151,235,.35);outline-offset:-3px;border-radius:14px}
 .pd-it{position:absolute;pointer-events:none;transform-origin:50% 50%}.pd-layer.ed .pd-it{pointer-events:auto;cursor:grab;touch-action:none}.pd-it.img img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.12))}
-.pd-tx{font-family:'Paperlogy',sans-serif;color:#2b2f36;line-height:1.3;white-space:pre-wrap;word-break:keep-all;outline:none;min-height:1em}.pd-layer.ed .pd-tx{cursor:text}
-.pd-it.sel{outline:1.5px dashed #5a97eb;outline-offset:3px}.pd-x,.pd-rz,.pd-ro{display:none;position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #c9d3df;font-size:12px;line-height:16px;text-align:center;color:#5c6672;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.pd-tx{display:inline-block;max-width:100%;min-width:1em;font-family:'Paperlogy',sans-serif;color:#2b2f36;line-height:1.3;white-space:pre-wrap;word-break:keep-all;outline:none;min-height:1em}.pd-layer.ed .pd-tx{cursor:text}
+.pd-it.sel{outline:1.5px dashed #5a97eb;outline-offset:3px}
+.pd-tb{position:absolute;z-index:40;display:flex;flex-wrap:wrap;align-items:center;gap:3px;max-width:calc(100% - 20px);padding:5px 7px;background:rgba(255,255,255,.97);border:1px solid #e1e6ec;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.1);font-size:.68rem}
+.pd-tb select{font:inherit;border:1px solid #e1e6ec;border-radius:6px;padding:2px 4px;background:#fff;max-width:120px}
+.pd-tb button{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:.68rem;color:#4a515b;cursor:pointer;line-height:1.2}.pd-tb button:hover{background:#f1f4f8}.pd-tb button.on{background:#e3edf9;color:#1f3b63}
+.pd-tb .sw{width:15px;height:15px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}.pd-tb .sw.on{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #5a97eb}
+.pd-tb label.cus{position:relative;display:inline-block;width:15px;height:15px;border-radius:50%;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);cursor:pointer;overflow:hidden}.pd-tb label.cus input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.pd-tb i{width:1px;height:14px;background:#e1e6ec;margin:0 3px}.pd-x,.pd-rz,.pd-ro{display:none;position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid #c9d3df;font-size:12px;line-height:16px;text-align:center;color:#5c6672;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .pd-it.sel .pd-x,.pd-it.sel .pd-rz,.pd-it.sel .pd-ro{display:block}.pd-x{top:-12px;right:-12px}.pd-rz{bottom:-12px;right:-12px;cursor:nwse-resize}.pd-ro{top:-12px;left:-12px;cursor:grab;font-size:10px}
 .plc-sw{position:absolute;top:6px;right:10px;border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.08em;padding:3px 8px;border-radius:8px;cursor:pointer;z-index:2}.plc-sw:hover{color:#8d96a3;background:#f4f6f9}
 .plc-bar.open{-webkit-mask:linear-gradient(90deg,#000 80%,transparent);mask:linear-gradient(90deg,#000 80%,transparent)}
@@ -3332,6 +3338,10 @@
     }
     /* ── 달력 꾸미기: 달마다 따로, 사진·글을 달력 위 아무 데나 (위치·크기는 달력 너비 기준 비율) ── */
     const PD = { cache: {}, edit: false, key: null, wrap: null, sel: null };
+    const PD_FONTS = [['pl', 'Paperlogy', "'Paperlogy',sans-serif"], ['gm', 'Gmarket', "'GmarketSansChrono',sans-serif"], ['hm', 'Hahmlet', "'Hahmlet',serif"], ['ns', 'Noto Serif', "'Noto Serif KR',serif"], ['gb', '고운바탕', "'Gowun Batang',serif"], ['nm', '나눔명조', "'Nanum Myeongjo',serif"], ['pf', 'Playfair', "'Playfair Display','Hahmlet',serif"], ['is', 'Instrument', "'Instrument Serif','Gowun Batang',serif"], ['lb', 'Baskerville', "'Libre Baskerville','Hahmlet',serif"], ['cg', 'Cormorant', "'Cormorant Garamond','Gowun Batang',serif"], ['cp', 'Courier', "'Courier Prime','Paperlogy',monospace"], ['ha', 'Homemade Apple', "'Homemade Apple','Nanum Pen Script',cursive"], ['np', '나눔펜', "'Nanum Pen Script',cursive"], ['gg', '개구', "'Gaegu',cursive"]];
+    const PD_FF = Object.fromEntries(PD_FONTS.map(f => [f[0], f[2]]));
+    const PD_COLS = ['#2b2f36', '#7b828c', '#ffffff', '#5a97eb', '#1f3b63', '#8b5e3c', '#c94c4c', '#d98aa0', '#5f9a45'];
+    let pdFontsOn = false; function pdFonts() { if (pdFontsOn) return; pdFontsOn = true; const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Hahmlet:wght@300;400;600;700&family=Noto+Serif+KR:wght@400;700&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Homemade+Apple&family=Gaegu:wght@400;700&display=swap'; document.head.appendChild(l); }
     const pdRef = k => (typeof db !== 'undefined' && db) ? db.ref('planner_deco_v1/' + k) : null;
     function pdItems(k) { if (!PD.cache[k]) { PD.cache[k] = {}; try { PD.cache[k] = JSON.parse(localStorage.getItem('pl_deco_' + k) || '{}') || {}; } catch (e) { } const r = pdRef(k); if (r) r.on('value', sn => { const v = sn.val() || {}; PD.cache[k] = v; try { localStorage.setItem('pl_deco_' + k, JSON.stringify(v)); } catch (e) { } if (PD.key === k && !PD.drag) pdDraw(); }); } return PD.cache[k]; }
     function pdPut(id, v) { const k = PD.key, it = pdItems(k); if (v) it[id] = v; else delete it[id]; try { localStorage.setItem('pl_deco_' + k, JSON.stringify(it)); } catch (e) { } const r = pdRef(k); if (r) r.child(id).set(v || null); }
@@ -3361,14 +3371,38 @@
         pdFlush();
         const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const L = wrap.querySelector('.pd-layer'); if (!L) return; const W = wrap.clientWidth;
         const its = Object.entries(pdItems(PD.key)).sort((a, b) => (a[1].z || 0) - (b[1].z || 0));
-        L.innerHTML = its.map(([id, it]) => { const st = `left:${it.x * W}px;top:${it.y * W}px;width:${it.w * W}px;${it.t === 'img' ? `height:${it.w * W * (it.ar || 1)}px;` : ''}${it.rot ? `transform:rotate(${it.rot}deg);` : ''}z-index:${it.z || 1}`;
-            const inner = it.t === 'img' ? `<img src="${it.src}" alt="" draggable="false">` : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
+        L.innerHTML = its.map(([id, it]) => { const st = `left:${it.x * W}px;top:${it.y * W}px;width:${it.w * W}px;${it.t === 'img' ? `height:${it.w * W * (it.ar || 1)}px;` : ''}${it.rot ? `transform:rotate(${it.rot}deg);` : ''}${it.t === 'txt' && it.al ? `text-align:${it.al};` : ''}z-index:${it.z || 1}`;
+            const inner = it.t === 'img' ? `<img src="${it.src}" alt="" draggable="false">` : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px;${it.ff ? `font-family:${PD_FF[it.ff]};` : ''}${it.c ? `color:${it.c};` : ''}${it.fw ? `font-weight:${it.fw};` : ''}${it.ital ? 'font-style:italic;' : ''}${it.al ? `text-align:${it.al};` : ''}${it.bg ? `background:${it.bg === 'hl' ? 'linear-gradient(transparent 55%,rgba(255,226,80,.6) 55%)' : it.bg === 'w' ? 'rgba(255,255,255,.85);padding:.15em .4em;border-radius:.25em' : it.bg === 'k' ? '#1d1d1f;padding:.15em .4em;border-radius:.25em' : 'none'};` : ''}${it.ls ? `letter-spacing:${it.ls}em;` : ''}">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
             return `<div class="pd-it ${it.t}${PD.sel === id && PD.edit ? ' sel' : ''}" data-id="${id}" style="${st}">${inner}${PD.edit ? '<span class="pd-x" title="지우기">×</span><span class="pd-rz"></span><span class="pd-ro" title="돌리기">↻</span>' : ''}</div>`; }).join('');
+        if (Object.values(pdItems(PD.key)).some(i => i.ff)) pdFonts();
+        wrap.querySelectorAll('.pd-tb').forEach(x => x.remove());
         if (!PD.edit) return;
-        L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; it.text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => pdPut(id, { ...it }), 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
+        const si = PD.sel && pdItems(PD.key)[PD.sel];
+        if (si && si.t === 'txt') {
+            pdFonts();
+            const tb = document.createElement('div'); tb.className = 'pd-tb';
+            const b = (a, v, l, on, st) => `<button data-ta="${a}" data-tv="${v}" class="${on ? 'on' : ''}" ${st ? `style="${st}"` : ''}>${l}</button>`;
+            tb.innerHTML = `<select data-ta="ff">${PD_FONTS.map(f => `<option value="${f[0]}" ${(si.ff || 'pl') === f[0] ? 'selected' : ''} style="font-family:${f[2].replace(/"/g, '&quot;')}">${f[1]}</option>`).join('')}</select>`
+                + b('fw', si.fw >= 700 ? 400 : 700, 'B', si.fw >= 700, 'font-weight:700') + b('ital', si.ital ? 0 : 1, 'I', si.ital, 'font-style:italic;font-family:serif') + '<i></i>'
+                + ['left', 'center', 'right'].map(a => b('al', a, a === 'left' ? '⇤' : a === 'center' ? '↔' : '⇥', (si.al || 'left') === a)).join('') + '<i></i>'
+                + b('ls', -0.02, 'A↔−') + b('ls', 0.02, 'A↔+') + '<i></i>'
+                + PD_COLS.map(c => `<button data-ta="c" data-tv="${c}" class="sw${(si.c || '#2b2f36') === c ? ' on' : ''}" style="background:${c}"></button>`).join('') + `<label class="sw cus" title="직접 고르기"><input type="color" data-ta="cc" value="${si.c || '#2b2f36'}"></label><i></i>`
+                + b('bg', '', '바탕X', !si.bg) + b('bg', 'hl', '형광', si.bg === 'hl') + b('bg', 'w', '흰 박스', si.bg === 'w') + b('bg', 'k', '검정 박스', si.bg === 'k');
+            const box = L.querySelector(`.pd-it[data-id="${PD.sel}"]`);
+            tb.style.left = '10px'; tb.style.top = Math.max(-8, (si.y * W) - 46) + 'px';
+            wrap.appendChild(tb);
+            const apply = (a, v) => { const it = { ...pdItems(PD.key)[PD.sel] }; if (!it) return; pdFlush();
+                if (a === 'ff') it.ff = v; else if (a === 'fw') { if (+v === 400) delete it.fw; else it.fw = +v; } else if (a === 'ital') { if (+v) it.ital = 1; else delete it.ital; }
+                else if (a === 'al') it.al = v; else if (a === 'ls') { it.ls = Math.round(((it.ls || 0) + (+v)) * 100) / 100; if (!it.ls) delete it.ls; } else if (a === 'c' || a === 'cc') it.c = v; else if (a === 'bg') { if (v) it.bg = v; else delete it.bg; }
+                pdPut(PD.sel, it); pdDraw(); };
+            tb.addEventListener('pointerdown', e => e.stopPropagation(), true);
+            tb.onclick = e => { const x = e.target.closest('button[data-ta]'); if (x) { e.preventDefault(); apply(x.dataset.ta, x.dataset.tv); } };
+            tb.onchange = e => { const x = e.target.closest('[data-ta]'); if (x && (x.tagName === 'SELECT' || x.type === 'color')) apply(x.dataset.ta, x.value); };
+        }
+        L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, k = PD.key; if (!pdItems(k)[id]) return; pdItems(k)[id].text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => { const cur = pdItems(k)[id]; if (cur) pdPut(id, { ...cur }); }, 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
     }
     document.addEventListener('pointerdown', e => {
-        if (!PD.edit) return; const el = e.target.closest && e.target.closest('.pd-it'); if (!el || !PD.wrap || !PD.wrap.contains(el)) { if (PD.sel && !(e.target.closest && e.target.closest('.pd-bar'))) { PD.sel = null; pdDraw(); } return; }
+        if (!PD.edit || (e.target.closest && e.target.closest('.pd-tb'))) return; const el = e.target.closest && e.target.closest('.pd-it'); if (!el || !PD.wrap || !PD.wrap.contains(el)) { if (PD.sel && !(e.target.closest && e.target.closest('.pd-bar'))) { PD.sel = null; pdDraw(); } return; }
         const id = el.dataset.id, it = { ...pdItems(PD.key)[id] }; if (!it) return; const W = PD.wrap.clientWidth;
         if (e.target.closest('.pd-x')) { e.preventDefault(); pdPut(id, null); PD.sel = null; pdDraw(); return; }
         if (PD.sel !== id) { PD.sel = id; it.z = pdTop() + 1; pdPut(id, it); pdDraw(); }
