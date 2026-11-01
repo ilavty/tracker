@@ -2285,6 +2285,17 @@ function buildAnswerKeyRows(){
       });
     });
   });
+  // 추가 정답(EXTRA_ANSWERS)도 정답표에 표시 — 7급 2025는 2025(1)로만 보여줌(같은 시험 중복 방지)
+  Object.keys(EXTRA_ANSWERS).forEach(level=>{
+    Object.keys(EXTRA_ANSWERS[level]).forEach(yearKey=>{
+      if(level==='7급' && yearKey==='2025') return;
+      SUBJECTS.forEach(subj=>{
+        if(!EXTRA_ANSWERS[level][yearKey][subj]) return;
+        const idk = examIdKeyStr(level, subj, yearKey);
+        if(!seen[idk]) seen[idk] = { level, subject:subj, year:yearKey, total: LEVEL_TOTAL[level], idk };
+      });
+    });
+  });
   records.forEach(r=>{
     if(r.category!=='기출' || !r.year) return;
     const idk = examIdKeyStr(r.level, r.subject, r.year);
