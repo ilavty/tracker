@@ -138,6 +138,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .atbl th,.atbl td{border:.2mm solid #555;text-align:center;height:6.6mm;padding:0;overflow:hidden;font-weight:400;white-space:nowrap}
 .atbl th{background:#f2f2f2;font-weight:600}
 .atbl td.a{background:#f0f0f0}
+.atbl tr.sec td{background:#f4ede7;font-weight:600}
 .atbl tr.gap td{height:2.6mm;border-left:0;border-right:0;background:none}
 
 </style>
@@ -493,9 +494,10 @@ function answerRows() {
   const mixed = subsOfSel().length > 1;
   const rows = [];
   for (const k of st.sel) {
-    if (isDiv(k)) continue;
+    // 구분 페이지(주제) 단위로 정답지도 나눔: 빈 줄 + 주제 이름 줄
+    if (isDiv(k)) { if (rows.length) rows.push({gap: true}); rows.push({sec: divName(k)}); continue; }
     const {e, it} = itemOf(k);
-    it.n.forEach((n, i) => { const k0 = (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''); if (rows.length && rows[rows.length - 1].k !== k0) rows.push({gap: true}); rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
+    it.n.forEach((n, i) => { rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
   }
   return rows;
 }
@@ -515,8 +517,9 @@ function answerPages() {
       let body = '';
       rs.forEach((r, i) => {
         if (r.gap) { body += '<tr class="gap"><td colspan="4"></td></tr>'; return; }
+        if (r.sec) { body += `<tr class="sec"><td colspan="4">${esc(r.sec)}</td></tr>`; return; }
         let kc = '';
-        if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
+        if (i === 0 || rs[i - 1].k !== r.k || rs[i - 1].sec) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k && !rs[i + sp].sec) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
         body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
       });
       return `<table class="atbl" style="left:${ci * 66}mm;width:${ANS_W.reduce((a, b) => a + b)}mm;table-layout:fixed"><colgroup>${ANS_W.map(w => `<col style="width:${w}mm">`).join('')}</colgroup><tr><th>구분</th><th>연도</th><th>문번</th><th>정답</th></tr>${body}</table>`;
@@ -690,7 +693,8 @@ async function buildPdf(ansOnly) {
           let cy = ty + RH;
           rs.forEach((r, i) => {
             if (r.gap) { cy += GAP_H; return; }
-            if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; cell(tx, cy, W[0], RH * sp, r.k); }
+            if (r.sec) { cell(tx, cy, W[0] + W[1] + W[2] + W[3], RH, r.sec, [.96, .93, .9], true); cy += RH; return; }
+            if (i === 0 || rs[i - 1].k !== r.k || rs[i - 1].sec) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k && !rs[i + sp].sec) sp++; cell(tx, cy, W[0], RH * sp, r.k); }
             cell(tx + W[0], cy, W[1], RH, r.y);
             cell(tx + W[0] + W[1], cy, W[2], RH, r.n);
             cell(tx + W[0] + W[1] + W[2], cy, W[3], RH, r.a, [.94, .94, .94]);
