@@ -813,7 +813,7 @@
 .plc-wrap.has-bg{background-image:linear-gradient(rgba(90,151,235,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(90,151,235,.07) 1px,transparent 1px),var(--pbg);background-size:14px 14px,14px 14px,var(--pbs,100% 100%, cover);background-position:0 0,0 0,var(--pbp,0 0, center);background-repeat:repeat,repeat,no-repeat,no-repeat}
 .has-bg.bgadj{cursor:move;outline:2px dashed #5a97eb!important}.has-bg.bgadj .pd-layer{pointer-events:none}
 .has-bg:not(.plc-wrap){background-image:var(--pbg);background-size:var(--pbs,100% 100%, cover);background-position:var(--pbp,0 0, center);background-repeat:no-repeat;border-radius:14px;padding:22px 8px 8px}
-.plc-wrap.has-bg{--plc-line:rgba(255,255,255,.28);--plc-line2:rgba(255,255,255,.35)}.plc-wrap.has-bg .plc-d{background:rgba(255,255,255,.18)}.plc-wrap.has-bg .plc-wk{border-bottom-color:rgba(255,255,255,.45)}.plc-wrap.has-bg .plc-wk{background:rgba(255,255,255,.55);border-radius:8px 8px 0 0}
+.plc-wrap.has-bg{--plc-line:rgba(255,255,255,.28);--plc-line2:rgba(255,255,255,.35)}.plc-wrap.has-bg .plc-d{background:rgba(255,255,255,.18)}.plc-wrap.has-bg .plc-wk{border-bottom-color:rgba(255,255,255,.45);background:rgba(255,255,255,.78);color:#4a515b}.has-bg .plc-n,.has-bg .plc-t{text-shadow:0 0 3px rgba(255,255,255,.95),0 0 6px rgba(255,255,255,.8)}.has-bg .plc-n{color:#22262c}.has-bg .plc-d.sun .plc-n{color:#c9302c}.has-bg .plc-sw,.has-bg .pd-bar button{background:rgba(255,255,255,.72);color:#6b7480}.plc-wrap.has-bg .plc-wk{background:rgba(255,255,255,.55);border-radius:8px 8px 0 0}
 .pd-veil{display:inline-flex;align-items:center}.pd-veil input{width:70px;accent-color:#5a97eb}
 .pd-bar{position:absolute;top:6px;right:70px;display:flex;gap:4px;z-index:30}.pd-bar button{border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.06em;padding:3px 8px;border-radius:8px;cursor:pointer}.pd-bar button:hover{color:#8d96a3;background:#f4f6f9}.pd-bar button.on{color:#fff;background:#3a3f47}.pd-bar button.on2{color:#1f3b63;background:#e3edf9}.pd-bar:has(.on) button:not(.on){color:#5c6672;background:#f1f4f8}
 .pd-layer{position:absolute;inset:0;pointer-events:none;z-index:20}.pd-layer.ed{outline:1.5px dashed rgba(90,151,235,.35);outline-offset:-3px;border-radius:14px}
@@ -3294,6 +3294,8 @@
         const out = []; seen.forEach(id => { const g = of[id]; if (g && !out.includes(g)) out.push(g); }); out.sort((a, b) => a.pos - b.pos);
         return out;
     }
+    // 색에 흰색을 섞은 반투명 색 (사진이 살짝 비침)
+    function pl_mixW(rgb, k, a) { const c = String(rgb).split(',').map(x => +x.trim()); return `rgba(${c.map(v => Math.round(v * k + 255 * (1 - k))).join(',')},${a})`; }
     let PL_HI = null;
     function pl_barHi(e, ci) { e.stopPropagation(); PL_HI = PL_HI === ci ? null : ci; document.querySelectorAll('.plc-bar').forEach(b => b.classList.toggle('hi', +b.dataset.ci === PL_HI)); }
     document.addEventListener('click', e => { if (PL_HI != null && !(e.target.closest && e.target.closest('.plc-bar'))) { PL_HI = null; document.querySelectorAll('.plc-bar.hi').forEach(b => b.classList.remove('hi')); } });
@@ -3349,7 +3351,7 @@
                     const t = pl_fmtStudy(pData[key] && pData[key].studyTime), tags = pl_calTags(key);
                     h += `<div class="plc-d${key === todayStr && y === yr ? ' today' : ''}${d.getDay() === 0 ? ' sun' : ''}" onclick="pl_calGoto('${key}')"><div class="plc-top"><span class="plc-n">${d.getDate()}</span>${t ? `<span class="plc-t">${t}</span>` : ''}</div><div class="plc-tags">${tags.map(g => `<span class="plc-tg" style="background:color-mix(in srgb, ${g.color} 78%, #7b828c)">${g.name}</span>`).join('')}</div></div>`;
                 }
-                h += `<div class="plc-bars" style="height:${segs.length * 17}px">${segs.map((sg, k) => `<span data-ci="${sg.ci}" onclick="pl_barHi(event,${sg.ci})" class="plc-bar${PL_HI === sg.ci ? ' hi' : ''}${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 17}px;--bg:linear-gradient(rgba(${sg.c.rgb},.16),rgba(${sg.c.rgb},.16)),#fff;--bgh:linear-gradient(rgba(${sg.c.rgb},.42),rgba(${sg.c.rgb},.42)),#fff">${sg.lb ? `<em style="color:color-mix(in srgb, ${sg.c.color} 55%, #1d1d1f)">${sg.c.name}</em>` : ''}</span>`).join('')}</div></div>`;
+                h += `<div class="plc-bars" style="height:${segs.length * 17}px">${segs.map((sg, k) => `<span data-ci="${sg.ci}" onclick="pl_barHi(event,${sg.ci})" class="plc-bar${PL_HI === sg.ci ? ' hi' : ''}${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 17}px;--bg:${pl_mixW(sg.c.rgb, .2, .7)};--bgh:${pl_mixW(sg.c.rgb, .45, .85)}">${sg.lb ? `<em style="color:color-mix(in srgb, ${sg.c.color} 55%, #1d1d1f)">${sg.c.name}</em>` : ''}</span>`).join('')}</div></div>`;
             }
             h += '</div>';
         });
