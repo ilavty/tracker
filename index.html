@@ -3459,6 +3459,8 @@
     function pdFlush() { const a = document.activeElement; if (a && a.classList && a.classList.contains('pd-tx')) { const box = a.closest('.pd-it'), it = box && pdItems(PD.key)[box.dataset.id]; if (it) { const v = a.innerText.replace(/\n$/, ''); if (v.trim()) pdPut(box.dataset.id, { ...it, text: v }); else pdPut(box.dataset.id, null); } } }
     // 그림자만 다시 그리기 (막대 끄는 동안)
     function pdDrawShadowOnly(id) { const L = PD.wrap && PD.wrap.querySelector('.pd-layer'); if (!L) return; const it = pdItems(PD.key)[id], el = L.querySelector(`.pd-it[data-id="${id}"]`); if (!it || !el) return; const old = el.previousElementSibling; if (old && old.classList.contains('pd-shd')) { const W = PD.wrap.clientWidth, b_ = it.sb == null ? 8 : it.sb, o_ = it.so == null ? .45 : it.so, d_ = it.sd == null ? 5 : it.sd; old.style.transform = `${it.rot ? `rotate(${it.rot}deg) ` : ''}translate(${d_ * .6}px,${d_}px)`; const inn = old.firstElementChild; inn.style.opacity = o_; inn.style.filter = `blur(${b_}px)`; } }
+    function pdFit(tx) { if (!tx) return; tx.style.width = ''; const box = tx.closest('.pd-it'); const it = box && pdItems(PD.key)[box.dataset.id]; if (!it || !['w', 'k', 'c'].includes(it.bg) || !tx.textContent.trim()) return; const tf = box.style.transform; box.style.transform = 'none'; const r = document.createRange(); r.selectNodeContents(tx); let l = 1e9, rt = -1e9; for (const q of r.getClientRects()) { if (q.width < .5) continue; l = Math.min(l, q.left); rt = Math.max(rt, q.right); } box.style.transform = tf; if (rt > l) { const cs = getComputedStyle(tx); tx.style.width = Math.ceil(rt - l + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 1) + 'px'; } }
+    const pdFitAll = () => { const L = PD.wrap && PD.wrap.querySelector('.pd-layer'); if (L) L.querySelectorAll('.pd-tx').forEach(pdFit); };
     function pdDraw() {
         pdFlush();
         const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const L = wrap.querySelector('.pd-layer'); if (!L) return; const W = wrap.clientWidth;
@@ -3510,7 +3512,7 @@
             tb.addEventListener('change', e => { if (e.target.matches('.pd-bgo')) { const it = { ...pdItems(PD.key)[PD.sel] }; it.bgo = +e.target.value; pdPut(PD.sel, it); } });
             const numAp = (el, save) => { const n = el.dataset.n, v = +el.value; if (!isFinite(v) || el.value === '') return; const it = pdItems(PD.key)[PD.sel]; if (!it) return; const tx = L.querySelector(`.pd-it[data-id="${PD.sel}"] .pd-tx`);
                 if (n === 'fs') { const px = Math.max(6, Math.min(200, v)); it.fs = px / W; if (tx) tx.style.fontSize = px + 'px'; } else if (n === 'ls') { it.ls = v; if (!v) delete it.ls; if (tx) tx.style.letterSpacing = v + 'em'; } else if (n === 'lh') { it.lh = v; if (tx) tx.style.lineHeight = v; } else if (n === 'pad') { it.pad = Math.max(0, v); if (tx) tx.style.padding = pdPad(it); }
-                if (save) pdPut(PD.sel, { ...it }); };
+                pdFit(tx); if (save) pdPut(PD.sel, { ...it }); };
             tb.addEventListener('input', e => { if (e.target.matches('.pd-num')) numAp(e.target, false); });
             tb.addEventListener('change', e => { if (e.target.matches('.pd-num')) numAp(e.target, true); });
             tb.addEventListener('keydown', e => { if (e.target.matches('.pd-num') && e.key === 'Enter') { e.preventDefault(); numAp(e.target, true); } });
@@ -3519,7 +3521,8 @@
         }
         wrap.querySelectorAll('.pd-tb[data-pos]').forEach(tb => { const box = L.querySelector(`.pd-it[data-id="${PD.sel}"]`); if (!box) return; const wr = wrap.getBoundingClientRect(), br = box.getBoundingClientRect(), th = tb.offsetHeight;
             let top = br.top - wr.top - th - 14; if (top < 2) top = br.bottom - wr.top + 14; tb.style.top = top + 'px'; tb.style.left = Math.max(6, Math.min(wrap.clientWidth - tb.offsetWidth - 6, br.left - wr.left)) + 'px'; });
-        L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, k = PD.key; if (!pdItems(k)[id]) return; pdItems(k)[id].text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => { const cur = pdItems(k)[id]; if (cur) pdPut(id, { ...cur }); }, 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
+        pdFitAll(); if (document.fonts) document.fonts.ready.then(pdFitAll);
+        L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, k = PD.key; if (!pdItems(k)[id]) return; pdFit(tx); pdItems(k)[id].text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => { const cur = pdItems(k)[id]; if (cur) pdPut(id, { ...cur }); }, 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
     }
     document.addEventListener('pointerdown', e => {
         if (!PD.edit || (e.target.closest && e.target.closest('.pd-tb,.pd-crop'))) return; const el = e.target.closest && e.target.closest('.pd-it'); if (!el || !PD.wrap || !PD.wrap.contains(el)) { if (PD.sel && !(e.target.closest && e.target.closest('.pd-bar'))) { PD.sel = null; pdDraw(); } return; }
@@ -3544,7 +3547,7 @@
         const d = PD.drag; if (!d) return; const dx = (e.clientX - d.sx) / d.W, dy = (e.clientY - d.sy) / d.W; if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) > 3) d.moved = true; if (!d.moved) return;
         const box = PD.wrap.querySelector(`.pd-it[data-id="${d.id}"]`); if (!box) return; const it = d.it, n = { ...it };
         if (d.mode === 'mv') { n.x = it.x + dx; n.y = it.y + dy; box.style.left = n.x * d.W + 'px'; box.style.top = n.y * d.W + 'px'; }
-        else if (d.mode === 'rz') { n.w = Math.max(.03, it.w + dx); box.style.width = n.w * d.W + 'px'; if (it.t === 'img') box.style.height = n.w * d.W * (it.ar || 1) + 'px'; else { n.fs = (it.fs || .022) * n.w / it.w; const tx = box.querySelector('.pd-tx'); if (tx) tx.style.fontSize = n.fs * d.W + 'px'; } }
+        else if (d.mode === 'rz') { n.w = Math.max(.03, it.w + dx); box.style.width = n.w * d.W + 'px'; if (it.t === 'img') box.style.height = n.w * d.W * (it.ar || 1) + 'px'; else { n.fs = (it.fs || .022) * n.w / it.w; const tx = box.querySelector('.pd-tx'); if (tx) { tx.style.fontSize = n.fs * d.W + 'px'; pdFit(tx); } } }
         else { let a = Math.atan2(e.clientY - d.cy, e.clientX - d.cx) * 180 / Math.PI + 90; if (e.shiftKey) a = Math.round(a / 15) * 15; n.rot = Math.round(((a + 540) % 360) - 180); box.style.transform = `rotate(${n.rot}deg)`; }
         d.n = n;
     });
