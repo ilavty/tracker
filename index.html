@@ -3340,7 +3340,7 @@
         wrap.appendChild(bar);
         const L = document.createElement('div'); L.className = 'pd-layer' + (PD.edit ? ' ed' : ''); wrap.appendChild(L);
         bar.onclick = e => { const b = e.target.closest('[data-pd]'); if (!b) return; e.stopPropagation(); const a = b.dataset.pd;
-            if (a === 'edit') { PD.edit = true; pl_renderPlanner(); } else if (a === 'done') { PD.edit = false; PD.sel = null; pl_renderPlanner(); }
+            if (a === 'edit') { PD.edit = true; pl_renderPlanner(); } else if (a === 'done') { pdFlush(); PD.edit = false; PD.sel = null; pl_renderPlanner(); }
             else if (a === 'img') bar.querySelector('input').click(); else if (a === 'txt') { const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'txt', x: .38, y: .1, w: .24, text: '', fs: .022, z: pdTop() + 1 }); PD.sel = id; pdDraw(); setTimeout(() => { const el = L.querySelector(`[data-id="${id}"] .pd-tx`); if (el) el.focus(); }, 30); } };
         bar.querySelector('input') && (bar.querySelector('input').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) pdAddImg(f); });
         pdDraw();
@@ -3353,14 +3353,16 @@
             const id = 'd' + Date.now().toString(36); pdPut(id, { t: 'img', src, x: .35, y: .08, w: .22, ar: im.height / im.width, z: pdTop() + 1 }); PD.sel = id; pdDraw(); }; im.src = fr.result; }; fr.readAsDataURL(file);
     }
     document.addEventListener('paste', e => { if (!PD.edit || !PD.wrap || !document.body.contains(PD.wrap)) return; if (e.target.closest && e.target.closest('input,textarea,[contenteditable="true"]')) return; const f = [...(e.clipboardData || {}).files || []].find(x => /^image\//.test(x.type)); if (f) { e.preventDefault(); pdAddImg(f); } });
+    function pdFlush() { const a = document.activeElement; if (a && a.classList && a.classList.contains('pd-tx')) { const box = a.closest('.pd-it'), it = box && pdItems(PD.key)[box.dataset.id]; if (it) { const v = a.innerText.replace(/\n$/, ''); if (v.trim()) pdPut(box.dataset.id, { ...it, text: v }); else pdPut(box.dataset.id, null); } } }
     function pdDraw() {
+        pdFlush();
         const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const L = wrap.querySelector('.pd-layer'); if (!L) return; const W = wrap.clientWidth;
         const its = Object.entries(pdItems(PD.key)).sort((a, b) => (a[1].z || 0) - (b[1].z || 0));
         L.innerHTML = its.map(([id, it]) => { const st = `left:${it.x * W}px;top:${it.y * W}px;width:${it.w * W}px;${it.t === 'img' ? `height:${it.w * W * (it.ar || 1)}px;` : ''}${it.rot ? `transform:rotate(${it.rot}deg);` : ''}z-index:${it.z || 1}`;
             const inner = it.t === 'img' ? `<img src="${it.src}" alt="" draggable="false">` : `<div class="pd-tx" ${PD.edit ? 'contenteditable="true"' : ''} style="font-size:${(it.fs || .022) * W}px">${(it.text || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>')}</div>`;
             return `<div class="pd-it ${it.t}${PD.sel === id && PD.edit ? ' sel' : ''}" data-id="${id}" style="${st}">${inner}${PD.edit ? '<span class="pd-x" title="지우기">×</span><span class="pd-rz"></span><span class="pd-ro" title="돌리기">↻</span>' : ''}</div>`; }).join('');
         if (!PD.edit) return;
-        L.querySelectorAll('.pd-tx').forEach(tx => { tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
+        L.querySelectorAll('.pd-tx').forEach(tx => { let tm; tx.oninput = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; it.text = tx.innerText.replace(/\n$/, ''); clearTimeout(tm); tm = setTimeout(() => pdPut(id, { ...it }), 400); }; tx.onblur = () => { const id = tx.closest('.pd-it').dataset.id, it = pdItems(PD.key)[id]; if (!it) return; const v = tx.innerText.replace(/\n$/, ''); if (!v.trim()) { pdPut(id, null); pdDraw(); return; } if (v !== it.text) pdPut(id, { ...it, text: v }); }; });
     }
     document.addEventListener('pointerdown', e => {
         if (!PD.edit) return; const el = e.target.closest && e.target.closest('.pd-it'); if (!el || !PD.wrap || !PD.wrap.contains(el)) { if (PD.sel && !(e.target.closest && e.target.closest('.pd-bar'))) { PD.sel = null; pdDraw(); } return; }
