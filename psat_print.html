@@ -160,7 +160,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
       <div><label>머리말 제목</label><input type="text" id="title"></div>
       <div class="tog" id="tCompact"><span class="sw"></span>짧은 문제는 한 칸에 이어서</div>
       <div class="tog" id="tAns"><span class="sw"></span>마지막 장에 정답지</div>
-      <button class="primary" id="print">프린트</button>
+      <div style="display:flex;gap:6px"><button class="primary" id="print" style="flex:1">프린트</button><button id="printAns" style="flex:none">정답지만</button></div>
     </div>
   </section>
 
@@ -561,7 +561,7 @@ function renderPages() {
 }
 function updateInfo(n) {
   $('pinfo').textContent = st.sel.length ? `문제 ${n}장${st.ans ? ' + 정답지' : ''}` + (pending ? ` · 불러오는 중 ${pending}` : '') : '';
-  if (!building) { $('print').disabled = !st.sel.length; $('print').textContent = '프린트 (PDF)'; }
+  if (!building) { $('print').disabled = !st.sel.length; $('print').textContent = '프린트 (PDF)'; $('printAns').disabled = !st.sel.length; }
 }
 let failShown = false;
 function loadFail(err) {
@@ -622,7 +622,8 @@ function drawHead(pg, F, title, center, area, right) {
   if (center) txt(pg, center, F.b, 3.5, 105, y + 2.3);
   pg.drawLine({start: {x: ML * MM, y: Y(MT + 6)}, end: {x: (ML + CW) * MM, y: Y(MT + 6)}, thickness: .2 * MM, color: PDFLib.rgb(0, 0, 0)});
 }
-async function buildPdf() {
+async function buildPdf(ansOnly) {
+  ansOnly = ansOnly === true;
   if (!st.sel.length || building) return;
   building = true; $('print').disabled = true; $('print').textContent = 'PDF 만드는 중…';
   const win = window.open('', '_blank');
@@ -633,7 +634,7 @@ async function buildPdf() {
     out.registerFontkit(fontkit);
     const [rb, bb] = await getFonts();
     const F = {r: await out.embedFont(rb, {subset: true}), b: await out.embedFont(bb, {subset: true})};
-    const pages = layout(), area = areaName(), title = st.title || defaultTitle();
+    const pages = ansOnly ? [] : layout(), area = areaName(), title = st.title || defaultTitle();
     // 시험(원본 PDF)별로 필요한 페이지를 한 번에 넣어서 글꼴 중복 없이
     const embedCache = {}, need = {};
     pages.forEach(pp => (pp.cols || []).flat().forEach(b => { (need[b.e.id] = need[b.e.id] || new Set()).add(b.seg[0]); }));
@@ -671,7 +672,7 @@ async function buildPdf() {
         }
       }
     }
-    if (st.ans) {
+    if (st.ans || ansOnly) {
       if (pages.length % 2) out.addPage([PW, PH]);   // 정답지는 항상 새 종이(앞면)에서 시작
       const rows = answerRows();
       const W = ANS_W, RH = 6.6;
@@ -805,7 +806,8 @@ $('tCompact').onclick = () => { st.compact = !st.compact; renderAll(); };
 $('tAns').onclick = () => { st.ans = !st.ans; renderAll(); };
 $('zi').onclick = () => { st.z = Math.min(1.2, +(st.z + .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
 $('zo').onclick = () => { st.z = Math.max(.3, +(st.z - .08).toFixed(2)); $('pages').style.setProperty('--z', st.z); save(); };
-$('print').onclick = buildPdf;
+$('print').onclick = () => buildPdf(false);
+$('printAns').onclick = () => buildPdf(true);
 
 let dragI = null;
 $('selList').addEventListener('dragstart', e => { const el = e.target.closest('.sl'); if (!el) return; dragI = +el.dataset.i; el.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', ''); } catch (er) {} });
