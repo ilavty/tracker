@@ -73,6 +73,7 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc .nm:hover{color:var(--sky)}
 #ilc .mine{font-size:10.5px;font-weight:700;color:var(--sky);margin-left:6px;vertical-align:1px}
 #ilc .cat{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--sky-soft);color:var(--ink);margin:1px 3px 1px 0}
+#ilc .cno{float:left;min-width:1.9em;margin:2px 4px 0 0;font-size:11px;color:#a59c8f;font-variant-numeric:tabular-nums}#ilc .qnums{display:flex;align-items:center;gap:8px;margin-bottom:10px}#ilc .qnums input{width:180px;border:1px solid #ddd5c8;border-radius:8px;padding:6px 10px;font:inherit;background:#fff}
 #ilc col.c1{width:15%}#ilc col.c2{width:27%}#ilc col.c3{width:9%}#ilc col.c4{width:27%}#ilc col.c5{width:22%}
 #ilc .empty{padding:30px;text-align:center;color:var(--muted)}
 /* modal */
@@ -301,7 +302,15 @@ function drawChips(){
   $("#ilc-chips").hidden=!open;
 }
 function noteText(n){return n?[n.src,...(n.items||[]).map(i=>i[1]),n.tags].join(" "):""}
+/* 판례 번호: 처음 준 순서(BASE) 그대로, 새로 추가한 건 같은 목차(첫 분류) 마지막 판례 바로 뒤에 끼워서 */
+function caseNums(){
+  const L=BASE.map(b=>b.id);
+  store.added.forEach(a=>{const c0=(a.cats||[])[0];let at=-1;if(c0!=null)L.forEach((id,i)=>{const r=find(id);if(r&&(r.cats||[])[0]===c0)at=i});L.splice(at<0?L.length:at+1,0,a.id)});
+  const M={};L.forEach((id,i)=>M[id]=i+1);return M;
+}
+function parseNums(t){const S=new Set();String(t||"").split(/[,\s]+/).forEach(p=>{const m=p.match(/^(\d+)(?:[-~](\d+))?$/);if(!m)return;let a=+m[1],b=m[2]?+m[2]:a;if(a>b)[a,b]=[b,a];for(let i=a;i<=b&&i-a<2000;i++)S.add(i)});return S}
 function render(){
+  const NUM=caseNums();
   const t=$("#ilc-q").value.trim().toLowerCase();
   const R=all();let html="",any=false;
   for(const [k,l] of G){
@@ -310,7 +319,7 @@ function render(){
     if(!rows.length)continue;any=true;
     html+=`<section><h2>${l}<span>${rows.length}건</span></h2><div class="tw"><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><thead><tr><th>재판소</th><th>판례 이름</th><th>연도</th><th>원고 v. 피고</th><th>목차 분류</th></tr></thead><tbody>`+
     rows.map(r=>{const f=r.flag?` <span class="fl" title="${esc(r.flag)}">*</span>`:"";const yf=r.flag&&r.flag.startsWith("연도")?f:"",pf=r.flag&&!r.flag.startsWith("연도")?f:"";
-      return `<tr><td class="court">${esc(r.court)}</td><td><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="year">${esc(r.year)}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
+      return `<tr><td class="court">${esc(r.court)}</td><td><span class="cno">${NUM[r.id]||""}</span><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="year">${esc(r.year)}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
   }
   $("#ilc-out").innerHTML=any?html:`<div class="empty">맞는 판례가 없어요</div>`;
 }
@@ -703,7 +712,7 @@ function qCheck(q,input){
 }
 
 /* ===== 퀴즈 화면 ===== */
-let QZ={rev:false,on:false,cats:new Set(),type:"all",scope:"new",n:20,list:[],i:0,res:[],done:false,ans:null};
+let QZ={rev:false,on:false,cats:new Set(),type:"all",scope:"new",n:20,list:[],i:0,res:[],done:false,ans:null,nums:(()=>{try{return localStorage.getItem("ilc_qnums")||""}catch(e){return ""}})()};
 const qzRoot=document.getElementById("ilc-quiz");
 const rec=()=>{if(!store.quiz)store.quiz={};return store.quiz};
 const GRAD=3;
@@ -711,7 +720,9 @@ function qStat(id){return rec()[id]||null}
 function qState(id){const s=qStat(id);if(!s)return "new";if(s.s>=GRAD)return "grad";if(s.s===0&&s.w>0)return "wrong";return "learn"}
 function allQ(){return genQuiz(all())}
 function pool(){
+  const NS=parseNums(QZ.nums),NUM=NS.size?caseNums():null;
   return allQ().filter(q=>{
+    if(NS.size&&!NS.has(NUM[q.cid]))return false;
     if(QZ.cats.size&&!q.cats.some(c=>QZ.cats.has(c)))return false;
     if(QZ.type!=="all"&&(q.kind||q.type)!==QZ.type)return false;
     const st=qState(q.id);
@@ -735,12 +746,13 @@ function qzSetup(){
   const n=pool().length;
   qzRoot.innerHTML=`<div class="qset">
     <div class="qstat"><span>전체 <b>${Q.length}</b></span><span>안 푼 문제 <b>${S.new}</b></span><span>오답 <b class="bad">${S.wrong}</b></span><span>졸업 <b>${S.grad}</b></span></div>
+    <div class="qlab">판례 번호</div><div class="qnums"><input id="qz-nums" value="${esc(QZ.nums)}" autocomplete="off" inputmode="numeric"><span class="hint" id="qz-numc">${QZ.nums.trim()?parseNums(QZ.nums).size+"건":"전체"}</span></div>
     <div class="qlab">목차 <span class="hint">안 고르면 전체</span></div>
     <div class="chips">${Object.entries(C).filter(([k])=>cnt[k]).map(([k,v])=>`<button type="button" class="chip" data-qc="${k}" aria-pressed="${QZ.cats.has(+k)}">${v}<b>${cnt[k]}</b></button>`).join("")}</div>
     <div class="qrow"><div><div class="qlab">유형</div>${seg("type",[["all","전체"],["ox","OX"],["sa","단답"],["mc","객관식"],["ct","법원 맞히기"],["na","나라 맞히기"],["fc","암기카드"]])}</div>
     <div><div class="qlab">범위</div>${seg("scope",[["new","졸업 빼고"],["wrong","오답만"],["all","전부"],["grad","졸업만"]])}</div>
     <div><div class="qlab">문제 수</div>${seg("n",[[10,"10"],[20,"20"],[50,"50"],[9999,"전부"]])}</div></div>
-    <div class="qgo"><span class="hint">${n}문제 중에서 랜덤 · 연속 ${GRAD}번 맞히면 졸업</span><button type="button" class="btn pri" data-qa="start" ${n?"":"disabled"}>시작</button></div>
+    <div class="qgo"><span class="hint" id="qz-pn">${n}문제 중에서 랜덤 · 연속 ${GRAD}번 맞히면 졸업</span><button type="button" class="btn pri" data-qa="start" ${n?"":"disabled"}>시작</button></div>
   </div>`;
 }
 function qzStart(list){QZ.rev=false;QZ.list=list||shuffle(pool()).slice(0,QZ.n);QZ.i=0;QZ.res=[];QZ.done=false;QZ.ans=null;if(QZ.list.length)qzDraw();else qzSetup()}
@@ -808,6 +820,12 @@ qzRoot.addEventListener("click",e=>{
   else if(act==="retry")qzStart(shuffle([...QZ.lastWrong]));
   else if(act==="case")show(QZ.list[QZ.i].cid);
 });
+qzRoot.addEventListener("input",e=>{
+  if(e.target.id!=="qz-nums")return;QZ.nums=e.target.value;try{localStorage.setItem("ilc_qnums",QZ.nums)}catch(x){}
+  const n=pool().length,c=qzRoot.querySelector("#qz-numc"),pn=qzRoot.querySelector("#qz-pn"),st=qzRoot.querySelector('[data-qa="start"]');
+  if(c)c.textContent=QZ.nums.trim()?parseNums(QZ.nums).size+"건":"전체";if(pn)pn.textContent=`${n}문제 중에서 랜덤 · 연속 ${GRAD}번 맞히면 졸업`;if(st)st.disabled=!n;
+});
+qzRoot.addEventListener("keydown",e=>{if(e.target.id==="qz-nums"&&e.key==="Enter"&&!e.isComposing){e.preventDefault();e.target.blur();const st=qzRoot.querySelector('[data-qa="start"]');if(st&&!st.disabled)st.click()}});
 qzRoot.addEventListener("submit",e=>{
   e.preventDefault();if(QZ.ans)return;
   const q=QZ.list[QZ.i],v=qzRoot.querySelector("#qz-in").value.trim();if(!v)return;
