@@ -808,7 +808,7 @@
 .plc-t{font-size:.74rem;color:var(--primary-blue);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
 .plc-tags{display:grid;grid-template-columns:1fr 1fr;gap:2.5px}.plc-tg{display:block;font-size:.58rem;font-weight:500;color:#fff;border-radius:4px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
 .plc-bars{grid-column:1/-1;position:relative;margin:2px 0 6px}
-.plc-bar{position:absolute;height:15px;border-radius:0;overflow:hidden}.plc-bar.hd{border-top-left-radius:5px;border-bottom-left-radius:5px}.plc-bar.tl{border-top-right-radius:5px;border-bottom-right-radius:5px}
+.plc-bar{position:absolute;height:15px;border-radius:0;overflow:visible;background:var(--bg);cursor:pointer;transition:background .15s}.plc-bar.hi{background:var(--bgh)}.plc-bar.hd{border-top-left-radius:5px;border-bottom-left-radius:5px}.plc-bar.tl{border-top-right-radius:5px;border-bottom-right-radius:5px}
 
 .pd-bar{position:absolute;top:6px;right:70px;display:flex;gap:4px;z-index:30}.pd-bar button{border:0;background:transparent;color:#c3c9d1;font-size:.6rem;font-weight:400;letter-spacing:.06em;padding:3px 8px;border-radius:8px;cursor:pointer}.pd-bar button:hover{color:#8d96a3;background:#f4f6f9}.pd-bar button.on{color:#fff;background:#3a3f47}.pd-bar:has(.on) button:not(.on){color:#5c6672;background:#f1f4f8}
 .pd-layer{position:absolute;inset:0;pointer-events:none;z-index:20}.pd-layer.ed{outline:1.5px dashed rgba(90,151,235,.35);outline-offset:-3px;border-radius:14px}
@@ -3279,6 +3279,9 @@
         const out = []; seen.forEach(id => { const g = of[id]; if (g && !out.includes(g)) out.push(g); }); out.sort((a, b) => a.pos - b.pos);
         return out;
     }
+    let PL_HI = null;
+    function pl_barHi(e, ci) { e.stopPropagation(); PL_HI = PL_HI === ci ? null : ci; document.querySelectorAll('.plc-bar').forEach(b => b.classList.toggle('hi', +b.dataset.ci === PL_HI)); }
+    document.addEventListener('click', e => { if (PL_HI != null && !(e.target.closest && e.target.closest('.plc-bar'))) { PL_HI = null; document.querySelectorAll('.plc-bar.hi').forEach(b => b.classList.remove('hi')); } });
     function pl_calCycles(yr) {
         const out = [], data = (typeof trackerData !== 'undefined' && trackerData && trackerData.data) || {};
         const pd = x => { const q = String(x || '').trim().split('.'); if (q.length !== 2) return null; const m = +q[0], d = +q[1]; return isNaN(m) || isNaN(d) ? null : new Date(yr, m - 1, d); };
@@ -3319,10 +3322,11 @@
         [...months].sort((a, b) => b - a).forEach(mi => {
             const y = Math.floor(mi / 12), m = mi % 12, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), rows = Math.ceil((first + days) / 7);
             h += `<div class="plc-month" id="plc-${m + 1}"><div class="plc-wk">${W.map(w => `<span>${w}</span>`).join('')}</div>`;
+            const named = new Set();
             for (let r = 0; r < rows; r++) {
                 const wkStart = new Date(y, m, 1 - first + r * 7), wkEnd = new Date(y, m, 1 - first + r * 7 + 6);
                 // 이 주에 걸친 사이클 막대
-                const segs = []; cyc.forEach(c => { const e = c.en || now; if (c.st > wkEnd || e < wkStart) return; const a = c.st < wkStart ? 0 : c.st.getDay(), b = e > wkEnd ? 6 : e.getDay(); segs.push({ c, a, b, head: c.st >= wkStart, tail: !c.open && c.en <= wkEnd, fade: c.open && now <= wkEnd }); });
+                const segs = []; cyc.forEach((c, ci) => { const e = c.en || now; if (c.st > wkEnd || e < wkStart) return; const a = c.st < wkStart ? 0 : c.st.getDay(), b = e > wkEnd ? 6 : e.getDay(); const lb = !named.has(ci); named.add(ci); segs.push({ c, ci, lb, a, b, head: c.st >= wkStart, tail: !c.open && c.en <= wkEnd, fade: c.open && now <= wkEnd }); });
                 h += `<div class="plc-row">`;
                 for (let i = 0; i < 7; i++) {
                     const d = new Date(y, m, 1 - first + r * 7 + i), out = d.getMonth() !== m, key = (d.getMonth() + 1) + '.' + d.getDate();
@@ -3330,7 +3334,7 @@
                     const t = pl_fmtStudy(pData[key] && pData[key].studyTime), tags = pl_calTags(key);
                     h += `<div class="plc-d${key === todayStr && y === yr ? ' today' : ''}${d.getDay() === 0 ? ' sun' : ''}" onclick="pl_calGoto('${key}')"><div class="plc-top"><span class="plc-n">${d.getDate()}</span>${t ? `<span class="plc-t">${t}</span>` : ''}</div><div class="plc-tags">${tags.map(g => `<span class="plc-tg" style="background:color-mix(in srgb, ${g.color} 78%, #7b828c)">${g.name}</span>`).join('')}</div></div>`;
                 }
-                h += `<div class="plc-bars" style="height:${segs.length * 17}px">${segs.map((sg, k) => `<span class="plc-bar${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 17}px;background:rgba(${sg.c.rgb},.16)"><em style="color:color-mix(in srgb, ${sg.c.color} 55%, #1d1d1f)">${sg.c.name}</em></span>`).join('')}</div></div>`;
+                h += `<div class="plc-bars" style="height:${segs.length * 17}px">${segs.map((sg, k) => `<span data-ci="${sg.ci}" onclick="pl_barHi(event,${sg.ci})" class="plc-bar${PL_HI === sg.ci ? ' hi' : ''}${sg.head ? ' hd' : ''}${sg.tail ? ' tl' : ''}${sg.fade ? ' open' : ''}" title="${sg.c.name}" style="left:calc(${sg.a} * 100% / 7 + 2px);width:calc(${sg.b - sg.a + 1} * 100% / 7 - 4px);top:${k * 17}px;--bg:rgba(${sg.c.rgb},.16);--bgh:rgba(${sg.c.rgb},.42)">${sg.lb ? `<em style="color:color-mix(in srgb, ${sg.c.color} 55%, #1d1d1f)">${sg.c.name}</em>` : ''}</span>`).join('')}</div></div>`;
             }
             h += '</div>';
         });
