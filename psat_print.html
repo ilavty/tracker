@@ -136,6 +136,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
 .atbl th,.atbl td{border:.2mm solid #555;text-align:center;height:6.6mm;padding:0;overflow:hidden;font-weight:400;white-space:nowrap}
 .atbl th{background:#f2f2f2;font-weight:600}
 .atbl td.a{background:#f0f0f0}
+.atbl tr.gap td{height:2.6mm;border-left:0;border-right:0;background:none}
 
 </style>
 </head>
@@ -492,19 +493,26 @@ function answerRows() {
   for (const k of st.sel) {
     if (isDiv(k)) continue;
     const {e, it} = itemOf(k);
-    it.n.forEach((n, i) => rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}));
+    it.n.forEach((n, i) => { const k0 = (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''); if (rows.length && rows[rows.length - 1].k !== k0) rows.push({gap: true}); rows.push({k: (e.kind === '7급근로' ? '근로' : e.kind) + (mixed ? ' ' + e.sub : ''), y: e.kind === '기타' ? '-' : yearShow(e), n, a: it.a[i] ? CIRC[it.a[i] - 1] : ''}); });
   }
   return rows;
 }
+const GAP_H = 2.6;
+// 높이에 맞춰 정답지 표 나누기 (구분 사이 틈 포함, 칸 맨 앞의 틈은 버림)
+function ansChunks(rows) {
+  const cap = COL_H - 4 - 6.6, out = []; let cur = [], h = 0;
+  rows.forEach(r => { const rh = r.gap ? GAP_H : 6.6; if (h + rh > cap && cur.length) { out.push(cur); cur = []; h = 0; } if (r.gap && !cur.length) return; cur.push(r); h += rh; });
+  while (cur.length && cur[cur.length - 1].gap) cur.pop(); if (cur.length) out.push(cur); return out;
+}
 function answerPages() {
   const rows = answerRows();
-  const PER = Math.floor((COL_H - 4) / 6.6) - 1;
-  const chunks = []; for (let i = 0; i < rows.length; i += PER) chunks.push(rows.slice(i, i + PER));
+  const chunks = ansChunks(rows);
   const out = [];
   for (let p = 0; p < chunks.length; p += 3) {
     const tbls = chunks.slice(p, p + 3).map((rs, ci) => {
       let body = '';
       rs.forEach((r, i) => {
+        if (r.gap) { body += '<tr class="gap"><td colspan="4"></td></tr>'; return; }
         let kc = '';
         if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; kc = `<td rowspan="${sp}">${esc(r.k)}</td>`; }
         body += `<tr>${kc}<td>${esc(r.y)}</td><td>${r.n}</td><td class="a">${r.a}</td></tr>`;
@@ -659,8 +667,8 @@ async function buildPdf() {
     }
     if (st.ans) {
       const rows = answerRows();
-      const W = ANS_W, RH = 6.6, PER = Math.floor((COL_H - 4) / RH) - 1;
-      const chunks = []; for (let i = 0; i < rows.length; i += PER) chunks.push(rows.slice(i, i + PER));
+      const W = ANS_W, RH = 6.6;
+      const chunks = ansChunks(rows);
       for (let p = 0; p < chunks.length; p += 3) {
         const pg = out.addPage([PW, PH]);
         drawHead(pg, F, title, '<정답지>', 'PSAT', '답지');
@@ -671,12 +679,14 @@ async function buildPdf() {
             if (t !== '' && t != null) txt(pg, t, bold ? F.b : F.r, 3, cx + w / 2, cy + h / 2, 'center', w - 1);
           };
           let cx = tx; ['구분', '연도', '문번', '정답'].forEach((h, i) => { cell(cx, ty, W[i], RH, h, [.95, .95, .95], true); cx += W[i]; });
+          let cy = ty + RH;
           rs.forEach((r, i) => {
-            const cy = ty + RH * (i + 1);
+            if (r.gap) { cy += GAP_H; return; }
             if (i === 0 || rs[i - 1].k !== r.k) { let sp = 1; while (i + sp < rs.length && rs[i + sp].k === r.k) sp++; cell(tx, cy, W[0], RH * sp, r.k); }
             cell(tx + W[0], cy, W[1], RH, r.y);
             cell(tx + W[0] + W[1], cy, W[2], RH, r.n);
             cell(tx + W[0] + W[1] + W[2], cy, W[3], RH, r.a, [.94, .94, .94]);
+            cy += RH;
           });
         });
       }
