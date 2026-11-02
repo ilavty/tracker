@@ -533,6 +533,7 @@ body.hlon .hlbar{display:flex}
 .imp-k{font-size:11.5px;font-weight:500;color:var(--brown);width:52px;flex-shrink:0}
 .imp-head input,.imp-head select,.imp-tag{font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:6px 9px;background:#fff;color:var(--ink);flex:1;min-width:140px}
 .imp-title{font-weight:700}
+.imp-sub{display:flex;flex-direction:column;gap:2px;flex:none}.imp-sub.grow{flex:1;min-width:0}.imp-sub small{font-size:11px;color:#a0a0a5}
 .imp-noterow{margin:4px 0 10px;font-size:12px;color:var(--sub)}
 .imp-noterow textarea{width:100%;min-height:60px;font-family:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:7px;padding:7px;margin-top:4px;background:var(--soft)}
 .imp-bar{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:4px}
@@ -1556,7 +1557,7 @@ function openImport() {
         <div class="imp-head"><span class="imp-k">Title</span><input class="imp-title" value="${esc(s.theme)}"></div>
         <div class="imp-head"><span class="imp-k">파일 날짜</span><input type="date" class="imp-fd" value="${esc(s.fd || todayFd())}"><span class="imp-k" style="margin-left:14px">구분</span><select class="imp-kind"><option value="prog"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? '' : ' selected'}>진도</option><option value="issue"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? ' selected' : ''}>이슈</option><option value="">없음</option></select></div>
         <div class="imp-head"><span class="imp-k">Place in</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
-        <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">New chapter</span><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select><input class="imp-chname" value="${esc(s.theme)}" placeholder="Chapter name"></div>
+        <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">새 챕터</span><label class="imp-sub"><small>파트</small><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select></label><label class="imp-sub grow"><small>챕터 이름</small><input class="imp-chname" value=""></label></div>
         ${s.note ? `<div class="imp-noterow"><label><input type="checkbox" class="imp-noteon" checked> Add as note box</label><textarea class="imp-note">${esc(s.note)}</textarea></div>` : ''}
         <div class="imp-bar"><label><input type="checkbox" class="imp-all" checked> Select all</label><span>${s.items.length} items</span></div>
         ${s.items.map(it => `<div class="imp-it${it.t.includes('[[??]]') ? ' warn' : ''}" data-a="${esc(it.a || '')}"><input type="checkbox" class="imp-on" checked><div class="imp-body">${it.tag ? `<input class="imp-tag" value="${esc(it.tag)}" title="Tag">` : '<input class="imp-tag" value="" placeholder="Tag" title="Tag">'}<div class="bed sm" contenteditable="true" data-t="${esc(it.t)}"></div><div class="prev"></div></div></div>`).join('')}
@@ -1567,7 +1568,7 @@ function openImport() {
     $('#impWrap').onclick = () => { const sel = getSelection(); const n = sel.rangeCount && sel.getRangeAt(0).commonAncestorContainer; const ed = n && (n.nodeType === 3 ? n.parentNode : n).closest('.bed'); if (!ed || !ed._wrap()) toast('Select a word in the text first'); };
     out.querySelectorAll('.imp-sheet').forEach(sh => {
       const ch = sh.querySelector('.imp-ch');
-      ch.onchange = () => { sh.querySelector('.imp-sec').innerHTML = secOptions(ch.value); sh.querySelector('.imp-new').hidden = ch.value !== '__new__'; };
+      ch.onchange = () => { sh.querySelector('.imp-sec').innerHTML = secOptions(ch.value); sh.querySelector('.imp-new').hidden = ch.value !== '__new__'; if (ch.value === '__new__') setTimeout(() => sh.querySelector('.imp-chname').focus(), 30); };
       sh.querySelector('.imp-all').onchange = e => sh.querySelectorAll('.imp-on').forEach(c => c.checked = e.target.checked);
     });
     $('#impAdd').disabled = false;
