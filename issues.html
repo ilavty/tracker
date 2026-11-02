@@ -1893,7 +1893,7 @@ $('#tocBtn').onclick = () => $('#side').classList.toggle('open');
 /* 폰: 위쪽 도구 줄 / 과목·연도 줄 따로 접기 — 상태 기억 */
 document.querySelectorAll('.topfold').forEach(b => { const k = b.dataset.fold, lab = k === 'tools' ? '도구' : '과목';
   const set = c => { document.body.classList.toggle('fold-' + k, c); b.textContent = lab + (c ? ' ▾' : ' ▴'); try { localStorage.setItem(KEY + ':fold-' + k, c ? '1' : '0'); } catch (e) {} };
-  let c = false; try { c = localStorage.getItem(KEY + ':fold-' + k) === '1'; } catch (e) {} set(c);
+  let c = true; try { c = localStorage.getItem(KEY + ':fold-' + k) !== '0'; } catch (e) {} set(c);   // 기본은 접힌 상태
   b.onclick = () => set(!document.body.classList.contains('fold-' + k)); });
 $('#menuBtn').onclick = e => { e.stopPropagation(); $('#menuPop').classList.toggle('open'); };
 $('#menuPop').onclick = e => {
