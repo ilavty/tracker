@@ -1578,7 +1578,7 @@ function openImport() {
   m.onclick = e => {
     const b = e.target.closest('[data-x]'); if (!b) return;
     if (b.dataset.x === 'cancel') { closeModal(); return; }
-    let n = 0, warn = 0, firstCh = null;
+    let n = 0, warn = 0, firstCh = null; const newIds = new Set();
     const impY = ($('#impYr input:checked') || {}).value || defYear();
     out.querySelectorAll('.imp-sheet').forEach(sh => {
       const picked = [...sh.querySelectorAll('.imp-it')].filter(r => r.querySelector('.imp-on').checked);
@@ -1600,29 +1600,31 @@ function openImport() {
       const secId = sh.querySelector('.imp-sec').value; let sec;
       if (secId === '__new__') { const st = sh.querySelector('.imp-title').value.trim() || 'More issues'; sec = chObj.secs.find(x => nk(x.title) === nk(st)); if (sec) { if (note) sec.note = sec.note ? sec.note + '\n' + note : note; } else { sec = { id: nid(), title: st, note, items: [] }; chObj.secs.push(sec); } }
       else { sec = locate(secId).obj; if (note) sec.note = sec.note ? sec.note + '\n' + note : note; }
-      sec.items.push(...items); if (fd && (!sec.fd || fd > sec.fd)) sec.fd = fd; if (kd && !sec.kind) sec.kind = kd; n += items.length; firstCh ||= chObj.id;
+      sec.items.push(...items); items.forEach(it => newIds.add(it.id)); if (fd && (!sec.fd || fd > sec.fd)) sec.fd = fd; if (kd && !sec.kind) sec.kind = kd; n += items.length; firstCh ||= chObj.id;
     });
     if (!n) { toast('Select items to add'); return; }
     if (yr !== 'all' && yr !== impY) { yr = impY; try { localStorage.setItem(KEY + ':yr', yr); } catch (x) {} }
     closeModal(); commit(); toast(`Added ${n} items${warn ? ` · ${warn} need answer check` : ''}`);
-    if (fillTargets().length) setTimeout(() => { if (confirm(`답이 비어 있는 빈칸이 ${fillTargets().length}개 있어요.\n지금 하나씩 답 채우기 할까요?`)) openFill(); }, 300);
+    { fillOnly = newIds; const nf = fillTargets().length; fillOnly = null; if (nf) setTimeout(() => { if (confirm(`방금 넣은 문항에 답이 비어 있는 빈칸이 ${nf}개 있어요.\n지금 하나씩 답 채우기 할까요?`)) openFill(newIds); }, 300); }
     const el = document.getElementById('ch-' + firstCh); if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
   };
 }
 
 
 /* ───── 답 채우기: 답이 없는 빈칸(??)을 하나씩 띄워서 Enter로 이어서 입력 ───── */
+let fillOnly = null;
 function fillTargets() {
   const out = [];
   doc().parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(sc => sc.items.forEach(it => {
+    if (fillOnly && !fillOnly.has(it.id)) return;
     let k = 0; (it.t || '').replace(/\[\[(.+?)\]\]/g, (m, x) => { if (x.trim() === '??') out.push({ it, k, path: `${c.title} · ${sc.title}` }); k++; return m; });
   }))));
   return out;
 }
 function setNthBlank(it, k, val) { let i = 0; it.t = it.t.replace(/\[\[(.+?)\]\]/g, (m, x) => (i++ === k ? `[[${val}]]` : m)); }
 let fillSkip = new Set();
-function openFill() {
-  fillSkip = new Set();
+function openFill(only) {
+  fillSkip = new Set(); fillOnly = only instanceof Set ? only : null;
   let ov = $('#fillOv');
   if (!ov) { ov = document.createElement('div'); ov.id = 'fillOv'; ov.className = 'fill-ov'; document.body.appendChild(ov);
     ov.addEventListener('click', e => { if (e.target === ov) closeFill(); }); }
