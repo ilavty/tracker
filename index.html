@@ -862,6 +862,21 @@ document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; 
 .plc-fsb{position:absolute;top:6px;left:14px;border:0;background:transparent;color:#c3c9d1;font-size:.8rem;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer;z-index:2}.plc-fsb:hover{color:#5a97eb}.bg-dark .plc-fsb{color:rgba(255,255,255,.5)}
 .plc-wrap.plc-fs{position:fixed!important;left:0;top:0;z-index:2147480000;border-radius:0;border:0;overflow-y:auto;scrollbar-width:none;zoom:var(--z,1);width:var(--w,100vw);height:calc((100vh + env(safe-area-inset-top)) / var(--z,1));height:calc((100lvh + env(safe-area-inset-top)) / var(--z,1));padding-top:calc(30px + env(safe-area-inset-top) / var(--z,1))}.plc-fs .plc-fsb,.plc-fs>.plc-sw,.plc-fs>.pd-bar{top:calc(6px + env(safe-area-inset-top) / var(--z,1))}.plc-wrap.plc-fs::-webkit-scrollbar{display:none}
 html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
+.pn-stk{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;align-content:flex-end;padding-top:4px}
+.pn-col{display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:4px 4px 2px;border-radius:8px;transition:background .15s}
+.pn-col:hover{background:rgba(127,127,127,.12)}
+.pn-blks{display:flex;flex-wrap:wrap-reverse;justify-content:center;width:62px;gap:2px}
+.pn-blks i{width:10px;height:10px;border-radius:2px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
+.pn-cl{font-size:.6rem;font-weight:700;opacity:.8;white-space:nowrap;max-width:76px;overflow:hidden;text-overflow:ellipsis}.pn-cl small{font-weight:500;opacity:.55;margin-left:3px}
+.pn-cntb{border:0;color:inherit;font-family:inherit;cursor:pointer}
+.pn-win{position:fixed;inset:0;z-index:2147483000;background:rgba(20,22,26,.35);display:flex;align-items:center;justify-content:center;padding:20px;font-family:'Paperlogy',sans-serif}
+.pn-wbox{background:#fff;color:#2b2f36;border-radius:16px;width:min(560px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden}
+.pn-wtop{display:flex;align-items:center;gap:8px;padding:16px 18px 8px;font-size:.75rem}.pn-wtop b{letter-spacing:.1em;font-size:.72rem}.pn-wtop span{opacity:.6}.pn-wtop .pn-cnt{opacity:1}
+.pn-wx{border:0;background:none;font-size:1.2rem;line-height:1;cursor:pointer;color:#9aa0a8}
+.pn-wtabs{display:flex;gap:4px;flex-wrap:wrap;padding:0 18px 10px;border-bottom:1px solid #eef0f3}
+.pn-wtabs button{border:0;background:#f3f4f6;color:#5b616b;font:inherit;font-size:.66rem;padding:3px 9px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:4px}.pn-wtabs button.on{background:#2b2f36;color:#fff}.pn-wtabs i{width:7px;height:7px;border-radius:2px}
+.pn-wbd{overflow-y:auto;padding:12px 18px 16px;scrollbar-width:none}.pn-wbd::-webkit-scrollbar{display:none}
+.pn-wbd .pn-r{font-size:.74rem;padding-left:12px}.pn-wbd .pn-ds em{font-size:.62rem}
 .pn-box{position:relative;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;color:#2b2f36;overflow:hidden;font-family:'Paperlogy',sans-serif}
 .pn-box.dk{color:#eef0f3}.pn-box.ed{outline:1.5px dashed rgba(90,151,235,.5);outline-offset:2px}
 .pn-tool{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.pn-tool button,.pn-wt button,.pn-per button{border:0;background:rgba(127,127,127,.18);color:inherit;font:inherit;font-size:.62rem;padding:3px 8px;border-radius:6px;cursor:pointer;opacity:.8}.pn-sep{width:8px}
@@ -3451,8 +3466,8 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     function pnW(w, vy, vm) {
         const ed = PD.edit, head = (lbl, extra) => `<div class="pn-wh"><span class="pn-lbl">${lbl}</span>${extra || ''}${ed ? `<span class="pn-wt"><button data-pw="l">‹</button><button data-pw="r">›</button><button data-pw="x">×</button></span>` : ''}</div>`;
         if (w.t === 'unf') { const per = w.per || 'month', G = pnUnf(per, vy, vm), tot = G.reduce((n, g) => n + g.rows.size, 0);
-            return head('UNFINISHED', `<span class="pn-per"><button data-pw="per" data-v="month" class="${per === 'month' ? 'on' : ''}">${vm}월</button><button data-pw="per" data-v="all" class="${per === 'all' ? 'on' : ''}">ALL</button></span><span class="pn-cnt">${tot}</span>`) +
-                `<div class="pn-bd">${G.map(g => `<div class="pn-g"><div class="pn-gh"><i style="background:${g.g ? g.g.color : '#c9c9c9'}"></i>${pnEsc(g.g ? g.g.name : '기타')}<small>${g.rows.size}</small></div>${[...g.rows.values()].map(r => `<div class="pn-r"><span class="pn-rt">${pnEsc(r.text)}</span><span class="pn-ds">${r.ks.map(k => `<em onclick="pl_calGoto('${k}')">${k.replace('.', '/')}</em>`).join('')}</span></div>`).join('')}</div>`).join('')}</div>`; }
+            return head('UNFINISHED', `<span class="pn-per"><button data-pw="per" data-v="month" class="${per === 'month' ? 'on' : ''}">${vm}월</button><button data-pw="per" data-v="all" class="${per === 'all' ? 'on' : ''}">ALL</button></span><button class="pn-cnt pn-cntb" data-ug="-1">${tot}</button>`) +
+                `<div class="pn-bd pn-stk" data-per="${per}">${G.map((g, gi) => `<button class="pn-col" data-ug="${gi}" title="${pnEsc(g.g ? g.g.name : '기타')}"><span class="pn-blks">${[...g.rows.values()].map(() => `<i style="background:${g.g ? g.g.color : '#c9c9c9'}"></i>`).join('')}</span><span class="pn-cl">${pnEsc(g.g ? g.g.name : '기타')}<small>${g.rows.size}</small></span></button>`).join('')}</div>`; }
         if (w.t === 'todo') { const L = PN.todo[w.id] || [], left = L.filter(x => !x.d).length;
             return head(pnEsc(w.name || 'TO DO'), `<span class="pn-cnt">${left}</span>`) + `<div class="pn-bd">${L.map((x, i) => `<div class="pn-td${x.d ? ' d' : ''}"><button class="pn-ck" data-td="ck" data-i="${i}"></button><span class="pn-tt">${pnEsc(x.t)}</span><button class="pn-tx" data-td="x" data-i="${i}">×</button></div>`).join('')}<input class="pn-in" data-td="add" enterkeyhint="done"></div>`; }
         if (w.t === 'gap') return PD.edit ? head('<span style="opacity:.6">빈칸</span>') : '';
@@ -3460,6 +3475,19 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     }
     // 예전 한 박스 모양 {h,c,o,ws} → {bx:{b0:...}}
     function pnBoxes(c) { if (!c) return { bx: {} }; const v = JSON.parse(JSON.stringify(c)); if (v.bx) return v; return { bx: { b0: { h: v.h, c: v.c, o: v.o, ws: v.ws || {}, ord: 0 } } }; }
+    // 못한 것 창: 블럭 누르면 적힌 거 (그 과목부터, 전체 보기)
+    function pnUnfWin(per, vy, vm, gi) {
+        const G = pnUnf(per, vy, vm); document.querySelectorAll('.pn-win').forEach(x => x.remove());
+        const ov = document.createElement('div'); ov.className = 'pn-win';
+        const draw = sel => { const L = sel >= 0 && G[sel] ? [G[sel]] : G, tot = G.reduce((n, g) => n + g.rows.size, 0);
+            ov.innerHTML = `<div class="pn-wbox"><div class="pn-wtop"><b>UNFINISHED</b><span>${per === 'all' ? 'ALL' : vm + '월'}</span><span class="pn-cnt">${sel >= 0 && G[sel] ? G[sel].rows.size + ' / ' + tot : tot}</span><span style="flex:1"></span><button class="pn-wx">×</button></div>
+            <div class="pn-wtabs"><button data-s="-1" class="${sel < 0 ? 'on' : ''}">전체</button>${G.map((g, k) => `<button data-s="${k}" class="${sel === k ? 'on' : ''}"><i style="background:${g.g ? g.g.color : '#c9c9c9'}"></i>${pnEsc(g.g ? g.g.name : '기타')}</button>`).join('')}</div>
+            <div class="pn-wbd">${L.map(g => `<div class="pn-g"><div class="pn-gh"><i style="background:${g.g ? g.g.color : '#c9c9c9'}"></i>${pnEsc(g.g ? g.g.name : '기타')}<small>${g.rows.size}</small></div>${[...g.rows.values()].map(r => `<div class="pn-r"><span class="pn-rt">${pnEsc(r.text)}</span><span class="pn-ds">${r.ks.map(k => `<em data-k="${k}">${k.replace('.', '/')}</em>`).join('')}</span></div>`).join('')}</div>`).join('') || '<div style="opacity:.4;text-align:center;padding:20px 0">0</div>'}</div></div>`; };
+        draw(gi); document.body.appendChild(ov);
+        const close = () => { ov.remove(); document.removeEventListener('keydown', esc, true); }; const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+        document.addEventListener('keydown', esc, true);
+        ov.onclick = e => { if (e.target === ov || e.target.closest('.pn-wx')) return close(); const t = e.target.closest('[data-s]'); if (t) return draw(+t.dataset.s); const k = e.target.closest('[data-k]'); if (k) { close(); if (window.plCalFS) pl_toggleCalFS(false); pl_calGoto(k.dataset.k); } };
+    }
     function pnDraw(vy, vm) {
         PN.vy = vy; PN.vm = vm; const wrap = PD.wrap; if (!wrap || !document.body.contains(wrap)) return; const slot = wrap.querySelector('.pn-slot'); if (!slot) return;
         const C = pnBoxes(pnCfg(PD.key)), boxes = Object.entries(C.bx).map(([id, b]) => ({ ...b, id })).sort((a, b) => (a.ord || 0) - (b.ord || 0));
@@ -3479,6 +3507,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
                 else edit(v => { const id = 'w' + Date.now().toString(36); const mx = Math.max(0, ...Object.values(v.ws).map(x => x.ord || 0)); v.ws[id] = { t: a, f: a === 'unf' ? 2 : 1, ord: mx + 1, ...(a === 'unf' ? { per: 'month' } : {}) }; });
                 return; }
             if (b.dataset.pw) { const a = b.dataset.pw; edit(v => { const w = v.ws[wid]; if (!w) return false; if (a === 'x') { if (w.t === 'todo' && (PN.todo[wid] || []).length && !confirm('투두 위젯 지울까?')) return false; delete v.ws[wid]; } else if (a === 'per') w.per = b.dataset.v; else { const arr = Object.entries(v.ws).sort((x, y) => (x[1].ord || 0) - (y[1].ord || 0)); const i = arr.findIndex(x => x[0] === wid), j = a === 'l' ? i - 1 : i + 1; if (j < 0 || j >= arr.length) return false; [arr[i], arr[j]] = [arr[j], arr[i]]; arr.forEach((x, n) => x[1].ord = n); } }); return; }
+            if (b.dataset.ug != null) { const st = b.closest('.pn-w').querySelector('.pn-stk'); pnUnfWin(st.dataset.per, vy, vm, +b.dataset.ug); return; }
             if (b.dataset.td) { const L = (PN.todo[wid] || []).slice(), i = +b.dataset.i; if (b.dataset.td === 'ck') L[i] = { ...L[i], d: L[i].d ? 0 : 1 }; else L.splice(i, 1); pnTodoPut(wid, L); pnDraw(vy, vm); } };
         box.querySelectorAll('.pn-in').forEach(inp => { inp.onkeydown = e => { if (e.key !== 'Enter' || e.isComposing) return; e.preventDefault(); const t = inp.value.trim(); if (!t) return; const wid = inp.closest('.pn-w').dataset.w; pnTodoPut(wid, [...(PN.todo[wid] || []), { t }]); inp.value = ''; pnDraw(vy, vm); const n = PD.wrap.querySelector(`.pn-w[data-w="${wid}"] .pn-in`); if (n) n.focus(); }; });
         box.querySelectorAll('.pn-tt').forEach(sp => { sp.ondblclick = () => { const wid = sp.closest('.pn-w').dataset.w, i = [...sp.closest('.pn-bd').querySelectorAll('.pn-tt')].indexOf(sp); sp.contentEditable = 'true'; sp.focus(); const fin = () => { sp.contentEditable = 'false'; const L = (PN.todo[wid] || []).slice(), t = sp.innerText.trim(); if (!L[i]) return; if (t) L[i] = { ...L[i], t }; else L.splice(i, 1); pnTodoPut(wid, L); pnDraw(vy, vm); }; sp.onblur = fin; sp.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sp.blur(); } }; }; });
