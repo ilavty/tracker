@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Final Notepad V75 (Ultimate Dashboard)</title>
 
     <link rel="apple-touch-icon" href="icon.png">
@@ -3317,6 +3317,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     }
     try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
     function pl_toggleCalFS(on) { const v = on == null ? !window.plCalFS : !!on; if (v === !!window.plCalFS) return; window.plCalFS = v; document.documentElement.classList.toggle('plc-fs-on', v);
+        { const m = document.querySelector('meta[name=viewport]'); if (m) m.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' + (v ? ', viewport-fit=cover' : ''); }
         const de = document.documentElement, fe = document.fullscreenElement || document.webkitFullscreenElement;
         try { if (v && !fe) { const r = de.requestFullscreen || de.webkitRequestFullscreen; if (r) { const p = r.call(de); if (p && p.catch) p.catch(() => { }); } } else if (!v && fe) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } } catch (e) { }
         pl_renderPlanner(); }
