@@ -1228,7 +1228,9 @@ function buildCellHtml(r, n, opts){
   return `<div class="${cls}" ${style} data-rec="${r.id}" data-num="${n}">${isWrong?'X':'O'}</div>`;
 }
 /* 폰: 번호줄+O/X줄을 10개씩 끊어서 여러 줄로 (화면 밖으로 안 넘치게) */
-function gridPerRow(total){ return window.matchMedia('(max-width:600px)').matches ? 10 : total; }
+function gridPerRow(total){ const ph = window.matchMedia('(max-width:600px)').matches; window.__gpPhone = ph; return ph ? 10 : total; }
+// 숨겨진 상태(폭 0)로 먼저 그려지면 폰 모양(10개씩)이 남음 → 그릴 때랑 지금 폭이 다르면 다시 그림
+(()=>{ let tm; const chk=()=>{ clearTimeout(tm); tm=setTimeout(()=>{ if(window.__gpPhone===undefined || !window.innerWidth) return; const ph=window.matchMedia('(max-width:600px)').matches; if(ph!==window.__gpPhone && typeof renderAll==='function') renderAll(); },80); }; window.addEventListener('resize', chk); document.addEventListener('visibilitychange', chk); })();
 function gridRows(total, headFn, cellFn, trailingHtml){
   const K = gridPerRow(total); let out = '';
   for(let s=1; s<=total; s+=K){
