@@ -126,7 +126,7 @@ body.edit .olpart .chh,body.edit .olsecs .sh{cursor:grab;-webkit-user-select:non
 .menu-pop button:hover{background:var(--soft)}
 .saved{font-size:11.5px;color:var(--sub);min-width:46px;text-align:right}
 #tocBtn{display:none}
-#topFold{display:none;align-items:center;justify-content:center;width:34px;padding-left:0;padding-right:0;color:var(--sub)}
+.topfold{display:none;align-items:center;justify-content:center;color:var(--sub);font-size:12px}
 
 /* layout */
 .wrap{display:flex;gap:22px;max-width:1240px;margin:0 auto;padding:20px 16px 80px}
@@ -547,9 +547,8 @@ body.hlon .hlbar{display:flex}
   .side{position:fixed;left:0;top:0;bottom:0;max-height:none;width:270px;border-radius:0;z-index:40;transform:translateX(-105%);transition:transform .2s;padding-top:18px}
   .side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.2)}
   #tocBtn{display:inline-block}
-  #topFold{display:inline-flex}
-  body.topclosed .top .tools,body.topclosed .top .tabs{display:none!important}
-  body.topclosed .top{padding-top:6px;padding-bottom:6px}
+  .topfold{display:inline-flex}
+  body.fold-tools .top .tools,body.fold-tabs .top .tabs{display:none!important}
   .paper{padding:18px 14px}
   .wrap{padding:12px 10px 80px}
   col.ca{width:78px}
@@ -596,7 +595,7 @@ body.hlon .hlbar{display:flex}
 </head>
 <body>
 <div class="top">
-  <button class="btn" id="tocBtn">Contents</button><button class="btn" id="topFold" title="위쪽 줄 접기/펴기">▴</button>
+  <button class="btn" id="tocBtn">Contents</button><button class="btn topfold" data-fold="tools">도구 ▴</button><button class="btn topfold" data-fold="tabs">과목 ▴</button>
   <div class="tabs" id="tabs"></div>
   <div class="tools">
     <span class="saved" id="saved"></span>
@@ -1888,10 +1887,11 @@ $('#editBtn').onclick = () => { editing = !editing; $('#editBtn').classList.togg
 $('#printBtn').onclick = () => window.print();
 $('#impBtn').onclick = () => openImport();
 $('#tocBtn').onclick = () => $('#side').classList.toggle('open');
-/* 폰: 위쪽 두 줄(도구·과목/연도) 접기 — 상태 기억 */
-(() => { const b = $('#topFold'); const set = c => { document.body.classList.toggle('topclosed', c); b.textContent = c ? '▾' : '▴'; try { localStorage.setItem(KEY + ':topclosed', c ? '1' : '0'); } catch (e) {} };
-  let c = false; try { c = localStorage.getItem(KEY + ':topclosed') === '1'; } catch (e) {} set(c);
-  b.onclick = () => set(!document.body.classList.contains('topclosed')); })();
+/* 폰: 위쪽 도구 줄 / 과목·연도 줄 따로 접기 — 상태 기억 */
+document.querySelectorAll('.topfold').forEach(b => { const k = b.dataset.fold, lab = k === 'tools' ? '도구' : '과목';
+  const set = c => { document.body.classList.toggle('fold-' + k, c); b.textContent = lab + (c ? ' ▾' : ' ▴'); try { localStorage.setItem(KEY + ':fold-' + k, c ? '1' : '0'); } catch (e) {} };
+  let c = false; try { c = localStorage.getItem(KEY + ':fold-' + k) === '1'; } catch (e) {} set(c);
+  b.onclick = () => set(!document.body.classList.contains('fold-' + k)); });
 $('#menuBtn').onclick = e => { e.stopPropagation(); $('#menuPop').classList.toggle('open'); };
 $('#menuPop').onclick = e => {
   const m = e.target.closest('[data-m]')?.dataset.m; if (!m) return;
