@@ -861,7 +861,7 @@ document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; 
 .plc-month{border-radius:16px;overflow:hidden}.plc-month .plc-wk{border-radius:0}.plc-month .plc-row:last-child{border-bottom:0}
 .plc-fsb{position:absolute;top:6px;left:14px;border:0;background:transparent;color:#c3c9d1;font-size:.8rem;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer;z-index:2}.plc-fsb:hover{color:#5a97eb}.bg-dark .plc-fsb{color:rgba(255,255,255,.5)}
 .plc-wrap.plc-fs{position:fixed!important;left:0;top:0;z-index:2147480000;margin:0;box-sizing:border-box;width:var(--w,100vw);transform-origin:0 0;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--z,1))}
-#plc-fs-bd{position:fixed;inset:0;z-index:2147479999;background:#121316;overflow:hidden}#plc-fs-bd i{position:absolute;inset:-80px;background-size:cover;background-position:center;filter:blur(40px) brightness(.55);transform:scale(1.1)}
+#plc-fs-bd{position:fixed;inset:0;z-index:2147479999;background-color:#f4f5f7;background-repeat:no-repeat}.plc-wrap.plc-fs{background:none!important;border-color:transparent!important}
 html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 .pn-stk{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;align-content:flex-start;padding-top:4px}
 .pn-col{display:flex;flex-direction:column-reverse;justify-content:flex-end;align-items:flex-start;gap:5px;border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:4px 4px 2px;border-radius:8px;transition:background .15s}
@@ -3341,11 +3341,13 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     }
     try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
     // 전체화면: 평소 폭 그대로 두고 화면 폭에 맞게 통째로 확대 (꾸미기 위치가 달력이랑 같이 커지게)
+    // 전체화면 배경: 사진은 화면 꽉 차게 따로 (달력은 따로 맞춰 확대)
+    function pl_fsBd(w) { w = w || document.querySelector('.plc-wrap.plc-fs'); if (!w) return; let bd = document.getElementById('plc-fs-bd'); if (!bd) { bd = document.createElement('div'); bd.id = 'plc-fs-bd'; document.body.appendChild(bd); }
+        const g = w.style.getPropertyValue('--pbg'); bd.style.backgroundImage = g || 'none'; bd.style.backgroundSize = w.style.getPropertyValue('--pbs') || '100% 100%, cover'; bd.style.backgroundPosition = w.style.getPropertyValue('--pbp') || '0 0, center'; bd.style.backgroundColor = g ? '#1b1c1f' : ''; }
     function pl_fsFit(w) { w = w || document.querySelector('.plc-wrap.plc-fs'); if (!w || !w.classList.contains('plc-fs')) return; const W0 = window.plFsW || 1000; w.style.setProperty('--w', W0 + 'px');
         const H = w.offsetHeight || 1, vw = window.innerWidth, vh = window.innerHeight, z = Math.min(vw / W0, vh / H); window.plFsZ = z;
         w.style.setProperty('--z', z); w.style.setProperty('--tx', Math.round((vw - W0 * z) / 2) + 'px'); w.style.setProperty('--ty', Math.round((vh - H * z) / 2) + 'px');
-        let bd = document.getElementById('plc-fs-bd'); if (!bd) { bd = document.createElement('div'); bd.id = 'plc-fs-bd'; bd.innerHTML = '<i></i>'; document.body.appendChild(bd); }
-        const b = PD.bg; bd.firstChild.style.backgroundImage = b && b.src ? `url('${b.src}')` : 'none';
+        pl_fsBd(w);
         if (!window.plFsRO && window.ResizeObserver) { window.plFsRO = new ResizeObserver(() => { const x = document.querySelector('.plc-wrap.plc-fs'); if (x && Math.abs(x.offsetHeight - (window.plFsH || 0)) > 1) { window.plFsH = x.offsetHeight; pl_fsFit(x); } }); }
         if (window.plFsRO) { window.plFsRO.disconnect(); window.plFsRO.observe(w); } window.plFsH = H; }
     window.addEventListener('resize', () => { if (window.plCalFS) pl_fsFit(); });
@@ -3578,7 +3580,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
         { const f = b && b.src && b.cb ? `blur(${b.cb}px)` : ''; w.querySelectorAll('.plc-month,.pn-box').forEach(mo => { mo.style.backdropFilter = f; mo.style.webkitBackdropFilter = f; }); }
         if (!b || !b.src) { w.style.removeProperty('--pbg'); w.classList.remove('has-bg', 'bg-dark'); return; }
         const v = b.v == null ? .45 : b.v, dk = b.th === 'dark', vc = dk ? '0,0,0' : '255,255,255'; w.classList.toggle('bg-dark', dk); w.style.setProperty('--pbg', `linear-gradient(rgba(${vc},${v}),rgba(${vc},${v})),url('${b.src}')`);
-        w.style.setProperty('--pbs', b.s ? `100% 100%, ${b.s}% auto` : '100% 100%, cover'); w.style.setProperty('--pbp', `0 0, ${b.px == null ? 50 : b.px}% ${b.py == null ? 50 : b.py}%`); w.classList.add('has-bg'); w.classList.toggle('bgadj', !!PD.bgAdj); if (PN.vy && w.querySelector('.pn-box') && !PN.rz) pnDraw(PN.vy, PN.vm); }
+        w.style.setProperty('--pbs', b.s ? `100% 100%, ${b.s}% auto` : '100% 100%, cover'); w.style.setProperty('--pbp', `0 0, ${b.px == null ? 50 : b.px}% ${b.py == null ? 50 : b.py}%`); w.classList.add('has-bg'); w.classList.toggle('bgadj', !!PD.bgAdj); if (window.plCalFS) pl_fsBd(w); if (PN.vy && w.querySelector('.pn-box') && !PN.rz) pnDraw(PN.vy, PN.vm); }
     function pdBgPick(file) { const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => { const M = 1800, sc = Math.min(1, M / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); let src = c.toDataURL('image/webp', .82); if (!src.startsWith('data:image/webp')) src = c.toDataURL('image/jpeg', .82); pdBgSet({ src, v: (PD.bg && PD.bg.v != null) ? PD.bg.v : .55 }); pl_renderPlanner(); }; im.src = fr.result; }; fr.readAsDataURL(file); }
     function pdCrop(id) {
         const it0 = pdItems(PD.key)[id]; if (!it0) return; const srcO = it0.orig || it0.src;
