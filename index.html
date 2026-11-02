@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>
+/* 탭 붙이기 등 시작 작업: 예전엔 setTimeout(0.4~0.9초)로 늦게 했던 걸, 페이지 다 읽히자마자 순서대로 바로 */
+window.__bootQ = []; window.__boot = (fn, ord) => { window.__bootQ.push([ord, fn]); if (window.__bootDone) fn(); };
+document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; window.__bootQ.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => { try { fn(); } catch (e) { console.error(e); } }); });
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Final Notepad V75 (Ultimate Dashboard)</title>
@@ -4165,7 +4171,7 @@ function pl_unmergeItem() {
         if(document.getElementById('pl-item-menu')) document.getElementById('pl-item-menu').style.display = 'none'; 
     });
 
-    setTimeout(() => {
+    __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');
         const plView = document.getElementById('planner-view');
         const navLinks = document.querySelector('.nav-links');
@@ -4221,7 +4227,7 @@ function pl_unmergeItem() {
             if (iframe) iframe.style.height = Math.max(600, e.data.height) + 'px';
         }
     });
-    setTimeout(() => {
+    __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');
         const psatView = document.getElementById('psat-view');
         const navLinks = document.querySelector('.nav-links');
@@ -4275,7 +4281,7 @@ function pl_unmergeItem() {
             if (f) f.style.height = Math.max(700, e.data.height) + 'px';
         }
     });
-    setTimeout(() => {
+    __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');
         const navLinks = document.querySelector('.nav-links');
         const cardsView = document.getElementById('cards-view');
@@ -4313,7 +4319,7 @@ function pl_unmergeItem() {
             if (f) f.style.height = Math.max(300, e.data.height) + 'px';
         }
     });
-    setTimeout(() => {
+    __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');
         const navLinks = document.querySelector('.nav-links');
         const ovView = document.getElementById('overview-view');
@@ -4347,7 +4353,7 @@ function pl_unmergeItem() {
     <iframe id="issues-iframe" data-src="issues.html" title="ISSUES" style="width:100%; height:calc(100vh - 64px); height:calc(100dvh - 64px); min-height:560px; border:none; display:block; background:#fff;"></iframe>
 </div>
 <script>
-    setTimeout(() => {
+    __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');
         const navLinks = document.querySelector('.nav-links');
         const issuesView = document.getElementById('issues-view');
@@ -4809,7 +4815,7 @@ function pl_unmergeItem() {
 
 <script>
 /* ========== CALENDAR — OVERVIEW와 PLANNER 사이 탭 (플래너 화면을 달력 모드로) ========== */
-setTimeout(() => {
+__boot(() => {
     const navLinks = document.querySelector('.nav-links'), plv = document.getElementById('planner-view');
     if (navLinks && !document.getElementById('nav-calendar')) {
         const b = document.createElement('span'); b.id = 'nav-calendar'; b.className = 'inactive'; b.innerText = 'CALENDAR'; b.onclick = () => showPage('calendar');
