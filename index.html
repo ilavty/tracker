@@ -853,6 +853,9 @@
 </style>
 <style>
 .plc-month{border-radius:16px;overflow:hidden}.plc-month .plc-wk{border-radius:0}.plc-month .plc-row:last-child{border-bottom:0}
+.plc-fsb{position:absolute;top:6px;left:14px;border:0;background:transparent;color:#c3c9d1;font-size:.8rem;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer;z-index:2}.plc-fsb:hover{color:#5a97eb}.bg-dark .plc-fsb{color:rgba(255,255,255,.5)}
+.plc-wrap.plc-fs{position:fixed!important;inset:0;z-index:2147480000;border-radius:0;border:0;overflow-y:auto;scrollbar-width:none;padding:44px max(28px,5vw) 40px;background-attachment:local}.plc-wrap.plc-fs::-webkit-scrollbar{display:none}
+html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 .pn-box{position:relative;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;color:#2b2f36;overflow:hidden;font-family:'Paperlogy',sans-serif}
 .pn-box.dk{color:#eef0f3}.pn-box.ed{outline:1.5px dashed rgba(90,151,235,.5);outline-offset:2px}
 .pn-tool{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.pn-tool button,.pn-wt button,.pn-per button{border:0;background:rgba(127,127,127,.18);color:inherit;font:inherit;font-size:.62rem;padding:3px 8px;border-radius:6px;cursor:pointer;opacity:.8}.pn-sep{width:8px}
@@ -3313,6 +3316,12 @@
         window.plViewMonth = m; pl_renderPlanner();
     }
     try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
+    function pl_toggleCalFS(on) { const v = on == null ? !window.plCalFS : !!on; if (v === !!window.plCalFS) return; window.plCalFS = v; document.documentElement.classList.toggle('plc-fs-on', v);
+        const de = document.documentElement, fe = document.fullscreenElement || document.webkitFullscreenElement;
+        try { if (v && !fe) { const r = de.requestFullscreen || de.webkitRequestFullscreen; if (r) { const p = r.call(de); if (p && p.catch) p.catch(() => { }); } } else if (!v && fe) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } } catch (e) { }
+        pl_renderPlanner(); }
+    ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { if (!(document.fullscreenElement || document.webkitFullscreenElement) && window.plCalFS) pl_toggleCalFS(false); }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && window.plCalFS && !document.querySelector('.pd-crop') && !(document.activeElement && document.activeElement.isContentEditable)) pl_toggleCalFS(false); });
     function pl_toggleCalSimple() { window.plCalSimple = !window.plCalSimple; try { localStorage.setItem('pl_cal_simple', window.plCalSimple ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
     try { window.plCalMode = localStorage.getItem('pl_cal_mode') === '1'; } catch (e) {}
     function pl_toggleCal() { window.plCalMode = !window.plCalMode; try { localStorage.setItem('pl_cal_mode', window.plCalMode ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
@@ -3379,7 +3388,7 @@
         const months = new Set([vy * 12 + vm - 1]);
         const cyc = pl_calCycles(yr);
         const W = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-        let h = '<div class="plc-wrap" style="grid-column:1/-1"><button class="plc-sw" onclick="pl_toggleCalSimple()">SIMPLE</button>';
+        let h = `<div class="plc-wrap${window.plCalFS ? ' plc-fs' : ''}" style="grid-column:1/-1"><button class="plc-fsb" onclick="pl_toggleCalFS()" title="전체화면">${window.plCalFS ? '✕' : '⤢'}</button><button class="plc-sw" onclick="pl_toggleCalSimple()">SIMPLE</button>`;
         [...months].sort((a, b) => b - a).forEach(mi => {
             const y = Math.floor(mi / 12), m = mi % 12, first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate(), rows = Math.ceil((first + days) / 7);
             h += `<div class="plc-month" id="plc-${m + 1}"><div class="plc-wk">${W.map(w => `<span>${w}</span>`).join('')}</div>`;
