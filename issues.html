@@ -1517,8 +1517,30 @@ function openImport() {
   dr.ondragover = e => { e.preventDefault(); dr.classList.add('over'); };
   dr.ondragleave = () => dr.classList.remove('over');
   dr.ondrop = e => { e.preventDefault(); dr.classList.remove('over'); const f = [...e.dataTransfer.files]; if (f.length) go(f); };
-  $('#impTextGo').onclick = () => { const t = $('#impText').value; if (!t.trim()) return; const ss = toSheets([t.split(/\r?\n/)]); ss.forEach(s => s.theme ||= 'Pasted text'); showSheets(ss); };
+  $('#impTextGo').onclick = () => { const t = $('#impText').value; if (!t.trim()) return; if (/^\s*#\s*\S/m.test(t) || /\[\[.+?\]\]/.test(t)) { showSheets(parseMarked(t)); return; } const ss = toSheets([t.split(/\r?\n/)]); ss.forEach(s => s.theme ||= 'Pasted text'); showSheets(ss); };
 
+  /* AI가 정리해 준 형식 붙여넣기:  # 소제목 / @날짜 2026-10-29 / @구분 진도|이슈 / > 안내 박스 / - 문장 [[정답]] / - 문장 => O */
+  function parseMarked(text) {
+    const out = []; let cur = null, date = '', kind = '';
+    const fdOf = v => { const m = v.match(/(\d{2,4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})/); if (!m) return ''; const y = m[1].length === 2 ? '20' + m[1] : m[1]; return `${y}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`; };
+    for (const raw of text.split(/\r?\n/)) {
+      const l = raw.trim(); if (!l) continue;
+      let m;
+      if ((m = l.match(/^@\s*날짜\s*:?\s*(.+)$/))) { date = fdOf(m[1]); if (cur && !cur.items.length && !cur.note) cur.fd = date; continue; }
+      if ((m = l.match(/^@\s*구분\s*:?\s*(.+)$/))) { kind = /이슈/.test(m[1]) ? 'issue' : /진도/.test(m[1]) ? 'prog' : ''; if (cur && !cur.items.length && !cur.note) cur.kind = kind; continue; }
+      if ((m = l.match(/^#+\s*(.+)$/))) { cur = { theme: m[1].trim(), note: '', items: [], fd: date, kind }; out.push(cur); continue; }
+      if (!cur) { cur = { theme: 'Pasted text', note: '', items: [], fd: date, kind }; out.push(cur); }
+      if ((m = l.match(/^>\s*(.*)$/))) { cur.note += (cur.note ? '\n' : '') + m[1]; continue; }
+      if ((m = l.match(/^(?:[-•*]|\d{1,2}[.)]|[①-⑳])\s*(.+)$/))) {
+        let t = m[1].trim(), a = '';
+        const ox = t.match(/^(.*?)\s*(?:=>|→)\s*(.+)$/); if (ox) { t = ox[1].trim(); a = ox[2].trim(); }
+        t = t.replace(/【\s*】|《\s*》|\(\s*\)|\[\[\s*\]\]/g, '[[??]]');
+        cur.items.push(a ? { t, a } : { t }); continue;
+      }
+      if (cur.items.length) cur.items[cur.items.length - 1].t += ' ' + l; else cur.note += (cur.note ? ' ' : '') + l;
+    }
+    return out.filter(x => x.items.length || x.note);
+  }
   function showSheets(sheets) {
     if (!sheets.length) { out.innerHTML = '<div class="empty">No readable text found. Scanned (image) PDFs cannot be read.</div>'; $('#impAdd').disabled = true; return; }
     out.innerHTML = `<div class="imp-tip">You can edit sentences · drag = blank, click blank = undo · <b class="w">??</b> = blank without a matched answer <button class="btn" type="button" id="impWrap">Selection → Blank</button></div>` +
@@ -1526,12 +1548,12 @@ function openImport() {
         const g = guessCh(s.theme);
         return `<div class="imp-sheet" data-si="${si}">
         <div class="imp-head"><span class="imp-k">Section</span><input class="imp-title" value="${esc(s.theme)}"></div>
-        <div class="imp-head"><span class="imp-k">파일 날짜</span><input type="date" class="imp-fd" value="${esc(s.fd || todayFd())}"><span class="imp-k" style="margin-left:14px">구분</span><select class="imp-kind"><option value="prog"${/이슈|시사|사례|기사|최근/.test(s.theme || '') ? '' : ' selected'}>진도</option><option value="issue"${/이슈|시사|사례|기사|최근/.test(s.theme || '') ? ' selected' : ''}>이슈</option><option value="">없음</option></select></div>
+        <div class="imp-head"><span class="imp-k">파일 날짜</span><input type="date" class="imp-fd" value="${esc(s.fd || todayFd())}"><span class="imp-k" style="margin-left:14px">구분</span><select class="imp-kind"><option value="prog"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? '' : ' selected'}>진도</option><option value="issue"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? ' selected' : ''}>이슈</option><option value="">없음</option></select></div>
         <div class="imp-head"><span class="imp-k">Place in</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
         <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">New chapter</span><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select><input class="imp-chname" value="${esc(s.theme)}" placeholder="Chapter name"></div>
         ${s.note ? `<div class="imp-noterow"><label><input type="checkbox" class="imp-noteon" checked> Add as note box</label><textarea class="imp-note">${esc(s.note)}</textarea></div>` : ''}
         <div class="imp-bar"><label><input type="checkbox" class="imp-all" checked> Select all</label><span>${s.items.length} items</span></div>
-        ${s.items.map(it => `<div class="imp-it${it.t.includes('[[??]]') ? ' warn' : ''}"><input type="checkbox" class="imp-on" checked><div class="imp-body">${it.tag ? `<input class="imp-tag" value="${esc(it.tag)}" title="Tag">` : '<input class="imp-tag" value="" placeholder="Tag" title="Tag">'}<div class="bed sm" contenteditable="true" data-t="${esc(it.t)}"></div><div class="prev"></div></div></div>`).join('')}
+        ${s.items.map(it => `<div class="imp-it${it.t.includes('[[??]]') ? ' warn' : ''}" data-a="${esc(it.a || '')}"><input type="checkbox" class="imp-on" checked><div class="imp-body">${it.tag ? `<input class="imp-tag" value="${esc(it.tag)}" title="Tag">` : '<input class="imp-tag" value="" placeholder="Tag" title="Tag">'}<div class="bed sm" contenteditable="true" data-t="${esc(it.t)}"></div><div class="prev"></div></div></div>`).join('')}
       </div>`;
       }).join('');
     out.querySelectorAll('.bed').forEach(ed => { setBed(ed, ed.dataset.t); initBed(ed, ed.nextElementSibling); });
@@ -1553,7 +1575,7 @@ function openImport() {
     out.querySelectorAll('.imp-sheet').forEach(sh => {
       const picked = [...sh.querySelectorAll('.imp-it')].filter(r => r.querySelector('.imp-on').checked);
       const fd = (sh.querySelector('.imp-fd') || {}).value || '', kd = (sh.querySelector('.imp-kind') || {}).value || '';
-      const items = picked.map(r => { const t = serBed(r.querySelector('.bed')); const tag = r.querySelector('.imp-tag').value.trim(); if (t.includes('[[??]]')) warn++; return t ? Object.assign({ id: nid(), t, y: impY }, tag ? { tag } : {}, fd ? { fd } : {}) : null; }).filter(Boolean);
+      const items = picked.map(r => { const t = serBed(r.querySelector('.bed')); const tag = r.querySelector('.imp-tag').value.trim(); if (t.includes('[[??]]')) warn++; const a = r.dataset.a || ''; return t ? Object.assign({ id: nid(), t, y: impY }, tag ? { tag } : {}, fd ? { fd } : {}, a ? { a } : {}) : null; }).filter(Boolean);
       const noteOn = sh.querySelector('.imp-noteon')?.checked, note = noteOn ? sh.querySelector('.imp-note').value.trim() : '';
       if (!items.length && !note) return;
       let chId = sh.querySelector('.imp-ch').value, chObj;
