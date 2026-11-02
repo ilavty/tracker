@@ -985,7 +985,7 @@ function renderMain() {
     return h;
   };
   h += `<section class="print-only cover"><div class="ct">${esc(d.name)} · Issues</div><div class="cs">Compiled by chapter${yr === 'all' ? '' : ` · <span class="yrtag">${yrLabel(yr)}</span>`}</div><div class="toc">${tocHtml(d)}</div></section>`;
-  if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Drag titles to reorder (hold on iPad) · click a chapter to open' : ''}</span><span class="ec"><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
+  if (editing) h += `<div class="dochead ed"><span class="olsw"><button class="${outline ? 'on' : ''}" data-ol="1">Outline</button><button class="${outline ? '' : 'on'}" data-ol="0">Full</button></span><span class="olhint">${outline ? 'Drag titles to reorder (hold on iPad) · click a chapter to open' : ''}</span><span class="ec"><button class="btn" data-act="addPart">+ 파트</button><button class="btn" data-act="renameDoc">Rename subject</button><button class="btn danger" data-act="delDoc">Delete subject</button></span></div>`;
   if (!editing) { const ld = lastFd(d); h += `<div class="dochead srt"><span class="olsw"><button class="${srt === 'date' ? '' : 'on'}" data-srt="toc">목차순</button><button class="${srt === 'date' ? 'on' : ''}" data-srt="date">날짜순</button></span>${srt === 'date' ? `<span class="srtdir"><button class="${srtDir === 'desc' ? 'on' : ''}" data-srtdir="desc" title="최신순">↓</button><button class="${srtDir === 'asc' ? 'on' : ''}" data-srtdir="asc" title="오래된순">↑</button></span>` : ''}${ld ? `<span class="lastfd">마지막 파일 <b>${fdLabel(ld)}</b></span>` : ''}${srt === 'date' ? `<span class="monchips">${monthsOf(d).map(([k]) => `<button data-gomon="${k}">${monLabel(k)}</button>`).join('')}</span>` : ''}</div>`; }
   if (!editing && srt === 'date') {
     const all = [];
@@ -1557,7 +1557,7 @@ function openImport() {
         <div class="imp-head"><span class="imp-k">Title</span><input class="imp-title" value="${esc(s.theme)}"></div>
         <div class="imp-head"><span class="imp-k">파일 날짜</span><input type="date" class="imp-fd" value="${esc(s.fd || todayFd())}"><span class="imp-k" style="margin-left:14px">구분</span><select class="imp-kind"><option value="prog"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? '' : ' selected'}>진도</option><option value="issue"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? ' selected' : ''}>이슈</option><option value="">없음</option></select></div>
         <div class="imp-head"><span class="imp-k">Place in</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
-        <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">새 챕터</span><label class="imp-sub"><small>파트</small><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select></label><label class="imp-sub grow"><small>챕터 이름</small><input class="imp-chname" value=""></label></div>
+        <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">새 챕터</span><label class="imp-sub"><small>파트</small><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}<option value="__newpart__">＋ 새 파트</option></select></label><label class="imp-sub imp-np" hidden><small>새 파트 이름</small><input class="imp-pname" value=""></label><label class="imp-sub grow"><small>챕터 이름</small><input class="imp-chname" value=""></label></div>
         ${s.note ? `<div class="imp-noterow"><label><input type="checkbox" class="imp-noteon" checked> Add as note box</label><textarea class="imp-note">${esc(s.note)}</textarea></div>` : ''}
         <div class="imp-bar"><label><input type="checkbox" class="imp-all" checked> Select all</label><span>${s.items.length} items</span></div>
         ${s.items.map(it => `<div class="imp-it${it.t.includes('[[??]]') ? ' warn' : ''}" data-a="${esc(it.a || '')}"><input type="checkbox" class="imp-on" checked><div class="imp-body">${it.tag ? `<input class="imp-tag" value="${esc(it.tag)}" title="Tag">` : '<input class="imp-tag" value="" placeholder="Tag" title="Tag">'}<div class="bed sm" contenteditable="true" data-t="${esc(it.t)}"></div><div class="prev"></div></div></div>`).join('')}
@@ -1569,6 +1569,7 @@ function openImport() {
     out.querySelectorAll('.imp-sheet').forEach(sh => {
       const ch = sh.querySelector('.imp-ch');
       ch.onchange = () => { sh.querySelector('.imp-sec').innerHTML = secOptions(ch.value); sh.querySelector('.imp-new').hidden = ch.value !== '__new__'; if (ch.value === '__new__') setTimeout(() => sh.querySelector('.imp-chname').focus(), 30); };
+      const pt = sh.querySelector('.imp-part'); pt.onchange = () => { const np = pt.value === '__newpart__'; sh.querySelector('.imp-np').hidden = !np; if (np) setTimeout(() => sh.querySelector('.imp-pname').focus(), 30); };
       sh.querySelector('.imp-all').onchange = e => sh.querySelectorAll('.imp-on').forEach(c => c.checked = e.target.checked);
     });
     $('#impAdd').disabled = false;
@@ -1588,7 +1589,10 @@ function openImport() {
       let chId = sh.querySelector('.imp-ch').value, chObj;
       const nk = x => (x || '').replace(/\s/g, '');
       if (chId === '__new__') {
-        const p = locate(sh.querySelector('.imp-part').value).obj, nm = sh.querySelector('.imp-chname').value.trim() || 'New chapter';
+        const pv = sh.querySelector('.imp-part').value, nm = sh.querySelector('.imp-chname').value.trim() || 'New chapter';
+        let p;
+        if (pv === '__newpart__') { const pn = sh.querySelector('.imp-pname').value.trim() || '새 파트'; p = doc().parts.find(q => q.title.replace(/\s/g, '') === pn.replace(/\s/g, '')); if (!p) { p = { id: nid(), title: pn, chapters: [] }; doc().parts.push(p); } }
+        else p = locate(pv).obj;
         // 같은 이름 챕터가 이미 있으면(이번에 같이 만든 것 포함) 새로 만들지 않고 거기에 넣기
         chObj = doc().parts.flatMap(q => q.chapters).find(c => nk(c.title) === nk(nm));
         if (!chObj) { chObj = { id: nid(), title: nm, secs: [] }; p.chapters.push(chObj); }
@@ -1685,7 +1689,7 @@ function act(a, id) {
     openModal({ title: `Add chapter · ${p.title}`, fields: [{ key: 'title', label: 'Chapter name' }, { key: 'sec', label: 'First section', value: '주요 논점' }], onSave: v => { if (!v.title) { toast('Enter a chapter name'); return false; } p.chapters.push({ id: nid(), title: v.title, secs: v.sec ? [{ id: nid(), title: v.sec, note: '', items: [] }] : [] }); commit(); } });
   }
   if (a === 'addPart') {
-    openModal({ title: 'Add part', fields: [{ key: 'title', label: 'Part name', ph: 'e.g. INTL LAW Ⅲ' }], onSave: v => { if (!v.title) return false; d.parts.push({ id: nid(), title: v.title, chapters: [] }); commit(); } });
+    openModal({ title: '파트 추가', fields: [{ key: 'title', label: '파트 이름' }, { key: 'ch', label: '첫 챕터 이름 (선택)' }], onSave: v => { if (!v.title) return false; d.parts.push({ id: nid(), title: v.title, chapters: v.ch ? [{ id: nid(), title: v.ch, secs: [] }] : [] }); commit(); toast('파트를 맨 아래에 만들었어요 · 파트 줄의 ↑↓로 위치를 바꿀 수 있어요'); } });
   }
   if (a === 'addDoc') {
     openModal({ title: 'Add subject', fields: [{ key: 'name', label: 'Subject name', ph: 'e.g. 경제학' }], onSave: v => { if (!v.name) return false; const nd = { id: nid(), name: v.name, parts: [{ id: nid(), title: 'PART 1', chapters: [] }] }; DB.docs.push(nd); cur = nd.id; commit(); } });
