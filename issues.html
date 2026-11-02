@@ -1527,11 +1527,14 @@ function openImport() {
     const out = []; let cur = null, date = '', kind = '';
     const fdOf = v => { const m = v.match(/(\d{2,4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})/); if (!m) return ''; const y = m[1].length === 2 ? '20' + m[1] : m[1]; return `${y}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`; };
     for (const raw of text.split(/\r?\n/)) {
-      const l = raw.trim(); if (!l) continue;
+      let l = raw.trim(); if (!l) continue;
+      if (/^```/.test(l) || /^확인\s*필요/.test(l)) continue;           // 코드블록 표시·확인필요 줄은 건너뛰기
+      l = l.replace(/^\*\*(.+)\*\*$/, '$1');
       let m;
       if ((m = l.match(/^@\s*날짜\s*:?\s*(.+)$/))) { date = fdOf(m[1]); if (cur && !cur.items.length && !cur.note) cur.fd = date; continue; }
       if ((m = l.match(/^@\s*구분\s*:?\s*(.+)$/))) { kind = /이슈/.test(m[1]) ? 'issue' : /진도/.test(m[1]) ? 'prog' : ''; if (cur && !cur.items.length && !cur.note) cur.kind = kind; continue; }
-      if ((m = l.match(/^#+\s*(.+)$/))) { cur = { theme: m[1].trim(), note: '', items: [], fd: date, kind }; out.push(cur); continue; }
+      if ((m = l.match(/^#+\s*(.+)$/))) { cur = { theme: m[1].trim().replace(/^(오늘의\s*)?테마\s*[:：]?\s*/, ''), note: '', items: [], fd: date, kind }; out.push(cur); continue; }
+      if (cur && (l.replace(/\s/g, '') === cur.theme.replace(/\s/g, '') || /^(오늘의\s*)?테마\s*[:：]?/.test(l))) continue;   // 제목이 한 번 더 적힌 줄은 내용에 안 넣기
       if (!cur) { cur = { theme: 'Pasted text', note: '', items: [], fd: date, kind }; out.push(cur); }
       if ((m = l.match(/^>\s*(.*)$/))) { cur.note += (cur.note ? '\n' : '') + m[1]; continue; }
       if ((m = l.match(/^(?:[-•*]|\d{1,2}[.)]|[①-⑳])\s*(.+)$/))) {
@@ -1550,7 +1553,7 @@ function openImport() {
       sheets.map((s, si) => {
         const g = guessCh(s.theme);
         return `<div class="imp-sheet" data-si="${si}">
-        <div class="imp-head"><span class="imp-k">Section</span><input class="imp-title" value="${esc(s.theme)}"></div>
+        <div class="imp-head"><span class="imp-k">Title</span><input class="imp-title" value="${esc(s.theme)}"></div>
         <div class="imp-head"><span class="imp-k">파일 날짜</span><input type="date" class="imp-fd" value="${esc(s.fd || todayFd())}"><span class="imp-k" style="margin-left:14px">구분</span><select class="imp-kind"><option value="prog"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? '' : ' selected'}>진도</option><option value="issue"${(s.kind ? s.kind === 'issue' : /이슈|시사|사례|기사|최근/.test(s.theme || '')) ? ' selected' : ''}>이슈</option><option value="">없음</option></select></div>
         <div class="imp-head"><span class="imp-k">Place in</span><select class="imp-ch">${chOptions(g)}</select><select class="imp-sec">${secOptions(g)}</select></div>
         <div class="imp-head imp-new"${g === '__new__' ? '' : ' hidden'}><span class="imp-k">New chapter</span><select class="imp-part">${doc().parts.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select><input class="imp-chname" value="${esc(s.theme)}" placeholder="Chapter name"></div>
