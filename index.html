@@ -860,7 +860,8 @@ document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; 
 <style>
 .plc-month{border-radius:16px;overflow:hidden}.plc-month .plc-wk{border-radius:0}.plc-month .plc-row:last-child{border-bottom:0}
 .plc-fsb{position:absolute;top:6px;left:14px;border:0;background:transparent;color:#c3c9d1;font-size:.8rem;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer;z-index:2}.plc-fsb:hover{color:#5a97eb}.bg-dark .plc-fsb{color:rgba(255,255,255,.5)}
-.plc-wrap.plc-fs{position:fixed!important;left:0;top:0;z-index:2147480000;border-radius:0;border:0;overflow-y:auto;scrollbar-width:none;zoom:var(--z,1);width:var(--w,100vw);height:calc((100vh + env(safe-area-inset-top)) / var(--z,1));height:calc((100lvh + env(safe-area-inset-top)) / var(--z,1));padding-top:calc(30px + env(safe-area-inset-top) / var(--z,1))}.plc-fs .plc-fsb,.plc-fs>.plc-sw,.plc-fs>.pd-bar{top:calc(6px + env(safe-area-inset-top) / var(--z,1))}.plc-wrap.plc-fs::-webkit-scrollbar{display:none}
+.plc-wrap.plc-fs{position:fixed!important;left:0;top:0;z-index:2147480000;margin:0;box-sizing:border-box;width:var(--w,100vw);transform-origin:0 0;transform:translate(var(--tx,0),var(--ty,0)) scale(var(--z,1))}
+#plc-fs-bd{position:fixed;inset:0;z-index:2147479999;background:#121316;overflow:hidden}#plc-fs-bd i{position:absolute;inset:-80px;background-size:cover;background-position:center;filter:blur(40px) brightness(.55);transform:scale(1.1)}
 html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 .pn-stk{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;align-content:flex-start;padding-top:4px}
 .pn-col{display:flex;flex-direction:column-reverse;justify-content:flex-end;align-items:flex-start;gap:5px;border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:4px 4px 2px;border-radius:8px;transition:background .15s}
@@ -3340,12 +3341,19 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     }
     try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
     // 전체화면: 평소 폭 그대로 두고 화면 폭에 맞게 통째로 확대 (꾸미기 위치가 달력이랑 같이 커지게)
-    function pl_fsFit(w) { w = w || document.querySelector('.plc-wrap.plc-fs'); if (!w || !w.classList.contains('plc-fs')) return; const W0 = window.plFsW || 1000, z = window.innerWidth / W0; window.plFsZ = z; w.style.setProperty('--w', W0 + 'px'); w.style.setProperty('--z', z); }
+    function pl_fsFit(w) { w = w || document.querySelector('.plc-wrap.plc-fs'); if (!w || !w.classList.contains('plc-fs')) return; const W0 = window.plFsW || 1000; w.style.setProperty('--w', W0 + 'px');
+        const H = w.offsetHeight || 1, vw = window.innerWidth, vh = window.innerHeight, z = Math.min(vw / W0, vh / H); window.plFsZ = z;
+        w.style.setProperty('--z', z); w.style.setProperty('--tx', Math.round((vw - W0 * z) / 2) + 'px'); w.style.setProperty('--ty', Math.round((vh - H * z) / 2) + 'px');
+        let bd = document.getElementById('plc-fs-bd'); if (!bd) { bd = document.createElement('div'); bd.id = 'plc-fs-bd'; bd.innerHTML = '<i></i>'; document.body.appendChild(bd); }
+        const b = PD.bg; bd.firstChild.style.backgroundImage = b && b.src ? `url('${b.src}')` : 'none';
+        if (!window.plFsRO && window.ResizeObserver) { window.plFsRO = new ResizeObserver(() => { const x = document.querySelector('.plc-wrap.plc-fs'); if (x && Math.abs(x.offsetHeight - (window.plFsH || 0)) > 1) { window.plFsH = x.offsetHeight; pl_fsFit(x); } }); }
+        if (window.plFsRO) { window.plFsRO.disconnect(); window.plFsRO.observe(w); } window.plFsH = H; }
     window.addEventListener('resize', () => { if (window.plCalFS) pl_fsFit(); });
     function pl_toggleCalFS(on) { const v = on == null ? !window.plCalFS : !!on; if (v === !!window.plCalFS) return; if (v) { const w0 = document.querySelector('.plc-wrap'); window.plFsW = w0 ? w0.offsetWidth : 1000; } window.plCalFS = v; document.documentElement.classList.toggle('plc-fs-on', v);
         { const m = document.querySelector('meta[name=viewport]'); if (m) m.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' + (v ? ', viewport-fit=cover' : ''); }
         const de = document.documentElement, fe = document.fullscreenElement || document.webkitFullscreenElement;
         try { if (v && !fe) { const r = de.requestFullscreen || de.webkitRequestFullscreen; if (r) { const p = r.call(de); if (p && p.catch) p.catch(() => { }); } } else if (!v && fe) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } } catch (e) { }
+        if (!v) { const bd = document.getElementById('plc-fs-bd'); if (bd) bd.remove(); if (window.plFsRO) window.plFsRO.disconnect(); }
         pl_renderPlanner(); }
     ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { if (!(document.fullscreenElement || document.webkitFullscreenElement) && window.plCalFS) pl_toggleCalFS(false); }));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && window.plCalFS && !document.querySelector('.pd-crop') && !(document.activeElement && document.activeElement.isContentEditable)) pl_toggleCalFS(false); });
@@ -3436,7 +3444,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             h += '</div>';
         });
         h += '<div class="pn-slot"></div>';
-        container.innerHTML = h + '</div>'; pl_fsFit(container.querySelector('.plc-wrap')); plDecoMount(container.querySelector('.plc-wrap'), vy + '-' + vm); pnDraw(vy, vm);
+        container.innerHTML = h + '</div>'; plDecoMount(container.querySelector('.plc-wrap'), vy + '-' + vm); pnDraw(vy, vm); pl_fsFit(container.querySelector('.plc-wrap'));
     }
 
     /* ── 달력 아래 칸: 달마다 (_pnl/{달}), 안 정한 달은 가장 최근 달 모양 그대로. 위젯 = 못한 것 / 투두 (투두 내용은 위젯별 _todo/{id}) ── */
