@@ -854,7 +854,7 @@
 <style>
 .plc-month{border-radius:16px;overflow:hidden}.plc-month .plc-wk{border-radius:0}.plc-month .plc-row:last-child{border-bottom:0}
 .plc-fsb{position:absolute;top:6px;left:14px;border:0;background:transparent;color:#c3c9d1;font-size:.8rem;line-height:1;padding:3px 6px;border-radius:8px;cursor:pointer;z-index:2}.plc-fsb:hover{color:#5a97eb}.bg-dark .plc-fsb{color:rgba(255,255,255,.5)}
-.plc-wrap.plc-fs{position:fixed!important;inset:0;z-index:2147480000;border-radius:0;border:0;overflow-y:auto;scrollbar-width:none;padding:calc(44px + env(safe-area-inset-top)) max(28px,5vw,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(28px,5vw,env(safe-area-inset-left));background-attachment:local;bottom:auto;height:calc(100vh + env(safe-area-inset-top));height:calc(100lvh + env(safe-area-inset-top))}.plc-fs .plc-fsb{top:calc(6px + env(safe-area-inset-top))}.plc-fs>.plc-sw,.plc-fs>.pd-bar{top:calc(6px + env(safe-area-inset-top))}.plc-wrap.plc-fs::-webkit-scrollbar{display:none}
+.plc-wrap.plc-fs{position:fixed!important;left:0;top:0;z-index:2147480000;border-radius:0;border:0;overflow-y:auto;scrollbar-width:none;zoom:var(--z,1);width:var(--w,100vw);height:calc((100vh + env(safe-area-inset-top)) / var(--z,1));height:calc((100lvh + env(safe-area-inset-top)) / var(--z,1));padding-top:calc(30px + env(safe-area-inset-top) / var(--z,1))}.plc-fs .plc-fsb,.plc-fs>.plc-sw,.plc-fs>.pd-bar{top:calc(6px + env(safe-area-inset-top) / var(--z,1))}.plc-wrap.plc-fs::-webkit-scrollbar{display:none}
 html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 .pn-box{position:relative;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;color:#2b2f36;overflow:hidden;font-family:'Paperlogy',sans-serif}
 .pn-box.dk{color:#eef0f3}.pn-box.ed{outline:1.5px dashed rgba(90,151,235,.5);outline-offset:2px}
@@ -3316,7 +3316,10 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
         window.plViewMonth = m; pl_renderPlanner();
     }
     try { window.plCalSimple = localStorage.getItem('pl_cal_simple') === '1'; } catch (e) {}
-    function pl_toggleCalFS(on) { const v = on == null ? !window.plCalFS : !!on; if (v === !!window.plCalFS) return; window.plCalFS = v; document.documentElement.classList.toggle('plc-fs-on', v);
+    // 전체화면: 평소 폭 그대로 두고 화면 폭에 맞게 통째로 확대 (꾸미기 위치가 달력이랑 같이 커지게)
+    function pl_fsFit(w) { w = w || document.querySelector('.plc-wrap.plc-fs'); if (!w || !w.classList.contains('plc-fs')) return; const W0 = window.plFsW || 1000, z = window.innerWidth / W0; window.plFsZ = z; w.style.setProperty('--w', W0 + 'px'); w.style.setProperty('--z', z); }
+    window.addEventListener('resize', () => { if (window.plCalFS) pl_fsFit(); });
+    function pl_toggleCalFS(on) { const v = on == null ? !window.plCalFS : !!on; if (v === !!window.plCalFS) return; if (v) { const w0 = document.querySelector('.plc-wrap'); window.plFsW = w0 ? w0.offsetWidth : 1000; } window.plCalFS = v; document.documentElement.classList.toggle('plc-fs-on', v);
         { const m = document.querySelector('meta[name=viewport]'); if (m) m.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' + (v ? ', viewport-fit=cover' : ''); }
         const de = document.documentElement, fe = document.fullscreenElement || document.webkitFullscreenElement;
         try { if (v && !fe) { const r = de.requestFullscreen || de.webkitRequestFullscreen; if (r) { const p = r.call(de); if (p && p.catch) p.catch(() => { }); } } else if (!v && fe) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } } catch (e) { }
@@ -3410,7 +3413,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             h += '</div>';
         });
         h += '<div class="pn-slot"></div>';
-        container.innerHTML = h + '</div>'; plDecoMount(container.querySelector('.plc-wrap'), vy + '-' + vm); pnDraw(vy, vm);
+        container.innerHTML = h + '</div>'; pl_fsFit(container.querySelector('.plc-wrap')); plDecoMount(container.querySelector('.plc-wrap'), vy + '-' + vm); pnDraw(vy, vm);
     }
 
     /* ── 달력 아래 칸: 달마다 (_pnl/{달}), 안 정한 달은 가장 최근 달 모양 그대로. 위젯 = 못한 것 / 투두 (투두 내용은 위젯별 _todo/{id}) ── */
@@ -3648,7 +3651,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
         const tx = e.target.closest('.pd-tx'); if (tx && document.activeElement === tx) return;
         const mode = e.target.closest('.pd-rz') ? 'rz' : e.target.closest('.pd-ro') ? 'ro' : 'mv';
         const box = PD.wrap.querySelector(`.pd-it[data-id="${id}"]`); const r = box.getBoundingClientRect();
-        PD.drag = { id, it, mode, sx: e.clientX, sy: e.clientY, W, moved: false, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+        PD.drag = { id, it, mode, sx: e.clientX, sy: e.clientY, W, z: (window.plCalFS && window.plFsZ) || 1, moved: false, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
         if (mode !== 'mv' || !tx) e.preventDefault();
     }, true);
     document.addEventListener('pointerdown', e => {
@@ -3659,7 +3662,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     document.addEventListener('pointermove', e => { const g = PD.bgDrag; if (!g) return; PD.bg.px = Math.max(0, Math.min(100, g.px - (e.clientX - g.sx) / g.w * 100 * 1.6)); PD.bg.py = Math.max(0, Math.min(100, g.py - (e.clientY - g.sy) / g.h * 100 * 1.6)); pdBgApply(); });
     document.addEventListener('pointerup', () => { if (PD.bgDrag) { PD.bgDrag = null; pdBgSet({ ...PD.bg }); } });
     document.addEventListener('pointermove', e => {
-        const d = PD.drag; if (!d) return; const dx = (e.clientX - d.sx) / d.W, dy = (e.clientY - d.sy) / d.W; if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) > 3) d.moved = true; if (!d.moved) return;
+        const d = PD.drag; if (!d) return; const dx = (e.clientX - d.sx) / (d.W * d.z), dy = (e.clientY - d.sy) / (d.W * d.z); if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) > 3) d.moved = true; if (!d.moved) return;
         const box = PD.wrap.querySelector(`.pd-it[data-id="${d.id}"]`); if (!box) return; const it = d.it, n = { ...it };
         if (d.mode === 'mv') { n.x = it.x + dx; n.y = it.y + dy; box.style.left = n.x * d.W + 'px'; box.style.top = n.y * d.W + 'px'; }
         else if (d.mode === 'rz') { n.w = Math.max(.03, it.w + dx); box.style.width = n.w * d.W + 'px'; if (it.t === 'img') box.style.height = n.w * d.W * (it.ar || 1) + 'px'; else if (!['w', 'k', 'c'].includes(it.bg)) { n.fs = (it.fs || .022) * n.w / it.w; const tx = box.querySelector('.pd-tx'); if (tx) tx.style.fontSize = n.fs * d.W + 'px'; } }
