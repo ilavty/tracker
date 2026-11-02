@@ -2781,7 +2781,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             <span onclick="pl_shiftMonth(-1)" style="cursor:pointer; padding:4px 6px;">‹</span>
             <span id="pl-month-label" style="min-width:34px; text-align:center;"></span>
             <span onclick="pl_shiftMonth(1)" style="cursor:pointer; padding:4px 6px;">›</span>
-            <span id="pl-cal-toggle" onclick="pl_toggleCal()" style="cursor:pointer; padding:4px 6px; margin-left:4px; border-left:1px solid #ddd;">달력</span>
+            
         </div>
         <button id="pl-select-mode-btn" onclick="pl_toggleSelectMode()" title="항목 선택(통합하기)" class="pl-select-mode-btn-mobile-only" style="display:none; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid var(--primary-blue); border-radius:50%; background:rgba(255,255,255,0.8); box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer; box-sizing:border-box;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l3.5-1L20 6.5a1.5 1.5 0 0 0 0-2.1l-1.4-1.4a1.5 1.5 0 0 0-2.1 0L3 16.5 2 20l1 1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 5.5l4 4" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -3327,7 +3327,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { if (!(document.fullscreenElement || document.webkitFullscreenElement) && window.plCalFS) pl_toggleCalFS(false); }));
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && window.plCalFS && !document.querySelector('.pd-crop') && !(document.activeElement && document.activeElement.isContentEditable)) pl_toggleCalFS(false); });
     function pl_toggleCalSimple() { window.plCalSimple = !window.plCalSimple; try { localStorage.setItem('pl_cal_simple', window.plCalSimple ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
-    try { window.plCalMode = localStorage.getItem('pl_cal_mode') === '1'; } catch (e) {}
+    window.plCalMode = localStorage.getItem('lastPage') === 'calendar';
     function pl_toggleCal() { window.plCalMode = !window.plCalMode; try { localStorage.setItem('pl_cal_mode', window.plCalMode ? '1' : '0'); } catch (e) {} pl_renderPlanner(); }
     function pl_fmtStudy(v) {
         v = String(v == null ? '' : v).trim(); if (!v) return '';
@@ -3674,7 +3674,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     window.addEventListener('resize', () => { if (PD.wrap) pdDraw(); });
     function pl_calGoto(key) {
         if (PD.edit) return;
-        window.plCalMode = false; try { localStorage.setItem('pl_cal_mode', '0'); } catch (e) {} window.plViewMonth = Number(key.split('.')[0]); pl_renderPlanner();
+        window.plViewMonth = Number(key.split('.')[0]); if (window.showPage) showPage('planner'); else { window.plCalMode = false; pl_renderPlanner(); }
         setTimeout(() => { let el = document.getElementById('card-' + key); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
     }
 
@@ -4254,7 +4254,7 @@ function pl_unmergeItem() {
             showPage('tracker');
         }
         // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · CARDS (MAP은 DATABASE로 이동)
-        const __order = ['nav-overview','nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
+        const __order = ['nav-overview','nav-calendar','nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
@@ -4806,5 +4806,29 @@ function pl_unmergeItem() {
     tx.oncomplete=()=>{ks.forEach(k=>localStorage.removeItem(k));};};
 }catch(e){}})();
 </script>
+
+<script>
+/* ========== CALENDAR — OVERVIEW와 PLANNER 사이 탭 (플래너 화면을 달력 모드로) ========== */
+setTimeout(() => {
+    const navLinks = document.querySelector('.nav-links'), plv = document.getElementById('planner-view');
+    if (navLinks && !document.getElementById('nav-calendar')) {
+        const b = document.createElement('span'); b.id = 'nav-calendar'; b.className = 'inactive'; b.innerText = 'CALENDAR'; b.onclick = () => showPage('calendar');
+        const pl = document.getElementById('nav-planner'); if (pl) navLinks.insertBefore(b, pl); else navLinks.appendChild(b);
+    }
+    const prev = window.showPage || function () { };
+    window.showPage = function (p) {
+        const cal = p === 'calendar'; window.plCalMode = cal; if (!cal && window.plCalFS && typeof pl_toggleCalFS === 'function') pl_toggleCalFS(false);
+        if (plv) plv.classList.toggle('cal-tab', cal);
+        prev(cal ? 'planner' : p);
+        try { localStorage.setItem('lastPage', p); } catch (e) { }
+        const np = document.getElementById('nav-planner'), nc = document.getElementById('nav-calendar');
+        if (np) np.className = p === 'planner' ? 'active' : 'inactive'; if (nc) nc.className = cal ? 'active' : 'inactive';
+    };
+    if (localStorage.getItem('lastPage') === 'calendar') showPage('calendar');
+}, 900);
+</script>
+<style>
+#planner-view.cal-tab .pl-top-dashboard > *:not(#pl-month-nav){display:none!important}
+</style>
 </body>
 </html>
