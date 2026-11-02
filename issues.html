@@ -1769,11 +1769,23 @@ document.addEventListener('contextmenu', e => {
   e.preventDefault(); getSelection().removeAllRanges(); act('editItem', row.dataset.item);
 });
 /* 소제목 통째로 고치기 (팝업): 이름·날짜·구분·안내 박스·문항 전부 한 화면에서 */
+// 정답칸: 빈칸 있는 문항이면 빈칸 답들을 ' / '로 보여주고, 저장 때 순서대로 빈칸에 채움. 빈칸 없는 문항(O/X 등)은 it.a
+function seAns(it) {
+  if (!it) return '';
+  const b = blanks(it.t); if (!b.length) return it.a || '';
+  if (b.every(x => x.trim() === '??')) return it.a || '';
+  return b.map(x => x.trim() === '??' ? '' : x).join(' / ');
+}
+function fillBlanksFrom(t, av) {
+  if (!av) return t.replace(/\[\[(.+?)\]\]/g, '[[??]]');
+  const parts = av.split('/').map(x => x.trim()); let i = 0;
+  return t.replace(/\[\[(.+?)\]\]/g, (m, x) => { const v = parts[i++]; return v ? `[[${v}]]` : (v === '' && x.trim() !== '??' ? '[[??]]' : m); });
+}
 function secEdit(id) {
   const L = locate(id); if (!L || L.kind !== 'sec') return; const o = L.obj;
   const cur = secDate(o) || '';
   const m = $('#mod'); m.classList.add('wide');
-  const row = (it, k) => `<div class="se-it" data-id="${it ? it.id : ''}"><span class="se-n">${k}</span><div class="se-body"><div class="bed sm" contenteditable="true"></div><label class="se-al"><span>정답</span><input class="se-a" value="${esc(it && it.a || '')}"></label></div><button class="ib x se-del" type="button" title="이 문항 지우기">✕</button></div>`;
+  const row = (it, k) => `<div class="se-it" data-id="${it ? it.id : ''}"><span class="se-n">${k}</span><div class="se-body"><div class="bed sm" contenteditable="true"></div><label class="se-al"><span>정답</span><input class="se-a" value="${esc(seAns(it))}" data-v0="${esc(seAns(it))}"></label></div><button class="ib x se-del" type="button" title="이 문항 지우기">✕</button></div>`;
   m.innerHTML = `<h2>소제목 편집</h2>
     <div class="se-head"><div class="fld"><label>소제목 이름</label><input class="se-title" value="${esc(o.title)}"></div><div class="fld"><label>파일 날짜</label><input type="date" class="se-fd" value="${esc(cur)}"></div><div class="fld"><label>구분</label><select class="se-kind">${[['prog', '진도'], ['issue', '이슈'], ['', '없음']].map(([v, l]) => `<option value="${v}"${(o.kind || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>
     <div class="fld"><label>안내 박스</label><textarea class="se-note">${esc(o.note || '')}</textarea></div>
@@ -1801,7 +1813,9 @@ function secEdit(id) {
         let it = byId[el.dataset.id];
         if (it) { if (dispOf(it.t) !== dispOf(t)) { delete it.hl; delete it.ul; } it.t = t; }
         else it = { id: nid(), t, y: yy };
-        if (av) it.a = av; else delete it.a;
+        const inp = el.querySelector('.se-a');
+        if (blanks(it.t).length) { if (av !== (inp.dataset.v0 || '').trim() || (av && it.a === av)) it.t = fillBlanksFrom(it.t, av); delete it.a; }
+        else if (av) it.a = av; else delete it.a;
         keep.push(it);
       });
       o.items.forEach(it => { if (!keep.includes(it)) tomb(it); });
