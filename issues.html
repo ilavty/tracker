@@ -1130,7 +1130,7 @@ function toolsBar() {
     // 폰: 처음엔 동그라미 하나로 닫혀 있고, 누르면 위로 펼쳐짐. B/F는 버튼 하나를 누를 때마다 바뀜
     b.classList.toggle('open', fabOpen);
     b.innerHTML = `<div class="ftm"><button class="tl" data-fill="${filled ? '0' : '1'}" title="Blank / Filled">${filled ? 'F' : 'B'}</button>` +
-      `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">${hideAns ? 'OFF' : 'ON'}</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">B</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">H</button></div>` +
+      `<button class="tl${hideAns ? ' on' : ''}" data-hideans title="Hide Answer">${hideAns ? 'OFF' : 'ON'}</button><button class="tl${punch ? ' on' : ''}" data-punch title="Make Blank">M</button><button class="tl${hlMode ? ' on' : ''}" data-hlmode title="Highlight">H</button></div>` +
       `<button class="tl fab${fabOpen ? ' on' : ''}" data-ftog title="도구">${fabOpen ? '×' : '•••'}</button><div class="nvp"><button data-inav="-1" title="이전 소제목">▲</button><i></i><button data-inav="1" title="다음 소제목">▼</button></div><button class="tl ftop" data-top title="맨 위로">↑</button>`;
     return;
   }
