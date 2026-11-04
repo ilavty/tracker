@@ -1252,7 +1252,7 @@ function serBed(ed) {
 }
 function initBed(ed, prev, btn) {
   let just = 0;
-  const upd = () => { const t = serBed(ed); const b = blanks(t); if (prev) prev.innerHTML = b.length ? 'Answer: <b>' + esc(b.join(' / ')) + '</b>' : 'No blanks (saved as a statement, no answer column)'; };
+  const upd = () => { const t = serBed(ed); const b = blanks(t); if (prev) { const ox = (prev.closest('.imp-it') || {}).dataset?.a; prev.innerHTML = b.length ? 'Answer: <b>' + esc(b.join(' / ')) + '</b>' + (ox ? ' · <b>→ ' + esc(ox) + '</b>' : '') : ox ? 'Answer: <b>→ ' + esc(ox) + '</b>' : 'No blanks (saved as a statement, no answer column)'; } };
   const wrap = () => {
     const sel = getSelection(); if (!sel.rangeCount || sel.isCollapsed) return false;
     const r = sel.getRangeAt(0); if (!ed.contains(r.commonAncestorContainer)) return false;
