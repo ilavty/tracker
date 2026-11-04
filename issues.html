@@ -1491,7 +1491,9 @@ function openImport() {
     out.innerHTML = '<div class="empty">Reading…</div>';
     const sheets = [];
     for (const f of files) {
-      try { const ss = toSheets(await readFile(f)); const fd = guessFd(f.name.replace(/\.[^.]+$/, ''), f.lastModified); ss.forEach(s => { if (!s.theme) s.theme = f.name.replace(/\.[^.]+$/, ''); s.fd = fd; }); sheets.push(...ss); }
+      try {
+        if (/\.(txt|md)$/i.test(f.name)) { const tx = await f.text(); if (/^\s*#\s*\S/m.test(tx) || /\[\[.+?\]\]/.test(tx) || /^\s*@\s*(날짜|구분)/m.test(tx)) { const ms = parseMarked(tx); const fd0 = guessFd(f.name.replace(/\.[^.]+$/, ''), f.lastModified); ms.forEach(s => { if (!s.fd) s.fd = fd0; }); sheets.push(...ms); continue; } }
+        const ss = toSheets(await readFile(f)); const fd = guessFd(f.name.replace(/\.[^.]+$/, ''), f.lastModified); ss.forEach(s => { if (!s.theme) s.theme = f.name.replace(/\.[^.]+$/, ''); s.fd = fd; }); sheets.push(...ss); }
       catch (e) { toast(f.name + ': ' + e.message); }
     }
     showSheets(sheets);
