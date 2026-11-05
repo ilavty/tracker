@@ -617,7 +617,7 @@ body.hlon .hlbar{display:flex}
         <button data-m="wrong">Mistake Log</button>
         <button data-m="import-doc">Import from document</button>
         <button data-m="fill">Fill answers</button>
-        <button data-m="hlset">형광펜 설정</button>
+        <button data-m="hlset">Highlighter colors</button>
         <button data-m="print">Print PDF</button>
         <button data-m="export">Save backup</button>
         <button data-m="import">Load backup</button>
@@ -1171,8 +1171,8 @@ hlColsLoad();
 function hlSettings() {
   const cur = hlColsLoad(); const m = $('#mod');
   const names = { y: '1', b: '2', p: '3', o: '4' };
-  m.innerHTML = `<h2>형광펜 설정</h2><div class="hlset">${Object.keys(HL_DEF).map(k => `<label class="hlset-r"><span>${names[k]}</span><input type="color" data-hk="${k}" value="${cur[k] || HL_DEF[k]}"><mark class="hl h${k}">예시 문장</mark></label>`).join('')}</div>
-    <div class="mfoot"><button class="btn" data-hs="reset">기본색</button><span class="sp2"></span><button class="btn" data-hs="cancel">취소</button><button class="btn pri" data-hs="save">저장</button></div>`;
+  m.innerHTML = `<h2>Highlighter colors</h2><div class="hlset">${Object.keys(HL_DEF).map(k => `<label class="hlset-r"><span>${names[k]}</span><input type="color" data-hk="${k}" value="${cur[k] || HL_DEF[k]}"><mark class="hl h${k}">Highlight</mark></label>`).join('')}</div>
+    <div class="mfoot"><button class="btn" data-hs="reset">Default</button><span class="sp2"></span><button class="btn" data-hs="cancel">Cancel</button><button class="btn pri" data-hs="save">Save</button></div>`;
   $('#ov').classList.add('open');
   const preview = () => m.querySelectorAll('[data-hk]').forEach(i => document.documentElement.style.setProperty('--hl-' + i.dataset.hk, i.value));
   m.oninput = preview;

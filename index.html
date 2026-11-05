@@ -3958,7 +3958,7 @@ function pl_editNote(dateStr, id, sIdx) {
     if (pl_isLocked(dateStr)) return;
     let item = pData[dateStr].items.find(x => x.id === id); if (!item) return;
     let tgt = (sIdx !== null && sIdx !== undefined) ? item.subItems[sIdx] : item; if (!tgt) return;
-    let v = prompt('코멘트 (비우면 삭제):', tgt.note || ''); if (v === null) return;
+    let v = prompt('코멘트', tgt.note || ''); if (v === null) return;
     v = v.trim(); if (v) tgt.note = v; else delete tgt.note;
     pl_savePlanner(); pl_renderPlanner();
 }
