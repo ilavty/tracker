@@ -933,14 +933,15 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .spread .page+.page{border-left:1px solid #e3e0dc}
 .page{width:var(--pw,210mm);height:var(--ph,297mm);background:#fff;position:relative;overflow:hidden}
 .pno{position:absolute;font-size:calc(7.5pt * var(--f,1))}
-.cols{position:absolute;display:flex}.cols::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:.6pt dotted #9a9a9a}
+.cols{position:absolute;display:flex;--hx:calc(var(--gp,6mm) / 2)}
+.cols::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:.6pt dotted #9a9a9a}
 .col{height:100%;overflow:hidden;font-size:var(--fs);line-height:var(--lh);letter-spacing:var(--ls)}
 .col>:first-child{margin-top:0!important}
 .cat::before{content:"✪ "}
 .cat{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--cs);letter-spacing:var(--tls);margin:0 0 calc(var(--fs)*var(--lh) + .2em);padding-bottom:.35em;border-bottom:.75pt solid #555}
 .ttl{border-left:2.6pt solid #1a1a1a;padding-left:.5em;line-height:1.25}.ttl .tno{font-size:.72em;color:#8a8a8a;margin-right:.45em;font-variant-numeric:tabular-nums}
 .ttl{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--ts);letter-spacing:var(--tls);margin:0 0 .65em}
-.box{border:0;border-bottom:.75pt dotted #9a9a9a;padding:0 0 .8em;margin-bottom:var(--cg)}
+.box{border:0;padding:0 0 .6em;margin-bottom:var(--cg)}
 .box.cont{border-top:0}
 .box.open{margin-bottom:0;border-bottom:0}
 .src{font-weight:700;padding-bottom:.35em;margin-bottom:.4em;border-bottom:.75pt dotted #9a9a9a}
@@ -1039,7 +1040,7 @@ function newPage(){
   const F=S.pz/100,odd=pageNo%2===1,L=(odd?S.mi:S.mo)*F,R=(odd?S.mo:S.mi)*F,MT=S.mt*F,MB=S.mb*F,GP=S.gap*F;
   const p=document.createElement("div");p.className="page";p.dataset.no=pageNo;
   p.innerHTML='<div class="pno" style="top:'+(MT/2-1.5*F)+'mm;'+(odd?"right:"+R:"left:"+L)+'mm">'+pageNo+'</div>'+
-    '<div class="cols" style="left:'+L+'mm;right:'+R+'mm;top:'+MT+'mm;bottom:'+MB+'mm;gap:'+GP+'mm"><div class="col" style="flex:1"></div><div class="col" style="flex:1"></div></div>';
+    '<div class="cols" style="left:'+L+'mm;right:'+R+'mm;top:'+MT+'mm;bottom:'+MB+'mm;gap:'+GP+'mm;--gp:'+GP+'mm"><div class="col" style="flex:1"></div><div class="col" style="flex:1"></div></div>';
   let sp=pages.lastElementChild&&pages.lastElementChild.firstElementChild;
   if(pageNo===1||pageNo%2===0){const w=document.createElement("div");w.className="spread";sp=document.createElement("div");sp.className="sin";w.appendChild(sp);pages.appendChild(w);if(pageNo===1){const bl=document.createElement("div");bl.className="blank";sp.appendChild(bl)}}
   sp.appendChild(p);return [...p.querySelectorAll(".col")];
