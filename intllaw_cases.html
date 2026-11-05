@@ -939,14 +939,14 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .cat::before{content:"✪ "}
 .cat{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--cs);letter-spacing:var(--tls);margin:0 0 calc(var(--fs)*var(--lh) + .2em);padding-bottom:.35em;border-bottom:.75pt solid #555}
 .ttl{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--ts);letter-spacing:var(--tls);margin:0 0 .65em}
-.box{border:0;border-bottom:.75pt dotted #9a9a9a;padding:0 0 .45em;margin-bottom:var(--cg)}
+.box{border:0;border-bottom:.75pt dotted #9a9a9a;padding:0 0 .8em;margin-bottom:var(--cg)}
 .box.cont{border-top:0}
 .box.open{margin-bottom:0;border-bottom:0}
 .src{font-weight:700;padding-bottom:.35em;margin-bottom:.4em;border-bottom:.75pt dotted #9a9a9a}
 .ln{display:flex}.ln .m,.ln .t{border-bottom:.5pt solid #d9d9d9;padding:.16em 0}
 .ln .g{flex:none;width:var(--ind);position:relative}
-.ln .g::before{content:"";position:absolute;left:.72em;top:0;bottom:0;border-left:.6pt solid #b5b5b5}
-.ln .g{width:.95em}
+.ln .g::before{content:"";position:absolute;left:.72em;top:0;bottom:0;border-left:.6pt solid #b5b5b5}.ln .g:has(+.m)::after{content:"";position:absolute;left:.72em;right:0;bottom:0;border-bottom:.5pt solid #d9d9d9}
+.ln .g{width:1.2em}
 .ln .m{flex:none;width:.95em}
 .ln .t{flex:1;min-width:0;word-break:keep-all;overflow-wrap:break-word}
 .ln.h{font-weight:700;padding-top:.3em}
@@ -960,7 +960,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .tl .tn{flex:0 1 auto;min-width:0}
 .tl .ld{flex:1 1 1em;border-bottom:.75pt dotted #9a9a9a;transform:translateY(-.25em);min-width:1em}
 .tl .tp{flex:none;min-width:1.4em;text-align:right;font-variant-numeric:tabular-nums}
-.kw{margin-top:.45em;padding-top:.2em;text-align:right;font-weight:300}
+.kw{margin-top:.55em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.3em}.kw span{font-size:.9em;font-weight:500;padding:.1em .55em;border-radius:.3em;background:#eeeeee;color:#333}
 @page{size:A4;margin:0}
 @media print{
   html,body{background:#fff;margin:0!important;padding:0!important;height:auto!important;overflow:visible!important}
@@ -1027,7 +1027,7 @@ function blocks(){
     });
     if(!rs.length)return;
     B.push({type:"cat",name:D.C[c],html:'<div class="cat">'+esc(D.C[c])+'</div>'});
-    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+esc(n.tags)+'</div>':""}));
+    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
   });
   return B;
 }
