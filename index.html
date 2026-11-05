@@ -3829,7 +3829,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             container.insertAdjacentHTML('beforeend', cardHtml);
         });
         let plSortableInstances_local = [];
-        document.querySelectorAll('.planner-sortable-list').forEach(el => { const lk = !!el.closest('.pl-locked'); plSortableInstances_local.push(new Sortable(el, { group: { name: 'planner', pull: !lk, put: !lk }, animation: 150, fallbackTolerance: 3, disabled: pl_selectMode || lk, onEnd: function() { pl_syncAfterDrag(); } })); });
+        document.querySelectorAll('.planner-sortable-list').forEach(el => { const lk = !!el.closest('.pl-locked'); plSortableInstances_local.push(new Sortable(el, { group: { name: 'planner', pull: !lk, put: !lk }, animation: 150, fallbackTolerance: 3, disabled: pl_selectMode || lk, onEnd: function(evt) { pl_syncAfterDrag(evt); } })); });
         plSortableInstances = plSortableInstances_local;
         pl_ensureSelectModeBtn();
     }
@@ -3856,7 +3856,26 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
         if (!text) return; pData[dateStr].items.push({ id: Date.now() + Math.random(), tag: tagInput.value, text: text, done: false, hl: null }); textInput.value = ''; pLastTags[dateStr] = tagInput.value; pl_savePlanner(); pl_renderPlanner(); document.getElementById('card-' + dateStr).classList.add('edit-mode');
     }
     
-    function pl_syncAfterDrag() { let newPData = JSON.parse(JSON.stringify(pData)); document.querySelectorAll('.planner-sortable-list').forEach(listEl => { let dateStr = listEl.id.replace('pl-list-', ''); newPData[dateStr].items = []; listEl.querySelectorAll('.pl-item-wrapper').forEach(itemEl => { let id = parseFloat(itemEl.getAttribute('data-id')); let origItem = null; for (let d in pData) { let found = pData[d].items.find(x => x.id === id); if (found) { origItem = found; break; } } if (origItem) newPData[dateStr].items.push(origItem); }); }); pData = newPData; pl_savePlanner(); }
+    // 드래그 후 순서 반영: 통합 항목의 하위줄(.pl-grouped-item)도 카드 리스트의 형제라서 같이 계산
+    // - 끌어온 게 본 항목이면 하위줄은 원래 항목에 그대로 붙어서 따라감
+    // - 끌어온 게 하위줄이면 놓인 자리 바로 위 항목의 하위줄로 (맨 위에 놓으면 혼자 항목으로)
+    function pl_syncAfterDrag(evt) {
+        const dragged = evt && evt.item, orig = {}; for (let d in pData) (pData[d].items || []).forEach(it => orig[it.id] = it);
+        const clone = {}, get = id => { if (!clone[id]) { const o = orig[id]; clone[id] = JSON.parse(JSON.stringify(o)); clone[id].subItems = []; } return clone[id]; };
+        const lists = {};
+        document.querySelectorAll('.planner-sortable-list').forEach(listEl => { const dateStr = listEl.id.replace('pl-list-', ''); const arr = lists[dateStr] = []; let lastWrap = null;
+            [...listEl.children].forEach(el => {
+                const id = parseFloat(el.getAttribute('data-id')); if (isNaN(id) || !orig[id]) return;
+                if (el.classList.contains('pl-item-wrapper')) { const it = get(id); arr.push(it); lastWrap = it; return; }
+                if (!el.classList.contains('pl-grouped-item')) return;
+                const sub = (orig[id].subItems || [])[+el.getAttribute('data-subidx')]; if (!sub) return;
+                if (el === dragged) { if (lastWrap) lastWrap.subItems.push(JSON.parse(JSON.stringify(sub))); else { const p = orig[id]; arr.unshift({ id: Date.now() + Math.random(), tag: p.tag, text: sub.text, done: !!sub.done, hl: sub.hl || null, ...(sub.note ? { note: sub.note } : {}) }); } }
+                else get(id).subItems.push(JSON.parse(JSON.stringify(sub)));
+            }); });
+        Object.values(clone).forEach(it => { if (!it.subItems.length) delete it.subItems; });
+        const newPData = JSON.parse(JSON.stringify(pData)); Object.keys(lists).forEach(d => { if (newPData[d]) newPData[d].items = lists[d]; });
+        pData = newPData; pl_savePlanner(); pl_renderPlanner();
+    }
 
     // ★ 모바일 터치 좌표 지원 메뉴 함수
     function pl_openCommentModal() {
