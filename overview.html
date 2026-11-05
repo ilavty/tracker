@@ -244,15 +244,16 @@ body.col .it.img.rnd{filter:none}
 .sfr{display:flex;gap:calc(var(--fz)*.08);justify-content:flex-start}
 .sf{position:relative;display:inline-flex;justify-content:center;align-items:center;width:calc(var(--fz)*1.08);height:calc(var(--fz)*1.42);background:linear-gradient(#26282c,#1b1c1f 49.5%,#08090a 49.5% 50.5%,#202125 50.5%,#17181b);color:var(--afg);font-weight:700;font-size:var(--fz);line-height:1;border-radius:calc(var(--fz)*.08);box-shadow:0 1px 0 rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.07)}
 .sf::before,.sf::after{content:'';position:absolute;top:calc(50% - 2px);width:2px;height:4px;background:#000;border-radius:1px}.sf::before{left:-1px}.sf::after{right:-1px}
-.fmp{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#16365e,#0a1a33 75%);color:#e9f1fb;font-family:'GM',sans-serif;font-size:var(--fs)}
-.fmp svg.fmap{position:absolute;left:0;right:0;top:var(--mt);height:calc(100% - var(--mt) - var(--mb));width:100%;overflow:visible}
+.fmp{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,rgba(22,54,94,.88),rgba(10,26,51,.9) 75%);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),inset 0 1px 0 rgba(255,255,255,.18);color:#e9f1fb;font-family:'GM',sans-serif;font-size:var(--fs)}
+.fmp svg.fmap.fov{-webkit-mask-image:none;mask-image:none;overflow:visible}
+.fmp svg.fmap{position:absolute;left:var(--mx);right:var(--mx);top:var(--mt);height:calc(100% - var(--mt) - var(--mb));width:calc(100% - var(--mx)*2);-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(transparent,#000 12%,#000 82%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent),linear-gradient(transparent,#000 12%,#000 82%,transparent);mask-composite:intersect}
 .fmp .fgr{stroke:rgba(150,199,255,.07);stroke-width:1;fill:none}.fmp .fld{fill:#24476f;stroke:#33608f;stroke-width:.6}
 .fmp .frt{fill:none;stroke:#96C7FF;stroke-width:2.2;stroke-linecap:round}.fmp .frt2{fill:none;stroke:rgba(233,241,251,.55);stroke-width:1.6;stroke-dasharray:3 5;stroke-linecap:round}
 .fmp .fdot{fill:#e9f1fb}.fmp .fdot2{fill:#96C7FF}.fmp .fpl{fill:#fff;filter:drop-shadow(0 0 4px rgba(150,199,255,.8))}
 .fmp .fcl{font-size:calc(var(--fs)*.82);font-weight:700;letter-spacing:.12em;fill:#e9f1fb;paint-order:stroke;stroke:#0a1a33;stroke-width:3px}
-.fmp .ftop{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;padding:.8em 1em;font-size:calc(var(--fs)*.85);letter-spacing:.14em;font-weight:700;background:linear-gradient(#0a1a33cc,transparent)}
+.fmp .ftop{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;padding:1.05em 1.35em .6em;font-size:calc(var(--fs)*.85);letter-spacing:.14em;font-weight:700}
 .fmp .ftop small{color:#96C7FF;font-weight:700}
-.fmp .fst{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.4em;padding:.75em 1em .95em;background:linear-gradient(transparent,#0a1a33e6 35%)}
+.fmp .fst{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);gap:.4em;padding:.6em 1.35em 1.05em}
 .fmp .fst div{display:flex;flex-direction:column;gap:.25em;min-width:0}.fmp .fst span{font-size:calc(var(--fs)*.62);letter-spacing:.1em;color:rgba(233,241,251,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fmp .fst b{font-size:calc(var(--fs)*1.15);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .arf{display:flex;justify-content:space-between;font-size:var(--sm);letter-spacing:.14em;color:rgba(255,255,255,.55)}
@@ -617,7 +618,7 @@ function gcPts(a,b,n){const R=Math.PI/180,[la1,lo1,la2,lo2]=[a[0]*R,a[1]*R,b[0]*
     const la=Math.atan2(q[2],Math.hypot(q[0],q[1]))/R;let lo=Math.atan2(q[1],q[0])/R;while(lo-prev>180)lo-=360;while(lo-prev<-180)lo+=360;prev=lo;out.push([la,lo]);}
   return {pts:out,km:d*6371};}
 function dreamMap(p,it){
-  const W=it.w||300,H0=it.h||200,fs=Math.max(8,Math.min(W/26,H0/13));const mT=fs*2.6,mB=fs*4.4,H=Math.max(40,H0-mT-mB);
+  const W0=it.w||300,H0=it.h||200,fs=Math.max(8,Math.min(W0/26,H0/13));const mT=fs*2.9,mB=fs*4.5,mX=fs*.7,H=Math.max(40,H0-mT-mB),W=Math.max(60,W0-mX*2);
   const en=p?(ENM[p.city]||p.city):'—';const code=p?(IATA[p.city]||en.slice(0,3).toUpperCase()):'---';
   const el=p?+((DIP.elapsed||{})[DIP.idx]||0):0,pc=Math.min(1,el/360000);
   const dst=p&&p.lat!=null?[p.lat,p.lng]:null;
@@ -643,8 +644,8 @@ function dreamMap(p,it){
   const goingE=dst&&P[P.length-1][1]>FM_SEL[1];
   const rem=g.km*(1-pc),lh=Math.max(0,100-el/3600);const hh=Math.floor(lh),mm=Math.floor((lh-hh)*60);
   let lt='—';if(p&&p.tz){const m=String(p.tz).match(/UTC\s*([+-−])\s*(\d+)(?::?(\d+))?/);if(m){const off=(m[1]==='+'?1:-1)*((+m[2])*60+(+(m[3]||0)));const d=new Date(Date.now()+new Date().getTimezoneOffset()*6e4+off*6e4);lt=pad(d.getHours())+':'+pad(d.getMinutes());}}
-  return `<div class="fmp" style="--fs:${fs.toFixed(1)}px;--mt:${mT.toFixed(1)}px;--mb:${mB.toFixed(1)}px"><svg class="fmap" viewBox="${vb.map(v=>v.toFixed(3)).join(' ')}" preserveAspectRatio="xMidYMid slice">
-    <path class="fgr" d="${grid}" style="stroke-width:${u}"/><path class="fld" d="${land||''}" style="stroke-width:${.6*u}"/>
+  return `<div class="fmp" style="--fs:${fs.toFixed(1)}px;--mt:${mT.toFixed(1)}px;--mb:${mB.toFixed(1)}px;--mx:${mX.toFixed(1)}px"><svg class="fmap" viewBox="${vb.map(v=>v.toFixed(3)).join(' ')}" preserveAspectRatio="xMidYMid slice">
+    <path class="fgr" d="${grid}" style="stroke-width:${u}"/><path class="fld" d="${land||''}" style="stroke-width:${.6*u}"/></svg><svg class="fmap fov" viewBox="${vb.map(v=>v.toFixed(3)).join(' ')}" preserveAspectRatio="xMidYMid slice">
     ${dst?`<path class="frt2" d="${path(rest)}" style="stroke-width:${1.6*u};stroke-dasharray:${3*u} ${5*u}"/><path class="frt" d="${path(done)}" style="stroke-width:${2.2*u}"/>`:''}
     <circle class="fdot" cx="${X(FM_SEL[1])}" cy="${Y(FM_SEL[0])}" r="${3.2*u}"/>${dst?`<circle class="fdot2" cx="${X(P[P.length-1][1])}" cy="${Y(P[P.length-1][0])}" r="${3.6*u}"/>`:''}
     ${lab(P[0],'SEOUL')}${dst?lab(P[P.length-1],String(en).toUpperCase()):''}
