@@ -63,18 +63,19 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc h2{display:flex;align-items:baseline;gap:8px;font-size:17px;font-weight:600;margin:0 0 8px}
 #ilc h2 span{font-size:12px;font-weight:500;color:var(--sky);font-variant-numeric:tabular-nums}
 #ilc .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
-#ilc table{border-collapse:collapse;width:100%;min-width:760px}
+#ilc table{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed}
 #ilc th{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-align:left;color:var(--brown);background:var(--brown-soft);padding:9px 12px;border-bottom:1px solid var(--line)}
 #ilc td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
 #ilc tr:last-child td{border-bottom:0}
-#ilc td.court{color:var(--muted);font-size:12.5px;white-space:nowrap}
+#ilc td.court{color:var(--muted);font-size:12.5px;word-break:keep-all}
 #ilc td.year{font-variant-numeric:tabular-nums;white-space:nowrap}
 #ilc .nm{all:unset;cursor:pointer;font-weight:500}
 #ilc .nm:hover{color:var(--sky)}
 #ilc .mine{font-size:10.5px;font-weight:700;color:var(--sky);margin-left:6px;vertical-align:1px}
 #ilc .cat{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--sky-soft);color:var(--ink);margin:1px 3px 1px 0}
-#ilc .cno{float:left;min-width:1.9em;margin:2px 4px 0 0;font-size:11px;color:#a59c8f;font-variant-numeric:tabular-nums}#ilc .qnums{display:flex;align-items:center;gap:8px;margin-bottom:10px}#ilc .qnums input{width:180px;border:1px solid #ddd5c8;border-radius:8px;padding:6px 10px;font:inherit;background:#fff}
-#ilc col.c1{width:15%}#ilc col.c2{width:27%}#ilc col.c3{width:9%}#ilc col.c4{width:27%}#ilc col.c5{width:22%}
+#ilc .nmw{display:flex;align-items:baseline;gap:4px}#ilc .nmt{flex:1;min-width:0}
+#ilc .cno{flex:0 0 auto;min-width:1.9em;margin:0;font-size:11px;color:#a59c8f;font-variant-numeric:tabular-nums}#ilc .qnums{display:flex;align-items:center;gap:8px;margin-bottom:10px}#ilc .qnums input{width:180px;border:1px solid #ddd5c8;border-radius:8px;padding:6px 10px;font:inherit;background:#fff}
+#ilc col.c1{width:9%}#ilc col.c2{width:36%}#ilc col.c3{width:9%}#ilc col.c4{width:24%}#ilc col.c5{width:22%}
 #ilc .empty{padding:30px;text-align:center;color:var(--muted)}
 /* modal */
 #ilc .ov{position:fixed;inset:0;z-index:50;background:rgba(15,12,9,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) 16px 24px;overflow-y:auto}
@@ -155,7 +156,7 @@ window.makeCloud=function(path,key,getState,applyState){
   #ilc table{min-width:0;table-layout:fixed}
   #ilc th,#ilc td{padding:7px 8px;font-size:12px}
   #ilc col.c4,#ilc col.c5,#ilc th:nth-child(4),#ilc th:nth-child(5),#ilc td:nth-child(4),#ilc td:nth-child(5){display:none}
-  #ilc col.c1{width:24%}#ilc col.c2{width:58%}#ilc col.c3{width:18%}
+  #ilc col.c1{width:18%}#ilc col.c2{width:64%}#ilc col.c3{width:18%}
   #ilc td.court{font-size:11px;white-space:normal}
   #ilc h2{font-size:15px}
 }
@@ -215,6 +216,7 @@ window.makeCloud=function(path,key,getState,applyState){
       <div class="acts">
         <button class="btn pri" type="button" data-act="quiz">퀴즈</button>
         <button class="btn" type="button" data-act="add">+ 판례 추가</button>
+        <button class="btn" type="button" data-act="grp" id="ilc-grp">목차별</button>
         <button class="btn" type="button" data-act="print">프린트</button>
         <button class="btn" type="button" data-act="export">백업 저장</button>
         <button class="btn" type="button" data-act="import">백업 불러오기</button>
@@ -314,18 +316,23 @@ function caseNums(){
   store.added.forEach(a=>{const c0=(a.cats||[])[0];let at=-1;if(c0!=null)L.forEach((id,i)=>{const r=find(id);if(r&&(r.cats||[])[0]===c0)at=i});L.splice(at<0?L.length:at+1,0,a.id)});
   const M={};L.forEach((id,i)=>M[id]=i+1);return M;
 }
+function courtShort(c){return String(c||"").replace(/\s*\(?권고적\s*의견\)?/g," AO").replace(/\s+/g," ").trim()}
+let GRP=(()=>{try{return localStorage.getItem("ilc_grp")||"court"}catch(e){return "court"}})();
 function parseNums(t){const S=new Set();String(t||"").split(/[,\s]+/).forEach(p=>{const m=p.match(/^(\d+)(?:[-~](\d+))?$/);if(!m)return;let a=+m[1],b=m[2]?+m[2]:a;if(a>b)[a,b]=[b,a];for(let i=a;i<=b&&i-a<2000;i++)S.add(i)});return S}
+function grpBtn(){const b=document.getElementById("ilc-grp");if(b)b.textContent=GRP==="cat"?"재판소별":"목차별"}
 function render(){
+  grpBtn();
   const NUM=caseNums();
   const t=$("#ilc-q").value.trim().toLowerCase();
   const R=all();let html="",any=false;
-  for(const [k,l] of G){
-    if(active!=="all"&&active!==k)continue;
-    const rows=R.filter(r=>r.g===k).filter(r=>!natSel.size||natsOf(r).some(n=>natSel.has(n))).filter(r=>{if(!kwSel.size)return true;const m=kwOf(r.id);return kwAnd?[...kwSel].every(x=>m.includes(x)):m.some(x=>kwSel.has(x))}).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2),...kwOf(r.id)].join(" ").toLowerCase().includes(t)).sort((a,b)=>yr(a.year)-yr(b.year));
+  const GS=GRP==="cat"?[...Object.entries(C).map(([k,l])=>[k,l,r=>String((r.cats||[])[0])===k]),["_","목차 없음",r=>!(r.cats||[]).length]]:G.map(([k,l])=>[k,l,r=>r.g===k]);
+  for(const [k,l,inG] of GS){
+    if(GRP!=="cat"&&active!=="all"&&active!==k)continue;
+    const rows=R.filter(inG).filter(r=>GRP!=="cat"||active==="all"||r.g===active).filter(r=>!natSel.size||natsOf(r).some(n=>natSel.has(n))).filter(r=>{if(!kwSel.size)return true;const m=kwOf(r.id);return kwAnd?[...kwSel].every(x=>m.includes(x)):m.some(x=>kwSel.has(x))}).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2),...kwOf(r.id)].join(" ").toLowerCase().includes(t)).sort((a,b)=>GRP==="cat"?(NUM[a.id]||1e9)-(NUM[b.id]||1e9):yr(a.year)-yr(b.year));
     if(!rows.length)continue;any=true;
     html+=`<section><h2>${l}<span>${rows.length}건</span></h2><div class="tw"><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><thead><tr><th>재판소</th><th>판례 이름</th><th>연도</th><th>원고 v. 피고</th><th>목차 분류</th></tr></thead><tbody>`+
     rows.map(r=>{const f=r.flag?` <span class="fl" title="${esc(r.flag)}">*</span>`:"";const yf=r.flag&&r.flag.startsWith("연도")?f:"",pf=r.flag&&!r.flag.startsWith("연도")?f:"";
-      return `<tr><td class="court">${esc(r.court)}</td><td><span class="cno">${NUM[r.id]||""}</span><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="year">${esc(r.year)}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
+      return `<tr><td class="court">${esc(courtShort(r.court))}</td><td><div class="nmw"><span class="cno">${NUM[r.id]||""}</span><span class="nmt"><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}</span></div>${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="year">${esc(r.year)}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
   }
   $("#ilc-out").innerHTML=any?html:`<div class="empty">맞는 판례가 없어요</div>`;
 }
@@ -576,6 +583,7 @@ root.addEventListener("click",e=>{
   if(t.closest("#ilc-ctog")){setFilt("court");return}
   const a=t.closest("[data-act]");if(!a)return;
   const act=a.dataset.act,id=a.dataset.id;
+  if(act==="grp"){GRP=GRP==="cat"?"court":"cat";try{localStorage.setItem("ilc_grp",GRP)}catch(e){}grpBtn();render();return}
   if(act==="print"){openPrint();return}
   if(act==="quiz")toggleQuiz();
   else if(act==="add")form(null);
