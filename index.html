@@ -2560,7 +2560,8 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 }
 
     
-.pl-item-note { font-size: 0.78rem; font-weight: 500; line-height: 1.35; margin: 4px 0 1px 1em; word-break: break-all; cursor: text; }
+.pl-item-note { position: relative; font-size: 0.78rem; font-weight: 500; line-height: 1.6; margin: 4px 0 1px 0.4em; padding-left: 1.2em; word-break: break-all; cursor: text; }
+.pl-item-note::before { content: '└'; position: absolute; left: 0; top: 0; }
 .pl-item-text {
     font-size: 0.85rem;
     font-weight: 400;
