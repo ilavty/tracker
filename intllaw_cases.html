@@ -319,6 +319,10 @@ function noteText(n){return n?[n.src,...(n.items||[]).map(i=>i[1]),n.tags].join(
 function caseNums(){
   const L=BASE.map(b=>b.id);
   store.added.forEach(a=>{const c0=(a.cats||[])[0];let at=-1;if(c0!=null)L.forEach((id,i)=>{const r=find(id);if(r&&(r.cats||[])[0]===c0)at=i});L.splice(at<0?L.length:at+1,0,a.id)});
+  /* 프린트에서 바꾼 순서 (store.order) 우선, 거기 없는 건 원래 앞 판례 뒤에 */
+  if(Array.isArray(store.order)&&store.order.length){const ex=new Set(L);const Rr=store.order.filter(id=>ex.has(id));const inR=new Set(Rr);
+    L.forEach((id,i)=>{if(inR.has(id))return;let prev=null;for(let j=i-1;j>=0;j--)if(inR.has(L[j])){prev=L[j];break}Rr.splice(prev?Rr.indexOf(prev)+1:0,0,id);inR.add(id)});
+    L.length=0;L.push(...Rr)}
   const M={};L.forEach((id,i)=>M[id]=i+1);return M;
 }
 function courtShort(c){return String(c||"").replace(/\s*\(?권고적\s*의견\)?/g," AO").replace(/지방법원/g,"지법").replace(/\s+/g," ").trim()}
@@ -862,7 +866,7 @@ document.addEventListener("keydown",e=>{
 
 /* ===== 판례 프린트 ===== */
 function openPrint(){
-  const data={C,settings:store.print||null,cases:(NUM=>all().map(r=>({id:r.id,no:NUM[r.id]||"",name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2})))(caseNums())};
+  const data={C,settings:store.print||null,cases:(NUM=>all().map(r=>({id:r.id,no:NUM[r.id]||"",name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2})).sort((a,b)=>(a.no||1e9)-(b.no||1e9)))(caseNums())};
   const json=JSON.stringify(data).replace(/</g,"\\u003c");
   closePrint();
   const ov=document.createElement("div");ov.id="ilc-print-ov";
@@ -875,7 +879,7 @@ function dbFull(on){try{if(window.parent!==window)window.parent.postMessage({typ
 function closePrint(){const o=document.getElementById("ilc-print-ov");if(o){o.remove();document.documentElement.style.overflow="";dbFull(false)}}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("ilc-print-ov"))closePrint()});
 function printPageHTML(){
-  const data={C,settings:store.print||null,cases:(NUM=>all().map(r=>({id:r.id,no:NUM[r.id]||"",name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2})))(caseNums())};
+  const data={C,settings:store.print||null,cases:(NUM=>all().map(r=>({id:r.id,no:NUM[r.id]||"",name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2})).sort((a,b)=>(a.no||1e9)-(b.no||1e9)))(caseNums())};
   return PRINT_PAGE.replace("__DATA__",JSON.stringify(data).replace(/</g,"\\u003c"));
 }
 const PRINT_MODE=/[?&]print=1/.test(location.search);
@@ -893,7 +897,7 @@ if(PRINT_MODE){
   };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go();
 }
-window.addEventListener("message",e=>{if(!e.data)return;if(e.data.type==="ilcPrintClose"){closePrint();return}if(e.data.type==="ilcPrint"&&e.data.S){store.print=e.data.S;save()}});
+window.addEventListener("message",e=>{if(!e.data)return;if(e.data.type==="ilcPrintClose"){closePrint();return}if(e.data.type==="ilcOrder"&&Array.isArray(e.data.order)){store.order=e.data.order;save();render();return}if(e.data.type==="ilcPrint"&&e.data.S){store.print=e.data.S;save()}});
 const PRINT_PAGE=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>판례 프린트</title>
 <style>
 @font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');font-weight:300}
@@ -943,6 +947,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .col>:first-child{margin-top:0!important}
 .cat::before{content:"✪ "}
 .cat{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--cs);letter-spacing:var(--tls);margin:0 0 calc(var(--fs)*var(--lh) + .2em);padding-bottom:.35em}
+.ttl{position:relative}.ttl .mv{position:absolute;right:0;top:0;display:none;gap:2px}.ttl:hover .mv,.ttl.mvon .mv{display:flex}.ttl .mv button{border:1px solid #ddd;background:#fff;border-radius:4px;font-size:8pt;line-height:1;padding:2px 4px;cursor:pointer;color:#555}@media print{.ttl .mv{display:none!important}}
 .ttl{border-left:2.6pt solid #1a1a1a;padding-left:5pt;line-height:1.25}.ttl .tno{display:block;font-size:.8em;line-height:1.35;color:#777;font-variant-numeric:tabular-nums}
 .ttl{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--ts);letter-spacing:var(--tls);margin:0;padding-bottom:.25em}
 .box{border:0;padding:0 0 .6em;margin-bottom:var(--cg)}
@@ -1035,7 +1040,7 @@ function blocks(){
     });
     if(!rs.length)return;
     B.push({type:"cat",name:D.C[c],html:'<div class="cat">'+esc(D.C[c])+'</div>'});
-    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
+    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'" data-id="'+esc(r.id)+'" data-c="'+c+'"><span class="mv"><button type="button" data-mv="-1" title="위로">▲</button><button type="button" data-mv="1" title="아래로">▼</button></span>'+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
   });
   return B;
 }
@@ -1087,22 +1092,31 @@ function layout0(){
     if(tryWhole()){pendingCat=null;continue}
     // 다음 단이 비어있다면 통째로 들어가는지
     if(S.keep&&col.childElementCount>0){col=nextCol();if(tryWhole()){pendingCat=null;continue}}
-    // 쪼개기
-    const parts=[];if(pendingCat)parts.push(pendingCat.html);parts.push(b.title);
-    let head=document.createElement("div");head.innerHTML=parts.join("");
-    let heads=[...head.childNodes];
-    heads.forEach(n=>col.appendChild(n));
-    let box=document.createElement("div");box.className="box";col.appendChild(box);
-    const seq=[b.src,...b.lines,b.kw].filter(Boolean);
-    let cnt=0;
-    if(over(col)&&col.childElementCount>heads.length+1){heads.forEach(n=>n.remove());box.remove();col=nextCol();heads.forEach(n=>col.appendChild(n));col.appendChild(box)}
-    for(const h of seq){
-      const t=document.createElement("div");t.innerHTML=h;const el=t.firstChild;box.appendChild(el);
-      if(over(col)){
-        if(cnt===0){el.remove();continue}
-        el.remove();box.classList.add("open");
-        col=nextCol();box=document.createElement("div");box.className="box cont";col.appendChild(box);box.appendChild(el);cnt=1;
-      }else cnt++;
+    // 쪼개기 (같은 페이지 안에서 열로는 나눠도 되지만, 페이지는 안 넘김)
+    const doSplit=()=>{const made=[];
+      const parts=[];if(pendingCat)parts.push(pendingCat.html);parts.push(b.title);
+      const head=document.createElement("div");head.innerHTML=parts.join("");
+      const heads=[...head.childNodes];
+      heads.forEach(n=>col.appendChild(n));made.push(...heads);
+      let box=document.createElement("div");box.className="box";col.appendChild(box);made.push(box);
+      const seq=[b.src,...b.lines,b.kw].filter(Boolean);
+      let cnt=0;
+      if(over(col)&&col.childElementCount>heads.length+1){heads.forEach(n=>n.remove());box.remove();col=nextCol();heads.forEach(n=>col.appendChild(n));col.appendChild(box)}
+      for(const h of seq){
+        const t=document.createElement("div");t.innerHTML=h;const el=t.firstChild;box.appendChild(el);
+        if(over(col)){
+          if(cnt===0){el.remove();continue}
+          el.remove();box.classList.add("open");
+          col=nextCol();box=document.createElement("div");box.className="box cont";col.appendChild(box);made.push(box);box.appendChild(el);cnt=1;
+        }else cnt++;
+      }
+      return made};
+    const p0=pageNo,top0=(ci===0&&!col.childElementCount);
+    const made=doSplit();
+    if(pageNo>p0&&!top0){
+      made.forEach(n=>n.remove());
+      [...pages.querySelectorAll(".page")].forEach(pg=>{if(+pg.dataset.no>p0){const sp=pg.parentNode;pg.remove();if(sp&&!sp.querySelector(".page")){const w=sp.closest(".spread");if(w)w.remove()}}});
+      pageNo=p0;cols=newPage();ci=0;col=cols[0];doSplit();
     }
     pendingCat=null;
   }
@@ -1111,6 +1125,7 @@ function layout0(){
     document.querySelectorAll(".ttl[data-k]").forEach(t=>{const sp=document.querySelector('.tp[data-tk="'+t.dataset.k+'"]');if(sp)sp.textContent=pg(t)});
   }
   pages.classList.remove("measure");fit();
+  if(window.__mvId){const t=document.querySelector('.ttl[data-id="'+window.__mvId+'"]');if(t){t.classList.add('mvon');setTimeout(()=>t.classList.remove('mvon'),1500);const r=t.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)t.scrollIntoView({block:'center'})}window.__mvId=null}
   if(window.__imgSel)document.querySelectorAll('.ln.img').forEach(x=>{if(x.dataset.src===window.__imgSel)x.classList.add('sel')});
   window.__imgDone=window.__imgDone||new Set();document.querySelectorAll('.ln.img img').forEach(i=>{const k=i.getAttribute('src');if(i.complete||window.__imgDone.has(k))return;i.addEventListener('load',()=>{if(window.__imgDone.has(k))return;window.__imgDone.add(k);redo()},{once:true})});
   document.getElementById("info").textContent=pageNo+"쪽 (인쇄 미리보기 쪽수가 이보다 많으면 인쇄 배율을 낮추세요) · 양면: 안쪽 = 홀수쪽 왼쪽 / 짝수쪽 오른쪽";
@@ -1137,7 +1152,11 @@ function save(){S.t=Date.now();try{localStorage.setItem(K,JSON.stringify(S))}cat
 const doClose=()=>{if(window.parent!==window)window.parent.postMessage({type:"ilcPrintClose"},"*");else window.close()};
 document.getElementById("cls").addEventListener("click",doClose);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")doClose()});
-document.addEventListener("click",e=>{const z=e.target.closest(".ln.img [data-iz]");if(z){const src=z.closest(".ln.img").dataset.src;S.imgw=S.imgw||{};const v=Math.max(20,Math.min(100,((S.imgw[src]||100)+(+z.dataset.iz))));if(v===100)delete S.imgw[src];else S.imgw[src]=v;window.__imgSel=src;save();redo();return}
+document.addEventListener("click",e=>{const mv=e.target.closest(".ttl [data-mv]");if(mv){const t=mv.closest(".ttl"),id=t.dataset.id,c=+t.dataset.c,dir=+mv.dataset.mv;
+    const inC=D.cases.filter(x=>(x.cats||[]).includes(c)),k=inC.findIndex(x=>x.id===id),nb=inC[k+dir];if(!nb)return;
+    const me=D.cases.splice(D.cases.findIndex(x=>x.id===id),1)[0],at=D.cases.findIndex(x=>x.id===nb.id);D.cases.splice(dir<0?at:at+1,0,me);
+    try{HOST&&HOST.postMessage({type:"ilcOrder",order:D.cases.map(x=>x.id)},"*")}catch(err){}window.__mvId=id;redo();return}
+  const z=e.target.closest(".ln.img [data-iz]");if(z){const src=z.closest(".ln.img").dataset.src;S.imgw=S.imgw||{};const v=Math.max(20,Math.min(100,((S.imgw[src]||100)+(+z.dataset.iz))));if(v===100)delete S.imgw[src];else S.imgw[src]=v;window.__imgSel=src;save();redo();return}
   const im=e.target.closest(".ln.img");document.querySelectorAll(".ln.img.sel").forEach(x=>{if(x!==im)x.classList.remove("sel")});if(im){im.classList.toggle("sel");window.__imgSel=im.classList.contains("sel")?im.dataset.src:null}});
 let tm;function redo(){clearTimeout(tm);tm=setTimeout(()=>{css();layout()},150)}
 ["fs","lh","ls","cs","ts","tls","mi","mo","mt","mb","pz","so","gap","cg"].forEach(id=>{const el=document.getElementById(id);el.value=S[id];el.addEventListener("input",()=>{const v=parseFloat(el.value);if(!isNaN(v)){S[id]=v;if(id==="so"){if(S.om==="pdf")S.soD=v;else S.soP=v}save();redo()}})});
