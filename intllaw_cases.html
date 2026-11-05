@@ -1139,4 +1139,7 @@ if(!PRINT_MODE)cloud=makeCloud('database_v1/intllaw_cases',KEY,()=>store,o=>{if(
 </script>
 <!-- ===== 판례표 END ===== -->
 
+<button type="button" id="ilc-up" aria-label="위로" title="위로">↑</button>
+<style>#ilc-up{position:fixed;right:22px;bottom:22px;z-index:60;width:42px;height:42px;border-radius:50%;border:1px solid var(--line,#e6dfd5);background:var(--surface,#fff);color:var(--ink,#2b2622);font-size:18px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(60,45,30,.12);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .2s,transform .2s,color .15s}#ilc-up.on{opacity:1;pointer-events:auto;transform:none}#ilc-up:hover{color:var(--sky,#5b8fc7)}@media print{#ilc-up{display:none}}</style>
+<script>(()=>{const b=document.getElementById("ilc-up"),sc=()=>Math.max(window.scrollY||0,document.documentElement.scrollTop||0,document.body.scrollTop||0);const f=()=>b.classList.toggle("on",sc()>400);window.addEventListener("scroll",f,{passive:true});document.addEventListener("scroll",f,{passive:true,capture:true});f();b.onclick=()=>{window.scrollTo({top:0,behavior:"smooth"});document.body.scrollTo&&document.body.scrollTo({top:0,behavior:"smooth"})}})();</script>
 </body></html>
