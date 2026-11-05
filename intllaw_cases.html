@@ -858,7 +858,7 @@ document.addEventListener("keydown",e=>{
 
 /* ===== 판례 프린트 ===== */
 function openPrint(){
-  const data={C,settings:store.print||null,cases:all().map(r=>({id:r.id,name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2}))};
+  const data={C,settings:store.print||null,cases:(NUM=>all().map(r=>({id:r.id,no:NUM[r.id]||"",name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2})))(caseNums())};
   const json=JSON.stringify(data).replace(/</g,"\\u003c");
   closePrint();
   const ov=document.createElement("div");ov.id="ilc-print-ov";
@@ -871,7 +871,7 @@ function dbFull(on){try{if(window.parent!==window)window.parent.postMessage({typ
 function closePrint(){const o=document.getElementById("ilc-print-ov");if(o){o.remove();document.documentElement.style.overflow="";dbFull(false)}}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("ilc-print-ov"))closePrint()});
 function printPageHTML(){
-  const data={C,settings:store.print||null,cases:all().map(r=>({id:r.id,name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2}))};
+  const data={C,settings:store.print||null,cases:(NUM=>all().map(r=>({id:r.id,no:NUM[r.id]||"",name:r.name,court:r.court,year:r.year,parties:r.parties,cats:r.cats,note:r.note,note2:r.note2})))(caseNums())};
   return PRINT_PAGE.replace("__DATA__",JSON.stringify(data).replace(/</g,"\\u003c"));
 }
 const PRINT_MODE=/[?&]print=1/.test(location.search);
@@ -938,6 +938,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .col>:first-child{margin-top:0!important}
 .cat::before{content:"✪ "}
 .cat{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--cs);letter-spacing:var(--tls);margin:0 0 calc(var(--fs)*var(--lh) + .2em);padding-bottom:.35em;border-bottom:.75pt solid #555}
+.ttl{border-left:2.6pt solid #1a1a1a;padding-left:.5em;line-height:1.25}.ttl .tno{font-size:.72em;color:#8a8a8a;margin-right:.45em;font-variant-numeric:tabular-nums}
 .ttl{font-family:'Paperlogy',sans-serif;font-weight:var(--tw);font-size:var(--ts);letter-spacing:var(--tls);margin:0 0 .65em}
 .box{border:0;border-bottom:.75pt dotted #9a9a9a;padding:0 0 .8em;margin-bottom:var(--cg)}
 .box.cont{border-top:0}
@@ -1027,7 +1028,7 @@ function blocks(){
     });
     if(!rs.length)return;
     B.push({type:"cat",name:D.C[c],html:'<div class="cat">'+esc(D.C[c])+'</div>'});
-    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
+    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+(r.no?'<span class="tno">'+r.no+'</span>':'')+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
   });
   return B;
 }
