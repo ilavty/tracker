@@ -1102,13 +1102,19 @@ function layout0(){
       const seq=[b.src,...b.lines,b.kw].filter(Boolean);
       let cnt=0;
       if(over(col)&&col.childElementCount>heads.length+1){heads.forEach(n=>n.remove());box.remove();col=nextCol();heads.forEach(n=>col.appendChild(n));col.appendChild(box)}
-      for(const h of seq){
-        const t=document.createElement("div");t.innerHTML=h;const el=t.firstChild;box.appendChild(el);
-        if(over(col)){
-          if(cnt===0){el.remove();continue}
-          el.remove();box.classList.add("open");
-          col=nextCol();box=document.createElement("div");box.className="box cont";col.appendChild(box);made.push(box);box.appendChild(el);cnt=1;
-        }else cnt++;
+      /* 열 넘길 때 ✓ 단위(그 아래 하위줄까지)로 같이 넘김, 소제목(•)은 다음 덩어리에 붙임 */
+      const kind=h=>{const m=/class="ln (\\w+)/.exec(h);return m?m[1]:"x"};
+      const chunks=[];let cur=null;
+      for(const h of seq){const k=kind(h);
+        if(!cur||k==="h"||k==="a"||k==="r"||k==="x"||k==="img"){if(cur&&cur.hOnly&&k!=="x"){cur.items.push(h);cur.hOnly=k==="h";continue}cur={items:[h],hOnly:k==="h"};chunks.push(cur)}else cur.items.push(h)}
+      const newBox=()=>{box.classList.add("open");col=nextCol();box=document.createElement("div");box.className="box cont";col.appendChild(box);made.push(box)};
+      for(const ch of chunks){
+        const els=ch.items.map(h=>{const t=document.createElement("div");t.innerHTML=h;return t.firstChild});
+        els.forEach(el=>box.appendChild(el));
+        if(!over(col)){cnt+=els.length;continue}
+        els.forEach(el=>el.remove());
+        if(cnt>0){newBox();cnt=0;els.forEach(el=>box.appendChild(el));if(!over(col)){cnt=els.length;continue}els.forEach(el=>el.remove())}
+        for(const el of els){box.appendChild(el);if(over(col)){if(cnt===0){el.remove();continue}el.remove();newBox();box.appendChild(el);cnt=1}else cnt++}
       }
       return made};
     const p0=pageNo,top0=(ci===0&&!col.childElementCount);
