@@ -997,7 +997,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 const D=__DATA__;
 const K="ilcases_print_v2";
 const IS_SAFARI=/^((?!chrome|android|crios|fxios|edg).)*safari/i.test(navigator.userAgent);
-const DEF={pz:100,so:IS_SAFARI?13:0,ls:0,tls:0,fs:8,lh:1.45,cs:11,ts:9,tw:"400",mi:20,mo:12,mt:14,mb:14,gap:8,cg:5,keep:true,toc:true,cats:[]};
+const DEF={pz:100,so:0,ls:0,tls:0,fs:8,lh:1.45,cs:11,ts:9,tw:"400",mi:20,mo:12,mt:14,mb:14,gap:8,cg:5,keep:true,toc:true,cats:[]};
 let S=Object.assign({},DEF),LS={};try{LS=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){}
 Object.assign(S,(D.settings&&(D.settings.t||0)>(LS.t||0))?D.settings:LS);
 if(!S.m3){if(S.pz===88)S.pz=100;S.m3=1}
@@ -1142,7 +1142,9 @@ let tm;function redo(){clearTimeout(tm);tm=setTimeout(()=>{css();layout()},150)}
 ["fs","lh","ls","cs","ts","tls","mi","mo","mt","mb","pz","so","gap","cg"].forEach(id=>{const el=document.getElementById(id);el.value=S[id];el.addEventListener("input",()=>{const v=parseFloat(el.value);if(!isNaN(v)){S[id]=v;if(id==="so"){if(S.om==="pdf")S.soD=v;else S.soP=v}save();redo()}})});
 /* 프린터 / PDF: 위치 보정 값을 따로 기억해서 바꿔 끼움 */
 (()=>{const box=document.getElementById("omode");if(!box)return;const so=document.getElementById("so");
-  if(S.soP==null)S.soP=S.om==="pdf"?(IS_SAFARI?13:0):S.so;if(S.soD==null)S.soD=0;
+  if(S.soP==null)S.soP=S.om==="pdf"?0:S.so;if(S.soD==null)S.soD=0;
+  /* 실제 출력해보니 13mm 내리면 프린터도 위가 비고 아래가 잘림 → 한 번만 0으로 */
+  if(!S.so0){S.so0=1;S.soP=0;S.soD=0;S.so=0;so.value=0;save();redo()}
   const paint=()=>box.querySelectorAll("button").forEach(b=>b.classList.toggle("on",(S.om||"print")===b.dataset.om));paint();
   box.addEventListener("click",e=>{const b=e.target.closest("[data-om]");if(!b)return;S.om=b.dataset.om;S.so=S.om==="pdf"?S.soD:S.soP;so.value=S.so;paint();save();redo()})})();
 const tw=document.getElementById("tw");tw.value=String(S.tw);tw.addEventListener("change",()=>{S.tw=tw.value;save();redo()});
