@@ -1105,7 +1105,7 @@ function layout(){
   }
   pages.classList.remove("measure");fit();
   if(window.__imgSel)document.querySelectorAll('.ln.img').forEach(x=>{if(x.dataset.src===window.__imgSel)x.classList.add('sel')});
-  document.querySelectorAll('.ln.img img').forEach(i=>{if(!i.complete)i.addEventListener('load',()=>redo(),{once:true})});
+  window.__imgDone=window.__imgDone||new Set();document.querySelectorAll('.ln.img img').forEach(i=>{const k=i.getAttribute('src');if(i.complete||window.__imgDone.has(k))return;i.addEventListener('load',()=>{if(window.__imgDone.has(k))return;window.__imgDone.add(k);redo()},{once:true})});
   document.getElementById("info").textContent=pageNo+"쪽 (인쇄 미리보기 쪽수가 이보다 많으면 인쇄 배율을 낮추세요) · 양면: 안쪽 = 홀수쪽 왼쪽 / 짝수쪽 오른쪽";
 }
 function fit(){if(document.documentElement.classList.contains("printing"))return;const w=document.getElementById("pages").clientWidth-40,full=2*210*(S.pz/100)*96/25.4+2;document.documentElement.style.setProperty("--z",Math.min(1,Math.max(.3,w/full)).toFixed(3))}
