@@ -952,7 +952,7 @@ body{font-family:'KoPub','KoPubDotum','Noto Sans KR',sans-serif}
 .ln .g{flex:none;width:var(--ind);position:relative}
 .ln .g::before{content:"";position:absolute;left:.72em;top:0;bottom:0;border-left:.6pt solid #b5b5b5}.ln .g:has(+.m)::after{content:"";position:absolute;left:.72em;right:0;bottom:0;border-bottom:.5pt solid #d9d9d9}
 .ln .g{width:1.2em}
-.ln .m{flex:none;width:.85em}
+.ln .m{flex:none;width:.85em}.ln.c .m{width:.68em}
 .ln .t{flex:1;min-width:0;word-break:keep-all;overflow-wrap:break-word}
 .ln.h{font-weight:700;padding-top:.3em}
 .ln.h.first{padding-top:0}
@@ -1053,6 +1053,11 @@ let cols=[],ci=0;
 function nextCol(){ci++;if(ci>=cols.length){cols=newPage();ci=0}return cols[ci]}
 const over=c=>c.scrollHeight>c.clientHeight+1;
 function layout(){
+  /* 다시 그려도 보던 자리 유지 */
+  const scs=[document.scrollingElement,...[...document.querySelectorAll("*")].filter(e=>e.scrollTop>0)].filter(Boolean),sy=scs.map(e=>e.scrollTop);
+  try{return layout0()}finally{scs.forEach((e,i)=>{e.scrollTop=sy[i]});requestAnimationFrame(()=>scs.forEach((e,i)=>{if(Math.abs(e.scrollTop-sy[i])>2)e.scrollTop=sy[i]}))}
+}
+function layout0(){
   pages=document.getElementById("pages");pages.classList.add("measure");pages.innerHTML="";pageNo=0;cols=newPage();ci=0;
   const B=blocks();let col=cols[0],pendingCat=null;
   // 목차
