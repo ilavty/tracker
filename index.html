@@ -2560,6 +2560,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 }
 
     
+.pl-item-note { font-size: 0.78rem; font-weight: 500; line-height: 1.35; margin: 4px 0 1px 1em; word-break: break-all; cursor: text; }
 .pl-item-text {
     font-size: 0.85rem;
     font-weight: 400;
@@ -2829,6 +2830,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 
 <div id="pl-item-menu" class="pl-menu" onmouseleave="this.style.display='none'">
     <div class="pl-menu-item" onclick="pl_editItemText()">수정하기</div>
+    <div class="pl-menu-item" onclick="pl_editNote()">코멘트</div>
     <div class="pl-menu-item" style="color:var(--primary-blue);" onclick="pl_mergeSelectedItems()">선택 항목 통합하기</div>
     <div class="pl-menu-item delete" onclick="pl_deleteItem()">삭제하기</div>
 </div>
@@ -3788,6 +3790,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
                                         <span class="pl-tag" style="background:${tInfo.color}; margin-top:2px;">${item.tag}</span>
                                         <div style="display:flex; flex-direction:column; flex:1; min-width:0;">
                                             <span class="pl-item-text pl-hl-text" style="--hl-color:${hlColor};">${item.text}</span>
+                                            ${item.note ? `<div class="pl-item-note" style="${pl_noteCol(item.hl)}" onclick="event.stopPropagation(); pl_editNote('${dateStr}', ${item.id}, null)">${pl_esc(item.note).replace(/\n/g, '<br>')}</div>` : ''}
                                         </div>
                                     </div>
                                 </div>
@@ -3801,6 +3804,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
                                             <span class="pl-tag pl-tag-placeholder" style="background:${tInfo.color}; margin-top:2px;">${item.tag}</span>
                                             <div style="display:flex; flex-direction:column; flex:1; min-width:0;">
                                                 <span class="pl-item-text pl-hl-text" style="--hl-color:${subHlColor};">${sub.text}</span>
+                                                ${sub.note ? `<div class="pl-item-note" style="${pl_noteCol(sub.hl)}" onclick="event.stopPropagation(); pl_editNote('${dateStr}', ${item.id}, ${sIdx})">${pl_esc(sub.note).replace(/\n/g, '<br>')}</div>` : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -3943,6 +3947,19 @@ function pl_editItemText() {
         if(newText && newText.trim()) { item.text = newText; pl_savePlanner(); pl_renderPlanner(); } 
     }
     document.getElementById('pl-item-menu').style.display = 'none'; 
+}
+
+// 항목 아래 한 칸 들어간 코멘트. 글자색은 그 항목 형광펜 색을 살짝 진하게
+function pl_esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function pl_noteCol(hl) { return hl && hl !== 'transparent' ? `color:color-mix(in srgb, ${hl} 62%, #000)` : 'color:#555'; }
+function pl_editNote(dateStr, id, sIdx) {
+    if (dateStr === undefined) { if (!currentItemContext) return; ({ dateStr, id, sIdx } = currentItemContext); document.getElementById('pl-item-menu').style.display = 'none'; }
+    if (pl_isLocked(dateStr)) return;
+    let item = pData[dateStr].items.find(x => x.id === id); if (!item) return;
+    let tgt = (sIdx !== null && sIdx !== undefined) ? item.subItems[sIdx] : item; if (!tgt) return;
+    let v = prompt('코멘트 (비우면 삭제):', tgt.note || ''); if (v === null) return;
+    v = v.trim(); if (v) tgt.note = v; else delete tgt.note;
+    pl_savePlanner(); pl_renderPlanner();
 }
 
 function pl_deleteItem() { 
