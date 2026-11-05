@@ -385,7 +385,7 @@ td.n.wr{color:var(--brown);font-weight:700}
 
 .fillsw{margin-left:10px}
 .dochead .yrs:not(.fillsw){margin-left:auto}
-.paper .fill{color:var(--acc);font-weight:500}
+.paper .fill{color:var(--ink);font-weight:500}
 .paper .fill.ox{border-bottom:0}
 @media print{.paper .fill{color:#000;font-weight:700}.paper .fill.ox{border-bottom:0}}
 .qfront{font-family:var(--tf);font-size:12px;color:var(--acc);margin-bottom:2px}
@@ -455,7 +455,7 @@ body.hideans .paper td.a.rv{color:inherit!important;background:var(--ansbg)!impo
 @media print{.ftools{display:none!important}}
 body:has(#quiz.open) .ftools,body:has(#ov.open) .ftools,body:has(#quiz.open) .hlbar,body:has(#ov.open) .hlbar{display:none!important}
 mark.hl{color:inherit;border-radius:2px;padding:0 1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-mark.hl.hy{background:#fff1a1}mark.hl.hb{background:#cfe7f9}mark.hl.hp{background:#fbd5de}mark.hl.ho{background:#ecd9c6}
+mark.hl.hy{background:var(--hl-y,#fff1a1)}mark.hl.hb{background:var(--hl-b,#cfe7f9)}mark.hl.hp{background:var(--hl-p,#fbd5de)}mark.hl.ho{background:var(--hl-o,#ecd9c6)}
 mark.hl .bl,mark.hl .fill{background:transparent}
 u.ul{text-decoration:underline;text-decoration-color:var(--ink);text-decoration-thickness:1.5px;text-underline-offset:3px;text-decoration-skip-ink:none}
 body.hlon.hlerase .hbed u.ul{cursor:pointer}
@@ -471,8 +471,9 @@ body.hlon .hlbar{display:flex}
 .hlgrip:active{cursor:grabbing}
 .hlbar button{border:0;cursor:pointer;font-family:var(--tf)}
 .hlc{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.hlset{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px}.hlset-r{display:flex;align-items:center;gap:12px}.hlset-r span{width:14px;color:var(--sub);font-size:12px}.hlset-r input{width:44px;height:30px;border:1px solid var(--line);border-radius:7px;padding:2px;background:#fff;cursor:pointer}.hlset-r mark{padding:1px 4px}
 .hlc.hu{background:#fff;position:relative}.hlc.hu::after{content:'U';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--tf);font-size:12.5px;color:var(--ink);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px}
-.hlc.hy{background:#fff1a1}.hlc.hb{background:#cfe7f9}.hlc.hp{background:#fbd5de}.hlc.ho{background:#ecd9c6}
+.hlc.hy{background:var(--hl-y,#fff1a1)}.hlc.hb{background:var(--hl-b,#cfe7f9)}.hlc.hp{background:var(--hl-p,#fbd5de)}.hlc.ho{background:var(--hl-o,#ecd9c6)}
 .hlc.on{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
 .hle{font-size:13px;padding:6px 11px;border-radius:15px;background:#f2f2f2;color:var(--ink)}
 .hle.on{background:var(--ink);color:#fff}
@@ -616,6 +617,7 @@ body.hlon .hlbar{display:flex}
         <button data-m="wrong">Mistake Log</button>
         <button data-m="import-doc">Import from document</button>
         <button data-m="fill">Fill answers</button>
+        <button data-m="hlset">형광펜 설정</button>
         <button data-m="print">Print PDF</button>
         <button data-m="export">Save backup</button>
         <button data-m="import">Load backup</button>
@@ -1099,7 +1101,7 @@ function openModal({ title, fields, onSave, onDelete, again }) {
     }
   };
 }
-function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; const pd = CLOUD && CLOUD.isPending && CLOUD.isPending(); applyRemote(pd ? mergeInto(JSON.parse(JSON.stringify(DB)), st) : st); if (pd) CLOUD.touched(); } }
+function closeModal() { $('#ov').classList.remove('open'); const m = $('#mod'); if (m.querySelector('.hlset')) hlColsLoad(); m.oninput = null; m.innerHTML = ''; m.classList.remove('wide'); m.onclick = null; if (pendingRemote) { const st = pendingRemote; pendingRemote = null; const pd = CLOUD && CLOUD.isPending && CLOUD.isPending(); applyRemote(pd ? mergeInto(JSON.parse(JSON.stringify(DB)), st) : st); if (pd) CLOUD.touched(); } }
 $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#ov').classList.contains('open')) closeModal(); });
 
@@ -1162,6 +1164,23 @@ function toolsBar() {
 /* 형광펜 */
 let hlJust = 0;
 try { HL.c = localStorage.getItem(KEY + ':hl') || 'y'; } catch (e) {}
+// 형광펜 색: 기기마다 저장, 메뉴 ··· > 형광펜 설정에서 바꿈
+const HL_DEF = { y: '#fff1a1', b: '#cfe7f9', p: '#fbd5de', o: '#ecd9c6' };
+function hlColsLoad() { let c = {}; try { c = JSON.parse(localStorage.getItem(KEY + ':hlcols') || '{}') || {}; } catch (e) {} Object.keys(HL_DEF).forEach(k => document.documentElement.style.setProperty('--hl-' + k, c[k] || HL_DEF[k])); return c; }
+hlColsLoad();
+function hlSettings() {
+  const cur = hlColsLoad(); const m = $('#mod');
+  const names = { y: '1', b: '2', p: '3', o: '4' };
+  m.innerHTML = `<h2>형광펜 설정</h2><div class="hlset">${Object.keys(HL_DEF).map(k => `<label class="hlset-r"><span>${names[k]}</span><input type="color" data-hk="${k}" value="${cur[k] || HL_DEF[k]}"><mark class="hl h${k}">예시 문장</mark></label>`).join('')}</div>
+    <div class="mfoot"><button class="btn" data-hs="reset">기본색</button><span class="sp2"></span><button class="btn" data-hs="cancel">취소</button><button class="btn pri" data-hs="save">저장</button></div>`;
+  $('#ov').classList.add('open');
+  const preview = () => m.querySelectorAll('[data-hk]').forEach(i => document.documentElement.style.setProperty('--hl-' + i.dataset.hk, i.value));
+  m.oninput = preview;
+  m.onclick = e => { const b = e.target.closest('[data-hs]'); if (!b) return; const a = b.dataset.hs;
+    if (a === 'cancel') { closeModal(); hlColsLoad(); }
+    if (a === 'reset') { m.querySelectorAll('[data-hk]').forEach(i => i.value = HL_DEF[i.dataset.hk]); preview(); }
+    if (a === 'save') { const c = {}; m.querySelectorAll('[data-hk]').forEach(i => { if (i.value.toLowerCase() !== HL_DEF[i.dataset.hk]) c[i.dataset.hk] = i.value; }); try { localStorage.setItem(KEY + ':hlcols', JSON.stringify(c)); } catch (x) {} hlColsLoad(); closeModal(); } };
+}
 const HLC = [['y', 'Yellow'], ['b', 'Sky'], ['p', 'Pink'], ['o', 'Brown'], ['u', 'Underline']];
 function offIn(ed, node, off) { const r = document.createRange(); r.setStart(ed, 0); r.setEnd(node, off); return r.toString().length; }
 function hlEdit(it, s, e, c, key = 'hl') {
@@ -1192,7 +1211,7 @@ function hlApply(range, forceErase) {
     hlPaint(T, a, b, HL.erase || forceErase); ed.innerHTML = T.html(); n++;
   }
   sel.removeAllRanges(); hlJust = Date.now();
-  if (n) save();
+  if (n) { applyRev(); save(); }
   return n > 0;
 }
 function caretAt(x, y) {
@@ -1209,7 +1228,7 @@ function hlEraseAt(ed, x, y) {
   let hit = find(T.h, 'mark.hl'), key = T.h;
   if (!hit) { hit = find(T.u, 'u.ul'); key = T.u; }
   if (!hit) return;
-  hlEdit(T.o, hit[0], hit[1], null, key); ed.innerHTML = T.html(); save();
+  hlEdit(T.o, hit[0], hit[1], null, key); ed.innerHTML = T.html(); applyRev(); save();
 }
 document.addEventListener('mousedown', e => { if (hlMode && !editing && e.shiftKey && e.target.closest && e.target.closest('#paper')) getSelection().removeAllRanges(); }, true);
 document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.closest && e.target.closest('#paper')) { const sh = e.shiftKey; setTimeout(() => hlApply(null, sh), 0); } });
@@ -1959,6 +1978,7 @@ $('#menuPop').onclick = e => {
     toast('Backup saved');
   }
   if (m === 'import') $('#file').click();
+  if (m === 'hlset') hlSettings();
   if (m === 'sync') { CLOUD && CLOUD.syncNow ? CLOUD.syncNow() : toast('Sync is not connected on this device'); }
   if (m === 'reset') { if (confirm('All your additions and edits will be lost and the original restored. Continue?\n(saving a backup first is recommended)')) { DB = clone(ORIG); migrate(); cur = DB.docs[0].id; commit(); toast('Reset done'); } }
 };
