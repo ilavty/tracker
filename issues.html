@@ -1218,9 +1218,9 @@ document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.c
   let st = null;
   const isPen = e => [...e.changedTouches].some(t => t.touchType === 'stylus');
   document.addEventListener('touchstart', e => {
-    if (!hlMode || editing || !isPen(e)) return;
+    if (!(hlMode || punch) || editing || !isPen(e)) return;
     const t = e.changedTouches[0]; const el = document.elementFromPoint(t.clientX, t.clientY);
-    if (!el || !el.closest('#paper .hbed, #paper td.q')) return;
+    if (!el || !el.closest(punch && !hlMode ? '#paper .pbed' : '#paper .hbed, #paper td.q')) return;
     e.preventDefault(); st = caretAt(t.clientX, t.clientY); st && getSelection().removeAllRanges();
   }, { passive: false });
   document.addEventListener('touchmove', e => {
@@ -1231,6 +1231,11 @@ document.addEventListener('mouseup', e => { if (hlMode && !editing && e.target.c
   document.addEventListener('touchend', e => {
     if (!st) return; const t = e.changedTouches[0];
     const sel = getSelection();
+    if (punch && !hlMode) {   // 빈칸 만들기: 펜슬로 그으면 빈칸, 빈칸을 톡 치면 되돌리기
+      if (!sel.isCollapsed) punchWrap();
+      else { const el = document.elementFromPoint(t.clientX, t.clientY); const pm = el && el.closest('#paper .pbed mark'); if (pm) { const ed = pm.closest('.pbed'); pm.replaceWith(document.createTextNode(pm.textContent)); ed.normalize(); punchSave(ed); } }
+      st = null; return;
+    }
     if (sel.isCollapsed && HL.erase) { const el = document.elementFromPoint(t.clientX, t.clientY); const ed = el && el.closest('.hbed'); if (ed) hlEraseAt(ed, t.clientX, t.clientY); }
     else hlApply();
     st = null;
