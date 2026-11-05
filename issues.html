@@ -187,6 +187,7 @@ td.ctl{display:none}
 .bl{color:var(--acc);font-weight:500}
 .sp{display:inline-block;width:2.6em}
 .hbk{white-space:nowrap}.hbk::before{content:'【';color:var(--acc);font-weight:500}.hbk::after{content:'】';color:var(--acc);font-weight:500;margin-left:calc(2.6em*var(--bw,1))}.hbk .hbt{display:none}.hbk.rv::after{margin-left:.25em}.hbk.rv .hbt{display:inline;color:var(--acc);font-weight:600;margin-left:.25em}.hbk{cursor:pointer}
+@media screen{.paper .hbk::after{margin-left:0!important}.paper .hbk .hbt{display:inline-block!important;min-width:calc(2.6em*var(--bw,1));padding:0 .25em;margin:0!important;text-align:center;visibility:hidden;color:var(--acc);font-weight:600;white-space:normal}.paper .hbk.rv .hbt{visibility:visible}}
 .bk{cursor:pointer;-webkit-tap-highlight-color:transparent}.bk .bka{display:none}.bk.rv .sp{width:auto!important;padding:0 .25em}.bk.rv .bka{display:inline;color:var(--acc);font-weight:600}@media print{.bk.rv .sp{width:calc(2.6em*var(--bw,1))!important;padding:0}.bk.rv .bka{display:none}}
 @media screen{.paper .bk .sp{width:auto!important;min-width:calc(2.6em*var(--bw,1));padding:0 .25em;text-align:center}.paper .bk .bka{display:inline;visibility:hidden;color:var(--acc);font-weight:600}.paper .bk.rv .bka{visibility:visible}}
 .tag{color:var(--acc);font-weight:500}
@@ -941,7 +942,12 @@ const showSec = s => editing || (yr === 'all' && !mkF && !kindF) || visItems(s).
 const docCnt = d => d.parts.reduce((n, p) => n + p.chapters.reduce((m, c) => m + cnt(c), 0), 0);
 
 /* render */
-function render() { renderTabs(); renderSide(); renderMain(); }
+function render() { renderTabs(); renderSide(); renderMain(); applyRev(); }
+// 터치해서 보이게 해둔 빈칸·답 칸은 다시 그려도(모드 바꿔도) 그대로 보이게
+const REV = new Set();
+function revKey(el) { const tr = el.closest('tr.it'); if (!tr) return null; if (el.matches('td.a')) return tr.dataset.item + ':a'; const bs = [...tr.querySelectorAll('td.q .bk, td.q .hbk')]; return tr.dataset.item + ':' + bs.indexOf(el); }
+function revToggle(el) { el.classList.toggle('rv'); const k = revKey(el); if (k) { if (el.classList.contains('rv')) REV.add(k); else REV.delete(k); } }
+function applyRev() { if (!REV.size) return; document.querySelectorAll('#paper tr.it').forEach(tr => { const id = tr.dataset.item; tr.querySelectorAll('td.q .bk, td.q .hbk').forEach((b, k) => { if (REV.has(id + ':' + k)) b.classList.add('rv'); }); const a = tr.querySelector('td.a'); if (a && REV.has(id + ':a')) a.classList.add('rv'); }); }
 function renderTabs() {
   let h = DB.docs.map(d => `<button class="tab ${d.id === doc().id ? 'on' : ''}" data-doc="${d.id}">${esc(d.name)}</button>`).join('');
   if (editing) h += `<button class="tab add" data-act="addDoc">+ Subject</button>`;
@@ -1896,9 +1902,9 @@ document.addEventListener('click', e => {
   const shb = t.closest('[data-shmk]'); if (shb) { mkPop(shb, shb.dataset.shmk); return; }
   const mf = t.closest('[data-mkf]'); if (mf) { mkF = mkF === mf.dataset.mkf ? null : mf.dataset.mkf; render(); scrollTo(0, 0); return; }
   if (t.closest('[data-hideans]')) { hideAns = !hideAns; try { localStorage.setItem(KEY + ':hideans', hideAns ? '1' : '0'); } catch (x) {} document.body.classList.toggle('hideans', hideAns && !editing); document.querySelectorAll('#paper td.a.rv').forEach(x => x.classList.remove('rv')); toolsBar(); return; }
-  const bk = !editing && !punch && !hlMode && t.closest('#paper .bk'); if (bk) { bk.classList.toggle('rv'); return; }
-  const hbk = hlMode && !editing && !HL.erase && getSelection().isCollapsed && t.closest('#paper .hbk'); if (hbk) { hbk.classList.toggle('rv'); return; }
-  const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { ta.classList.toggle('rv'); return; }
+  const bk = !editing && !punch && !hlMode && t.closest('#paper .bk'); if (bk) { revToggle(bk); return; }
+  const hbk = hlMode && !editing && !HL.erase && getSelection().isCollapsed && t.closest('#paper .hbk'); if (hbk) { revToggle(hbk); return; }
+  const ta = hideAns && !editing && t.closest('#paper td.a'); if (ta) { revToggle(ta); return; }
   if (t.closest('[data-hlmode]')) { hlMode = !hlMode; if (hlMode) punch = false; renderKeep(); return; }
   const hc = t.closest('[data-hlc]'); if (hc) { const v = hc.dataset.hlc; if (v === 'erase') HL.erase = !HL.erase; else { HL.c = v; HL.erase = false; } try { localStorage.setItem(KEY + ':hl', HL.c); } catch (x) {} hlBar(); document.body.classList.toggle('hlerase', HL.erase); return; }
   if (hlMode && !editing && (HL.erase || e.shiftKey) && getSelection().isCollapsed && Date.now() - hlJust > 300) { const hm = t.closest('.hbed mark.hl, .hbed u.ul'); if (hm) { hlEraseAt(hm.closest('.hbed'), e.clientX, e.clientY); return; } }
