@@ -1029,7 +1029,7 @@ function blocks(){
     });
     if(!rs.length)return;
     B.push({type:"cat",name:D.C[c],html:'<div class="cat">'+esc(D.C[c])+'</div>'});
-    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+(r.no?'<span class="tno">'+r.no+'</span>':'')+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
+    rs.forEach(({r,n})=>B.push({type:"case",name:r.name,title:'<div class="ttl" data-k="'+B.length+'">'+esc(r.name)+'</div>',src:'<div class="src">'+esc(n.src||[r.court,r.year,r.parties].filter(Boolean).join(", "))+'</div>',lines:lineHTML(n.items),kw:n.tags?'<div class="kw">'+n.tags.split(/,\s*/).filter(Boolean).map(x=>'<span>'+esc(x.trim())+'</span>').join("")+'</div>':""}));
   });
   return B;
 }
