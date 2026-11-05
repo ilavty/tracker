@@ -619,7 +619,6 @@ body.hlon .hlbar{display:flex}
         <button data-m="export">Save backup</button>
         <button data-m="import">Load backup</button>
         <button data-m="sync">Sync now</button>
-        <button data-m="reset">Reset to original</button>
       </div>
     </div>
   </div>
@@ -988,7 +987,7 @@ function renderMain() {
         const a = ansOf(it);
         const yb = editing && yr === 'all' ? `<span class="ybadge">${esc(it.y)}</span>` : '';
         const ctl = !editing ? '' : `<td class="ctl"><button class="ib" data-act="up" data-id="${it.id}">↑</button> <button class="ib" data-act="down" data-id="${it.id}">↓</button> <button class="ib x" data-act="del" data-id="${it.id}">✕</button></td>`;
-        if (hlMode && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, FILLF)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
+        if (hlMode && !editing) { const box = a && !filled; h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q"${box ? '' : ' colspan="2"'}>${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="hbed" data-hid="${it.id}">${hlHtml(it, FILLF)}</span>${it.a && !box ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td>${box ? `<td class="a">${esc(a)}</td>` : ''}</tr>`; return; }
         if (punch && !editing) { h += `<tr class="it" data-item="${it.id}"><td class="n">${k + 1}${mkMini(it)}</td><td class="q" colspan="2">${it.tag ? `<b class="tag">[${esc(it.tag)}]</b> ` : ''}<span class="pbed" data-pid="${it.id}">${esc(it.t).replace(/\[\[(.+?)\]\]/g, (_, x) => `<mark class="bk">${x}</mark>`)}</span>${it.a ? ` <span class="pox">→ ${esc(it.a)}</span>` : ''}</td></tr>`; return; }
         h += `<tr class="it" data-item="${it.id}"><td class="n${(DB.stats || {})[it.id]?.w ? ' wr' : ''}" title="${(DB.stats || {})[it.id]?.w ? 'Missed ' + DB.stats[it.id].w : ''}">${k + 1}${mkMini(it)}</td>` + (a && !filled ? `<td class="q">${yb}${qHtml(it)}</td><td class="a">${esc(a)}</td>` : `<td class="q" colspan="2">${yb}${qHtml(it, filled)}</td>`) + ctl + `</tr>`;
       });
