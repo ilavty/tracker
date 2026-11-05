@@ -74,9 +74,9 @@ window.makeCloud=function(path,key,getState,applyState){
 #ilc .nm:hover{color:var(--sky)}
 #ilc .mine{font-size:10.5px;font-weight:700;color:var(--sky);margin-left:6px;vertical-align:1px}
 #ilc .cat{display:inline-block;font-size:12px;padding:2px 8px;border-radius:6px;background:var(--sky-soft);color:var(--ink);margin:1px 3px 1px 0}
-#ilc .nmw{display:flex;align-items:baseline;gap:7px}#ilc .nmt{flex:1;min-width:0}
-#ilc .cno{flex:0 0 auto;min-width:2.3em;margin:0;font-size:11px;color:#a59c8f;font-variant-numeric:tabular-nums}#ilc .qnums{display:flex;align-items:center;gap:8px;margin-bottom:10px}#ilc .qnums input{width:180px;border:1px solid #ddd5c8;border-radius:8px;padding:6px 10px;font:inherit;background:#fff}
-#ilc col.c1{width:9%}#ilc col.c2{width:42%}#ilc col.c3{width:8%}#ilc col.c4{width:26%}#ilc col.c5{width:15%}
+#ilc .nmw{display:flex;align-items:flex-start;gap:7px}#ilc .nmt{flex:1;min-width:0}
+#ilc .cno{flex:0 0 auto;min-width:2.3em;margin:0;padding-top:.22em;font-size:11px;color:#a59c8f;font-variant-numeric:tabular-nums}#ilc .qnums{display:flex;align-items:center;gap:8px;margin-bottom:10px}#ilc .qnums input{width:180px;border:1px solid #ddd5c8;border-radius:8px;padding:6px 10px;font:inherit;background:#fff}
+#ilc col.c1{width:9%}#ilc col.c2{width:38%}#ilc col.c3{width:8%}#ilc col.c4{width:26%}#ilc col.c5{width:19%}
 #ilc .empty{padding:30px;text-align:center;color:var(--muted)}
 /* modal */
 #ilc .ov{position:fixed;inset:0;z-index:50;background:rgba(15,12,9,.45);display:flex;align-items:flex-start;justify-content:center;padding:max(24px,env(safe-area-inset-top,0px)) 16px 24px;overflow-y:auto}
@@ -156,7 +156,7 @@ window.makeCloud=function(path,key,getState,applyState){
   #ilc .chip{font-size:11.5px;padding:5px 10px}
   #ilc table{min-width:0;table-layout:fixed}
   #ilc th,#ilc td{padding:7px 8px;font-size:12px}
-  #ilc col.c4,#ilc col.c5,#ilc th:nth-child(4),#ilc th:nth-child(5),#ilc td:nth-child(4),#ilc td:nth-child(5){display:none}
+  #ilc col.c4,#ilc col.c5,#ilc th:nth-child(3),#ilc th:nth-child(5),#ilc td:nth-child(3),#ilc td:nth-child(5){display:none}
   #ilc col.c1{width:18%}#ilc col.c2{width:64%}#ilc col.c3{width:18%}
   #ilc td.court{font-size:11px;white-space:normal}
   #ilc h2{font-size:15px}
@@ -331,9 +331,9 @@ function render(){
     if(active!=="all"&&active!==k)continue;
     const rows=R.filter(inG).filter(r=>!natSel.size||natsOf(r).some(n=>natSel.has(n))).filter(r=>{if(!kwSel.size)return true;const m=kwOf(r.id);return kwAnd?[...kwSel].every(x=>m.includes(x)):m.some(x=>kwSel.has(x))}).filter(r=>!t||[r.court,r.name,r.year,r.parties,...r.cats.map(c=>C[c]),noteText(r.note),noteText(r.note2),...kwOf(r.id)].join(" ").toLowerCase().includes(t)).sort((a,b)=>GRP==="cat"?(NUM[a.id]||1e9)-(NUM[b.id]||1e9):yr(a.year)-yr(b.year));
     if(!rows.length)continue;any=true;
-    html+=`<section><h2>${l}<span>${rows.length}건</span></h2><div class="tw"><table><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><thead><tr><th>재판소</th><th>판례 이름</th><th>연도</th><th>원고 v. 피고</th><th>목차 분류</th></tr></thead><tbody>`+
+    html+=`<section><h2>${l}<span>${rows.length}건</span></h2><div class="tw"><table><colgroup><col class="c1"><col class="c2"><col class="c4"><col class="c3"><col class="c5"></colgroup><thead><tr><th>재판소</th><th>판례 이름</th><th>원고 v. 피고</th><th>연도</th><th>목차 분류</th></tr></thead><tbody>`+
     rows.map(r=>{const f=r.flag?` <span class="fl" title="${esc(r.flag)}">*</span>`:"";const yf=r.flag&&r.flag.startsWith("연도")?f:"",pf=r.flag&&!r.flag.startsWith("연도")?f:"";
-      return `<tr><td class="court">${esc(courtShort(r.court))}</td><td><div class="nmw"><span class="cno">${NUM[r.id]||""}</span><span class="nmt"><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}</span></div>${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="year">${esc(r.year).replace(/([·,~\/])/g,"$1<wbr>")}${yf}</td><td>${esc(r.parties)}${pf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
+      return `<tr><td class="court">${esc(courtShort(r.court))}</td><td><div class="nmw"><span class="cno">${NUM[r.id]||""}</span><span class="nmt"><button type="button" class="nm" data-id="${r.id}">${esc(r.name)}</button>${r.mine?'<span class="mine">추가</span>':r.edited?'<span class="mine">수정</span>':""}</span></div>${kwOf(r.id).length?`<div class="tkw">${kwOf(r.id).map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}</td><td class="pty">${esc(r.parties)}${pf}</td><td class="year">${esc(r.year).replace(/([·,~\/])/g,"$1<wbr>")}${yf}</td><td>${r.cats.map(c=>`<span class="cat">${C[c]||c}</span>`).join("")}</td></tr>`}).join("")+`</tbody></table></div></section>`;
   }
   $("#ilc-out").innerHTML=any?html:`<div class="empty">맞는 판례가 없어요</div>`;
 }
