@@ -316,6 +316,18 @@ col.ca{width:calc(110px*var(--r))!important}
 .qz-foot{display:flex;gap:8px;align-items:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--line);position:sticky;bottom:0;background:#fff;padding-bottom:12px}
 .qz-foot.res{display:block;position:static}
 .qz-go{background:var(--acc)!important;border-color:var(--acc)!important;color:#fff!important;padding:8px 18px!important}
+.sr-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sr-in{flex:1;min-width:0;font:inherit;font-family:var(--tf);font-size:16px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);outline:none}
+.sr-in:focus{border-color:var(--acc)}
+.sr-sub{font-size:12px;color:var(--sub);font-family:var(--tf);margin:0 2px 6px}
+.sr-it{cursor:pointer;border-radius:10px;padding:12px 10px}
+.sr-it:hover{background:var(--sky3)}
+.sr-q{font-family:var(--bf);font-size:calc(14.5px*var(--r));line-height:1.85;word-break:keep-all;overflow-wrap:anywhere}
+.sr-q .sa{color:var(--ans);border-bottom:1px solid var(--ans2)}
+.sr-it mark{background:#ffe9a8;color:inherit;border-radius:2px;padding:0 1px}
+.sr-doc{font-family:var(--tf);font-size:12px;font-weight:600;color:var(--brown);margin:14px 2px 2px}
+tr.it.srflash td{animation:srflash 1.8s ease}
+@keyframes srflash{0%,40%{background:#fff3c4}100%{background:transparent}}
 .qz-top{display:flex;align-items:center;gap:10px;margin-bottom:18px}
 .qz-prog{flex:1;text-align:center;font-size:14px;color:var(--sub)}
 .qz-bar{height:4px;background:var(--sky3);border-radius:4px;margin:6px auto 0;max-width:300px;overflow:hidden}
@@ -604,6 +616,7 @@ body.hlon .hlbar{display:flex}
   <div class="tools">
     <span class="saved" id="saved"></span>
     <button class="btn" id="editBtn">Edit</button>
+    <button class="btn" id="srchBtn" title="Search (⌘K)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg></button>
     <button class="btn" id="quizBtn">Quiz</button>
     <button class="btn pri" id="impBtn">Import</button>
     <button class="btn hide-m" id="printBtn">Print PDF</button>
@@ -2333,6 +2346,69 @@ $('#quiz').addEventListener('click', e => {
 });
 
 $('#quizBtn').onclick = () => openQuiz();
+/* ───── 검색: 모든 과목·연도에서 문장/답/소제목으로 찾기 → 누르면 그 자리로 이동 ───── */
+let SR = {q: ''};
+const srPlain = t => String(t || '').replace(/\[\[(.+?)\]\]/g, '$1');
+const srKey = t => srPlain(t).toLowerCase().replace(/\s+/g, '');
+function srRegex(q) {
+  const cs = [...q.replace(/\s+/g, '')].map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return cs.length ? new RegExp(cs.join('\\s*'), 'gi') : null;
+}
+function srMark(html, rx) { // 태그 밖 텍스트에만 하이라이트
+  if (!rx) return html;
+  return html.replace(/(<[^>]+>)|([^<]+)/g, (m, tag, txt) => tag ? tag : txt.replace(rx, x => `<mark>${x}</mark>`));
+}
+function srHits(q) {
+  const k = q.toLowerCase().replace(/\s+/g, ''); if (!k) return [];
+  const out = [];
+  DB.docs.forEach(d => d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => {
+    const secHit = srKey(s.title).includes(k);
+    s.items.forEach(it => {
+      if (secHit || srKey(it.t).includes(k) || srKey(it.a).includes(k) || srKey(it.tag).includes(k) || srKey(it.q).includes(k))
+        out.push({d, c, s, it});
+    });
+  }))));
+  return out;
+}
+function openSearch() { $('#quiz').classList.add('open'); document.body.style.overflow = 'hidden'; QZ = null; showSearch(true); }
+function showSearch(focus) {
+  $('#qzBody').innerHTML = `<div class="sr-top"><input class="sr-in" id="srIn" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(SR.q)}"><button class="btn" data-q="close">Close</button></div><div id="srRes"></div>`;
+  const inp = $('#srIn');
+  inp.oninput = () => { SR.q = inp.value; drawSearch(); };
+  inp.onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) { const f = $('#srRes .sr-it'); if (f) srGo(f.dataset.srid); } };
+  drawSearch();
+  if (focus) setTimeout(() => { inp.focus(); inp.select(); }, 30);
+}
+function drawSearch() {
+  const q = SR.q.trim(), box = $('#srRes'); if (!box) return;
+  if (!q) { box.innerHTML = ''; return; }
+  const hits = srHits(q), rx = srRegex(q), MAX = 300;
+  let h = `<div class="sr-sub">${hits.length}개${hits.length > MAX ? ` · 앞 ${MAX}개만 표시` : ''}</div>`, lastDoc = null;
+  hits.slice(0, MAX).forEach(({d, c, s, it}) => {
+    if (d !== lastDoc) { h += `<div class="sr-doc">${esc(d.name)}</div>`; lastDoc = d; }
+    const body = esc(it.t).replace(/\[\[(.+?)\]\]/g, '<span class="sa">$1</span>');
+    h += `<div class="qz-item sr-it" data-srid="${it.id}"><div class="qz-main"><div class="qz-meta">${srMark(esc(c.title) + ' · ' + esc(s.title), rx)}${it.y ? ' · ' + esc(yrLabel(it.y)) : ''}</div><div class="sr-q">${it.tag ? `<b class="tag">[${srMark(esc(it.tag), rx)}]</b> ` : ''}${srMark(body, rx)}${it.a ? ` <span class="sa">→ ${srMark(esc(it.a), rx)}</span>` : ''}</div></div></div>`;
+  });
+  if (!hits.length) h = `<div class="sr-sub">없음</div>`;
+  box.innerHTML = h;
+}
+function srGo(id) {
+  const L = locate(id); if (!L) return;
+  const d = DB.docs.find(x => x.parts.some(p => p.chapters.some(c => c.secs.some(s => s.items.some(i => i.id === id)))));
+  if (d) { cur = d.id; try { localStorage.setItem(KEY + ':cur', cur); } catch (x) {} }
+  if (!vis(L.obj, L.sec)) { yr = 'all'; mkF = null; kindF = ''; try { localStorage.setItem(KEY + ':yr', yr); localStorage.setItem(KEY + ':kindF', ''); } catch (x) {} }
+  $('#quiz').classList.remove('open'); document.body.style.overflow = '';
+  render();
+  const row = document.querySelector(`#paper tr.it[data-item="${id}"]`);
+  if (row) { row.scrollIntoView({block: 'center'}); row.classList.add('srflash'); setTimeout(() => row.classList.remove('srflash'), 1900); }
+}
+$('#qzBody').addEventListener('click', e => { const r = e.target.closest('.sr-it'); if (r) srGo(r.dataset.srid); });
+$('#srchBtn').onclick = () => openSearch();
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSearch(); return; }
+  if (e.key === 'Escape' && $('#srIn')) { $('#quiz').classList.remove('open'); document.body.style.overflow = ''; }
+});
+
 render();
 /* 위아래 넘기기: 다음/이전 문항으로 스크롤 */
 (() => {
