@@ -221,7 +221,17 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 .scount{font-size:.8rem;color:var(--grey)}
 .fc{background:#fff;border:1px solid var(--bd);border-radius:16px;min-height:360px;padding:38px 34px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 4px 20px rgba(30,50,80,.06);transition:transform .12s ease;user-select:none;position:relative}
 .fc.flip{transform:rotateX(90deg)}
-.fcwrite{display:block;width:100%;box-sizing:border-box;margin:12px 0 0;padding:12px 16px;border:1px solid var(--bd);border-radius:12px;background:#fff;font:inherit;font-size:.95rem;line-height:1.6;color:var(--txt);resize:none;overflow:hidden;opacity:.4;transition:opacity .15s,border-color .15s;outline:none}
+.fc.both{cursor:default;padding:30px 28px;gap:0;justify-content:stretch;min-height:420px}
+.fc.both .fhalf{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px 10px;min-width:0}
+.fc.both .fhalf.bk .qt{font-weight:400}
+.fc.both .fhalf.bk .qlist .ql{font-weight:500}
+.fc.both .fsep{flex:none;background:var(--bd)}
+.fc.both.stack{flex-direction:column}
+.fc.both.stack .fsep{height:1px;width:80%;margin:4px 0}
+.fc.both.side{flex-direction:row;align-items:stretch}
+.fc.both.side .fsep{width:1px;margin:0 10px}
+.fc.both .fhalf .qlist{max-width:100%}
+.fcwrite{display:block;width:100%;box-sizing:border-box;margin:16px 0 0;padding:12px 16px;border:1px solid var(--bd);border-radius:12px;background:#fff;font:inherit;font-size:.95rem;line-height:1.6;color:var(--txt);resize:none;overflow:hidden;opacity:.4;transition:opacity .15s,border-color .15s;outline:none}
 .fcwrite:hover{opacity:.7}
 .fcwrite:focus,.fcwrite.has{opacity:1}
 .fc.back .qt{font-weight:400}
@@ -1613,30 +1623,33 @@ function resumeSess(k) {
 }
 
 /* ---------------- FLASHCARDS ---------------- */
+let FCV = 'flip'; try { FCV = localStorage.getItem('cards_fcview') || 'flip'; } catch (e) { }
+if (!['flip', 'stack', 'side'].includes(FCV)) FCV = 'flip';
+function flashView() { FCV = FCV === 'flip' ? 'stack' : FCV === 'stack' ? 'side' : 'flip'; try { localStorage.setItem('cards_fcview', FCV); } catch (e) { } SD.flip = false; flashDraw(); }
 function flashStart() { SD.deck = shuffle(SD.units); SD.i = 0; SD.flip = false; SD.know = []; SD.dont = []; SD.hist = []; persistSess(); flashDraw(); }
 function flashDraw() {
   const st_ = $('#study'); const n = SD.deck.length;
   if (SD.i >= n) return flashEnd();
   const u = SD.deck[SD.i]; const starred = u.items.every(it => st(it.id).star);
-  st_.innerHTML = shead('플래시카드', `<span class="scount">${SD.i + 1} / ${n}</span><button class="btn sm ghost" onclick="flashShuffle()">섞기</button>`) +
+  st_.innerHTML = shead('플래시카드', `<span class="scount">${SD.i + 1} / ${n}</span><button class="btn sm ghost" onclick="flashView()">${FCV === 'flip' ? '한 면씩' : FCV === 'stack' ? '위아래' : '좌우'}</button><button class="btn sm ghost" onclick="flashShuffle()">섞기</button>`) +
     `<div class="sprog"><i style="width:${SD.i / n * 100}%"></i></div>
-    <div class="fc ${SD.flip ? 'back' : ''}" id="fcard" onclick="if(!window._lp)flashFlip();window._lp=0">
-      <span class="side-lbl">${SD.flip ? '뒷면' : '앞면'}</span>
+    <div class="fc ${FCV !== 'flip' ? 'both ' + FCV : SD.flip ? 'back' : ''}" id="fcard" onclick="if(!window._lp)flashFlip();window._lp=0">
+      ${FCV === 'flip' ? `<span class="side-lbl">${SD.flip ? '뒷면' : '앞면'}</span>` : ''}
       <span class="fstar star ${starred ? 'on' : ''}" onclick="event.stopPropagation();flashStar()">${starred ? '★' : '☆'}</span>
-      ${SD.flip ? aHtml(u, SD.dir) : qHtml(u, SD.dir)}
+      ${FCV !== 'flip' ? `<div class="fhalf">${qHtml(u, SD.dir)}</div><div class="fsep"></div><div class="fhalf bk">${aHtml(u, SD.dir)}</div>` : SD.flip ? aHtml(u, SD.dir) : qHtml(u, SD.dir)}
     </div>
-    <textarea class="fcwrite${SD.scratch ? ' has' : ''}" id="fcwrite" rows="2" oninput="SD.scratch=this.value;this.classList.toggle('has',!!this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(SD.scratch || '')}</textarea>
     <div class="fcbtns">
       <button class="backbtn" onclick="flashBack()" title="이전 카드 (Backspace)" ${SD.hist.length ? '' : 'disabled'}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
       <button class="big no ${SD.prevPick === false ? 'sel' : ''}" onclick="flashMark(false)">몰라요</button>
       <button class="big yes ${SD.prevPick === true ? 'sel' : ''}" onclick="flashMark(true)">알아요</button>
     </div>
+    <textarea class="fcwrite${SD.scratch ? ' has' : ''}" id="fcwrite" rows="2" oninput="SD.scratch=this.value;this.classList.toggle('has',!!this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'">${esc(SD.scratch || '')}</textarea>
 `;
   bindFcLongPress();
   const w = $('#fcwrite'); if (w && w.value) { w.style.height = 'auto'; w.style.height = w.scrollHeight + 'px'; }
 }
 function bindFcLongPress() { const el = $('#fcard'); if (el && !el._lpb) { el._lpb = 1; longPress(el, e => { window._lp = 1; studyCardMenu(e); }); } }
-function flashFlip() { if (modalStack.length) return; const el = $('#fcard'); el.classList.add('flip'); setTimeout(() => { SD.flip = !SD.flip; flashDraw(); const n = $('#fcard'); n.classList.add('flip'); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('flip'))); }, 120); }
+function flashFlip() { if (modalStack.length || FCV !== 'flip') return; const el = $('#fcard'); el.classList.add('flip'); setTimeout(() => { SD.flip = !SD.flip; flashDraw(); const n = $('#fcard'); n.classList.add('flip'); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('flip'))); }, 120); }
 function flashMark(ok) {
   if (SD.flying) return;
   const el = $('#fcard');
