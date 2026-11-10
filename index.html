@@ -2059,7 +2059,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             const list = document.getElementById('quiz-list'); list.innerHTML='';
             const crownSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z"></path></svg>`;
             let todayStr = new Date().toLocaleDateString();
-            const qW = v => { let w = 0; for (const ch of String(v || '')) w += /[\x00-\x7f]/.test(ch) ? 10.5 : 17; return Math.max(50, Math.ceil(w + 16)); };
+            const qW = v => { if (!String(v || '').includes('/')) return 50; let w = 0; for (const ch of String(v || '')) w += /[\x00-\x7f]/.test(ch) ? 10.5 : 17; return Math.max(50, Math.ceil(w + 16)); };
             const wE = Math.max(50, ...qSession.map(q => qW(q.effect))), wK = Math.max(50, ...qSession.map(q => qW(q.korEffect)));
             const qWrap = document.querySelector('#chrono-view .quiz-wrapper');
             if (qWrap) { qWrap.style.setProperty('--ce', wE + 'px'); qWrap.style.setProperty('--ck', wK + 'px'); qWrap.style.setProperty('--cem', Math.max(60, wE) + 'px'); qWrap.style.setProperty('--ckm', Math.max(60, wK) + 'px'); }
