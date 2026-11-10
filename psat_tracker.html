@@ -447,7 +447,7 @@ tr.clickable:hover td{background:#FBF9FE;}
       <div class="field"><label>급수</label><select id="filterLevel"><option value="all">전체</option><option value="5급">5급</option><option value="7급">7급</option><option value="민경채">민경채</option></select></div>
       <div class="field"><label>연도</label><select id="filterYear"><option value="all">연도 전체</option></select></div>
       <div class="field"><label>과목</label><select id="filterSubject"><option value="all">전체</option><option>언어논리</option><option>상황판단</option><option>자료해석</option></select></div>
-      <div class="field"><label>정오</label><select id="filterCorrectness"><option value="all">전체</option><option value="wrong">틀린 문제만</option><option value="correct">맞은 문제만</option></select></div>
+      <div class="field"><label>정오</label><select id="filterCorrectness"><option value="all">전체</option><option value="wrong">틀린 문제만</option><option value="correct">맞은 문제만</option><option value="unsolved">안 푼 문제만</option></select></div>
       <div class="field"><label>풀이시간 이상 (mm:ss)</label><input type="text" id="filterMinTime" placeholder="00:00" style="width:80px;"></div>
       <div class="field">
         <label>정렬</label>
@@ -2034,12 +2034,22 @@ function buildAggregate(){
         typeKw:[...typeKw], reasonKw:[...reasonKw], choices:[...choices], lastCreated, maxTimeSec });
     }
   });
+  // 시험기록이 하나도 없는 시험(안 푼 문제): 상세페이지에서 분류해둔 유형 키워드가 있으면 행으로 추가
+  Object.keys(notesStore).forEach(nk=>{
+    const nt = notesStore[nk]; if(!nt || !nt.typeKw || !nt.typeKw.length) return;
+    const p = nk.lastIndexOf('|'); const idk = nk.slice(0,p); const num = parseInt(nk.slice(p+1),10);
+    if(groups[idk] || !num) return;
+    const [category, level, subject, year, setName] = idk.split('|');
+    rows.push({ idKeyStr:idk, level, subject, label: category==='기출' ? year : (setName||'유형모음'), num,
+      attempts:0, wrongCount:0, accuracy:null, typeKw:[...nt.typeKw], reasonKw:[], choices:[], lastCreated:0, maxTimeSec:null });
+  });
   return rows;
 }
 
 function renderYearOptions(){
   const sel = document.getElementById('filterYear');
-  const years = [...new Set(records.filter(r=>r.category==='기출' && r.year).map(r=>String(r.year)))]
+  const years = [...new Set([...records.filter(r=>r.category==='기출' && r.year).map(r=>String(r.year)),
+    ...Object.keys(notesStore).filter(k=>{const n=notesStore[k]; return n&&n.typeKw&&n.typeKw.length&&k.startsWith('기출|');}).map(k=>k.split('|')[3]).filter(Boolean)])]
     .sort((a,b)=>yearSortValue(b)-yearSortValue(a));
   const cur = sel.value;
   sel.innerHTML = '<option value="all">연도 전체</option>' + years.map(y=>`<option value="${y}">${y}</option>`).join('');
@@ -2172,15 +2182,17 @@ function renderAll(){
     if(yr!=='all' && String(r.label)!==yr) return false;
     if(subj!=='all' && r.subject!==subj) return false;
     if(corr==='wrong' && r.wrongCount===0) return false;
-    if(corr==='correct' && r.wrongCount>0) return false;
+    if(corr==='correct' && (r.attempts===0 || r.wrongCount>0)) return false;
+    if(corr==='unsolved' && r.attempts>0) return false;
     if(minTimeSec!=null && (r.maxTimeSec==null || r.maxTimeSec < minTimeSec)) return false;
     if(filterTypeKwSelected.size && !r.typeKw.some(k=>filterTypeKwSelected.has(k))) return false;
     if(filterReasonKwSelected.size && !r.reasonKw.some(k=>filterReasonKwSelected.has(k))) return false;
     return true;
   });
   filtered.sort((a,b)=>{
-    if(sortMode==='acc_asc') return a.accuracy-b.accuracy;
-    if(sortMode==='acc_desc') return b.accuracy-a.accuracy;
+    const ac = x=>x.accuracy==null?2:x.accuracy;
+    if(sortMode==='acc_asc') return ac(a)-ac(b);
+    if(sortMode==='acc_desc') return ac(b)-ac(a);
     if(sortMode==='attempts_desc') return b.attempts-a.attempts;
     if(sortMode==='recent') return b.lastCreated-a.lastCreated;
     return 0;
@@ -2190,7 +2202,7 @@ function renderAll(){
   document.getElementById('allEmpty').style.display = filtered.length ? 'none':'block';
   document.getElementById('allEmpty').textContent = '조건에 맞는 문제가 없어요.';
   document.getElementById('allTbody').innerHTML = filtered.map(r=>{
-    const pct = Math.round(r.accuracy*100);
+    const pct = r.accuracy==null ? 0 : Math.round(r.accuracy*100);
     const correctCnt = r.attempts-r.wrongCount;
     const typeTags = r.typeKw.map(k=>`<span class="kw-tag type">${k}</span>`).join('') || '-';
     const reasonTags = r.reasonKw.map(k=>`<span class="kw-tag">${k}</span>`).join('') || '-';
@@ -2201,7 +2213,7 @@ function renderAll(){
       <td><span class="chip-static c-subj-${r.subject}">${r.subject}</span></td>
       <td>${r.label}</td>
       <td style="font-weight:800;cursor:pointer;color:#2A558C;" data-opendetail="${opendetail}">#${r.num}</td>
-      <td><span class="${accClass(pct)}" style="font-weight:800;">${correctCnt}/${r.attempts} (${pct}%)</span></td>
+      <td>${r.attempts===0 ? '<span style="color:var(--ink-soft);">안 푼 문제</span>' : `<span class="${accClass(pct)}" style="font-weight:800;">${correctCnt}/${r.attempts} (${pct}%)</span>`}</td>
       <td>${choiceTags}</td>
       <td>${typeTags}</td>
       <td>${reasonTags}</td>
@@ -2388,6 +2400,7 @@ function openProblemDetailPage(idk, num, level, subject, label){
     }
   });
   attemptRecs.sort((a,b)=>a.createdAt-b.createdAt);
+  if(!attemptRecs.length) (note.typeKw||[]).forEach(k=>typeKw.add(k));
   const tagsHtml = (set, cls)=> set.size ? [...set].map(k=>`<span class="kw-tag ${cls}">${k}</span>`).join('') : '<span style="color:var(--ink-soft);font-size:12.5px;">없음</span>';
 
   const historyHtml = attemptRecs.map(r=>{
@@ -2597,7 +2610,9 @@ function openProblemDetailPage(idk, num, level, subject, label){
       const kw = [...choiceSelSets[n]];
       if(text || kw.length) choiceAnalysis[n] = { text, kw };
     });
-    saveNote(idk, num, {analysis, theory, choiceAnalysis});
+    const noteData = {analysis, theory, choiceAnalysis};
+    if(!attemptRecs.length && typeKwSelSet.size) noteData.typeKw = [...typeKwSelSet];
+    saveNote(idk, num, noteData);
     if(closeAfter) closeDetailOverlay();
     if(document.getElementById('panel-answerkey').classList.contains('active')) renderAnswerKeyTab();
     if(document.getElementById('panel-all').classList.contains('active')) renderAll();

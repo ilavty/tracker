@@ -261,12 +261,12 @@ document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; 
         #chrono-view .progress-bg { flex: 1; height: 18px; background: rgba(0,0,0,0.1); border-radius: 9px; overflow: hidden; }
         #chrono-view .progress-fill { height: 100%; background: var(--primary-blue); transition: 0.3s; width: 0%;}
         #chrono-view .quiz-wrapper { width: 100%; overflow-x: auto; }
-        #chrono-view .q-grid-header { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 40px 40px; gap: 15px; font-weight: 700; border-bottom: 1px solid var(--primary-blue); padding-bottom: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; color: var(--primary-blue); align-items: center; min-width: 800px;}
-        #chrono-view .quiz-note-list { display: flex; flex-direction: column; gap: 6px; min-width: 800px;}
-        #chrono-view .q-row { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 40px 40px; gap: 15px; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 12px 5px; text-align: center; font-weight: 300; font-size: 1rem; }
-        #chrono-view .q-grid-header { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 30px 40px 40px; gap: 15px; font-weight: 700; border-bottom: 1px solid var(--primary-blue); padding-bottom: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; color: var(--primary-blue); align-items: center; min-width: 800px;}
-        #chrono-view .quiz-note-list { display: flex; flex-direction: column; gap: 6px; min-width: 800px;}
-        #chrono-view .q-row { display: grid; grid-template-columns: 30px 3.5fr 50px 50px 50px 2.5fr 30px 40px 40px; gap: 15px; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 12px 5px; text-align: center; font-weight: 300; font-size: 1rem; }
+        #chrono-view .q-grid-header { display: grid; grid-template-columns: 30px 3.5fr 50px var(--ce,50px) var(--ck,50px) 2.5fr 40px 40px; gap: 15px; font-weight: 700; border-bottom: 1px solid var(--primary-blue); padding-bottom: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; color: var(--primary-blue); align-items: center; min-width: calc(830px + var(--ce,50px) + var(--ck,50px) - 100px);}
+        #chrono-view .quiz-note-list { display: flex; flex-direction: column; gap: 6px; min-width: calc(830px + var(--ce,50px) + var(--ck,50px) - 100px);}
+        #chrono-view .q-row { display: grid; grid-template-columns: 30px 3.5fr 50px var(--ce,50px) var(--ck,50px) 2.5fr 40px 40px; gap: 15px; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 12px 5px; text-align: center; font-weight: 300; font-size: 1rem; }
+        #chrono-view .q-grid-header { display: grid; grid-template-columns: 30px 3.5fr 50px var(--ce,50px) var(--ck,50px) 2.5fr 30px 40px 40px; gap: 15px; font-weight: 700; border-bottom: 1px solid var(--primary-blue); padding-bottom: 8px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; color: var(--primary-blue); align-items: center; min-width: calc(830px + var(--ce,50px) + var(--ck,50px) - 100px);}
+        #chrono-view .quiz-note-list { display: flex; flex-direction: column; gap: 6px; min-width: calc(830px + var(--ce,50px) + var(--ck,50px) - 100px);}
+        #chrono-view .q-row { display: grid; grid-template-columns: 30px 3.5fr 50px var(--ce,50px) var(--ck,50px) 2.5fr 30px 40px 40px; gap: 15px; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding: 12px 5px; text-align: center; font-weight: 300; font-size: 1rem; }
         /* v72 반영: 랜덤 퀴즈 폰트 굵기 하향 */
         #chrono-view .q-num { font-family: 'Montserrat', sans-serif !important; font-weight: 500; color: var(--grey-text); text-align: right; }
         #chrono-view .q-name { font-weight: 400; color: #111; text-align: left;}
@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; 
         #chrono-view .q-input:disabled { border-bottom: 2px dashed #ccc !important; background: transparent; cursor: not-allowed; opacity: 0.7; }
         #chrono-view .q-ans { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-family: 'Montserrat', sans-serif !important; font-size: 0.8rem; color: #d32f2f; font-weight: 600; display: none; white-space: nowrap;}
         #chrono-view .q-ans.show { display: block; }
-        #chrono-view .q-kws-cell { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-start; align-items: center;}
+        #chrono-view .q-kws-cell { margin-left: 28px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-start; align-items: center;}
         #chrono-view .q-kw-box { padding: 1px 8px 0 8px; border: 1px solid #aaa; border-radius: 12px; font-size: 0.8rem !important; font-weight: 500 !important; color: #444 !important; background: transparent;}
 
         .circular-chart { display: block; margin: 0 auto; width: 22px; height: 22px; }
@@ -577,8 +577,8 @@ document.addEventListener('DOMContentLoaded', () => { window.__bootDone = true; 
 
             /* 2행: 입력칸 3개 (_ _ _) (Absolute 하단 고정) */
             #chrono-view .q-row > *:nth-child(3) { position: absolute !important; bottom: 15px !important; left: 25px !important; width: 60px !important; margin: 0 !important; display: block !important; }
-            #chrono-view .q-row > *:nth-child(4) { position: absolute !important; bottom: 15px !important; left: 95px !important; width: 60px !important; margin: 0 !important; display: block !important; }
-            #chrono-view .q-row > *:nth-child(5) { position: absolute !important; bottom: 15px !important; left: 165px !important; width: 60px !important; margin: 0 !important; display: block !important; }
+            #chrono-view .q-row > *:nth-child(4) { position: absolute !important; bottom: 15px !important; left: 95px !important; width: var(--cem,60px) !important; margin: 0 !important; display: block !important; }
+            #chrono-view .q-row > *:nth-child(5) { position: absolute !important; bottom: 15px !important; left: calc(105px + var(--cem,60px)) !important; width: var(--ckm,60px) !important; margin: 0 !important; display: block !important; }
             
             #chrono-view .q-row .q-input {
                 width: 100% !important;
@@ -1024,7 +1024,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
                 
                 <div class="quiz-wrapper">
                     <div class="q-grid-header">
-                        <div></div><div style="text-align:left;">문제</div><div>연도</div><div>발효</div><div>한국</div><div class="q-col-kws" style="text-align:left; margin-left:10px;">키워드</div><div class="q-col-prog">진척</div><div>완료</div>
+                        <div></div><div style="text-align:left;">문제</div><div>연도</div><div>발효</div><div>한국</div><div class="q-col-kws" style="text-align:left; margin-left:28px;">키워드</div><div class="q-col-prog">진척</div><div>완료</div>
                     </div>
                     <div class="quiz-note-list" id="quiz-list"></div>
                 </div>
@@ -2059,6 +2059,10 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             const list = document.getElementById('quiz-list'); list.innerHTML='';
             const crownSvg = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z"></path></svg>`;
             let todayStr = new Date().toLocaleDateString();
+            const qW = v => { let w = 0; for (const ch of String(v || '')) w += /[\x00-\x7f]/.test(ch) ? 10.5 : 17; return Math.max(50, Math.ceil(w + 16)); };
+            const wE = Math.max(50, ...qSession.map(q => qW(q.effect))), wK = Math.max(50, ...qSession.map(q => qW(q.korEffect)));
+            const qWrap = document.querySelector('#chrono-view .quiz-wrapper');
+            if (qWrap) { qWrap.style.setProperty('--ce', wE + 'px'); qWrap.style.setProperty('--ck', wK + 'px'); qWrap.style.setProperty('--cem', Math.max(60, wE) + 'px'); qWrap.style.setProperty('--ckm', Math.max(60, wK) + 'px'); }
 
             qSession.forEach((q, i) => {
                 let kws = q.keywords ? String(q.keywords).split(',').map(k=>`<span class="q-kw-box">${k.trim()}</span>`).join('') : '';

@@ -316,10 +316,16 @@ async function fbGet(node, lsKey) {
   if (!v) { try { v = asArr(JSON.parse(localStorage.getItem(lsKey) || '[]')); } catch (e) {} }
   return v || [];
 }
-let RECS = [];
+let RECS = [], NOTES = {};
+async function loadNotes() {
+  let v = null;
+  try { const r = await fetch(FB + 'notesStore.json', {cache: 'no-store'}); if (r.ok) v = await r.json(); } catch (e) {}
+  if (!v) { try { v = JSON.parse(localStorage.getItem('psatProblemNotes_v1') || '{}'); } catch (e) {} }
+  return v || {};
+}
 async function loadReviewBox() {
   const [box, marks, recs] = await Promise.all([fbGet('reviewBox', 'psatTrackerReviewBox_v1'), fbGet('markBox', 'psatTrackerMarkBox_v1'), fbGet('records', 'psatTrackerRecords_v1')]);
-  RECS = recs; buildKw();
+  RECS = recs; NOTES = await loadNotes(); buildKw();
   buildLinked(box, marks);
   linkLoaded = true;
   if (isLinked()) Object.assign(st, linkedSel(st.cur));
@@ -388,6 +394,22 @@ function buildKw() {
     vals(r.problemTypeKeywords).forEach(([n, l]) => put('type', n, l));
     vals(r.wrongs).forEach(([n, w]) => w && put('reason', n, w.reasonKeywords));
     vals(r.noteKeywords).forEach(([n, l]) => put('reason', n, l));
+  });
+  // 시험기록 없이(안 푼 문제) 트래커 상세페이지에서 분류해둔 유형 키워드
+  const solved = new Set(RECS.filter(r => r).map(r => [r.category, r.level, r.subject, r.year || '', r.setName || ''].join('|')));
+  Object.keys(NOTES || {}).forEach(nk => {
+    const nt = NOTES[nk]; const kws = nt && (Array.isArray(nt.typeKw) ? nt.typeKw : asArr(nt.typeKw));
+    if (!kws || !kws.length) return;
+    const q = nk.lastIndexOf('|'), idk = nk.slice(0, q), num = +nk.slice(q + 1);
+    if (solved.has(idk)) return;
+    const [cat, level, subject, year] = idk.split('|');
+    if (cat !== '기출') return;
+    const sub = RV_SUBJ[subject]; if (!sub) return;
+    const e = findExam(level, sub, year); if (!e) return;
+    const it = e.items.find(i => i.n.includes(num)); if (!it) return;
+    const k = keyOf(e, it);
+    const K = KW[sub] || (KW[sub] = {type: {}, reason: {}});
+    kws.forEach(w => { if (!w) return; const a = K.type[w] || (K.type[w] = []); if (!a.includes(k)) a.push(k); });
   });
 }
 function renderKw() {
