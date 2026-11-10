@@ -189,7 +189,7 @@ textarea.inp{resize:none;overflow:hidden;line-height:1.5}
 .opt{display:flex;align-items:center;gap:6px;font-size:.83rem;cursor:pointer;user-select:none}
 .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .box{border:1px solid var(--bd);border-radius:10px;padding:10px;max-height:300px;overflow:auto}
-.modes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.modes{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
 .mode{border:1px solid var(--bd);border-radius:12px;padding:14px 8px;text-align:center;background:#fff;transition:.15s}
 .mode:hover{border-color:var(--navy);background:var(--lb)}
 .mode b{display:block;color:var(--navy);font-size:.95rem}
@@ -221,16 +221,17 @@ pre.fmt{background:var(--soft);border-radius:8px;padding:10px 12px;font-family:'
 .scount{font-size:.8rem;color:var(--grey)}
 .fc{background:#fff;border:1px solid var(--bd);border-radius:16px;min-height:360px;padding:38px 34px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-shadow:0 4px 20px rgba(30,50,80,.06);transition:transform .12s ease;user-select:none;position:relative}
 .fc.flip{transform:rotateX(90deg)}
-.fc.both{cursor:default;padding:30px 28px;gap:0;justify-content:stretch;min-height:420px}
-.fc.both .fhalf{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px 10px;min-width:0}
-.fc.both .fhalf.bk .qt{font-weight:400}
-.fc.both .fhalf.bk .qlist .ql{font-weight:500}
-.fc.both .fsep{flex:none;background:var(--bd)}
-.fc.both.stack{flex-direction:column}
-.fc.both.stack .fsep{height:1px;width:80%;margin:4px 0}
-.fc.both.side{flex-direction:row;align-items:stretch}
-.fc.both.side .fsep{width:1px;margin:0 10px}
-.fc.both .fhalf .qlist{max-width:100%}
+.vcard{display:grid;grid-template-columns:minmax(0,30%) minmax(0,1fr);padding:28px 30px;min-height:300px;align-items:center;margin-bottom:0}
+.vcard .chead{padding-top:0}
+.vcard .ctitle{font-size:1.25rem;cursor:default;line-height:1.7}
+.vcard .ctitle:hover{color:var(--txt)}
+.vcard .cbody{padding-left:26px;gap:6px;transition:opacity .15s}
+.vcard .ilab,.vcard .itext{font-size:1.15rem}
+.vcard .irow{padding:10px 2px}
+.vcard .cbody.vhide{opacity:0;cursor:pointer}
+.vcard .cbody.vhide .star{pointer-events:none}
+.vbtns .big:disabled{opacity:.35;cursor:default}
+.vbtns{display:flex;gap:12px;justify-content:center;margin-top:18px}
 .fcwrite{display:block;width:100%;box-sizing:border-box;margin:16px 0 0;padding:12px 16px;border:1px solid var(--bd);border-radius:12px;background:#fff;font:inherit;font-size:.95rem;line-height:1.6;color:var(--txt);resize:none;overflow:hidden;opacity:.4;transition:opacity .15s,border-color .15s;outline:none}
 .fcwrite:hover{opacity:.7}
 .fcwrite:focus,.fcwrite.has{opacity:1}
@@ -1464,6 +1465,7 @@ function openStudySetup(pre) {
       <button class="mode" data-m="learn"><b>학습</b></button>
       <button class="mode" data-m="test"><b>테스트</b></button>
       <button class="mode" data-m="match"><b>매칭</b></button>
+      <button class="mode" data-m="view"><b>카드 보기</b></button>
     </div>`);
   const draw = () => {
     // folders
@@ -1516,9 +1518,9 @@ function startStudy(mode, pool) {
   studyActive = true;
   $('#app').classList.add('hidden'); $('#study').classList.remove('hidden');
   scrollToTopOfApp(); try { window.focus(); } catch (e) { }
-  const unit = (mode === 'test' || mode === 'match') ? 'item' : CFG.unit;
+  const unit = (mode === 'test' || mode === 'match') ? 'item' : mode === 'view' ? 'card' : CFG.unit;
   SD = { mode, pool, units: makeUnits(pool, unit), dir: CFG.dir, subject: UI.subject, scope: scopeOf(CFG) };
-  ({ flash: flashStart, learn: learnStart, test: testStart, match: matchStart })[mode]();
+  ({ flash: flashStart, learn: learnStart, test: testStart, match: matchStart, view: viewStart })[mode]();
 }
 function endStudy() {
   studyActive = false; SD = null; clearInterval(window._mt);
@@ -1623,20 +1625,41 @@ function resumeSess(k) {
 }
 
 /* ---------------- FLASHCARDS ---------------- */
-let FCV = 'flip'; try { FCV = localStorage.getItem('cards_fcview') || 'flip'; } catch (e) { }
-if (!['flip', 'stack', 'side'].includes(FCV)) FCV = 'flip';
-function flashView() { FCV = FCV === 'flip' ? 'stack' : FCV === 'stack' ? 'side' : 'flip'; try { localStorage.setItem('cards_fcview', FCV); } catch (e) { } SD.flip = false; flashDraw(); }
+/* ---------------- 카드 보기 (목록 카드 모양 그대로, 한 장씩 크게) ---------------- */
+function viewStart() { SD.i = 0; SD.hideMode = false; SD.hidden = false; viewDraw(); }
+function viewDraw() {
+  const st_ = $('#study'); const n = SD.units.length; const u = SD.units[SD.i]; const c = u.card;
+  const rows = u.items.map(it => { const s = st(it.id); return `<div class="irow ${it.label ? '' : 'nolab'}">
+        <span class="dot lv${s.lv || 0}"></span>
+        ${it.label ? `<span class="ilab">${esc(it.label)}</span>` : ''}
+        <span class="itext">${esc(it.text)}</span><span></span>
+        <span class="star ${s.star ? 'on' : ''}" onclick="event.stopPropagation();viewStar('${it.id}')">${s.star ? '★' : '☆'}</span>
+      </div>`; }).join('');
+  st_.innerHTML = shead('카드 보기', `<span class="scount">${SD.i + 1} / ${n}</span><button class="btn sm ${SD.hideMode ? '' : 'ghost'}" onclick="viewHideMode()" title="스페이스: 우측 가리기/보이기">가리기</button><button class="btn sm ghost" onclick="viewShuffle()">섞기</button>`) +
+    `<div class="sprog"><i style="width:${(SD.i + 1) / n * 100}%"></i></div>
+    <div class="card vcard" id="fcard">
+      <div class="chead"><span class="ctitle">${esc(c.title || '(제목 없음)')}</span></div>
+      <div class="cbody ${SD.hideMode && SD.hidden ? 'vhide' : ''}" onclick="viewToggle()">${rows}</div>
+    </div>
+    <div class="vbtns"><button class="big no" onclick="viewGo(-1)" ${SD.i ? '' : 'disabled'}>이전</button><button class="big nv" onclick="viewGo(1)" ${SD.i < n - 1 ? '' : 'disabled'}>다음</button></div>`;
+}
+function viewGo(d) { const n = SD.units.length; SD.i = Math.max(0, Math.min(n - 1, SD.i + d)); SD.hidden = true; viewDraw(); }
+function viewToggle() { if (!SD.hideMode) return; SD.hidden = !SD.hidden; viewDraw(); }
+function viewHideMode() { SD.hideMode = !SD.hideMode; SD.hidden = SD.hideMode; viewDraw(); }
+function viewSpace() { if (!SD.hideMode) { SD.hideMode = true; SD.hidden = true; } else SD.hidden = !SD.hidden; viewDraw(); }
+function viewShuffle() { SD.units = shuffle(SD.units); SD.i = 0; SD.hidden = true; viewDraw(); toast('카드를 섞었어요'); }
+function viewStar(id) { setSt(id, { star: !st(id).star }); save(); viewDraw(); }
 function flashStart() { SD.deck = shuffle(SD.units); SD.i = 0; SD.flip = false; SD.know = []; SD.dont = []; SD.hist = []; persistSess(); flashDraw(); }
 function flashDraw() {
   const st_ = $('#study'); const n = SD.deck.length;
   if (SD.i >= n) return flashEnd();
   const u = SD.deck[SD.i]; const starred = u.items.every(it => st(it.id).star);
-  st_.innerHTML = shead('플래시카드', `<span class="scount">${SD.i + 1} / ${n}</span><button class="btn sm ghost" onclick="flashView()">${FCV === 'flip' ? '한 면씩' : FCV === 'stack' ? '위아래' : '좌우'}</button><button class="btn sm ghost" onclick="flashShuffle()">섞기</button>`) +
+  st_.innerHTML = shead('플래시카드', `<span class="scount">${SD.i + 1} / ${n}</span><button class="btn sm ghost" onclick="flashShuffle()">섞기</button>`) +
     `<div class="sprog"><i style="width:${SD.i / n * 100}%"></i></div>
-    <div class="fc ${FCV !== 'flip' ? 'both ' + FCV : SD.flip ? 'back' : ''}" id="fcard" onclick="if(!window._lp)flashFlip();window._lp=0">
-      ${FCV === 'flip' ? `<span class="side-lbl">${SD.flip ? '뒷면' : '앞면'}</span>` : ''}
+    <div class="fc ${SD.flip ? 'back' : ''}" id="fcard" onclick="if(!window._lp)flashFlip();window._lp=0">
+      <span class="side-lbl">${SD.flip ? '뒷면' : '앞면'}</span>
       <span class="fstar star ${starred ? 'on' : ''}" onclick="event.stopPropagation();flashStar()">${starred ? '★' : '☆'}</span>
-      ${FCV !== 'flip' ? `<div class="fhalf">${qHtml(u, SD.dir)}</div><div class="fsep"></div><div class="fhalf bk">${aHtml(u, SD.dir)}</div>` : SD.flip ? aHtml(u, SD.dir) : qHtml(u, SD.dir)}
+      ${SD.flip ? aHtml(u, SD.dir) : qHtml(u, SD.dir)}
     </div>
     <div class="fcbtns">
       <button class="backbtn" onclick="flashBack()" title="이전 카드 (Backspace)" ${SD.hist.length ? '' : 'disabled'}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
@@ -1649,7 +1672,7 @@ function flashDraw() {
   const w = $('#fcwrite'); if (w && w.value) { w.style.height = 'auto'; w.style.height = w.scrollHeight + 'px'; }
 }
 function bindFcLongPress() { const el = $('#fcard'); if (el && !el._lpb) { el._lpb = 1; longPress(el, e => { window._lp = 1; studyCardMenu(e); }); } }
-function flashFlip() { if (modalStack.length || FCV !== 'flip') return; const el = $('#fcard'); el.classList.add('flip'); setTimeout(() => { SD.flip = !SD.flip; flashDraw(); const n = $('#fcard'); n.classList.add('flip'); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('flip'))); }, 120); }
+function flashFlip() { if (modalStack.length) return; const el = $('#fcard'); el.classList.add('flip'); setTimeout(() => { SD.flip = !SD.flip; flashDraw(); const n = $('#fcard'); n.classList.add('flip'); requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('flip'))); }, 120); }
 function flashMark(ok) {
   if (SD.flying) return;
   const el = $('#fcard');
@@ -1981,6 +2004,12 @@ const keyStudy = e => {
     }
     if (c.result && !c.done && e.key === 'Enter') { e.preventDefault(); return learnWrResult(); }
     if (c.marks && !typing && e.key === 'Enter') { e.preventDefault(); if (!c.revealed) learnRecallReveal(); else learnRecallDone(); }
+    return;
+  }
+  if (SD.mode === 'view' && !typing) {
+    if (e.key === ' ') { e.preventDefault(); viewSpace(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); viewGo(1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); viewGo(-1); }
     return;
   }
   if (SD.mode === 'match' && SD.M && SD.M.done && e.key === 'Enter') matchStart();
