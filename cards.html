@@ -1098,7 +1098,7 @@ function renderMain() {
     itemsForStat = [];
   }
   window._studyPre = UI.view.type === 'folder' ? { folders: [UI.view.id], tags: [] } : UI.view.type === 'tag' ? { folders: [], tags: vTags(UI.view), tagMode: UI.view.mode === 'and' ? 'and' : 'or', tagScope: 'items' } : UI.view.type === 'star' ? { folders: [], tags: [], starOnly: true } : { folders: [], tags: [] };
-  main.innerHTML = `
+  const _html = `
     ${crumb ? `<div class="crumb">${crumb}</div>` : ''}
     <div class="toolbar">
       <div class="mtitle">${title}</div>
@@ -1111,8 +1111,21 @@ function renderMain() {
     </div>
 ${selBarHtml()}
     ${body}`;
-  const sb = $('#searchBox');
-  const doSearch = () => { UI.search = sb.value; const pos = sb.selectionStart; renderMain(); const n = $('#searchBox'); n.focus(); n.setSelectionRange(pos, pos); reportHeight(); };
+  // 검색 중에는 입력칸을 다시 만들지 않고 아래 내용만 교체 (아이패드 한글 조합이 끊기는 문제)
+  const _old = $('#searchBox');
+  const _keep = renderMain._keep && _old && document.activeElement === _old && main.querySelector('.toolbar');
+  renderMain._keep = false;
+  let sb;
+  if (_keep) {
+    sb = _old;
+    const tmp = document.createElement('div'); tmp.innerHTML = _html;
+    const tb = main.querySelector('.toolbar'), ntb = tmp.querySelector('.toolbar');
+    while (tb.previousSibling) tb.previousSibling.remove();
+    while (tb.nextSibling) tb.nextSibling.remove();
+    let nn; while ((nn = ntb.previousSibling)) tb.before(nn);
+    while ((nn = ntb.nextSibling)) main.appendChild(nn);
+  } else { main.innerHTML = _html; sb = $('#searchBox'); }
+  const doSearch = () => { UI.search = sb.value; renderMain._keep = true; renderMain(); reportHeight(); };
   sb.oninput = e => { if (e.isComposing) return; doSearch(); };
   sb.addEventListener('compositionend', doSearch);
   main.querySelectorAll('[data-tagv]').forEach(t => t.onclick = e => { e.stopPropagation(); setView({ type: 'tag', ids: [t.dataset.tagv], mode: 'or' }); });
