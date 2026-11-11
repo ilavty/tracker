@@ -2781,6 +2781,32 @@ psatLoadFromFirebase();
     new ResizeObserver(reportHeight).observe(document.body);
   }
 })();
+// ---------- 팝업(상세페이지 등)을 지금 보고 있는 화면 위치에 띄우기 ----------
+// iframe이 내용 길이만큼 늘어나 있어서, top:0 으로 띄우면 스크롤을 내려도 팝업이 맨 위에 생김
+// → 부모(index.html)가 알려주는 "현재 보이는 구간"에 맞춰 열릴 때 한 번만 위치를 잡음
+(function(){
+  const IDS=['detailOverlay','examPopupOverlay','modalOverlay','sideWrongModalOverlay'];
+  const emb = window.parent !== window;
+  const GAP = emb ? 60 : 0; // 위쪽 고정 메뉴에 가리지 않게
+  let VP = {top:0, vh:window.innerHeight};
+  if(emb) window.addEventListener('message', e=>{ if(e.data && e.data.type==='psatVP') VP = {top:e.data.top, vh:e.data.vh}; });
+  function place(el){
+    const v = emb ? VP : {top:window.scrollY, vh:window.innerHeight};
+    el.style.top = (v.top + GAP) + 'px';
+    el.style.minHeight = Math.max(300, v.vh - GAP) + 'px';
+  }
+  function sync(){
+    IDS.forEach(id=>{
+      const el=document.getElementById(id); if(!el) return;
+      const open=el.classList.contains('open');
+      if(open && !el._placed){ el._placed=true; place(el); }
+      else if(!open && el._placed){ el._placed=false; el.style.top=''; el.style.minHeight=''; }
+    });
+  }
+  const mo=new MutationObserver(sync);
+  IDS.forEach(id=>{ const el=document.getElementById(id); if(el) mo.observe(el,{attributes:true,attributeFilter:['class']}); });
+  sync();
+})();
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden && typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} detailFlush=null; } });
 window.addEventListener('pagehide', ()=>{ if(typeof detailFlush==='function'){ try{ detailFlush(); }catch(e){} } });
 

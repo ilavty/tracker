@@ -4312,6 +4312,21 @@ function pl_unmergeItem() {
             if (iframe) iframe.style.height = Math.max(600, e.data.height) + 'px';
         }
     });
+    // PSAT 팝업이 지금 보고 있는 화면 위치에 뜨도록, iframe 안에서 현재 보이는 구간을 계속 알려줌
+    (function(){
+        let raf = 0;
+        function sendVP(){
+            raf = 0;
+            const f = document.getElementById('psat-iframe');
+            if (!f || !f.contentWindow || f.offsetParent === null) return;
+            const r = f.getBoundingClientRect();
+            f.contentWindow.postMessage({ type: 'psatVP', top: Math.max(0, -r.top), vh: window.innerHeight }, '*');
+        }
+        const req = () => { if (!raf) raf = requestAnimationFrame(sendVP); };
+        window.addEventListener('scroll', req, { passive: true, capture: true });
+        window.addEventListener('resize', req);
+        setInterval(sendVP, 400);
+    })();
     __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');
         const psatView = document.getElementById('psat-view');
