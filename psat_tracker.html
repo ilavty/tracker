@@ -203,8 +203,8 @@ select:focus,input:focus{border-color:var(--lavender-deep);}
 .notion-page-box.has-prob{width:min(1320px,96vw)}
 .np-split{display:flex;align-items:stretch}
 .np-main{flex:1;min-width:0}
-.np-prob{flex:0 0 46%;max-width:46%;border-right:1px solid var(--line);padding:22px 20px;display:flex;flex-direction:column;gap:12px;align-items:center;box-sizing:border-box}
-.np-prob img{width:85%;height:auto;display:block}
+.np-prob{flex:0 0 42.5%;max-width:42.5%;border-right:1px solid var(--line);padding:22px 20px;display:flex;flex-direction:column;gap:12px;align-items:center;box-sizing:border-box}
+.np-prob img{width:100%;height:auto;display:block}
 @media (max-width:900px){.np-split{flex-direction:column}.np-prob{flex:none;max-width:none;width:100%;border-right:0;border-bottom:1px solid var(--line)}}
 .notion-page-box{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:0;width:min(720px,94vw);box-shadow:0 12px 32px rgba(40,20,70,0.1);}
 #detailOverlay.open{position:absolute;top:0;left:0;right:0;bottom:auto;height:auto;min-height:100vh;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:visible;background:rgba(252,251,250,0.88);}
@@ -2863,6 +2863,13 @@ psatLoadFromFirebase();
   if(emb) window.addEventListener('message', e=>{ if(e.data && e.data.type==='psatVP') VP = {top:e.data.top, vh:e.data.vh}; });
   function place(el){
     const v = emb ? VP : {top:window.scrollY, vh:window.innerHeight};
+    if(el.id === 'detailOverlay'){
+      // 상세페이지: 배경은 문서 전체를 덮고(바깥 어디를 눌러도 닫힘), 박스만 지금 화면 위치에 내려옴
+      el.style.top = '0px';
+      el.style.paddingTop = (v.top + GAP + 40) + 'px';
+      el.style.minHeight = Math.max(document.documentElement.scrollHeight, v.top + v.vh) + 'px';
+      return;
+    }
     el.style.top = (v.top + GAP) + 'px';
     el.style.minHeight = Math.max(300, v.vh - GAP) + 'px';
   }
@@ -2871,7 +2878,7 @@ psatLoadFromFirebase();
       const el=document.getElementById(id); if(!el) return;
       const open=el.classList.contains('open');
       if(open && !el._placed){ el._placed=true; place(el); }
-      else if(!open && el._placed){ el._placed=false; el.style.top=''; el.style.minHeight=''; }
+      else if(!open && el._placed){ el._placed=false; el.style.top=''; el.style.minHeight=''; el.style.paddingTop=''; }
     });
   }
   const mo=new MutationObserver(sync);
