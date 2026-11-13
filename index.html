@@ -4334,6 +4334,12 @@ function pl_unmergeItem() {
         window.addEventListener('scroll', req, { passive: true, capture: true });
         window.addEventListener('resize', req);
         setInterval(sendVP, 400);
+        // PSAT 상세페이지가 열려 있을 때 iframe 바깥(좌우 여백 등)을 누르면 닫기
+        document.addEventListener('click', () => {
+            const f = document.getElementById('psat-iframe');
+            if (!f || !f.contentWindow || f.offsetParent === null) return;
+            f.contentWindow.postMessage({ type: 'psatClose' }, '*');
+        });
     })();
     __boot(() => {
         const appWrapper = document.querySelector('.app-wrapper');

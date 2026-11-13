@@ -2860,7 +2860,12 @@ psatLoadFromFirebase();
   const emb = window.parent !== window;
   const GAP = emb ? 60 : 0; // 위쪽 고정 메뉴에 가리지 않게
   let VP = {top:0, vh:window.innerHeight};
-  if(emb) window.addEventListener('message', e=>{ if(e.data && e.data.type==='psatVP') VP = {top:e.data.top, vh:e.data.vh}; });
+  if(emb) window.addEventListener('message', e=>{
+    if(!e.data) return;
+    if(e.data.type==='psatVP') VP = {top:e.data.top, vh:e.data.vh};
+    // 부모 페이지(iframe 좌우 여백 바깥)를 눌렀을 때도 상세페이지 닫기
+    if(e.data.type==='psatClose'){ const od=document.getElementById('detailOverlay'); if(od && od.classList.contains('open') && typeof closeDetailOverlay==='function') closeDetailOverlay(); }
+  });
   function place(el){
     const v = emb ? VP : {top:window.scrollY, vh:window.innerHeight};
     if(el.id === 'detailOverlay'){
