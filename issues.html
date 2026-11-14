@@ -182,14 +182,9 @@ table{width:100%;min-width:100%;border-collapse:collapse;table-layout:fixed;bord
 td{border-bottom:1px solid var(--line);padding:6px 7px;vertical-align:top}
 td.n{color:var(--sub);font-weight:500;text-align:center;padding-left:0;padding-right:0;font-size:12px;padding-top:7px}
 td.q{text-align:left;word-break:keep-all;overflow-wrap:anywhere}
-@media screen{.oxsel{display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle;white-space:nowrap}}
-@media print{.oxsel{display:none}}
-.oxb{border:1px solid var(--line);background:#fff;color:#8a8f98;border-radius:50%;width:22px;height:22px;padding:0;font:600 11px/20px inherit;cursor:pointer}
-.oxb.on{border-color:#2f73d9;color:#2f73d9;background:#eef4fd}
-td.a.ox-ok{color:#2f73d9!important;font-weight:700}
-td.a.ox-no{color:#d65a5a!important}
-body.hideans .paper td.a.ox-ok{color:#2f73d9!important}
-body.hideans .paper td.a.ox-no{color:#d65a5a!important}
+.oxt{margin-left:10px;white-space:nowrap;cursor:pointer;user-select:none;padding:2px 6px;color:inherit}
+.oxt .on{color:var(--acc);font-weight:700}
+@media print{.oxt{display:none}}
 td.a{background:var(--soft);color:var(--ans);font-weight:500;font-size:13px;word-break:keep-all;overflow-wrap:anywhere;border-left:1px solid var(--line)}
 td.ctl{display:none}
 .bl{color:var(--acc);font-weight:500}
@@ -914,18 +909,14 @@ const secDate = s => { let m = s.fd || autoFd(s); (s.items || []).forEach(it => 
 const lastFd = d => { let m = ''; d.parts.forEach(p => p.chapters.forEach(c => c.secs.forEach(s => { const x = secDate(s); if (x > m) m = x; }))); return m; };
 const OXSEL = {};
 const oxKey = a => { const m = String(a || '').trim().match(/^([OoXx○×])(?![A-Za-z가-힣0-9])/); return m ? ({ '○': 'O', '×': 'X' }[m[1]] || m[1].toUpperCase()) : ''; };
-const oxBtns = (it, a) => !oxKey(a) ? '' : `<span class="oxsel">${['O', 'X'].map(v => `<button type="button" class="oxb${OXSEL[it.id] === v ? ' on' : ''}" data-ox="${v}" data-oxid="${it.id}">${v}</button>`).join('')}</span>`;
-const oxCls = (it, a) => !OXSEL[it.id] || !oxKey(a) ? '' : (OXSEL[it.id] === oxKey(a) ? ' ox-ok rv' : ' ox-no rv');
+const oxBtns = (it, a) => { const k = oxKey(a); return !k ? '' : `<span class="oxt" data-oxid="${it.id}" data-oxa="${k}"><span class="${OXSEL[it.id] && k === 'O' ? 'on' : ''}">O</span>/<span class="${OXSEL[it.id] && k === 'X' ? 'on' : ''}">X</span></span>`; };
+const oxCls = () => '';
 document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('.oxb'); if (!b) return;
+  const t = e.target.closest && e.target.closest('.oxt'); if (!t) return;
   e.stopPropagation(); e.preventDefault();
-  const id = b.dataset.oxid, v = b.dataset.ox; OXSEL[id] = OXSEL[id] === v ? '' : v;
-  const tr = b.closest('tr'); if (!tr) return;
-  tr.querySelectorAll('.oxb').forEach(x => x.classList.toggle('on', x.dataset.ox === OXSEL[id]));
-  const td = tr.querySelector('td.a'); if (!td) return;
-  const ans = oxKey(td.textContent);
-  td.classList.remove('ox-ok', 'ox-no', 'rv');
-  if (OXSEL[id]) td.classList.add(OXSEL[id] === ans ? 'ox-ok' : 'ox-no', 'rv');
+  const id = t.dataset.oxid, k = t.dataset.oxa; OXSEL[id] = !OXSEL[id];
+  t.children[0].classList.toggle('on', !!OXSEL[id] && k === 'O');
+  t.children[1].classList.toggle('on', !!OXSEL[id] && k === 'X');
 }, true);
 const fdLabel = (v, long, yr) => { const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/); if (!m) return esc(v); const dt = new Date(+m[1], +m[2] - 1, +m[3]); const Y = yr ? m[1] + '.' : ''; return long ? `${Y}${+m[2]}.${+m[3]} ${'일월화수목금토'[dt.getDay()]}` : `${Y}${+m[2]}.${+m[3]}`; };
 const todayFd = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
