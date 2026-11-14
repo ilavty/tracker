@@ -184,6 +184,25 @@ body.dragover #empty{background:var(--sky2)}
 #modal p{margin:0 0 14px;font-size:13px;color:#777;line-height:1.6}
 #modal select{width:100%;font:inherit;font-size:14px;padding:9px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:16px}
 #modal .row{display:flex;gap:8px;justify-content:flex-end}
+
+/* ---------- 문제 풀기 화면 ---------- */
+#solve{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
+#solve.hidden{display:none!important}
+#solve .sbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg);flex:none}
+#solve .sbar .sp{flex:1}
+#solve .sbar b{font-weight:700;color:var(--ink);font-size:.95rem;min-width:70px;text-align:center}
+#solve .sbar .cnt{font-size:.82rem;color:var(--brown)}
+#solve .sbar .cnt i{font-style:normal;color:#4a9fd4;font-weight:700}
+#solve .stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;touch-action:none;overflow:hidden;padding:8px}
+#solve .sheet{position:relative;box-shadow:0 2px 18px rgba(60,40,20,.14);background:#fff;flex:none}
+#solve .sheet>.pv{display:block;width:100%;height:100%}
+#solve .sbk{position:absolute;background:var(--bcol);cursor:pointer;-webkit-tap-highlight-color:transparent}
+#solve .sbk.cl{opacity:1}
+#solve .sbk.op{mix-blend-mode:multiply}
+#solve .sbk.wr{background:var(--sky)}
+#solve .arr{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:0;border-radius:10px;background:rgba(255,255,255,.7);color:var(--brown);font-size:1.4rem;cursor:pointer;z-index:2}
+#solve .arr:disabled{opacity:.25;cursor:default}
+#solve .arr.l{left:6px}#solve .arr.r{right:6px}
 </style>
 </head>
 <body>
@@ -200,6 +219,7 @@ body.dragover #empty{background:var(--sky2)}
     <label class="ctl">빈칸색<input type="color" id="bcol" title="빈칸 색"></label>
     <label class="ctl">글자<select id="font"><option value="pl">페이퍼로지</option><option value="kd">코펍돋움</option><option value="kb">코펍바탕</option></select><input type="number" id="size" min="4" max="48" step="0.5" title="글자 크기"><input type="number" id="tlh" min="0.8" max="3" step="0.1" title="행간 (줄 간격)" style="width:50px"><input type="color" id="tcol"></label>
     <div class="zoom"><button id="zOut" title="축소 (⌘−)">−</button><button id="zVal" title="화면 너비에 맞추기 (⌘0)">100%</button><button id="zIn" title="확대 (⌘+)">+</button></div>
+    <button class="btn" id="solveBtn" title="문제 풀기">풀기</button>
     <button class="btn" id="undo" title="되돌리기 (⌘Z)">↶</button>
     <button class="btn warn hidden" id="lostBtn"></button>
     <div class="more"><button class="btn ic" id="moreBtn" title="더보기">⋯</button>
@@ -1211,6 +1231,67 @@ window.addEventListener('keydown',e=>{
   e.preventDefault();e.stopImmediatePropagation();if(ae&&ae!==document.body)ae.blur();undo();},true);
 document.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'&&!(document.activeElement&&document.activeElement.isContentEditable)){e.preventDefault();}},true);
 restoreSession();
+</script>
+<div id="solve" class="hidden">
+  <div class="sbar"><button class="btn" id="svClose">✕ 닫기</button><span class="sp"></span><span class="cnt">틀림 <i id="svWr">0</i></span><b id="svPg"></b><button class="btn" id="svReset" title="열어둔 빈칸 전부 다시 가리기">다시 가리기</button></div>
+  <div class="stage" id="svStage"><button class="arr l" id="svPrev">‹</button><button class="arr r" id="svNext">›</button></div>
+</div>
+<script>
+/* ---------- 문제 풀기: 빈칸을 터치해 열고(글자 보임) → 한 번 더 하늘색(틀림) → 한 번 더 다시 가림 ---------- */
+(function(){
+  const sv=$('#solve'),stage=$('#svStage'),pgEl=$('#svPg');
+  const ST={list:[],i:0,open:{},tok:0,sheet:null,timer:0};
+  const lsKey=()=>'bm:solve:'+S.name;
+  const wrCount=()=>S.boxes.filter(b=>b.wr).length;
+  const paint=(e,b)=>{if(e)e.className='sbk '+(ST.open[b.id]?'op':'cl')+(b.wr?' wr':'');};
+  const queueSave=()=>{clearTimeout(ST.timer);ST.timer=setTimeout(()=>{try{save();}catch(e){}},700);};
+  async function show(){
+    const tok=++ST.tok,pi=ST.list[ST.i],p=S.pages[pi];
+    pgEl.textContent=(ST.i+1)+' / '+ST.list.length+'  · '+(pi+1)+'쪽';
+    $('#svPrev').disabled=ST.i===0;$('#svNext').disabled=ST.i===ST.list.length-1;$('#svWr').textContent=wrCount();
+    const r=stage.getBoundingClientRect(),sc=Math.min((r.width-16)/p.w,(r.height-16)/p.h),cw=p.w*sc,ch=p.h*sc;
+    let v;try{v=await pageVisual(pi,Math.round(cw*Math.min(window.devicePixelRatio||1,2.5)));}catch(e){toast('쪽을 그리지 못했어요');return;}
+    if(tok!==ST.tok){freeVis(v);return;}
+    if(ST.sheet){freeVis(ST.sheet.querySelector('.pv'));ST.sheet.remove();}
+    const sh=document.createElement('div');sh.className='sheet';sh.style.width=cw+'px';sh.style.height=ch+'px';
+    v.classList.add('pv');v.draggable=false;sh.appendChild(v);
+    S.boxes.filter(b=>b.page===pi).forEach(b=>{const d=disp(b),e=document.createElement('div');e.dataset.id=b.id;
+      Object.assign(e.style,{left:d.x*sc+'px',top:d.y*sc+'px',width:d.w*sc+'px',height:d.h*sc+'px',borderRadius:Math.min(3,d.h/3,d.w/3)*sc+'px'});
+      paint(e,b);sh.appendChild(e);});
+    stage.appendChild(sh);ST.sheet=sh;
+    try{localStorage.setItem(lsKey(),String(ST.i));}catch(e){}
+  }
+  function cycle(id){
+    const b=S.boxes.find(x=>x.id===id);if(!b)return;
+    if(!ST.open[id])ST.open[id]=1;
+    else if(!b.wr)b.wr=1;
+    else{delete ST.open[id];delete b.wr;}
+    paint(ST.sheet&&ST.sheet.querySelector('[data-id="'+id+'"]'),b);$('#svWr').textContent=wrCount();queueSave();
+  }
+  const go=d=>{const n=Math.max(0,Math.min(ST.list.length-1,ST.i+d));if(n===ST.i)return;ST.i=n;show();};
+  const key=e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'||e.key==='Escape'||e.key===' '){e.preventDefault();e.stopPropagation();
+      if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key==='Escape')close();}
+  };
+  function close(){clearTimeout(ST.timer);try{save();}catch(e){}sv.classList.add('hidden');document.removeEventListener('keydown',key,true);if(ST.sheet){freeVis(ST.sheet.querySelector('.pv'));ST.sheet.remove();ST.sheet=null;}ST.tok++;}
+  function openSolve(){
+    if(!S.name){toast('먼저 PDF를 열어줘요');return;}
+    ST.list=[...new Set(S.boxes.map(b=>b.page))].filter(i=>S.pages[i]).sort((a,b)=>a-b);
+    if(!ST.list.length){toast('빈칸이 아직 없어요');return;}
+    let i=0;try{i=+localStorage.getItem(lsKey())||0;}catch(e){}
+    ST.i=Math.min(i,ST.list.length-1);ST.open={};sv.classList.remove('hidden');
+    document.addEventListener('keydown',key,true);show();
+  }
+  $('#solveBtn').onclick=openSolve;$('#svClose').onclick=close;
+  $('#svPrev').onclick=()=>go(-1);$('#svNext').onclick=()=>go(1);
+  $('#svReset').onclick=()=>{ST.open={};if(ST.sheet)S.boxes.filter(b=>b.page===ST.list[ST.i]).forEach(b=>paint(ST.sheet.querySelector('[data-id="'+b.id+'"]'),b));};
+  let sx=0,sy=0,tgt=null;
+  stage.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;tgt=e.target;});
+  stage.addEventListener('pointerup',e=>{const dx=e.clientX-sx,dy=e.clientY-sy;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){go(dx<0?1:-1);return;}
+    if(Math.hypot(dx,dy)<12){const b=tgt&&tgt.closest&&tgt.closest('.sbk');if(b)cycle(b.dataset.id);}});
+  let rz=0;addEventListener('resize',()=>{if(sv.classList.contains('hidden'))return;clearTimeout(rz);rz=setTimeout(show,250);});
+})();
 </script>
 </body>
 </html>
