@@ -190,19 +190,24 @@ body.dragover #empty{background:var(--sky2)}
 #solve.hidden{display:none!important}
 #solve .sbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg);flex:none}
 #solve .sbar .sp{flex:1}
-#solve .sbar b{font-weight:700;color:var(--ink);font-size:.95rem;min-width:70px;text-align:center}
+#solve .sbar .pj{display:flex;align-items:center;gap:6px;color:var(--ink);font-size:.9rem}
+#solve .sbar .pj input{width:54px;font:inherit;font-weight:700;text-align:center;border:1.5px solid var(--line);border-radius:999px;padding:6px 4px;background:#fff;color:var(--ink);-moz-appearance:textfield;appearance:textfield}
+#solve .sbar .pj input::-webkit-outer-spin-button,#solve .sbar .pj input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+#solve .sbar .pj input:focus{outline:none;border-color:var(--sky)}
+#solve .sbar .pj span{color:var(--brown)}
 #solve .sbar .cnt{font-size:.82rem;color:var(--brown)}
 #solve .sbar .cnt i{font-style:normal;color:#4a9fd4;font-weight:700}
 #solve .stage{flex:1;min-height:0;position:relative;touch-action:none;overflow:hidden}
 #solve .sheet{position:absolute;box-shadow:0 2px 18px rgba(60,40,20,.14);background:#fff;overflow:hidden}
 #solve .zoom{display:flex;align-items:center;gap:2px}
-#solve .zoom button{border:1px solid var(--line);background:#fff;color:var(--brown);border-radius:8px;min-width:34px;height:32px;padding:0 8px;cursor:pointer;font:inherit}
-#solve .zoom #svZv{min-width:58px}
+#solve .zoom #svZv{min-width:52px}
 #solve .sheet>.pv{display:block;width:100%;height:100%}
-#solve .sbk{position:absolute;background:var(--sg,#f4f4f4);cursor:pointer;-webkit-tap-highlight-color:transparent}
+#solve .sbk{position:absolute;background:var(--sg0,#ebebeb);cursor:pointer;-webkit-tap-highlight-color:transparent}
 #solve .sbk.cl{opacity:1}
 #solve .sbk.op{mix-blend-mode:multiply}
-#solve .sbk.wr{background:var(--sw,#e3f2fa)}
+#solve .sbk.cl.wr{background:var(--sw0,#8cc8ec)}
+#solve .sbk.op{background:var(--sg,#f4f4f4)}
+#solve .sbk.op.wr{background:var(--sw,#e3f2fa)}
 #solve .arr{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:0;border-radius:10px;background:rgba(255,255,255,.7);color:var(--brown);font-size:1.4rem;cursor:pointer;z-index:2}
 #solve .arr:disabled{opacity:.25;cursor:default}
 #solve .arr.l{left:6px}#solve .arr.r{right:6px}
@@ -1236,7 +1241,7 @@ document.addEventListener('beforeinput',e=>{if(e.inputType==='historyUndo'&&!(do
 restoreSession();
 </script>
 <div id="solve" class="hidden">
-  <div class="sbar"><button class="btn" id="svClose">✕ 닫기</button><span class="sp"></span><span class="cnt">틀림 <i id="svWr">0</i></span><b id="svPg"></b>
+  <div class="sbar"><button class="btn" id="svClose">✕ 닫기</button><span class="sp"></span><span class="cnt">틀림 <i id="svWr">0</i></span><div class="pj"><input id="svJump" type="number" inputmode="numeric" min="1" title="가고 싶은 쪽 번호 입력 후 Enter"><span id="svTot"></span></div>
     <div class="zoom"><button id="svZo" title="축소 (−)">−</button><button id="svZv" title="화면에 맞추기 (0)">100%</button><button id="svZi" title="확대 (+)">+</button></div>
     <button class="btn" id="svReset" title="열어둔 빈칸 전부 다시 가리기">다시 가리기</button></div>
   <div class="stage" id="svStage"><button class="arr l" id="svPrev">‹</button><button class="arr r" id="svNext">›</button></div>
@@ -1244,7 +1249,7 @@ restoreSession();
 <script>
 /* ---------- 문제 풀기: 빈칸을 터치해 열고(글자 보임) → 한 번 더 하늘색(틀림) → 한 번 더 다시 가림. 확대·이동 가능 ---------- */
 (function(){
-  const sv=$('#solve'),stage=$('#svStage'),pgEl=$('#svPg');
+  const sv=$('#solve'),stage=$('#svStage'),jumpEl=$('#svJump'),totEl=$('#svTot');
   const ST={list:[],i:0,open:{},tok:0,sheet:null,timer:0,Z:1,pan:{x:0,y:0},bw:1,bh:1,hi:0};
   const lsKey=()=>'bm:solve:'+S.name;
   const wrCount=()=>S.boxes.filter(b=>b.wr).length;
@@ -1275,7 +1280,7 @@ restoreSession();
   const zoomCenter=f=>{const r=stage.getBoundingClientRect();zoomAt(ST.Z*f,r.width/2,r.height/2);};
   async function show(){
     const tok=++ST.tok,pi=ST.list[ST.i],p=S.pages[pi];
-    pgEl.textContent=(ST.i+1)+' / '+ST.list.length+'  · '+(pi+1)+'쪽';
+    jumpEl.value=pi+1;totEl.textContent='/ '+S.pages.length+'쪽';
     $('#svPrev').disabled=ST.i===0;$('#svNext').disabled=ST.i===ST.list.length-1;$('#svWr').textContent=wrCount();
     const r=stage.getBoundingClientRect(),fit=Math.min((r.width-16)/p.w,(r.height-16)/p.h);
     ST.bw=p.w*fit;ST.bh=p.h*fit;
@@ -1299,8 +1304,15 @@ restoreSession();
     paint(ST.sheet&&ST.sheet.querySelector('[data-id="'+id+'"]'),b);$('#svWr').textContent=wrCount();queueSave();
   }
   const go=d=>{const n=Math.max(0,Math.min(ST.list.length-1,ST.i+d));if(n===ST.i)return;ST.i=n;show();};
+  function jumpTo(){
+    const n=Math.round(+jumpEl.value);if(!n){jumpEl.value=ST.list[ST.i]+1;return;}
+    let j=ST.list.findIndex(pi=>pi>=n-1);if(j<0)j=ST.list.length-1;
+    if(ST.list[j]!==n-1)toast(n>S.pages.length?'마지막 쪽으로 갔어요':n+'쪽엔 빈칸이 없어서 '+(ST.list[j]+1)+'쪽으로 갔어요');
+    if(j!==ST.i){ST.i=j;show();}else jumpEl.value=ST.list[ST.i]+1;
+  }
   const key=e=>{
     const k=e.key;
+    if(e.target===jumpEl){e.stopPropagation();if(k==='Enter'){e.preventDefault();jumpTo();jumpEl.blur();}else if(k==='Escape'){e.preventDefault();jumpEl.value=ST.list[ST.i]+1;jumpEl.blur();}return;}
     if(k==='ArrowRight'||k==='ArrowLeft'||k==='Escape'||k===' '){e.preventDefault();e.stopPropagation();
       if(k==='ArrowRight')go(1);else if(k==='ArrowLeft')go(-1);else if(k==='Escape')close();}
     else if(k==='+'||k==='='){e.preventDefault();e.stopPropagation();zoomCenter(1.25);}
@@ -1315,11 +1327,12 @@ restoreSession();
     if(!ST.list.length){toast('빈칸이 아직 없어요');return;}
     let i=0;try{i=+localStorage.getItem(lsKey())||0;}catch(e){}
     ST.i=Math.min(i,ST.list.length-1);ST.open={};ST.Z=1;
-    const g=mix(S.bcol||'#ebebeb',.45),w=mix('#8cc8ec',.72);sv.style.setProperty('--sg',g);sv.style.setProperty('--sw',w);
+    const g=mix(S.bcol||'#ebebeb',.45),w=mix('#8cc8ec',.72);sv.style.setProperty('--sg',g);sv.style.setProperty('--sw',w);sv.style.setProperty('--sg0',S.bcol||'#ebebeb');sv.style.setProperty('--sw0','#8cc8ec');
     sv.classList.remove('hidden');document.addEventListener('keydown',key,true);addEventListener('message',onMsg,true);show();
   }
   $('#solveBtn').onclick=openSolve;$('#svClose').onclick=close;
   $('#svPrev').onclick=()=>go(-1);$('#svNext').onclick=()=>go(1);
+  jumpEl.onfocus=()=>jumpEl.select();jumpEl.onchange=jumpTo;
   $('#svZi').onclick=()=>zoomCenter(1.25);$('#svZo').onclick=()=>zoomCenter(1/1.25);$('#svZv').onclick=()=>zoomCenter(1/ST.Z);
   $('#svReset').onclick=()=>{ST.open={};if(ST.sheet)S.boxes.filter(b=>b.page===ST.list[ST.i]).forEach(b=>paint(ST.sheet.querySelector('[data-id="'+b.id+'"]'),b));};
   /* 손가락·마우스: 한 손가락 = 이동/넘기기/탭, 두 손가락 = 확대 */
