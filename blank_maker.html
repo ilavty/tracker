@@ -471,7 +471,22 @@ function locate(runs,home){
   for(let q=0;q<S.pages.length;q++){const r=tryPage(q,q!==home);if(!r)continue;
     const v=r.sc*1000-Math.abs(q-home);if(!best||v>best.v)best={pi:q,idx:r.idx,v,weak:r.weak};}
   return best;}
+/* 글자에 직접 안 붙은 빈칸(⌥·넓게·표 칸)도 '자기 글자 기준 상대 위치'를 기억해 두고, 글이 밀리면 그 글자를 따라감 */
+const RDEF={dx:-.7,dy:-1.8},TDEF={dx:-12.4,dy:-1.8};
+const rsig=b=>Math.round(b.raw.x*10)+','+Math.round(b.raw.y*10);
+const wantsRoff=b=>b.free&&!b.cell&&b.runs&&b.runs.length;
+function locateOn(runs,pi){const p=S.pages[pi];if(!p)return null;const idx=[];for(const r of runs){const f=findRun(p,r);if(!f)return null;for(let k=f.a;k<=f.b;k++)idx.push(p.map[k]);}return idx.length?idx:null;}
+function refreshOff(){S.boxes.forEach(b=>{if(!wantsRoff(b)||(b.roff&&b.rsig===rsig(b)))return;const idx=locateOn(b.runs,b.page);if(!idx)return;const tb=bbox(S.pages[b.page],idx);b.roff={dx:b.raw.x-tb.x,dy:b.raw.y-tb.y};b.rsig=rsig(b);});}
+function initToff(b){if(!(b.cell&&b.runs&&b.runs.length&&!b.toff))return;const f=locate(b.runs,b.page);if(!f)return;const tb=bbox(S.pages[f.pi],f.idx),dy=b.raw.y-tb.y;b.toff=(f.pi===b.page&&Math.abs(dy-TDEF.dy)<20)?{dx:b.raw.x-tb.x,dy}:{...TDEF};}
 function reanchor(b){
+  if(wantsRoff(b)){
+    const f=locate(b.runs,b.page);
+    if(!f){b.lost=true;if(b.page>=S.pages.length)b.page=S.pages.length-1;return'lost';}
+    const tb=bbox(S.pages[f.pi],f.idx);
+    let o=(b.roff&&b.rsig===rsig(b))?b.roff:null;
+    if(!o){const dx=b.raw.x-tb.x,dy=b.raw.y-tb.y;o=(f.pi===b.page&&Math.abs(dx-RDEF.dx)<8&&Math.abs(dy-RDEF.dy)<8)?{dx,dy}:{...RDEF};}
+    const nx=tb.x+o.dx,ny=tb.y+o.dy,mv=f.pi!==b.page||Math.abs(nx-b.raw.x)>.5||Math.abs(ny-b.raw.y)>.5;
+    b.page=f.pi;b.raw={...b.raw,x:nx,y:ny};b.roff=o;b.rsig=rsig(b);b.lost=!!f.weak;return f.weak?'lost':mv?'moved':'same';}
   if(b.cell&&b.runs&&b.runs.length&&b.toff){
     const f=locate(b.runs,b.page);
     if(!f){b.lost=true;if(b.page>=S.pages.length)b.page=S.pages.length-1;return'lost';}
@@ -489,8 +504,8 @@ function reanchor(b){
   const odd=f.weak||Math.abs(nr.h-b.raw.h)>Math.max(4,b.raw.h*.6)||Math.abs(nr.w-b.raw.w)>Math.max(12,b.raw.w*.6);
   b.page=f.pi;b.raw=nr;b.lost=!!odd;b.runs=mkRuns(p,f.idx);return odd?'lost':mv?'moved':'same';}
 /* 글자에 안 붙은 것(⌥자유박스·빈 곳 텍스트/이미지)은 같은 쪽 빈칸들이 옮겨간 만큼 같이 이동 */
-function reanchorAll(){const rep={same:0,moved:0,lost:0},shift={},fixed=[],refs=[];
-  const anch=(it,isBox)=>isBox?((it.cell&&it.runs&&it.runs.length&&it.toff)||!(it.free||!it.runs||!it.runs.length)):!!it.anchor;
+function reanchorAll(){const rep={same:0,moved:0,lost:0},shift={},fixed=[],refs=[];S.boxes.forEach(initToff);
+  const anch=(it,isBox)=>isBox?((it.cell&&it.runs&&it.runs.length&&it.toff)||wantsRoff(it)||!(it.free||!it.runs||!it.runs.length)):!!it.anchor;
   const pos=(it,isBox)=>isBox?{x:it.raw.x,y:it.raw.y}:{x:it.x,y:it.y};
   const go=(it,isBox)=>{if(!anch(it,isBox)){fixed.push([it,isBox]);return;}const o=it.page,op=pos(it,isBox),r=isBox?reanchor(it):reanchorNote(it);rep[r]++;
     if(r!=='lost'){const v=shift[o]||(shift[o]={});v[it.page-o]=(v[it.page-o]||0)+1;const np=pos(it,isBox);refs.push({op:o,np:it.page,ox:op.x,oy:op.y,dx:np.x-op.x,dy:np.y-op.y});}};
@@ -531,7 +546,7 @@ function reanchorNote(t){
 
 /* ---------- storage / history ---------- */
 const KEY=n=>'bm:f:'+n;
-function save(){if(!S.name)return;const wasDirty=S.dirty;S.dirty=true;if(!wasDirty)renderTabs();cloudPush(S.name,S.boxes,S.texts,S.imgs||[]);IDB.put('meta','work:'+S.name,JSON.parse(JSON.stringify({boxes:S.boxes,texts:cleanTexts(S.texts),imgs:S.imgs||[],at:Date.now()})));updLost();}
+function save(){if(!S.name)return;refreshOff();const wasDirty=S.dirty;S.dirty=true;if(!wasDirty)renderTabs();cloudPush(S.name,S.boxes,S.texts,S.imgs||[]);IDB.put('meta','work:'+S.name,JSON.parse(JSON.stringify({boxes:S.boxes,texts:cleanTexts(S.texts),imgs:S.imgs||[],at:Date.now()})));updLost();}
 async function getSaved(n){const v=await IDB.get('meta','work:'+n);if(v)return v;try{return JSON.parse(localStorage.getItem(KEY(n)));}catch(e){return null;}}
 // one-time move: old work copies in localStorage (shared 5MB with the other apps) -> IndexedDB
 (async()=>{try{const ks=Object.keys(localStorage).filter(k=>k.startsWith('bm:f:'));
