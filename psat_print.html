@@ -161,7 +161,7 @@ input[type=text]:focus{outline:none;border-color:var(--sky)}
   <section class="panel">
     <div class="sets"><select id="setSel"></select><button id="setSave">저장</button><button id="setDel">삭제</button></div>
     <div id="linkInfo" style="display:none;padding:2px 14px 0;font-size:11px;color:var(--brown)"></div>
-    <div class="ph" style="padding-top:8px;padding-bottom:6px"><h2>담은 문제<span class="cnt" id="selCnt"></span></h2></div>
+    <div class="ph" style="padding-top:8px;padding-bottom:6px"><h2>담은 문제<span class="cnt" id="selCnt"></span><button id="selAllEye" style="margin-left:10px;padding:3px 8px;font-size:12px;font-weight:500"></button></h2></div>
     <div class="tools"><button id="addDiv" title="선택한 줄 아래(없으면 맨 끝)에 구분 페이지 추가">+ 구분 페이지</button><span class="sp"></span><button id="sortNo" title="구분 페이지 사이에서 시험별(오래된 시험부터)로 묶고 그 안에서 번호순">번호순</button><button id="shuffle">섞기</button><button id="clear">비우기</button></div>
     <div class="scroll" id="selList"></div>
     <div class="settings">
@@ -424,7 +424,7 @@ function renderKw() {
   if (st.kwSel.length) {
     const keys = [...new Set(st.kwSel.flatMap(x => { const [g, w] = x.split('\u0001'); return K[g][w]; }))].filter(k => itemOf(k)).sort(cmpKey);
     const allOn = keys.every(k => st.sel.includes(k));
-    h += `<div class="kwres"><div class="gh"><span class="gt" style="font-weight:600">고른 키워드 문제</span><span class="cnt">${keys.length}개</span><span class="sp"></span><button data-kwall="1" style="padding:3px 8px">${allOn ? '전체 빼기' : '전체 담기'}</button></div>
+    h += `<div class="kwres"><div class="gh"><span class="gt" style="font-weight:600">고른 키워드 문제</span><span class="cnt">${keys.reduce((a, k) => { try { return a + itemOf(k).it.n.length; } catch (e) { return a + 1; } }, 0)}개</span><span class="sp"></span><button data-kwall="1" style="padding:3px 8px">${allOn ? '전체 빼기' : '전체 담기'}</button></div>
       <div class="knums">${keys.map(k => { const {e, it} = itemOf(k); return `<div class="num ${st.sel.includes(k) ? 'on' : ''}" data-k="${k}">${esc(srcLabel(e, it))}</div>`; }).join('')}</div></div>`;
   }
   return h;
@@ -484,16 +484,18 @@ function renderSets() {
   $('linkInfo').style.display = isLinked() ? '' : 'none';
 }
 function renderSel() {
-  const off = st.hidden.length;
-  const nq = st.sel.filter(k => !isDiv(k)).length;
+  const nQ = k => { try { return isDiv(k) ? 0 : itemOf(k).it.n.length; } catch (e) { return isDiv(k) ? 0 : 1; } };
+  const off = st.sel.filter(k => st.hidden.includes(k)).reduce((a, k) => a + nQ(k), 0);
+  const nq = st.sel.reduce((a, k) => a + nQ(k), 0);
   $('selCnt').textContent = nq ? nq + '개' + (off ? ` · 숨김 ${off}` : '') : '';
+  const allB = $('selAllEye'); if (allB) { const anyOn = st.sel.some(k => isOn(k)); allB.textContent = anyOn ? '전체 끄기' : '전체 켜기'; allB.style.display = st.sel.length ? '' : 'none'; }
   let no = 0;
   $('selList').innerHTML = st.sel.length ? st.sel.map((k, i) => {
     if (isDiv(k)) { const on = isOn(k); return `<div class="sl div ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="src">${esc(divName(k))}</span><span class="dtag">구분 페이지</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${userDiv(k) || !String(st.cur || '').startsWith('th:') ? `<button class="x" data-x="${i}">✕</button>` : ''}</div>`; }
-    no++;
     const {e, it} = itemOf(k);
+    const c0 = no + 1; no += it.n.length;
     const on = isOn(k);
-    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${isSeq() ? numLabel(k) : no}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
+    return `<div class="sl ${on ? '' : 'off'}" draggable="true" data-i="${i}"><span class="no">${isSeq() ? numLabel(k) : (it.n.length > 1 ? c0 + '-' + no : c0)}</span><span class="src">${esc(e.sub + ' ' + srcLabel(e, it))}</span><button class="eye" data-eye="${i}" title="${on ? '프린트에서 빼기' : '프린트에 넣기'}">${on ? EYE : EYE_OFF}</button>${isLinked() ? '' : `<button class="x" data-x="${i}">✕</button>`}</div>`;
   }).join('') : '<div class="empty">왼쪽에서 시험 → 번호를 눌러 담아줘<br>드래그로 순서 바꾸기</div>';
 }
 
@@ -817,6 +819,11 @@ function lockLinked() {
   alert((st.cur.startsWith('th:') ? '모음집 묶음은 고정이에요.' : '이 묶음은 PSAT 트래커의 ' + AUTO_PFX[st.cur.slice(0, 2)].icon + '로 관리돼요.') + '\n여기서 바꾸려면 위에서 [복사]해서 내 묶음으로 만들어줘!');
   return true;
 }
+$('selAllEye').onclick = () => {
+  const anyOn = st.sel.some(k => isOn(k));
+  st.hidden = anyOn ? [...st.sel] : [];
+  renderAll();
+};
 $('clear').onclick = () => { if (lockLinked()) return; if (st.sel.length && confirm('담은 문제 다 비울까?')) { st.sel = []; st.hidden = []; renderAll(); } };
 $('setSel').onchange = e => {
   save();
