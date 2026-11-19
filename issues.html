@@ -638,6 +638,7 @@ body.hlon .hlbar{display:flex}
         <button data-m="export">Save backup</button>
         <button data-m="import">Load backup</button>
         <button data-m="sync">Sync now</button>
+        <button data-m="recache">Reload from cloud</button>
       </div>
     </div>
   </div>
@@ -2006,6 +2007,14 @@ $('#menuPop').onclick = e => {
   }
   if (m === 'import') $('#file').click();
   if (m === 'hlset') hlSettings();
+  if (m === 'recache') {
+    if (!confirm('Delete the copy stored on this device and re-download everything from the cloud?\n(saving a backup first is recommended)')) return;
+    (async () => {
+      try { await IDBS.put(KEY, { at: 0, d: '' }); } catch (e) {}
+      try { [KEY, KEY + ':at', KEY + '_cloud_t', KEY + '_pending', KEY + '_v2'].forEach(k => localStorage.removeItem(k)); } catch (e) {}
+      location.reload();
+    })();
+  }
   if (m === 'sync') { CLOUD && CLOUD.syncNow ? CLOUD.syncNow() : toast('Sync is not connected on this device'); }
   if (m === 'reset') { if (confirm('All your additions and edits will be lost and the original restored. Continue?\n(saving a backup first is recommended)')) { DB = clone(ORIG); migrate(); cur = DB.docs[0].id; commit(); toast('Reset done'); } }
 };
