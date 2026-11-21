@@ -835,8 +835,9 @@ function mergeInto(B, O) {
     else if (!r || !r.t || r.t < lt) { if (!lt) setT(Date.now()); fresh = false; firstV2 = false; push(); } // push()가 클라우드를 먼저 합침
     else if (r.t === lt) {
       pending(false);
-      // 같은 버전이라는데 기기 쪽이 모자라면(저장 실패 등) 클라우드 것으로 채우기
-      try { if (r.d && r.d.length !== JSON.stringify(DB).length) { const before = JSON.stringify(DB); const M = mergeInto(JSON.parse(before), JSON.parse(r.d)); if (JSON.stringify(M) !== before) applyRemote(M); } } catch (e) {}
+      // 같은 버전이라는데 내용이 다르면 이 기기 사본이 낡은 것(저장 공간 부족 등으로 저장 실패) → 클라우드를 기준으로 삼고, 이 기기에만 있는 것은 더해 줌
+      // (예전엔 글자 수만 비교하고 이 기기 쪽을 기준으로 합쳐서, 순서만 바뀐 경우는 새로고침하면 옛 순서로 돌아갔음)
+      try { if (r.d) { const before = JSON.stringify(DB); if (r.d !== before) { const M = mergeInto(JSON.parse(r.d), JSON.parse(before)); if (JSON.stringify(M) !== before) { applyRemote(M); if (JSON.stringify(M) !== JSON.stringify(JSON.parse(r.d))) push(); } } } } catch (e) {}
     }
     ready = true;
   }));
