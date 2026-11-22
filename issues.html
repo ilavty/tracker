@@ -170,7 +170,7 @@ body.edit .olpart .chh,body.edit .olsecs .sh{cursor:grab;-webkit-user-select:non
 .monchips::-webkit-scrollbar{display:none}
 .monchips button{font-family:var(--tf);font-size:12px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:3px 10px;color:var(--sub);white-space:nowrap;cursor:pointer}
 .monchips button:hover{color:var(--ink);border-color:#bbb}
-@media print{.monchips{display:none}}
+@media print{.monchips{display:none}} .dochead.srt{flex-wrap:nowrap}.dochead.srt>*{flex:none;white-space:nowrap}.dochead.srt>.monchips{flex:1 1 0;min-width:0}.olsw button,.srtdir button{white-space:nowrap}
 .chh{display:flex;align-items:baseline;gap:9px;border-bottom:1.5px solid var(--ink);padding-bottom:5px;margin-bottom:10px}
 .chp{font-size:10.5px;font-weight:700;color:var(--acc);border:1px solid var(--acc);border-radius:20px;padding:1px 8px;letter-spacing:.4px;align-self:center;white-space:nowrap}
 .chn{font-weight:500;color:var(--sub);font-size:15px}
@@ -183,7 +183,7 @@ td{border-bottom:1px solid var(--line);padding:6px 7px;vertical-align:top}
 td.n{color:var(--sub);font-weight:500;text-align:center;padding-left:0;padding-right:0;font-size:12px;padding-top:7px}
 td.q{text-align:left;word-break:keep-all;overflow-wrap:anywhere}
 .oxt{margin-left:10px;white-space:nowrap;cursor:pointer;user-select:none;padding:2px 6px;color:inherit}
-.oxt .on{color:var(--acc);font-weight:700}
+.oxt .on{color:var(--acc);font-weight:800}
 @media print{.oxt{display:none}}
 td.a{background:var(--soft);color:var(--ans);font-weight:500;font-size:13px;word-break:keep-all;overflow-wrap:anywhere;border-left:1px solid var(--line)}
 td.ctl{display:none}
@@ -1784,9 +1784,14 @@ function act(a, id) {
   if (a === 'rename') {
     const L = locate(id), o = L.obj;
     const f = [{ key: 'title', label: L.kind === 'part' ? 'Part name' : L.kind === 'ch' ? 'Chapter name' : 'Section', value: o.title }];
+    const dd = doc(), curCh = L.kind === 'sec' ? (dd.parts.flatMap(p => p.chapters).find(c => c.secs === L.arr) || {}).id : null, curPt = L.kind === 'ch' ? (dd.parts.find(p => p.chapters === L.arr) || {}).id : null;
+    if (L.kind === 'sec') { const co = dd.parts.flatMap(p => p.chapters.map(c => [c.id, `${p.title} · ${c.title}`])); f.push({ key: 'cid', label: 'Chapter (목차)', type: 'select', options: [...co.filter(x => x[0] === curCh), ...co.filter(x => x[0] !== curCh)] }); }
+    if (L.kind === 'ch') { const po = dd.parts.map(p => [p.id, p.title]); f.push({ key: 'pid', label: 'Part', type: 'select', options: [...po.filter(x => x[0] === curPt), ...po.filter(x => x[0] !== curPt)] }); }
     if (L.kind === 'sec') { f.push({ key: 'skind', label: '구분', type: 'select', options: [[o.kind || '', o.kind ? KINDS.find(k => k[0] === o.kind)[1] : '없음'], ...[['prog', '진도'], ['issue', '이슈'], ['', '없음']].filter(x => x[0] !== (o.kind || ''))] }); f.push({ key: 'note', label: 'Note box (optional)', type: 'textarea', value: o.note || '' }); f.push({ key: 'bulk', label: 'Change year of all items in this section (optional)', value: '', ph: 'Leave empty to keep · e.g. ' + DB.years[DB.years.length - 1] }); }
     openModal({ title: 'Edit', fields: f, onSave: v => {
       if (!v.title) return false; o.title = v.title;
+      if (L.kind === 'sec' && v.cid && v.cid !== curCh) { const tc = dd.parts.flatMap(p => p.chapters).find(c => c.id === v.cid); if (tc) { L.arr.splice(L.arr.indexOf(o), 1); tc.secs.push(o); toast(`Moved to ${tc.title}`); } }
+      if (L.kind === 'ch' && v.pid && v.pid !== curPt) { const tp = dd.parts.find(p => p.id === v.pid); if (tp) { L.arr.splice(L.arr.indexOf(o), 1); tp.chapters.push(o); toast(`Moved to ${tp.title}`); } }
       if (L.kind === 'sec') { if (v.skind) o.kind = v.skind; else delete o.kind; if ((o.note || '') !== (v.note || '')) { delete o.nhl; delete o.nul; } o.note = v.note; if (v.bulk) { if (!DB.years.includes(v.bulk)) { toast('Unknown year: ' + DB.years.join(', ')); return false; } o.items.forEach(it => it.y = v.bulk); } }
       commit(); } });
   }
