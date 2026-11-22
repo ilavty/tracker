@@ -59,6 +59,10 @@ button{cursor:pointer;border:none;background:none}
 .ochip{font-size:.7rem;color:var(--grey);border:1px solid var(--bd);border-radius:10px;padding:0 7px;white-space:nowrap;cursor:pointer}
 .ochip.topic{color:var(--navy);border-color:#c8d7e8;background:var(--lb)}
 .selbox{width:18px;height:18px;border:1.5px solid #b9c2cd;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;flex:0 0 18px;cursor:pointer}
+.irow.hasbox{grid-template-columns:18px 10px fit-content(55%) minmax(0,1fr) auto 20px}
+.irow.nolab.hasbox{grid-template-columns:18px 10px 1fr auto 20px}
+.irow.isel{background:var(--lb);border-radius:8px}
+.msec{font-size:.78rem;font-weight:700;color:var(--grey);margin:2px 0 6px}
 .selbox.on{background:var(--navy);border-color:var(--navy)}
 .selbar{position:sticky;top:8px;z-index:20;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:1.5px solid var(--navy);border-radius:12px;padding:8px 12px;margin-bottom:12px;box-shadow:0 6px 18px rgba(30,50,80,.1)}
 .selbar b{color:var(--navy);font-size:.85rem}
@@ -806,7 +810,7 @@ function moveSubj(id, d) {
   list.forEach((x, k) => { x.o = k + 1; x.u = now; }); save(); renderAll();
 }
 function toggleSide() { $('#side').classList.toggle('fold'); }
-function setView(v) { selMode = false; SEL.clear(); UI.view = v; UI.search = ''; saveUI(); renderAll(); if (window.innerWidth <= 760) $('#side').classList.add('fold'); }
+function setView(v) { selMode = false; SEL.clear(); SELI.clear(); UI.view = v; UI.search = ''; saveUI(); renderAll(); if (window.innerWidth <= 760) $('#side').classList.add('fold'); }
 
 function newFolder(parentId, kind) {
   kind = parentId ? fk(F(parentId)) : (kind || 'topic');
@@ -941,22 +945,84 @@ function otherChip(c, opts) {
   if (vk !== 'date' && c.dateId && F(c.dateId) && (vk === 'topic' || opts.showPath)) out.push(`<span class="ochip" data-goto="${c.dateId}">${esc(pathStr(c.dateId))}</span>`);
   return out.join('');
 }
-let SEL = new Set(); let selMode = false;
+let SEL = new Set(); let SELI = new Set(); let selMode = false;
 function selBarHtml() {
   if (!selMode) return '';
-  return `<div class="selbar"><b>${SEL.size}장 선택</b><span class="sp" style="flex:1"></span>
+  return `<div class="selbar"><b>${SEL.size}장${SELI.size ? ` · ${SELI.size}줄` : ''} 선택</b><span class="sp" style="flex:1"></span>
     <button class="btn sm" onclick="selAll()">전체 선택</button>
+    <button class="btn sm pri" onclick="selItemsToCard()">줄을 카드로</button>
+    <button class="btn sm" onclick="selMergeCards()">카드 합치기</button>
     <button class="btn sm pri" onclick="selTo('topic')">주제 폴더로</button>
     <button class="btn sm" onclick="selTo('date')">날짜 폴더로</button>
     <button class="btn sm" onclick="selToSubject()">다른 과목으로</button>
     <button class="btn sm danger" onclick="selDelete()">삭제</button>
     <button class="btn sm ghost" onclick="selExit()">완료</button></div>`;
 }
-function selToggleMode() { selMode = !selMode; SEL.clear(); renderMain(); reportHeight(); }
-function selExit() { selMode = false; SEL.clear(); renderMain(); reportHeight(); }
+function selToggleMode() { selMode = !selMode; SEL.clear(); SELI.clear(); renderMain(); reportHeight(); }
+function selExit() { selMode = false; SEL.clear(); SELI.clear(); renderMain(); reportHeight(); }
 function selAll() { const all = [...document.querySelectorAll('#main .card')].map(e => e.dataset.id); const every = all.every(id => SEL.has(id)); all.forEach(id => every ? SEL.delete(id) : SEL.add(id)); renderMain(); }
 function selTo(kind) { if (!SEL.size) return; pickFolder(`${SEL.size}장을 어느 ${kind === 'date' ? '날짜' : '주제'} 폴더에?`, [], true, fid => { moveCards([...SEL], fid, kind); SEL.clear(); renderMain(); }, kind); }
 function selToSubject() { if (!SEL.size) return; pickSubject(`${SEL.size}장을 어느 과목으로?`, sid => { moveCardsToSubject([...SEL], sid); SEL.clear(); selMode = false; renderAll(); }); }
+/* ---- 줄을 다른 카드로 옮기기 / 카드 합치기 ---- */
+function pickTargetCard(count, onPick) {
+  const m = openModal(`<h3>${count}줄을 어디로 옮길까요?</h3>
+    <div class="msec">새 카드</div>
+    <div style="display:flex;gap:8px"><input class="inp" id="ntitle" style="flex:1"><button class="btn pri" id="nmake">만들기</button></div>
+    <div class="msec" style="margin-top:14px">기존 카드에 붙이기</div>
+    <input class="inp" id="csearch">
+    <div class="box ftree-pick" id="clist" style="max-height:40vh;overflow:auto"></div>
+    <div class="mfoot"><button class="btn ghost" onclick="closeModal()">취소</button></div>`, 'narrow');
+  const draw = () => {
+    const q = norm(m.querySelector('#csearch').value);
+    const rows = SC().filter(c => !q || norm(c.title + c.items.map(i => i.label).join('')).includes(q)).slice(0, 80);
+    m.querySelector('#clist').innerHTML = rows.map(c => `<div class="fnode" data-id="${c.id}"><span class="car"></span><span class="nm">${esc(c.title || '(제목 없음)')} <span style="color:var(--grey)">· ${c.items.length}줄</span></span></div>`).join('');
+    m.querySelectorAll('#clist .fnode').forEach(n => n.onclick = () => { closeModal(); onPick({ id: n.dataset.id }); });
+  };
+  m.querySelector('#csearch').oninput = draw; draw();
+  const make = () => { const t = m.querySelector('#ntitle').value.trim(); if (!t) return; closeModal(); onPick({ newTitle: t }); };
+  m.querySelector('#nmake').onclick = make;
+  m.querySelector('#ntitle').onkeydown = e => { if (e.key === 'Enter' && !e.isComposing) make(); };
+  setTimeout(() => m.querySelector('#ntitle').focus(), 50);
+}
+function selItemsToCard() {
+  if (!SELI.size) return toast('옮길 줄을 먼저 체크해 주세요');
+  const ids = new Set(SELI);
+  pickTargetCard(ids.size, target => moveItemsTo(ids, target));
+}
+function moveItemsTo(ids, target) {
+  const now = Date.now(), moving = [], srcs = [];
+  S.cards.forEach(c => {
+    const keep = []; let hit = false;
+    c.items.forEach(it => { if (ids.has(it.id)) { moving.push({ it, from: c }); hit = true; } else keep.push(it); });
+    if (hit) { c.items = keep; c.u = now; srcs.push(c); }
+  });
+  if (!moving.length) return;
+  let tc;
+  if (target.newTitle) {
+    const f = moving[0].from;
+    tc = { id: uid(), subjectId: f.subjectId, folderId: f.folderId, dateId: f.dateId, title: target.newTitle, tags: [], items: [], o: (f.o || f.c || now) + 0.0005, c: now, u: now };
+    S.cards.push(tc);
+  } else { tc = C(target.id); if (!tc) return; }
+  moving.forEach(m => tc.items.push(m.it)); tc.u = now;
+  SELI.clear(); save(); renderAll();
+  const empty = srcs.filter(c => c !== tc && !c.items.length);
+  toast(`${moving.length}줄을 '${tc.title}'(으)로 옮겼어요`);
+  if (empty.length && confirm(`줄이 모두 빠진 빈 카드가 ${empty.length}장 있어요. 지울까요?\n${empty.map(c => '· ' + (c.title || '(제목 없음)')).join('\n')}`)) {
+    empty.forEach(c => { S.deleted[c.id] = Date.now(); });
+    S.cards = S.cards.filter(c => !empty.includes(c)); save(); renderAll();
+  }
+}
+function selMergeCards() {
+  if (SEL.size < 2) return toast('합칠 카드를 2장 이상 골라 주세요');
+  const cs = [...SEL].map(C).filter(Boolean).sort((a, b) => (a.o || a.c || 0) - (b.o || b.c || 0));
+  inputModal('합친 카드 제목', cs[0].title, t => {
+    t = String(t || '').trim(); if (!t) return;
+    const now = Date.now(), base = cs[0], rest = cs.slice(1);
+    rest.forEach(c => { base.items.push(...c.items); c.tags.forEach(x => { if (!base.tags.includes(x)) base.tags.push(x); }); S.deleted[c.id] = now; });
+    base.title = t; base.u = now; S.cards = S.cards.filter(c => !rest.includes(c));
+    SEL.clear(); save(); renderAll(); toast(`${cs.length}장을 한 카드로 합쳤어요 (겹치는 줄은 그대로 모아 뒀어요)`);
+  });
+}
 function selDelete() { if (!SEL.size || !confirm(`${SEL.size}장을 지울까?`)) return; const now = Date.now(); [...SEL].forEach(id => { const c = C(id); if (!c) return; S.deleted[id] = now; c.items.forEach(it => delete S.stats[it.id]); }); S.cards = S.cards.filter(c => !SEL.has(c.id)); SEL.clear(); save(); renderAll(); }
 function cardHtml(c, opts = {}) {
   const q = UI.search;
@@ -970,7 +1036,7 @@ function cardHtml(c, opts = {}) {
     </div>
     <div class="cbody">${items.map(it => {
     const s = st(it.id);
-    return `<div class="irow ${it.label ? '' : 'nolab'}">
+    return `<div class="irow ${it.label ? '' : 'nolab'}" data-iid="${it.id}">
         <span class="dot lv${s.lv || 0}" title="${LV_NAME[s.lv || 0]} · 맞음 ${s.c || 0} / 틀림 ${s.w || 0}"></span>
         ${it.label ? `<span class="ilab">${hiQ(it.label, q)}</span>` : ''}
         <span class="itext">${hiQ(it.text, q)}</span>
@@ -1136,7 +1202,17 @@ ${selBarHtml()}
     el.classList.toggle('sel', SEL.has(el.dataset.id));
     const b = document.createElement('span'); b.className = 'selbox' + (SEL.has(el.dataset.id) ? ' on' : ''); b.textContent = SEL.has(el.dataset.id) ? '✓' : '';
     el.querySelector('.chead').prepend(b);
-    el.addEventListener('click', e => { if (e.target.closest('.star,.ibtn')) return; e.stopPropagation(); e.preventDefault(); const id = el.dataset.id; SEL.has(id) ? SEL.delete(id) : SEL.add(id); renderMain(); }, true);
+    el.querySelectorAll('.irow[data-iid]').forEach(r => {
+      const iid = r.dataset.iid, on = SELI.has(iid); r.classList.add('hasbox'); r.classList.toggle('isel', on);
+      const ib = document.createElement('span'); ib.className = 'selbox' + (on ? ' on' : ''); ib.textContent = on ? '✓' : ''; r.prepend(ib);
+    });
+    el.addEventListener('click', e => {
+      if (e.target.closest('.star,.ibtn')) return; e.stopPropagation(); e.preventDefault();
+      const ir = e.target.closest('.irow[data-iid]');
+      if (ir) { const iid = ir.dataset.iid; SELI.has(iid) ? SELI.delete(iid) : SELI.add(iid); }
+      else { const id = el.dataset.id; SEL.has(id) ? SEL.delete(id) : SEL.add(id); }
+      renderMain();
+    }, true);
   });
   main.querySelectorAll('.card').forEach(el => {
     el.ondragstart = e => { if (e.target !== el) return; e.dataTransfer.setData('text/card', el.dataset.id); };
