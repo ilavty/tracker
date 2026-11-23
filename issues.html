@@ -639,7 +639,7 @@ body.hlon .hlbar{display:flex}
         <button data-m="import">Load backup</button>
         <button data-m="sync">Sync now</button>
         <button data-m="recache">Reload from cloud</button>
-        <div style="padding:6px 14px 4px;font-size:11px;color:#9aa0a8;letter-spacing:.02em">build 1121-a · chapter-edit · ox800 · sort-fix · sync-fix</div>
+        <div style="padding:6px 14px 4px;font-size:11px;color:#9aa0a8;letter-spacing:.02em">build 1121-b · chapter-edit · ox800 · sort-fix · sync-fix</div>
       </div>
     </div>
   </div>
@@ -1864,10 +1864,12 @@ function fillBlanksFrom(t, av) {
 function secEdit(id) {
   const L = locate(id); if (!L || L.kind !== 'sec') return; const o = L.obj;
   const cur = secDate(o) || '';
+  const dd = doc(), allCh = dd.parts.flatMap(p => p.chapters.map(c => [c.id, `${p.title} · ${c.title}`])), curCh = (dd.parts.flatMap(p => p.chapters).find(c => c.secs === L.arr) || {}).id;
   const m = $('#mod'); m.classList.add('wide');
   const row = (it, k) => `<div class="se-it" data-id="${it ? it.id : ''}"><span class="se-n">${k}</span><div class="se-body"><div class="bed sm" contenteditable="true"></div><label class="se-al"><span>정답</span><input class="se-a" value="${esc(seAns(it))}" data-v0="${esc(seAns(it))}"></label></div><button class="ib x se-del" type="button" title="이 문항 지우기">✕</button></div>`;
   m.innerHTML = `<h2>소제목 편집</h2>
     <div class="se-head"><div class="fld"><label>소제목 이름</label><input class="se-title" value="${esc(o.title)}"></div><div class="fld"><label>파일 날짜</label><input type="date" class="se-fd" value="${esc(cur)}"></div><div class="fld"><label>구분</label><select class="se-kind">${[['prog', '진도'], ['issue', '이슈'], ['', '없음']].map(([v, l]) => `<option value="${v}"${(o.kind || '') === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div></div>
+    <div class="fld"><label>목차 (챕터)</label><select class="se-ch" style="width:100%">${allCh.map(([v, l]) => `<option value="${v}"${v === curCh ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
     <div class="fld"><label>안내 박스</label><textarea class="se-note">${esc(o.note || '')}</textarea></div>
     <div class="se-list">${o.items.map((it, k) => row(it, k + 1)).join('')}</div>
     <button class="addrow" type="button" data-se="add" style="display:block">+ 문항 추가</button>
@@ -1908,6 +1910,8 @@ function secEdit(id) {
       o.title = title;
       const kd = m.querySelector('.se-kind').value; if (kd) o.kind = kd; else delete o.kind;
       const nt = m.querySelector('.se-note').value.trim(); if ((o.note || '') !== nt) { delete o.nhl; delete o.nul; } if (nt) o.note = nt; else delete o.note;
+      const nc = m.querySelector('.se-ch').value;
+      if (nc && nc !== curCh) { const tc = dd.parts.flatMap(p => p.chapters).find(c => c.id === nc); if (tc) { const ix = L.arr.indexOf(o); if (ix >= 0) L.arr.splice(ix, 1); tc.secs.push(o); } }
       closeModal(); commit(); toast('저장됨');
     }
   };
