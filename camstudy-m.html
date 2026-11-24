@@ -9,7 +9,10 @@
 <link rel="icon" href="camstudy-m-icon-192.png">
 <link rel="apple-touch-icon" href="camstudy-m-icon-192.png">
 <style>
+@font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-3Light.ttf") format("truetype");font-weight:300}
 @font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-4Regular.ttf") format("truetype");font-weight:400}
+@font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-5Medium.ttf") format("truetype");font-weight:500}
+@font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-6SemiBold.ttf") format("truetype");font-weight:600}
 @font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-7Bold.ttf") format("truetype");font-weight:700}
 :root{--bg:#1c1713;--sky:#BEE9F2;--card:#2a211b;--line:#4a4039}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none}
@@ -110,7 +113,7 @@ function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch 
 
 let S = load("csm_settings", {
   tab: true, plan: "off",
-  text: { str: "", size: 0.09, color: "#ffffff", ow: 3, fx: 0.08, fy: 0.42 },
+  text: { str: "", size: 0.09, color: "#ffffff", ow: 3, wt: 700, fx: 0.08, fy: 0.42 },
   items: { tab: { fx: 0.04, fy: 0.12, fw: 0.40, hs: 1 }, plan: { fx: 0.5, fy: 0.12, fw: 0.46 }, friend: { fx: 0.04, fy: 0.62, fw: 0.28 } },
   interval: 3, cam: -1, facing: "user", flay: "off", rep: null
 });
@@ -118,6 +121,7 @@ if (!S.items.friend) S.items.friend = { fx: 0.04, fy: 0.62, fw: 0.28 };
 if (S.items.tab.hs == null) S.items.tab.hs = 1;
 if (!S.facing) S.facing = "user";
 if (!S.flay) S.flay = "off";
+if (!S.text.wt) S.text.wt = 700;
 if (S.keepClock == null) S.keepClock = true;
 if (!S.adj) S.adj = { mirror: true, bright: 0, contrast: 100, sat: 100, warm: 0 };
 let DAYS = load("csm_days", {});          // { "2026-11-24": [144 cells of seconds] }
@@ -332,7 +336,7 @@ function drawPlan(c, x, y, w) {
 function drawText(c, w, h) {
   const T = S.text; if (!T.str) return null;
   const px = Math.max(8, T.size * w), lines = T.str.split("\n");
-  c.save(); c.font = `700 ${px}px ${FONT}`; c.textBaseline = "top"; c.lineJoin = "round";
+  c.save(); c.font = `${T.wt || 700} ${px}px ${FONT}`; c.textBaseline = "top"; c.lineJoin = "round";
   const x = T.fx * w, y = T.fy * h; let maxw = 0;
   lines.forEach((l, i) => {
     const yy = y + i * px * 1.2; maxw = Math.max(maxw, c.measureText(l).width);
@@ -641,12 +645,14 @@ $("#bT").onclick = () => {
   openSheet(`<div class="h">글씨</div>
     <textarea id="tIn"></textarea>
     <div class="h">크기</div><div class="row"><input type="range" id="tSz" min="3" max="30" value="${Math.round(S.text.size * 100)}"></div>
+    <div class="h">굵기</div><div class="row"><input type="range" id="tWt" min="3" max="7" step="1" value="${Math.round((S.text.wt || 700) / 100)}"></div>
     <div class="h">테두리</div><div class="row"><input type="range" id="tOw" min="0" max="8" value="${S.text.ow}"></div>
     <div class="h">색</div><div class="row" id="tCol">${["#ffffff", SKY, "#1c1713", "#f4c9a8"].map(c => `<button class="pill ${S.text.color === c ? "on" : ""}" data-c="${c}" style="background:${c};color:${c === "#1c1713" ? "#fff" : "#1c1713"}">가</button>`).join("")}</div>
     <div class="dim">화면에서 글씨를 끌어서 옮기고, 두 손가락으로 크기를 바꿔요.</div>`);
   const ta = $("#tIn"); ta.value = S.text.str;
   ta.oninput = () => { S.text.str = ta.value; persistSettings(); render(); };
   $("#tSz").oninput = e => { S.text.size = e.target.value / 100; persistSettings(); render(); };
+  $("#tWt").oninput = e => { S.text.wt = e.target.value * 100; persistSettings(); render(); };
   $("#tOw").oninput = e => { S.text.ow = +e.target.value; persistSettings(); render(); };
   $("#tCol").onclick = e => { const c = e.target.dataset.c; if (!c) return; S.text.color = c; persistSettings(); render(); [...$("#tCol").children].forEach(b => b.classList.toggle("on", b.dataset.c === c)); };
 };
@@ -892,6 +898,7 @@ $("#bTab").classList.toggle("on", S.tab);
 $("#bPlan").classList.toggle("on", S.plan !== "off");
 $("#clock").textContent = hms(total(todayCells()));
 if (S.plan !== "off") fetchPlan();
+[300, 400, 500, 600, 700].forEach(w => document.fonts && document.fonts.load(`${w} 20px ${FONT}`, "가Aa").then(render).catch(() => {}));
 loadFriends();
 applyAdj();
 render();

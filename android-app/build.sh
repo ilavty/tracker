@@ -6,7 +6,7 @@ WORK="${WORK:-/tmp/capapp}"
 rm -rf "$WORK" && mkdir -p "$WORK/www/fonts" && cd "$WORK"
 
 cp "$REPO/camstudy-m.html" www/index.html
-cp "$REPO/fonts/Paperlogy-4Regular.ttf" "$REPO/fonts/Paperlogy-7Bold.ttf" www/fonts/
+cp "$REPO"/fonts/Paperlogy-{3Light,4Regular,5Medium,6SemiBold,7Bold}.ttf www/fonts/
 cp "$REPO/camstudy-m-icon-192.png" "$REPO/camstudy-m-icon-512.png" www/
 
 npm init -y >/dev/null
