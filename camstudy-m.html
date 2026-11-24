@@ -552,7 +552,45 @@ setInterval(() => {
   $("#clock").textContent = hms(total(todayCells()));
   render();
 }, 1000);
+/* 컴퓨터처럼 저장: 왼쪽 카메라(+글씨·계획), 오른쪽 위 친구, 그 아래 타임테이블 */
+function drawCamInto(c, r) {
+  c.save(); c.beginPath(); c.rect(r.x, r.y, r.w, r.h); c.clip();
+  c.fillStyle = BG; c.fillRect(r.x, r.y, r.w, r.h);
+  if (v.videoWidth) {
+    if (CANVAS_FILTER) c.filter = adjFilter();
+    if (S.adj.mirror) { c.translate(2 * r.x + r.w, 0); c.scale(-1, 1); }
+    cover(c, v, v.videoWidth, v.videoHeight, r.x, r.y, r.w, r.h);
+  }
+  c.restore();
+  if (S.adj.warm) {
+    c.save(); c.globalCompositeOperation = "soft-light"; const a = Math.min(.6, Math.abs(S.adj.warm) / 50 * .5);
+    c.fillStyle = S.adj.warm > 0 ? `rgba(255,140,40,${a})` : `rgba(60,140,255,${a})`; c.fillRect(r.x, r.y, r.w, r.h); c.restore();
+  }
+}
+function shotDesk() {
+  const split = S.flay === "split" && friendImgs.length > 0;
+  const sr = split ? splitRects(W, H).c : { w: W, h: H };       // 내 카메라 칸의 비율을 그대로 쓴다
+  const ch = 640, cw = Math.max(2, Math.round(ch * sr.w / sr.h / 2) * 2), tw = Math.max(240, Math.round(ch * 0.4)), pad = 10;
+  const cv = document.createElement("canvas"); cv.width = cw + tw; cv.height = ch;
+  const c = cv.getContext("2d");
+  c.fillStyle = BG; c.fillRect(0, 0, cv.width, cv.height);
+  drawCamInto(c, { x: 0, y: 0, w: cw, h: ch });
+  if (S.plan !== "off" && planData) { const it = S.items.plan; drawPlan(c, it.fx * cw, it.fy * ch, it.fw * cw); }
+  drawText(c, cw, ch);
+  let top = pad;
+  const f = S.flay !== "off" ? repFriend() : null;
+  if (f) {
+    const fw = tw - pad * 2, fh = Math.round(fw * 3 / 4), x = cw + pad;
+    c.save(); rr(c, x, top, fw, fh, 14); c.clip(); cover(c, f.bmp, f.bmp.width, f.bmp.height, x, top, fw, fh); c.restore();
+    top += fh + pad;
+  }
+  const tx_ = cw + pad, tww = tw - pad * 2, sc = tww / 300;
+  const hs = Math.max(.25, ((ch - top - pad) / sc - 46) / (24 * 11.2));
+  drawTable(c, tx_, top, tww, hs);
+  cv.toBlob(b => { if (b) putFrame(dayKey(), b, [0, 0, cw / cv.width, 1]).catch(() => {}); }, "image/jpeg", .82);
+}
 function shot() {
+  if ((S.saveLay || "desk") === "desk") { shotDesk(); return; }
   const w = 540, h = Math.round(540 * H / W), cv = document.createElement("canvas");
   cv.width = w; cv.height = h;
   const bx = paint(cv.getContext("2d"), w, h, true, false), cr = bx.cam;
@@ -615,6 +653,8 @@ function download(blob, name) {
 $("#bSave").onclick = () => {
   openSheet(`<div class="h">저장</div>
     <div class="row"><button class="pill" id="sPng">타임테이블 이미지 (PNG)</button></div>
+    <div class="h">저장 영상 모양 (이후에 쌓이는 장면부터)</div>
+    <div class="row"><button class="pill ${(S.saveLay || "desk") === "desk" ? "on" : ""}" data-sl="desk">컴퓨터처럼</button><button class="pill ${S.saveLay === "screen" ? "on" : ""}" data-sl="screen">화면 그대로</button></div>
     <div class="row"><button class="pill go" id="sVid">타임랩스 영상 만들기</button></div>
     <div class="h">타임랩스 간격</div>
     <div class="row"><input type="range" id="iv" min="1" max="10" value="${S.interval}"><span id="ivl" style="width:34px;text-align:right">${S.interval}초</span></div>
@@ -628,6 +668,7 @@ $("#bSave").onclick = () => {
     c.toBlob(async b => { try { await saveBlob(b, `timetable_${dayKey()}.png`); toast(NATIVE ? "사진 폴더에 저장했어요" : "저장했어요"); } catch (e) { toast("저장하지 못했어요"); } closeSheet(); });
   };
   $("#sVid").onclick = openExport;
+  sheet.onclick = e => { const k = e.target.dataset && e.target.dataset.sl; if (!k) return; S.saveLay = k; persistSettings(); sheet.querySelectorAll("[data-sl]").forEach(b => b.classList.toggle("on", b.dataset.sl === k)); };
 };
 
 async function openExport() {
