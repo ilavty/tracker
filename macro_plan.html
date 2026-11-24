@@ -68,7 +68,10 @@ button{cursor:pointer;border:none;background:none}
 .vmt{font-size:1.55rem;font-weight:800;line-height:1}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
-.cv{max-width:1100px;margin:0 auto}
+.cv{max-width:1320px;margin:0 auto}
+.cmb{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}
+.cmemo{position:sticky;top:64px;border-left:1.5px solid var(--bd);padding:8px 4px 8px 16px;min-height:200px}
+.mtext{outline:none;white-space:pre-wrap;word-break:break-word;font-size:.88rem;line-height:1.7;min-height:180px}
 .cm{margin-bottom:30px}
 .cwd{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;font-weight:700;color:var(--sub);text-align:center;padding:8px 0 4px}
 .cwk{position:relative}
@@ -87,8 +90,11 @@ button{cursor:pointer;border:none;background:none}
 .cbar .nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .cbar .pg{position:absolute;left:0;bottom:0;height:2px;background:rgba(0,0,0,.45)}
 .dbub{display:flex;flex-direction:column;gap:2px;padding:2px 4px 6px;align-items:flex-end;pointer-events:none;min-width:0}
-.cb{pointer-events:auto;display:flex;align-items:center;gap:3px;max-width:100%;padding:2px 8px;border-radius:11px;font-size:.7rem;line-height:1.35}
-.cb.pay{background:#9fd0ee;color:#17303f}
+.cb{pointer-events:auto;position:relative;display:flex;align-items:center;gap:3px;max-width:calc(100% - 8px);margin:0 8px 3px 0;padding:3px 10px;border-radius:14px;font-size:.72rem;line-height:1.35}
+.cb:before,.cb:after{content:"";position:absolute;bottom:0;height:13px}
+.cb:before{right:-5px;width:12px;background:inherit;border-bottom-left-radius:11px 9px}
+.cb:after{right:-11px;width:11px;background:#fff;border-bottom-left-radius:7px}
+.cb.pay{background:#4fa8f0;color:#fff}
 .cb.sched{background:#a9805a;color:#fff}
 .cb.memo{background:#e9e9eb;color:#222}
 .rnote{outline:none;min-width:12px;word-break:break-word}
@@ -196,12 +202,13 @@ function seedState() {
     { id: uid(), date: '2027-01-18', text: '2차 개강', kind: 'sched', seed: true },
     { id: uid(), date: '2027-02-14', text: '상황판단 밀린 거 따라잡기', kind: 'memo', seed: true },
   ];
-  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes };
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, memos: {} };
 }
 function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
+  x.memos = x.memos || {};
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
   x.exams = x.exams || { p: '2027-07-10', s: '2027-09-11' };
@@ -410,9 +417,10 @@ function calView() {
     const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
     const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
     h += `<div class="cm"><div class="vmh"><span class="vmt">${mo + 1}월</span><span class="vy">${y}</span>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
-      <div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div>`;
+      <div class="cmb"><div class="ccal"><div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div>`;
     for (let ws = ms - ((ms + 3) % 7); ws <= me; ws += 7) { if (ws + 6 < r0) continue; h += weekRow(ws, ms, me, ep, es); }
-    h += '</div>';
+    const mk = `${y}-${p2(mo + 1)}`;
+    h += `</div><div class="cmemo"><div class="mtext" contenteditable="true" data-mm="${mk}">${esc(S.memos[mk] || '')}</div></div></div></div>`;
   }
   return h + '</div>';
 }
@@ -562,6 +570,7 @@ function saveNote() {
 /* 말풍선 안에서 바로 고치기 */
 document.addEventListener('focusout', ev => {
   const t = ev.target;
+  if (t.dataset && t.dataset.mm) { const v = t.innerText.replace(/\n+$/, ''); if ((S.memos[t.dataset.mm] || '') !== v) { if (v) S.memos[t.dataset.mm] = v; else delete S.memos[t.dataset.mm]; save(); } return; }
   if (t.dataset && t.dataset.nn) {
     const n = S.notes.find(x => x.id === t.dataset.nn); if (!n) return;
     const v = t.innerText.trim();
@@ -576,6 +585,7 @@ document.addEventListener('keydown', ev => {
 });
 document.addEventListener('paste', ev => {
   const t = ev.target;
+  if (t.dataset && t.dataset.mm) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text')); return; }
   if (t.dataset && t.dataset.nn) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ')); }
 });
 function scrollTodayC() { const el = $('#tdcell'); if (el) setTimeout(() => { const y = el.getBoundingClientRect().top + window.scrollY - 260; window.scrollTo({ top: y > 120 ? y : 0, behavior: 'auto' }); }, 60); }
