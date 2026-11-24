@@ -392,9 +392,16 @@ function cover(c, img, iw, ih, x, y, w, h) {
   if (ir > rr_) { sh = ih; sw = sh * rr_; sx = (iw - sw) / 2; sy = 0; } else { sw = iw; sh = sw / rr_; sx = 0; sy = (ih - sh) / 2; }
   c.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
-function splitRects(w, h) {   // 세로: 친구 위·나 아래 / 가로: 친구 왼쪽·나 오른쪽
-  if (w > h * 1.1) { const fw = Math.round(w * 0.34); return { f: { x: 0, y: 0, w: fw, h }, c: { x: fw, y: 0, w: w - fw, h } }; }
-  const th = Math.round(h * 0.4); return { f: { x: 0, y: 0, w, h: th }, c: { x: 0, y: th, w, h: h - th } };
+function splitRects(w, h) {   // 내 위치(mepos)에 따라 내 카메라와 친구 칸을 나눈다
+  const me = S.mepos || (w > h * 1.1 ? "right" : "bottom");
+  if (me === "left" || me === "right") {
+    const fw = Math.round(w * 0.34);
+    return me === "right" ? { f: { x: 0, y: 0, w: fw, h }, c: { x: fw, y: 0, w: w - fw, h } }
+                          : { f: { x: w - fw, y: 0, w: fw, h }, c: { x: 0, y: 0, w: w - fw, h } };
+  }
+  const th = Math.round(h * 0.4);
+  return me === "bottom" ? { f: { x: 0, y: 0, w, h: th }, c: { x: 0, y: th, w, h: h - th } }
+                         : { f: { x: 0, y: h - th, w, h: th }, c: { x: 0, y: 0, w, h: h - th } };
 }
 
 /* 한 장 합성 (화면용 / 저장용 공통) */
@@ -459,6 +466,7 @@ function render() {
   octx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const split = S.flay === "split" && friendImgs.length > 0, cr = split ? splitRects(W, H).c : { x: 0, y: 0, w: W, h: H };
   v.style.left = cr.x + "px"; v.style.top = cr.y + "px"; v.style.width = cr.w + "px"; v.style.height = cr.h + "px";
+  const bar = $("#bar"); bar.style.left = cr.x + "px"; bar.style.width = cr.w + "px"; bar.style.right = "auto"; bar.style.top = cr.y + "px";
   const t = $("#tint"); t.style.left = v.style.left; t.style.top = v.style.top; t.style.width = v.style.width; t.style.height = v.style.height;
   boxes = paint(octx, W, H, false, true);
 }
@@ -670,11 +678,13 @@ async function encode(pick, onp) {
 function friendSheet() {
   const thumbs = () => friendImgs.map(f => `<div style="position:relative"><img data-r="${f.id}" src="${f.url}" style="width:64px;height:64px;object-fit:cover;border-radius:12px;${repFriend() && repFriend().id === f.id ? "outline:2px solid " + SKY + ";" : ""}"><button data-d="${f.id}" style="position:absolute;right:-5px;top:-5px;width:22px;height:22px;border-radius:11px;border:0;background:#fff;color:#1c1713;font-size:13px;line-height:22px;padding:0">×</button></div>`).join("");
   openSheet(`<div class="h">친구 화면</div>
-    <div class="row">${[["off", "끄기"], ["pip", "작게"], ["split", "위아래"]].map(([k, t]) => `<button class="pill ${S.flay === k ? "on" : ""}" data-l="${k}">${t}</button>`).join("")}</div>
+    <div class="row">${[["off", "끄기"], ["pip", "작게"], ["split", "분할"]].map(([k, t]) => `<button class="pill ${S.flay === k ? "on" : ""}" data-l="${k}">${t}</button>`).join("")}</div>
+    <div class="h">내 위치 (분할일 때)</div>
+    <div class="row">${[["top", "위"], ["bottom", "아래"], ["left", "왼쪽"], ["right", "오른쪽"]].map(([k, t]) => `<button class="pill ${(S.mepos || (innerWidth > innerHeight * 1.1 ? "right" : "bottom")) === k ? "on" : ""}" data-m="${k}">${t}</button>`).join("")}</div>
     <div class="h">사진</div>
     <div id="fl" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${thumbs()}</div>
     <div class="row"><button class="pill go" id="fAdd">사진 추가</button></div>
-    <div class="dim">작게: 대표 친구 한 명이 왼쪽 아래에 떠요 (끌어서 이동, 두 손가락으로 크기). 사진을 눌러 대표 친구를 바꿔요. 위아래: 친구들이 위, 내가 아래예요.</div>
+    <div class="dim">작게: 대표 친구 한 명이 작게 떠요 (끌어서 이동, 두 손가락으로 크기). 사진을 눌러 대표 친구를 바꿔요. 위아래: 화면을 나눠서 친구들과 내가 한쪽씩 차지해요.</div>
     <input type="file" id="fFile" accept="image/*" multiple hidden>`);
   const refresh = () => { $("#fl").innerHTML = thumbs(); };
   $("#fAdd").onclick = () => $("#fFile").click();
@@ -682,6 +692,7 @@ function friendSheet() {
   sheet.onclick = async e => {
     const t = e.target.dataset || {};
     if (t.l) { S.flay = t.l; persistSettings(); render(); friendSheet(); }
+    else if (t.m) { S.mepos = t.m; if (S.flay !== "split") S.flay = "split"; persistSettings(); render(); friendSheet(); }
     else if (t.r) { S.rep = t.r; persistSettings(); render(); refresh(); }
     else if (t.d) { await delFriend(t.d); render(); refresh(); }
   };
