@@ -59,7 +59,7 @@ button{cursor:pointer;border:none;background:none}
 .blk .nm{overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
 .blk .pg{position:absolute;left:0;bottom:0;height:3px;background:rgba(0,0,0,.45)}
 .ghost{position:absolute;height:5px;border-radius:3px;z-index:2;pointer-events:none}
-.must{font-size:.62rem;font-weight:800;background:#111;color:#fff;border-radius:4px;padding:0 4px;line-height:15px;flex:none}
+.must{font-size:.62rem;font-weight:800;border-radius:4px;padding:0 4px;line-height:13px;flex:none}
 .dl{font-size:.64rem;font-weight:700;background:rgba(255,255,255,.85);color:#222;border-radius:8px;padding:0 5px;line-height:15px;flex:none;border:1px solid rgba(0,0,0,.15)}
 .dl.od{background:#f3e7de;color:#7a4a2a}
 
@@ -323,7 +323,7 @@ function monthView() {
     bl.forEach((b, k) => {
       const m = meta(b), top = pos[k] * LH + 4, left = X(pd(b.s)), w = (pd(b.e) - pd(b.s) + 1) * px;
       inner += `<div class="blk" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="left:${left}px;top:${top}px;width:${w}px;${blkStyle(b, m)}">
-        ${b.imp === 2 ? '<span class="must" style="background:${m.c}">필수</span>' : ''}
+        ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
         <span class="nm" ${b.done >= 100 ? 'style="opacity:.7"' : ''}>${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
         ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}
         ${b.done > 0 ? `<span class="pg" style="width:${b.done}%"></span>` : ''}</div>`;
@@ -349,7 +349,7 @@ function weekView() {
   const chip = (b, ws, we) => {
     const m = meta(b), ends = pd(b.e) >= ws && pd(b.e) <= we;
     return `<div class="chip" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="${blkStyle(b, m)}">
-      ${b.imp === 2 ? '<span class="must" style="background:${m.c}">필수</span>' : ''}
+      ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
       <span class="nm">${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
       ${ends ? `<span class="em">~${md(pd(b.e))}</span>` : ''}
       ${b.done > 0 && b.done < 100 ? `<span class="em">${b.done}%</span>` : ''}
