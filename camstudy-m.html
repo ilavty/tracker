@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#1c1713">
+<title>캠스터디</title>
+<link rel="manifest" href="camstudy-m.webmanifest">
+<link rel="icon" href="camstudy-m-icon-192.png">
+<link rel="apple-touch-icon" href="camstudy-m-icon-192.png">
+<style>
+@font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-4Regular.ttf") format("truetype");font-weight:400}
+@font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-7Bold.ttf") format("truetype");font-weight:700}
+:root{--bg:#1c1713;--sky:#BEE9F2;--card:#2a211b;--line:#4a4039}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none}
+*::-webkit-scrollbar{display:none}
+html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:"Paperlogy",system-ui,sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:none}
+#stage{position:fixed;inset:0;background:var(--bg)}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--bg)}
+#ov{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#bar{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;display:flex;align-items:center;gap:8px;background:linear-gradient(rgba(28,23,19,.78),rgba(28,23,19,0));z-index:5;transition:opacity .25s}
+#bar.hide,#dock.hide{opacity:0;pointer-events:none}
+#dock{position:absolute;left:0;right:0;bottom:0;padding:14px 12px calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;gap:12px;background:linear-gradient(rgba(28,23,19,0),rgba(28,23,19,.78));z-index:5;transition:opacity .25s}
+#dock .b{width:46px;height:46px;border-radius:23px}
+#tm{font-weight:700;font-size:26px;letter-spacing:.5px;color:var(--sky);display:flex;align-items:center;gap:8px;min-width:0}
+#dot{width:9px;height:9px;border-radius:50%;background:#6b5d52;flex:none}
+#dot.on{background:var(--sky)}
+#sp{flex:1}
+.b{width:42px;height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.b.on{background:var(--sky);color:var(--bg)}
+.b svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.b svg .f{fill:currentColor;stroke:none}
+#sheet{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:18px 18px calc(env(safe-area-inset-bottom) + 18px);z-index:20;transform:translateY(105%);transition:transform .25s;max-height:78vh;overflow:auto;touch-action:pan-y}
+#sheet.open{transform:none}
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:15;display:none}
+#scrim.open{display:block}
+.h{color:var(--sky);font-size:11px;font-weight:700;margin:14px 0 6px}
+.h:first-child{margin-top:0}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.pill{flex:1;height:38px;border-radius:19px;border:0;background:rgba(255,255,255,.13);color:#fff;font:inherit;font-size:13px;font-weight:700}
+.pill.on{background:var(--sky);color:var(--bg)}
+.pill.go{background:var(--sky);color:var(--bg)}
+select,textarea,input[type=text]{width:100%;background:rgba(255,255,255,.12);border:0;border-radius:10px;padding:10px 12px;color:#fff;font:inherit;font-size:14px}
+select option{color:#000}
+textarea{resize:none;height:64px}
+input[type=range]{flex:1;accent-color:var(--sky)}
+.dim{color:rgba(255,255,255,.6);font-size:12px;line-height:1.5}
+#prog{height:6px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;display:none;margin:10px 0}
+#prog i{display:block;height:100%;width:0;background:var(--sky)}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 96px);transform:translateX(-50%);background:rgba(42,33,27,.94);border:1px solid var(--line);border-radius:18px;padding:9px 16px;font-size:13px;z-index:30;opacity:0;transition:opacity .25s;pointer-events:none;max-width:88vw;text-align:center}
+#toast.show{opacity:1}
+#start{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+#start button{pointer-events:auto;height:46px;padding:0 26px;border-radius:23px;border:0;background:var(--sky);color:var(--bg);font:inherit;font-weight:700;font-size:15px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="v" playsinline muted autoplay></video>
+  <canvas id="ov"></canvas>
+  <div id="start"><button id="camBtn">카메라 켜기</button></div>
+  <div id="bar">
+    <div id="tm"><span id="dot"></span><span id="clock">00:00:00</span></div>
+  </div>
+  <div id="dock">
+    <button class="b" id="bT" aria-label="글씨"><svg viewBox="0 0 20 20"><path d="M4.5 5.5V4h11v1.5M10 4v12M7.5 16h5"/></svg></button>
+    <button class="b" id="bPlan" aria-label="오늘 계획"><svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 7.5h6M7 10.5h6M7 13.5h3.5"/></svg></button>
+    <button class="b on" id="bTab" aria-label="타임테이블"><svg viewBox="0 0 20 20"><rect x="3" y="3.5" width="14" height="13" rx="2"/><path d="M3 8h14M3 12.3h14M8.6 8v8.5"/></svg></button>
+    <button class="b" id="bFlip" aria-label="카메라 전환"><svg viewBox="0 0 20 20"><rect x="2.5" y="5.5" width="15" height="10" rx="2.2"/><path d="M7.5 5.5l1-2h3l1 2"/><path d="M8 10.5a2.2 2.2 0 0 1 3.8-1.3M12 10.5a2.2 2.2 0 0 1-3.8 1.3"/></svg></button>
+    <button class="b" id="bRun" aria-label="시작/정지"><svg viewBox="0 0 20 20" id="runIc"><path class="f" d="M7 4.5v11l8.5-5.5z"/></svg></button>
+    <button class="b" id="bSave" aria-label="저장"><svg viewBox="0 0 20 20"><path d="M10 12.5V3.5M6.5 6.5L10 3l3.5 3.5M4.5 10.5v4.5a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-4.5"/></svg></button>
+  </div>
+</div>
+<div id="scrim"></div>
+<div id="sheet"></div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const SKY = "#BEE9F2", BG = "#1c1713";
+const PLAN_DB = "https://tracker-d3a39-default-rtdb.firebaseio.com/study_records/my_study_data_final10/";
+const $ = s => document.querySelector(s);
+const FONT = '"Paperlogy", system-ui, sans-serif';
+
+/* ───────── 저장소 ───────── */
+function load(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+let S = load("csm_settings", {
+  tab: true, plan: "off",
+  text: { str: "", size: 0.09, color: "#ffffff", ow: 3, fx: 0.08, fy: 0.42 },
+  items: { tab: { fx: 0.04, fy: 0.12, fw: 0.40 }, plan: { fx: 0.5, fy: 0.12, fw: 0.46 } },
+  interval: 3, cam: -1
+});
+let DAYS = load("csm_days", {});          // { "2026-11-24": [144 cells of seconds] }
+function persistSettings() { save("csm_settings", S); }
+
+function dayKey(d = new Date()) {         // 새벽 5시 기준
+  const x = new Date(d.getTime() - 5 * 3600 * 1000);
+  return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
+}
+function cellIndex(d = new Date()) {
+  const m = ((d.getHours() * 60 + d.getMinutes()) - 300 + 1440) % 1440;
+  return Math.min(143, Math.floor(m / 10));
+}
+function todayCells() { const k = dayKey(); if (!DAYS[k]) DAYS[k] = new Array(144).fill(0); return DAYS[k]; }
+function total(cells) { return cells.reduce((a, b) => a + b, 0); }
+function hms(s) {
+  s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return [h, m, x].map(n => String(n).padStart(2, "0")).join(":");
+}
+
+/* ───────── 프레임 DB (IndexedDB) ───────── */
+let _db = null;
+function db() {
+  if (_db) return _db;
+  _db = new Promise((res, rej) => {
+    const r = indexedDB.open("csm", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("frames");
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  return _db;
+}
+function tx(mode) { return db().then(d => d.transaction("frames", mode).objectStore("frames")); }
+function idbReq(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+const frameCount = {};                       // day -> next index
+async function putFrame(day, blob) {
+  if (frameCount[day] == null) {
+    const st = await tx("readonly");
+    const keys = await idbReq(st.getAllKeys(IDBKeyRange.bound(day + "|", day + "|￿")));
+    frameCount[day] = keys.length;
+  }
+  const i = ++frameCount[day];
+  const st = await tx("readwrite");
+  st.put(blob, day + "|" + String(i).padStart(6, "0"));
+}
+async function allFrameKeys() { const st = await tx("readonly"); return idbReq(st.getAllKeys()); }
+async function getFrame(k) { const st = await tx("readonly"); return idbReq(st.get(k)); }
+async function delDay(day) {
+  const st = await tx("readwrite");
+  st.delete(IDBKeyRange.bound(day + "|", day + "|￿"));
+  delete frameCount[day];
+}
+
+/* ───────── 카메라 ───────── */
+const v = $("#v");
+let stream = null, devices = [], camOn = false;
+async function listCams() {
+  try { devices = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "videoinput"); } catch (e) { devices = []; }
+}
+async function startCam(idx) {
+  stopCam();
+  const c = { audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 } } };
+  if (idx >= 0 && devices[idx] && devices[idx].deviceId) c.video.deviceId = { exact: devices[idx].deviceId };
+  else c.video.facingMode = "user";
+  stream = await navigator.mediaDevices.getUserMedia(c);
+  v.srcObject = stream;
+  await v.play().catch(() => {});
+  camOn = true;
+  $("#start").style.display = "none";
+  await listCams();
+  S.cam = idx; persistSettings();
+}
+function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camOn = false; }
+$("#camBtn").onclick = async () => {
+  try { await startCam(S.cam); } catch (e) { toast("카메라를 켤 수 없어요. 권한을 확인해주세요"); }
+};
+$("#bFlip").onclick = async () => {
+  try {
+    if (!camOn) { await startCam(S.cam); return; }
+    await listCams();
+    if (devices.length < 2) { toast("연결된 카메라가 하나예요"); return; }
+    const cur = stream.getVideoTracks()[0].getSettings().deviceId;
+    let i = devices.findIndex(d => d.deviceId === cur);
+    await startCam((i + 1) % devices.length);
+  } catch (e) { toast("카메라를 바꿀 수 없어요"); }
+};
+
+/* ───────── 그리기 ───────── */
+const ov = $("#ov"), octx = ov.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+function fit() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  ov.width = W * DPR; ov.height = H * DPR;
+}
+addEventListener("resize", () => { fit(); render(); });
+
+function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); }
+
+function drawTable(c, x, y, w) {
+  const s = w / 300, pad = 12 * s, head = 34 * s, rowH = 11.2 * s;
+  const cells = todayCells();
+  const h = head + 24 * rowH + pad;
+  c.save();
+  rr(c, x, y, w, h, 16 * s); c.fillStyle = "rgba(44,35,29,.88)"; c.fill();
+  c.strokeStyle = "rgba(255,255,255,.14)"; c.lineWidth = Math.max(1, s); c.stroke();
+  const d = new Date(new Date().getTime() - 5 * 3600 * 1000);
+  c.fillStyle = "#fff"; c.font = `700 ${12 * s}px ${FONT}`; c.textBaseline = "middle";
+  c.fillText(`${d.getMonth() + 1}월 ${d.getDate()}일`, x + pad, y + head / 2 + 1 * s);
+  c.textAlign = "right"; c.fillStyle = SKY; c.fillText(hms(total(cells)), x + w - pad, y + head / 2 + 1 * s);
+  c.textAlign = "left";
+  const gx = x + pad + 18 * s, gw = w - pad * 2 - 18 * s, cw = gw / 6;
+  for (let r = 0; r < 24; r++) {
+    const yy = y + head + r * rowH, hr = (5 + r) % 24;
+    c.fillStyle = "rgba(255,255,255,.5)"; c.font = `${7 * s}px ${FONT}`;
+    c.fillText(String(hr).padStart(2, "0"), x + pad, yy + rowH / 2);
+    for (let k = 0; k < 6; k++) {
+      const cx = gx + k * cw, f = Math.min(1, (cells[r * 6 + k] || 0) / 600);
+      c.fillStyle = "rgba(255,255,255,.08)"; c.fillRect(cx + .5 * s, yy + .5 * s, cw - 1 * s, rowH - 1 * s);
+      if (f > 0) { c.fillStyle = SKY; c.fillRect(cx + .5 * s, yy + .5 * s, (cw - 1 * s) * f, rowH - 1 * s); }
+    }
+  }
+  c.restore();
+  return h;
+}
+
+/* 오늘 계획 */
+let planData = null;
+function planText(t) { return String(t || "").replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(); }
+function planHex(h) { h = String(h || ""); if (/^[0-9a-f]{6}$/i.test(h)) h = "#" + h; return /^#[0-9a-f]{6}$/i.test(h) ? h : null; }
+function plist(x) { return Array.isArray(x) ? x.filter(v => v != null) : (x && typeof x === "object" ? Object.values(x).filter(v => v != null) : []); }
+function pparse(v) { if (typeof v === "string") { try { return JSON.parse(v); } catch (e) { return null; } } return v; }
+async function fetchPlan() {
+  try {
+    const get = async n => (await fetch(PLAN_DB + n + ".json?t=" + Date.now())).json();
+    const P = pparse(await get("plannerData")) || {}, T = plist(pparse(await get("plannerTags")));
+    const d = new Date(Date.now() - 5 * 3600 * 1000), key = (d.getMonth() + 1) + "." + d.getDate();
+    const day = P[key] || { items: [] }, rows = [];
+    for (const it of plist(day.items)) {
+      const t = T.find(x => x.id === it.tag) || {}, col = planHex(t.color) || "#c9c9c9";
+      rows.push({ tag: String(t.name || ""), col, text: planText(it.text), hl: planHex(it.hl), done: !!it.done, sub: false });
+      for (const sb of plist(it.subItems)) rows.push({ tag: "", col, text: planText(sb.text), hl: planHex(sb.hl), done: !!sb.done, sub: true });
+    }
+    planData = { rows, bg: planHex(day.bgColor) || "#e8f1f9" };
+    render();
+  } catch (e) {}
+}
+function planHeight(w) { const n = Math.max(1, planData ? planData.rows.length : 1); return (14 + n * 28 + 14) * (w / 300); }
+function drawPlan(c, x, y, w) {
+  const s = w / 300, web = S.plan === "web", rows = planData ? planData.rows : [], h = planHeight(w);
+  c.save();
+  rr(c, x, y, w, h, (web ? 8 : 16) * s);
+  c.fillStyle = web ? (planData && planData.bg) : "rgba(44,35,29,.92)"; c.fill();
+  c.strokeStyle = web ? "rgba(42,85,140,.16)" : "rgba(255,255,255,.14)"; c.lineWidth = Math.max(1, s); c.stroke();
+  const pad = 15 * s; let yy = y + 14 * s;
+  c.textBaseline = "middle";
+  const ink = web ? "#222" : "#fff";
+  for (const r of rows) {
+    const mid = yy + 14 * s, ix = x + pad + (r.sub ? 14 * s : 0);
+    let tx = ix;
+    if (r.tag && !r.sub) {
+      c.font = `700 ${10 * s}px ${FONT}`;
+      const tw = c.measureText(r.tag).width + 12 * s;
+      rr(c, ix, mid - 9 * s, tw, 18 * s, 9 * s); c.fillStyle = r.col; c.fill();
+      c.fillStyle = "#222"; c.fillText(r.tag, ix + 6 * s, mid + .5 * s); tx = ix + tw + 6 * s;
+    }
+    c.font = `${r.sub ? 12 : 13}px ${FONT}`.replace(/\d+px/, (r.sub ? 12 : 13) * s + "px");
+    const maxw = x + w - pad - tx;
+    let t = r.text; while (t.length > 1 && c.measureText(t).width > maxw) t = t.slice(0, -1);
+    if (t !== r.text) t += "…";
+    const tw2 = c.measureText(t).width;
+    if (r.hl) {
+      c.save(); c.globalAlpha = .75; c.fillStyle = r.hl;
+      c.beginPath(); c.moveTo(tx - 2 * s, mid + 7 * s); c.lineTo(tx + 3 * s, mid - 5 * s); c.lineTo(tx + tw2 + 3 * s, mid - 5 * s); c.lineTo(tx + tw2 - 2 * s, mid + 7 * s); c.closePath(); c.fill(); c.restore();
+    }
+    c.fillStyle = r.hl ? "#222" : (r.done ? (web ? "#888" : "rgba(255,255,255,.5)") : ink);
+    c.fillText(t, tx, mid);
+    if (r.done && !r.hl) { c.strokeStyle = c.fillStyle; c.lineWidth = s; c.beginPath(); c.moveTo(tx, mid); c.lineTo(tx + tw2, mid); c.stroke(); }
+    yy += 28 * s;
+  }
+  c.restore();
+  return h;
+}
+
+/* 글씨 */
+function drawText(c, w, h) {
+  const T = S.text; if (!T.str) return null;
+  const px = Math.max(8, T.size * w), lines = T.str.split("\n");
+  c.save(); c.font = `700 ${px}px ${FONT}`; c.textBaseline = "top"; c.lineJoin = "round";
+  const x = T.fx * w, y = T.fy * h; let maxw = 0;
+  lines.forEach((l, i) => {
+    const yy = y + i * px * 1.2; maxw = Math.max(maxw, c.measureText(l).width);
+    if (T.ow > 0) { c.strokeStyle = "#1c1713"; c.lineWidth = T.ow * 2 * (w / 360); c.strokeText(l, x, yy); }
+    c.fillStyle = T.color; c.fillText(l, x, yy);
+  });
+  c.restore();
+  return { x, y, w: maxw, h: lines.length * px * 1.2 };
+}
+
+/* 한 장 합성 (화면용 / 저장용 공통) */
+let boxes = {};
+function paint(c, w, h, withVideo) {
+  c.clearRect(0, 0, w, h);
+  if (withVideo && v.videoWidth) {
+    const vr = v.videoWidth / v.videoHeight, sr = w / h;
+    let sw, sh, sx, sy;
+    if (vr > sr) { sh = v.videoHeight; sw = sh * sr; sx = (v.videoWidth - sw) / 2; sy = 0; }
+    else { sw = v.videoWidth; sh = sw / sr; sx = 0; sy = (v.videoHeight - sh) / 2; }
+    c.fillStyle = BG; c.fillRect(0, 0, w, h);
+    c.drawImage(v, sx, sy, sw, sh, 0, 0, w, h);
+  } else if (withVideo) { c.fillStyle = BG; c.fillRect(0, 0, w, h); }
+  const b = {};
+  if (S.tab) {
+    const it = S.items.tab, ww = it.fw * w; b.tab = { x: it.fx * w, y: it.fy * h, w: ww, h: drawTable(c, it.fx * w, it.fy * h, ww) };
+  }
+  if (S.plan !== "off" && planData) {
+    const it = S.items.plan, ww = it.fw * w; b.plan = { x: it.fx * w, y: it.fy * h, w: ww, h: drawPlan(c, it.fx * w, it.fy * h, ww) };
+  }
+  const t = drawText(c, w, h); if (t) b.text = t;
+  return b;
+}
+function render() {
+  octx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  boxes = paint(octx, W, H, false);
+}
+
+/* ───────── 끌기·확대 ───────── */
+const ptrs = new Map(); let drag = null;
+function hit(x, y) {
+  for (const k of ["text", "plan", "tab"]) { const b = boxes[k]; if (b && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return k; }
+  return null;
+}
+ov.addEventListener("pointerdown", e => {
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  ov.setPointerCapture(e.pointerId);
+  if (ptrs.size === 1) {
+    const k = hit(e.clientX, e.clientY);
+    if (k) { drag = { k, sx: e.clientX, sy: e.clientY, ox: (k === "text" ? S.text.fx : S.items[k].fx), oy: (k === "text" ? S.text.fy : S.items[k].fy) }; }
+    else { drag = null; ($("#bar").classList.toggle("hide"), $("#dock").classList.toggle("hide")); }
+  } else if (ptrs.size === 2 && drag) {
+    const [a, b] = [...ptrs.values()]; drag.d0 = Math.hypot(a.x - b.x, a.y - b.y);
+    drag.s0 = drag.k === "text" ? S.text.size : S.items[drag.k].fw;
+  }
+});
+ov.addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (!drag) return;
+  if (ptrs.size >= 2 && drag.d0) {
+    const [a, b] = [...ptrs.values()], r = Math.hypot(a.x - b.x, a.y - b.y) / drag.d0;
+    if (drag.k === "text") S.text.size = Math.min(.3, Math.max(.03, drag.s0 * r));
+    else S.items[drag.k].fw = Math.min(1, Math.max(.2, drag.s0 * r));
+  } else if (ptrs.size === 1) {
+    const fx = drag.ox + (e.clientX - drag.sx) / W, fy = drag.oy + (e.clientY - drag.sy) / H;
+    if (drag.k === "text") { S.text.fx = fx; S.text.fy = fy; } else { S.items[drag.k].fx = fx; S.items[drag.k].fy = fy; }
+  }
+  render();
+});
+function up(e) { ptrs.delete(e.pointerId); if (ptrs.size === 0 && drag) { drag = null; persistSettings(); } else if (ptrs.size === 1 && drag) { const p = [...ptrs.values()][0]; drag.sx = p.x; drag.sy = p.y; drag.ox = drag.k === "text" ? S.text.fx : S.items[drag.k].fx; drag.oy = drag.k === "text" ? S.text.fy : S.items[drag.k].fy; drag.d0 = 0; } }
+ov.addEventListener("pointerup", up); ov.addEventListener("pointercancel", up);
+
+/* ───────── 시간 재기 / 타임랩스 ───────── */
+let running = false, last = 0, lastShot = 0, wake = null;
+async function keepAwake() { try { if ("wakeLock" in navigator && running) wake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && running) keepAwake(); });
+function setRun(on) {
+  running = on; last = Date.now(); lastShot = 0;
+  $("#dot").classList.toggle("on", on);
+  $("#bRun").classList.toggle("on", on);
+  $("#runIc").innerHTML = on ? '<rect class="f" x="5" y="4.5" width="3.6" height="11" rx="1"/><rect class="f" x="11.4" y="4.5" width="3.6" height="11" rx="1"/>' : '<path class="f" d="M7 4.5v11l8.5-5.5z"/>';
+  if (on) keepAwake(); else if (wake) { wake.release().catch(() => {}); wake = null; }
+  save("csm_days", DAYS);
+}
+$("#bRun").onclick = () => setRun(!running);
+let saveTick = 0;
+setInterval(() => {
+  const now = Date.now();
+  if (running) {
+    const d = Math.min(60, (now - last) / 1000);
+    todayCells()[cellIndex()] += d;
+    if (now - lastShot >= S.interval * 1000) { lastShot = now; shot(); }
+    if (++saveTick % 10 === 0) save("csm_days", DAYS);
+  }
+  last = now;
+  $("#clock").textContent = hms(total(todayCells()));
+  render();
+}, 1000);
+function shot() {
+  const w = 540, h = Math.round(540 * H / W), cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  paint(cv.getContext("2d"), w, h, true);
+  cv.toBlob(b => { if (b) putFrame(dayKey(), b).catch(() => {}); }, "image/jpeg", .8);
+}
+addEventListener("pagehide", () => save("csm_days", DAYS));
+
+/* ───────── 아래 시트 ───────── */
+const sheet = $("#sheet"), scrim = $("#scrim");
+function openSheet(html) { sheet.innerHTML = html; sheet.classList.add("open"); scrim.classList.add("open"); }
+function closeSheet() { sheet.classList.remove("open"); scrim.classList.remove("open"); }
+scrim.onclick = closeSheet;
+let tt = 0;
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2400); }
+
+$("#bTab").onclick = () => { S.tab = !S.tab; $("#bTab").classList.toggle("on", S.tab); persistSettings(); render(); };
+$("#bPlan").onclick = () => {
+  S.plan = S.plan === "off" ? "dark" : S.plan === "dark" ? "web" : "off";
+  $("#bPlan").classList.toggle("on", S.plan !== "off");
+  persistSettings();
+  if (S.plan !== "off") { fetchPlan(); toast(S.plan === "dark" ? "오늘 계획 · 어둡게" : "오늘 계획 · 밝게"); } else toast("오늘 계획 끔");
+  render();
+};
+setInterval(() => { if (S.plan !== "off") fetchPlan(); }, 20000);
+
+$("#bT").onclick = () => {
+  openSheet(`<div class="h">글씨</div>
+    <textarea id="tIn"></textarea>
+    <div class="h">크기</div><div class="row"><input type="range" id="tSz" min="3" max="30" value="${Math.round(S.text.size * 100)}"></div>
+    <div class="h">테두리</div><div class="row"><input type="range" id="tOw" min="0" max="8" value="${S.text.ow}"></div>
+    <div class="h">색</div><div class="row" id="tCol">${["#ffffff", SKY, "#1c1713", "#f4c9a8"].map(c => `<button class="pill ${S.text.color === c ? "on" : ""}" data-c="${c}" style="background:${c};color:${c === "#1c1713" ? "#fff" : "#1c1713"}">가</button>`).join("")}</div>
+    <div class="dim">화면에서 글씨를 끌어서 옮기고, 두 손가락으로 크기를 바꿔요.</div>`);
+  const ta = $("#tIn"); ta.value = S.text.str;
+  ta.oninput = () => { S.text.str = ta.value; persistSettings(); render(); };
+  $("#tSz").oninput = e => { S.text.size = e.target.value / 100; persistSettings(); render(); };
+  $("#tOw").oninput = e => { S.text.ow = +e.target.value; persistSettings(); render(); };
+  $("#tCol").onclick = e => { const c = e.target.dataset.c; if (!c) return; S.text.color = c; persistSettings(); render(); [...$("#tCol").children].forEach(b => b.classList.toggle("on", b.dataset.c === c)); };
+};
+
+/* ───────── 저장 ───────── */
+function download(blob, name) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+$("#bSave").onclick = () => {
+  openSheet(`<div class="h">저장</div>
+    <div class="row"><button class="pill" id="sPng">타임테이블 이미지 (PNG)</button></div>
+    <div class="row"><button class="pill go" id="sVid">타임랩스 영상 만들기</button></div>
+    <div class="h">타임랩스 간격</div>
+    <div class="row"><input type="range" id="iv" min="1" max="10" value="${S.interval}"><span id="ivl" style="width:34px;text-align:right">${S.interval}초</span></div>
+    <div class="dim">공부 중일 때만 이 간격으로 한 장씩 쌓여요.</div>`);
+  $("#iv").oninput = e => { S.interval = +e.target.value; $("#ivl").textContent = S.interval + "초"; persistSettings(); };
+  $("#sPng").onclick = () => {
+    const c = document.createElement("canvas"), w = 900; c.width = w; const cx = c.getContext("2d");
+    c.height = Math.ceil(34 / 300 * w + 24 * 11.2 / 300 * w + 12 / 300 * w);
+    cx.fillStyle = BG; cx.fillRect(0, 0, c.width, c.height);
+    drawTable(cx, 0, 0, w);
+    c.toBlob(b => { download(b, `timetable_${dayKey()}.png`); toast("저장했어요"); closeSheet(); });
+  };
+  $("#sVid").onclick = openExport;
+};
+
+async function openExport() {
+  const keys = await allFrameKeys(), cnt = {};
+  keys.forEach(k => { const d = String(k).split("|")[0]; cnt[d] = (cnt[d] || 0) + 1; });
+  const days = Object.keys(cnt).sort().reverse();
+  if (!days.length) { openSheet(`<div class="h">타임랩스</div><div class="dim">아직 쌓인 장면이 없어요. 시작을 누르고 공부하면 쌓여요.</div>`); return; }
+  const opts = days.map(d => `<option value="${d}">${d} · ${cnt[d].toLocaleString()}장</option>`).join("");
+  const mp4 = window.MediaRecorder && MediaRecorder.isTypeSupported("video/mp4");
+  openSheet(`<div class="h">기간</div>
+    <div class="row"><select id="eF">${opts}</select><span class="dim">~</span><select id="eT">${opts}</select></div>
+    <div class="h">영상 길이</div>
+    <div class="row"><input type="range" id="eL" min="10" max="300" step="10" value="60"><span id="eLl" style="width:52px;text-align:right">1분</span></div>
+    <div class="dim" id="eInfo"></div>
+    <div id="prog"><i></i></div>
+    <div class="row"><button class="pill" id="eDel">이 기간 지우기</button><button class="pill go" id="eGo">영상 저장</button></div>
+    <div class="dim">영상은 길이만큼 시간이 걸려 만들어져요 (60초 영상 = 약 1분). 만드는 동안 화면을 켜두세요. 형식: ${mp4 ? "MP4" : "WebM"}</div>`);
+  const sel = () => { const a = [$("#eF").value, $("#eT").value].sort(); return keys.filter(k => { const d = String(k).split("|")[0]; return d >= a[0] && d <= a[1]; }); };
+  const info = () => {
+    const n = sel().length, L = +$("#eL").value, m = Math.floor(L / 60), s = L % 60;
+    $("#eLl").textContent = m ? (s ? `${m}분 ${s}초` : `${m}분`) : `${s}초`;
+    const used = Math.min(n, L * 30);
+    $("#eInfo").textContent = `${n.toLocaleString()}장 중 ${used.toLocaleString()}장으로 약 ${Math.round(used / 30)}초 영상 (30fps)`;
+  };
+  $("#eF").onchange = $("#eT").onchange = $("#eL").oninput = info; info();
+  let confirmDel = false;
+  $("#eDel").onclick = async () => {
+    if (!confirmDel) { confirmDel = true; $("#eDel").textContent = "정말 지울까요? 한 번 더"; setTimeout(() => { confirmDel = false; $("#eDel").textContent = "이 기간 지우기"; }, 4000); return; }
+    const a = [$("#eF").value, $("#eT").value].sort();
+    for (const d of days) if (d >= a[0] && d <= a[1]) await delDay(d);
+    toast("지웠어요"); closeSheet();
+  };
+  $("#eGo").onclick = async () => {
+    const list = sel(), L = +$("#eL").value, want = Math.min(list.length, L * 30);
+    if (!list.length) return;
+    if (!window.MediaRecorder) { toast("이 브라우저는 영상 저장이 안 돼요"); return; }
+    const pick = []; for (let i = 0; i < want; i++) pick.push(list[Math.floor(i * list.length / want)]);
+    $("#eGo").disabled = true; $("#prog").style.display = "block";
+    try { await encode(pick, p => { $("#prog i").style.width = p + "%"; }); toast("저장했어요"); closeSheet(); }
+    catch (e) { toast("영상을 만들지 못했어요"); $("#eGo").disabled = false; }
+  };
+}
+async function encode(pick, onp) {
+  const first = await createImageBitmap(await getFrame(pick[0]));
+  const cv = document.createElement("canvas"); cv.width = first.width & ~1; cv.height = first.height & ~1;
+  const cx = cv.getContext("2d");
+  cx.fillStyle = BG; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(first, 0, 0, cv.width, cv.height);
+  const st = cv.captureStream(30);
+  const mp4 = MediaRecorder.isTypeSupported("video/mp4");
+  const rec = new MediaRecorder(st, { mimeType: mp4 ? "video/mp4" : "video/webm", videoBitsPerSecond: 5e6 });
+  const chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  const done = new Promise(r => rec.onstop = r);
+  rec.start(1000);
+  const step = 1000 / 30; let t0 = performance.now();
+  for (let i = 0; i < pick.length; i++) {
+    const bm = await createImageBitmap(await getFrame(pick[i]));
+    cx.fillStyle = BG; cx.fillRect(0, 0, cv.width, cv.height);
+    const sc = Math.min(cv.width / bm.width, cv.height / bm.height), dw = bm.width * sc, dh = bm.height * sc;
+    cx.drawImage(bm, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
+    bm.close && bm.close();
+    const due = t0 + (i + 1) * step, wait = due - performance.now();
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    if (i % 15 === 0) onp(Math.round(i / pick.length * 100));
+  }
+  await new Promise(r => setTimeout(r, 300));
+  rec.stop(); await done;
+  download(new Blob(chunks, { type: mp4 ? "video/mp4" : "video/webm" }), `timelapse_${dayKey()}.${mp4 ? "mp4" : "webm"}`);
+}
+
+/* ───────── 시작 ───────── */
+fit();
+$("#bTab").classList.toggle("on", S.tab);
+$("#bPlan").classList.toggle("on", S.plan !== "off");
+$("#clock").textContent = hms(total(todayCells()));
+if (S.plan !== "off") fetchPlan();
+render();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("camstudy-m-sw.js").catch(() => {});
+</script>
+</body>
+</html>
