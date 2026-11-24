@@ -100,6 +100,8 @@ input[type=range]{flex:1;accent-color:var(--sky)}
 const SKY = "#BEE9F2", BG = "#1c1713";
 const PLAN_DB = "https://tracker-d3a39-default-rtdb.firebaseio.com/study_records/my_study_data_final10/";
 const $ = s => document.querySelector(s);
+const NATIVE = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+const FD = () => (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.FaceDetect) || null;
 const FONT = '"Paperlogy", system-ui, sans-serif';
 
 /* ───────── 저장소 ───────── */
@@ -141,11 +143,12 @@ let _db = null;
 function db() {
   if (_db) return _db;
   _db = new Promise((res, rej) => {
-    const r = indexedDB.open("csm", 2);
+    const r = indexedDB.open("csm", 3);
     r.onupgradeneeded = () => {
       const d = r.result;
       if (!d.objectStoreNames.contains("frames")) d.createObjectStore("frames");
       if (!d.objectStoreNames.contains("friends")) d.createObjectStore("friends");
+      if (!d.objectStoreNames.contains("stickers")) d.createObjectStore("stickers");
     };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -155,7 +158,7 @@ function db() {
 function tx(mode, name = "frames") { return db().then(d => d.transaction(name, mode).objectStore(name)); }
 function idbReq(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
 const frameCount = {};                       // day -> next index
-async function putFrame(day, blob) {
+async function putFrame(day, blob, cam) {
   if (frameCount[day] == null) {
     const st = await tx("readonly");
     const keys = await idbReq(st.getAllKeys(IDBKeyRange.bound(day + "|", day + "|￿")));
@@ -163,7 +166,11 @@ async function putFrame(day, blob) {
   }
   const i = ++frameCount[day];
   const st = await tx("readwrite");
-  st.put(blob, day + "|" + String(i).padStart(6, "0"));
+  st.put({ b: blob, c: cam || [0, 0, 1, 1] }, day + "|" + String(i).padStart(6, "0"));
+}
+async function loadFrame(k) {        // { bmp, c:[x,y,w,h] 카메라 영역(0~1) }
+  const v_ = await getFrame(k), blob = v_ instanceof Blob ? v_ : v_.b, c = v_ instanceof Blob ? [0, 0, 1, 1] : v_.c;
+  return { bmp: await createImageBitmap(blob), c };
 }
 async function allFrameKeys() { const st = await tx("readonly"); return idbReq(st.getAllKeys()); }
 async function getFrame(k) { const st = await tx("readonly"); return idbReq(st.get(k)); }
@@ -460,6 +467,7 @@ function paint(c, w, h, withVideo, ui) {
     const it = S.items.plan, ww = it.fw * w; b.plan = { x: it.fx * w, y: it.fy * h, w: ww, h: drawPlan(c, it.fx * w, it.fy * h, ww) };
   }
   const t = drawText(c, w, h); if (t) b.text = t;
+  b.cam = cr;
   return b;
 }
 function render() {
@@ -547,8 +555,9 @@ setInterval(() => {
 function shot() {
   const w = 540, h = Math.round(540 * H / W), cv = document.createElement("canvas");
   cv.width = w; cv.height = h;
-  paint(cv.getContext("2d"), w, h, true, false);
-  cv.toBlob(b => { if (b) putFrame(dayKey(), b).catch(() => {}); }, "image/jpeg", .8);
+  const bx = paint(cv.getContext("2d"), w, h, true, false), cr = bx.cam;
+  const cam = [cr.x / w, cr.y / h, cr.w / w, cr.h / h];
+  cv.toBlob(b => { if (b) putFrame(dayKey(), b, cam).catch(() => {}); }, "image/jpeg", .8);
 }
 addEventListener("pagehide", () => save("csm_days", DAYS));
 
@@ -585,6 +594,20 @@ $("#bT").onclick = () => {
 };
 
 /* ───────── 저장 ───────── */
+async function saveBlob(blob, name) {
+  const P = FD();
+  if (NATIVE && P && P.saveBegin) {
+    const { id } = await P.saveBegin({ name, mime: blob.type || (name.endsWith(".png") ? "image/png" : "video/mp4") });
+    const CH = 768 * 1024;
+    for (let o = 0; o < blob.size; o += CH) {
+      const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(",")[1]); fr.readAsDataURL(blob.slice(o, o + CH)); });
+      await P.saveChunk({ id, data: b64 });
+    }
+    await P.saveEnd({ id });
+    return;
+  }
+  download(blob, name);
+}
 function download(blob, name) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
@@ -602,7 +625,7 @@ $("#bSave").onclick = () => {
     c.height = Math.ceil(34 / 300 * w + 24 * 11.2 / 300 * w + 12 / 300 * w);
     cx.fillStyle = BG; cx.fillRect(0, 0, c.width, c.height);
     drawTable(cx, 0, 0, w);
-    c.toBlob(b => { download(b, `timetable_${dayKey()}.png`); toast("저장했어요"); closeSheet(); });
+    c.toBlob(async b => { try { await saveBlob(b, `timetable_${dayKey()}.png`); toast(NATIVE ? "사진 폴더에 저장했어요" : "저장했어요"); } catch (e) { toast("저장하지 못했어요"); } closeSheet(); });
   };
   $("#sVid").onclick = openExport;
 };
@@ -618,6 +641,9 @@ async function openExport() {
     <div class="row"><select id="eF">${opts}</select><span class="dim">~</span><select id="eT">${opts}</select></div>
     <div class="h">영상 길이</div>
     <div class="row"><input type="range" id="eL" min="10" max="300" step="10" value="60"><span id="eLl" style="width:52px;text-align:right">1분</span></div>
+    ${NATIVE && FD() ? `<div class="h">얼굴 가리기</div>
+    <div class="row"><select id="eC"><option value="off">안 가림</option><option value="blur">블러</option><option value="mosaic">모자이크</option><option value="sticker">스티커</option><option value="full">카메라 전체 블러</option></select></div>
+    <div id="stk" style="display:none"><div id="stkL" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px"></div><div class="row"><button class="pill" id="stkAdd">스티커 사진 추가</button></div><input type="file" id="stkF" accept="image/*" multiple hidden></div>` : ""}
     <div class="dim" id="eInfo"></div>
     <div id="prog"><i></i></div>
     <div class="row"><button class="pill" id="eDel">이 기간 지우기</button><button class="pill go" id="eGo">영상 저장</button></div>
@@ -630,6 +656,14 @@ async function openExport() {
     $("#eInfo").textContent = `${n.toLocaleString()}장 중 ${used.toLocaleString()}장으로 약 ${Math.round(used / 30)}초 영상 (30fps)`;
   };
   $("#eF").onchange = $("#eT").onchange = $("#eL").oninput = info; info();
+  if ($("#eC")) {
+    const stkThumbs = () => { $("#stkL").innerHTML = stickerImgs.map(x => `<div style="position:relative"><img src="${x.url}" style="width:56px;height:56px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,.1)"><button data-sd="${x.id}" style="position:absolute;right:-5px;top:-5px;width:20px;height:20px;border-radius:10px;border:0;background:#fff;color:#1c1713;font-size:12px;line-height:20px;padding:0">×</button></div>`).join(""); };
+    $("#eC").onchange = () => { $("#stk").style.display = $("#eC").value === "sticker" ? "block" : "none"; stkThumbs(); };
+    $("#stkAdd").onclick = () => $("#stkF").click();
+    $("#stkF").onchange = async e => { for (const f of e.target.files) await addSticker(f); stkThumbs(); };
+    $("#stkL").onclick = async e => { const id = e.target.dataset.sd; if (id) { await delSticker(id); stkThumbs(); } };
+    loadStickers().then(stkThumbs);
+  }
   let confirmDel = false;
   $("#eDel").onclick = async () => {
     if (!confirmDel) { confirmDel = true; $("#eDel").textContent = "정말 지울까요? 한 번 더"; setTimeout(() => { confirmDel = false; $("#eDel").textContent = "이 기간 지우기"; }, 4000); return; }
@@ -643,12 +677,86 @@ async function openExport() {
     if (!window.MediaRecorder) { toast("이 브라우저는 영상 저장이 안 돼요"); return; }
     const pick = []; for (let i = 0; i < want; i++) pick.push(list[Math.floor(i * list.length / want)]);
     $("#eGo").disabled = true; $("#prog").style.display = "block";
-    try { await encode(pick, p => { $("#prog i").style.width = p + "%"; }); toast("저장했어요"); closeSheet(); }
+    try { await encode(pick, p => { $("#prog i").style.width = p + "%"; }, $("#eC") ? $("#eC").value : "off"); toast(NATIVE ? "영상 폴더에 저장했어요" : "저장했어요"); closeSheet(); }
     catch (e) { toast("영상을 만들지 못했어요"); $("#eGo").disabled = false; }
   };
 }
-async function encode(pick, onp) {
-  const first = await createImageBitmap(await getFrame(pick[0]));
+/* 스티커 사진 */
+let stickerImgs = [];       // { id, blob, bmp, url }
+async function loadStickers() {
+  try {
+    const keys = await idbReq((await tx("readonly", "stickers")).getAllKeys());
+    stickerImgs = [];
+    for (const k of keys.sort()) {
+      const blob = await idbReq((await tx("readonly", "stickers")).get(k));
+      stickerImgs.push({ id: k, blob, bmp: await createImageBitmap(blob), url: URL.createObjectURL(blob) });
+    }
+  } catch (e) {}
+}
+async function addSticker(file) {
+  const id = String(Date.now()) + String(Math.floor(Math.random() * 1000));
+  (await tx("readwrite", "stickers")).put(file, id);
+  stickerImgs.push({ id, blob: file, bmp: await createImageBitmap(file), url: URL.createObjectURL(file) });
+}
+async function delSticker(id) { (await tx("readwrite", "stickers")).delete(id); stickerImgs = stickerImgs.filter(x => x.id !== id); }
+
+/* 얼굴 찾기 (안드로이드 앱에서만) — 저장 전에 한 번에 훑는다 */
+async function detectFaces(pick, onp) {
+  const out = new Array(pick.length), B = 8, tmp = document.createElement("canvas"), tc = tmp.getContext("2d");
+  for (let i = 0; i < pick.length; i += B) {
+    const imgs = [], metas = [];
+    for (let j = i; j < Math.min(pick.length, i + B); j++) {
+      const { bmp, c } = await loadFrame(pick[j]);
+      const sx = c[0] * bmp.width, sy = c[1] * bmp.height, sw = c[2] * bmp.width, sh = c[3] * bmp.height;
+      tmp.width = Math.max(2, Math.round(sw)); tmp.height = Math.max(2, Math.round(sh));
+      tc.drawImage(bmp, sx, sy, sw, sh, 0, 0, tmp.width, tmp.height);
+      imgs.push(tmp.toDataURL("image/jpeg", .8).split(",")[1]); metas.push(c); bmp.close && bmp.close();
+    }
+    const r = await FD().detectBatch({ images: imgs });
+    (r.results || []).forEach((faces, k) => {
+      const c = metas[k];
+      out[i + k] = (faces || []).map(f => ({ x: c[0] + f.x * c[2], y: c[1] + f.y * c[3], w: f.w * c[2], h: f.h * c[3] }));
+    });
+    onp(Math.round(Math.min(pick.length, i + B) / pick.length * 100));
+  }
+  // 한두 장 놓친 건 앞 장면의 얼굴 위치를 이어서 쓴다
+  let last = [], miss = 99;
+  for (let i = 0; i < out.length; i++) {
+    if (out[i] && out[i].length) { last = out[i]; miss = 0; }
+    else if (miss < 3) { out[i] = last; miss++; } else out[i] = [];
+  }
+  return out;
+}
+function censorDraw(cx, cv, faces, mode, camRect) {
+  if (mode === "full") {
+    const r = camRect; cx.save(); cx.beginPath(); cx.rect(r.x * cv.width, r.y * cv.height, r.w * cv.width, r.h * cv.height); cx.clip();
+    cx.filter = "blur(22px)"; cx.drawImage(cv, 0, 0); cx.restore(); cx.filter = "none"; return;
+  }
+  faces.forEach((f, idx) => {
+    const cxm = (f.x + f.w / 2) * cv.width, cym = (f.y + f.h / 2) * cv.height, k = 1.4;
+    const rw = f.w * cv.width * k, rh = f.h * cv.height * k, rx = cxm - rw / 2, ry = cym - rh / 2;
+    if (mode === "sticker" && stickerImgs.length) {
+      const im = stickerImgs[idx % stickerImgs.length].bmp, sz = Math.max(rw, rh) * 1.15, sc = Math.min(sz / im.width, sz / im.height);
+      cx.drawImage(im, cxm - im.width * sc / 2, cym - im.height * sc / 2, im.width * sc, im.height * sc); return;
+    }
+    cx.save(); cx.beginPath(); cx.ellipse(cxm, cym, rw / 2, rh / 2, 0, 0, 7); cx.clip();
+    if (mode === "mosaic") {
+      const t = document.createElement("canvas"), n = Math.max(4, Math.round(rw / 14)); t.width = n; t.height = Math.max(4, Math.round(n * rh / rw));
+      t.getContext("2d").drawImage(cv, rx, ry, rw, rh, 0, 0, t.width, t.height);
+      cx.imageSmoothingEnabled = false; cx.drawImage(t, 0, 0, t.width, t.height, rx, ry, rw, rh); cx.imageSmoothingEnabled = true;
+    } else {
+      cx.filter = `blur(${Math.max(6, rw / 5)}px)`; cx.drawImage(cv, rx, ry, rw, rh, rx, ry, rw, rh); cx.filter = "none";
+    }
+    cx.restore();
+  });
+}
+
+async function encode(pick, onp, cmode) {
+  cmode = cmode || "off";
+  let faces = null;
+  if (cmode !== "off" && cmode !== "full" && FD()) faces = await detectFaces(pick, p => onp(Math.round(p * 0.5)));
+  const baseP = faces ? 50 : 0;
+  const f0 = await loadFrame(pick[0]), first = f0.bmp;
   const cv = document.createElement("canvas"); cv.width = first.width & ~1; cv.height = first.height & ~1;
   const cx = cv.getContext("2d");
   cx.fillStyle = BG; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(first, 0, 0, cv.width, cv.height);
@@ -660,18 +768,20 @@ async function encode(pick, onp) {
   rec.start(1000);
   const step = 1000 / 30; let t0 = performance.now();
   for (let i = 0; i < pick.length; i++) {
-    const bm = await createImageBitmap(await getFrame(pick[i]));
+    const { bmp, c } = await loadFrame(pick[i]);
     cx.fillStyle = BG; cx.fillRect(0, 0, cv.width, cv.height);
-    const sc = Math.min(cv.width / bm.width, cv.height / bm.height), dw = bm.width * sc, dh = bm.height * sc;
-    cx.drawImage(bm, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
-    bm.close && bm.close();
+    const sc = Math.min(cv.width / bmp.width, cv.height / bmp.height), dw = bmp.width * sc, dh = bmp.height * sc;
+    cx.drawImage(bmp, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
+    bmp.close && bmp.close();
+    if (cmode === "full") censorDraw(cx, cv, [], "full", { x: c[0], y: c[1], w: c[2], h: c[3] });
+    else if (faces && faces[i] && faces[i].length) censorDraw(cx, cv, faces[i], cmode);
     const due = t0 + (i + 1) * step, wait = due - performance.now();
     if (wait > 0) await new Promise(r => setTimeout(r, wait));
-    if (i % 15 === 0) onp(Math.round(i / pick.length * 100));
+    if (i % 15 === 0) onp(baseP + Math.round(i / pick.length * (100 - baseP)));
   }
   await new Promise(r => setTimeout(r, 300));
   rec.stop(); await done;
-  download(new Blob(chunks, { type: mp4 ? "video/mp4" : "video/webm" }), `timelapse_${dayKey()}.${mp4 ? "mp4" : "webm"}`);
+  await saveBlob(new Blob(chunks, { type: mp4 ? "video/mp4" : "video/webm" }), `timelapse_${dayKey()}.${mp4 ? "mp4" : "webm"}`);
 }
 
 /* ───────── 친구 ───────── */
