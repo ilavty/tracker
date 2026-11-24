@@ -16,6 +16,7 @@
 *::-webkit-scrollbar{display:none}
 html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:"Paperlogy",system-ui,sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:none}
 #stage{position:fixed;inset:0;background:var(--bg)}
+#tint{position:absolute;pointer-events:none;mix-blend-mode:soft-light}
 video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;background:var(--bg)}
 #ov{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 #bar{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;display:flex;align-items:center;gap:8px;background:linear-gradient(rgba(28,23,19,.78),rgba(28,23,19,0));z-index:5;transition:opacity .25s}
@@ -68,11 +69,13 @@ input[type=range]{flex:1;accent-color:var(--sky)}
 <body>
 <div id="stage">
   <video id="v" playsinline muted autoplay></video>
+  <div id="tint"></div>
   <canvas id="ov"></canvas>
   <div id="start"><button id="camBtn">카메라 켜기</button></div>
   <div id="bar">
     <div id="tm"><span id="dot"></span><span id="clock">00:00:00</span></div>
     <div id="sp"></div>
+    <button class="b" id="bAdj" aria-label="화면 보정" style="width:36px;height:36px;border-radius:18px;margin-right:8px"><svg viewBox="0 0 20 20"><path d="M3.5 6h13M3.5 14h13"/><circle cx="7" cy="6" r="2" fill="#1c1713"/><circle cx="13" cy="14" r="2" fill="#1c1713"/></svg></button>
     <button class="b" id="bFs" aria-label="전체화면"><svg viewBox="0 0 20 20"><path d="M3.5 7.5v-4h4M16.5 7.5v-4h-4M3.5 12.5v4h4M16.5 12.5v4h-4"/></svg></button>
   </div>
   <div id="dock">
@@ -110,6 +113,7 @@ if (!S.items.friend) S.items.friend = { fx: 0.04, fy: 0.62, fw: 0.28 };
 if (S.items.tab.hs == null) S.items.tab.hs = 1;
 if (!S.facing) S.facing = "user";
 if (!S.flay) S.flay = "off";
+if (!S.adj) S.adj = { mirror: true, bright: 0, contrast: 100, sat: 100, warm: 0 };
 let DAYS = load("csm_days", {});          // { "2026-11-24": [144 cells of seconds] }
 function persistSettings() { save("csm_settings", S); }
 
@@ -183,7 +187,7 @@ async function startCam(idx) {
   $("#start").style.display = "none";
   await listCams();
   S.cam = idx; persistSettings();
-  v.style.transform = "";
+  
 }
 function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camOn = false; }
 $("#camBtn").onclick = async () => {
@@ -210,7 +214,7 @@ $("#bFlip").onclick = async () => {
   if (flipLong) return;
   try {
     if (!camOn) { await startCam(S.cam); return; }
-    S.facing = S.facing === "user" ? "environment" : "user"; S.cam = -1; persistSettings();
+    S.facing = S.facing === "user" ? "environment" : "user"; S.cam = -1; S.adj.mirror = S.facing === "user"; persistSettings();
     await startCam(-1);
     toast(S.facing === "user" ? "전면 카메라" : "후면 카메라 (길게 누르면 카메라 고르기)");
   } catch (e) { toast("카메라를 바꿀 수 없어요"); }
@@ -328,6 +332,28 @@ function drawText(c, w, h) {
   return { x, y, w: maxw, h: lines.length * px * 1.2 };
 }
 
+const CANVAS_FILTER = "filter" in CanvasRenderingContext2D.prototype;
+function adjFilter() { const a = S.adj; return `brightness(${1 + a.bright / 100}) contrast(${a.contrast / 100}) saturate(${a.sat / 100})`; }
+function applyAdj() {
+  const a = S.adj, t = $("#tint");
+  v.style.filter = adjFilter(); v.style.transform = a.mirror ? "scaleX(-1)" : "";
+  const al = Math.min(.6, Math.abs(a.warm) / 50 * .5);
+  t.style.background = a.warm ? (a.warm > 0 ? `rgba(255,140,40,${al})` : `rgba(60,140,255,${al})`) : "transparent";
+}
+$("#bAdj").onclick = () => {
+  const sl = (k, label, min, max, unit = "") => `<div class="h">${label}</div><div class="row"><input type="range" data-k="${k}" min="${min}" max="${max}" value="${S.adj[k]}"><span style="width:44px;text-align:right" id="v_${k}">${S.adj[k]}${unit}</span></div>`;
+  openSheet(`<div class="h">화면</div>
+    <div class="row"><button class="pill ${S.adj.mirror ? "on" : ""}" id="aMir">좌우 반전</button><button class="pill" id="aRst">초기화</button></div>
+    ${sl("bright", "밝기", -60, 60)}${sl("contrast", "대비", 60, 160, "%")}${sl("sat", "채도", 0, 200, "%")}${sl("warm", "따뜻함", -50, 50)}
+    ${CANVAS_FILTER ? "" : '<div class="dim">이 브라우저는 저장되는 영상에 밝기·대비·채도가 적용되지 않을 수 있어요 (화면에는 적용돼요).</div>'}`);
+  $("#aMir").onclick = () => { S.adj.mirror = !S.adj.mirror; $("#aMir").classList.toggle("on", S.adj.mirror); persistSettings(); applyAdj(); render(); };
+  $("#aRst").onclick = () => { S.adj = { mirror: S.adj.mirror, bright: 0, contrast: 100, sat: 100, warm: 0 }; persistSettings(); applyAdj(); $("#bAdj").click(); };
+  sheet.querySelectorAll("input[type=range]").forEach(r => r.oninput = () => {
+    S.adj[r.dataset.k] = +r.value; $("#v_" + r.dataset.k).textContent = r.value + (r.dataset.k === "contrast" || r.dataset.k === "sat" ? "%" : "");
+    persistSettings(); applyAdj();
+  });
+};
+
 /* 친구 사진 */
 let friendImgs = [];      // { id, blob, bmp, url }
 async function loadFriends() {
@@ -388,8 +414,14 @@ function paint(c, w, h, withVideo, ui) {
   if (withVideo && v.videoWidth) {
     c.save(); c.beginPath(); c.rect(cr.x, cr.y, cr.w, cr.h); c.clip();
     c.fillStyle = BG; c.fillRect(cr.x, cr.y, cr.w, cr.h);
+    if (CANVAS_FILTER) c.filter = adjFilter();
+    if (S.adj.mirror) { c.translate(2 * cr.x + cr.w, 0); c.scale(-1, 1); }
     cover(c, v, v.videoWidth, v.videoHeight, cr.x, cr.y, cr.w, cr.h);
     c.restore();
+    if (S.adj.warm) {
+      c.save(); c.globalCompositeOperation = "soft-light"; const a = Math.min(.6, Math.abs(S.adj.warm) / 50 * .5);
+      c.fillStyle = S.adj.warm > 0 ? `rgba(255,140,40,${a})` : `rgba(60,140,255,${a})`; c.fillRect(cr.x, cr.y, cr.w, cr.h); c.restore();
+    }
   } else if (withVideo) { c.fillStyle = BG; c.fillRect(cr.x, cr.y, cr.w, cr.h); }
   const b = {};
   if (S.flay === "pip" && repFriend()) {
@@ -420,6 +452,7 @@ function render() {
   octx.setTransform(DPR, 0, 0, DPR, 0, 0);
   const split = S.flay === "split" && friendImgs.length > 0, cr = split ? splitRects(W, H).c : { x: 0, y: 0, w: W, h: H };
   v.style.left = cr.x + "px"; v.style.top = cr.y + "px"; v.style.width = cr.w + "px"; v.style.height = cr.h + "px";
+  const t = $("#tint"); t.style.left = v.style.left; t.style.top = v.style.top; t.style.width = v.style.width; t.style.height = v.style.height;
   boxes = paint(octx, W, H, false, true);
 }
 
@@ -668,6 +701,7 @@ $("#bPlan").classList.toggle("on", S.plan !== "off");
 $("#clock").textContent = hms(total(todayCells()));
 if (S.plan !== "off") fetchPlan();
 loadFriends();
+applyAdj();
 render();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("camstudy-m-sw.js").catch(() => {});
 </script>
