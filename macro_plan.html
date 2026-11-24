@@ -68,9 +68,13 @@ button{cursor:pointer;border:none;background:none}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
 .cv{max-width:1320px;margin:0 auto;padding-left:46px}
-#rail{position:fixed;left:8px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:0;padding:8px 5px;border-radius:14px;background:rgba(255,255,255,.85);border:1px solid var(--bd);touch-action:none;user-select:none;cursor:grab}
-#rail .rm{font-size:.66rem;font-weight:600;color:var(--sub);padding:4px 7px;border-radius:9px;line-height:1.1;text-align:center}
-#rail .rm.on{background:var(--line);color:#fff;font-weight:800}
+#rail{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:20;width:58px;touch-action:none;user-select:none;cursor:grab}
+#rail .rl{position:absolute;left:8px;top:0;bottom:0;width:1.5px;background:#bfc4cb;border-radius:1px}
+#rail .tk{position:absolute;left:8px;height:1px;background:#b5bac2;width:5px}
+#rail .tk.mo{width:11px;background:#555;height:1.5px}
+#rail .lb{position:absolute;left:23px;transform:translateY(-50%);font-size:.68rem;font-weight:600;color:var(--sub);white-space:nowrap;line-height:1}
+#rail .lb.on{color:#000;font-weight:800}
+#rail .th{position:absolute;left:8px;width:11px;height:11px;margin:-5px 0 0 -4.5px;border-radius:50%;background:#111;border:2px solid #fff;box-shadow:0 0 0 1px #111}
 #rail.hide{display:none}
 .cwr{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:stretch}
 .wm{outline:none;white-space:pre-wrap;word-break:break-word;font-size:.85rem;line-height:1.6;padding:5px 6px 5px 12px;border-left:1.5px solid var(--bd);min-height:84px;border-radius:0 6px 6px 0}
@@ -599,35 +603,46 @@ document.addEventListener('paste', ev => {
 });
 function scrollTodayC() { const t = new Date(TODAY * DAY); setTimeout(() => jumpMonth(`cm-${t.getUTCFullYear()}-${p2(t.getUTCMonth() + 1)}`, false), 60); }
 
-/* ---- 왼쪽 월 이동 바 ---- */
+/* ---- 왼쪽 월 이동 바 (눈금자) ---- */
+const RAIL_OFF = 90;
 function monthEls() { return [...document.querySelectorAll('.cm[id^="cm-"]')]; }
+function railH() { return Math.min(Math.round(window.innerHeight * 0.72), 600); }
+function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
 function renderRail() {
   const r = $('#rail'); if (!r) return;
   const ms = monthEls();
   if (UI.v !== 'c' || !ms.length) { r.classList.add('hide'); return; }
   r.classList.remove('hide');
-  r.innerHTML = ms.map(m => `<div class="rm" data-rid="${m.id}">${m.dataset.mo}월</div>`).join('');
-  spyRail();
+  const H = railH(), D = document.documentElement.scrollHeight;
+  r.style.height = H + 'px';
+  let html = '<div class="rl"></div>';
+  document.querySelectorAll('.cwk').forEach(w => { html += `<div class="tk" style="top:${(docTop(w) / D * H).toFixed(1)}px"></div>`; });
+  ms.forEach(m => {
+    const y = (docTop(m) / D * H).toFixed(1);
+    html += `<div class="tk mo" style="top:${y}px"></div><div class="lb" data-rid="${m.id}" style="top:${y}px">${m.dataset.mo}월</div>`;
+  });
+  html += '<div class="th" id="rth"></div>';
+  r.innerHTML = html; spyRail();
 }
 function jumpMonth(id, smooth) {
   const el = document.getElementById(id); if (!el) return;
-  const y = el.getBoundingClientRect().top + window.scrollY - 4;
+  const y = docTop(el) - 4;
   window.scrollTo({ top: y < 140 ? 0 : y, behavior: smooth ? 'smooth' : 'auto' });
 }
 function spyRail() {
   const r = $('#rail'); if (!r || r.classList.contains('hide')) return;
   let cur = null;
-  monthEls().forEach(m => { if (m.getBoundingClientRect().top <= 90) cur = m.id; });
+  monthEls().forEach(m => { if (m.getBoundingClientRect().top <= RAIL_OFF) cur = m.id; });
   if (!cur) cur = (monthEls()[0] || {}).id;
-  r.querySelectorAll('.rm').forEach(x => x.classList.toggle('on', x.dataset.rid === cur));
+  r.querySelectorAll('.lb').forEach(x => x.classList.toggle('on', x.dataset.rid === cur));
+  const th = $('#rth'); if (th) th.style.top = Math.min(railH(), (window.scrollY + RAIL_OFF) / document.documentElement.scrollHeight * railH()) + 'px';
 }
 (function () {
   const r = $('#rail'); let drag = false;
   const at = ev => {
-    const items = [...r.querySelectorAll('.rm')]; if (!items.length) return;
-    let best = items[0], bd = 1e9;
-    items.forEach(it => { const b = it.getBoundingClientRect(), d = Math.abs(ev.clientY - (b.top + b.height / 2)); if (d < bd) { bd = d; best = it; } });
-    jumpMonth(best.dataset.rid, false);
+    const box = r.getBoundingClientRect(), D = document.documentElement.scrollHeight;
+    const y = Math.max(0, Math.min(box.height, ev.clientY - box.top));
+    window.scrollTo({ top: y / box.height * D - RAIL_OFF, behavior: 'auto' });
   };
   r.addEventListener('pointerdown', ev => { drag = true; r.setPointerCapture(ev.pointerId); r.style.cursor = 'grabbing'; at(ev); });
   r.addEventListener('pointermove', ev => { if (drag) at(ev); });
@@ -635,6 +650,7 @@ function spyRail() {
   r.addEventListener('pointerup', end); r.addEventListener('pointercancel', end);
   let tk = false;
   window.addEventListener('scroll', () => { if (tk) return; tk = true; requestAnimationFrame(() => { tk = false; spyRail(); }); }, { passive: true });
+  window.addEventListener('resize', () => { renderRail(); });
 })();
 function scrollToday() { const mv = $('.mv'); if (mv) mv.scrollTo({ left: Math.max(0, (TODAY - CTX.r0) * CTX.px - 40), behavior: 'smooth' }); }
 
