@@ -13,7 +13,7 @@
 @font-face { font-family: 'GmkC'; font-weight: 800; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2'); }
 :root{
   --bg:#fcfbfa; --line:#222; --bd:#e2e5ea; --soft:#f4f5f7; --txt:#23272e; --sub:#6b7480; --grey:#7c90a6;
-  --P:#2f7a68; --S:#a0603a;
+  --P:#2f7a68; --S:#3f5fbf;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{display:none!important} *{scrollbar-width:none!important}
@@ -57,7 +57,6 @@ button{cursor:pointer;border:none;background:none}
 .vl.exam{border-left:2px solid var(--line);z-index:4}
 .blk{position:absolute;height:26px;border-radius:6px;z-index:3;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0 7px;font-size:.76rem;font-weight:600;overflow:hidden;white-space:nowrap}
 .blk .nm{overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
-.blk .pg{position:absolute;left:0;bottom:0;height:3px;background:rgba(0,0,0,.45)}
 .ghost{position:absolute;height:5px;border-radius:3px;z-index:2;pointer-events:none}
 .must{font-size:.62rem;font-weight:800;border-radius:4px;padding:0 4px;line-height:13px;flex:none}
 .dl{font-size:.64rem;font-weight:700;background:rgba(255,255,255,.85);color:#222;border-radius:8px;padding:0 5px;line-height:15px;flex:none;border:1px solid rgba(0,0,0,.15)}
@@ -68,13 +67,18 @@ button{cursor:pointer;border:none;background:none}
 .vmt{font-size:1.55rem;font-weight:800;line-height:1}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
-.cv{max-width:1320px;margin:0 auto}
-.cmb{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}
-.cmemo{position:sticky;top:64px;border-left:1.5px solid var(--bd);padding:8px 4px 8px 16px;min-height:200px}
-.mtext{outline:none;white-space:pre-wrap;word-break:break-word;font-size:.88rem;line-height:1.7;min-height:180px}
-.cm{margin-bottom:30px}
+.cv{max-width:1320px;margin:0 auto;padding-left:46px}
+#rail{position:fixed;left:8px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:0;padding:8px 5px;border-radius:14px;background:rgba(255,255,255,.85);border:1px solid var(--bd);touch-action:none;user-select:none;cursor:grab}
+#rail .rm{font-size:.66rem;font-weight:600;color:var(--sub);padding:4px 7px;border-radius:9px;line-height:1.1;text-align:center}
+#rail .rm.on{background:var(--line);color:#fff;font-weight:800}
+#rail.hide{display:none}
+.cwr{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:stretch}
+.wm{outline:none;white-space:pre-wrap;word-break:break-word;font-size:.85rem;line-height:1.6;padding:5px 6px 5px 12px;border-left:1.5px solid var(--bd);min-height:84px;border-radius:0 6px 6px 0}
+.wm:focus,.wm:hover{background:rgba(0,0,0,.025)}
+.cyr{display:flex;align-items:center;gap:12px;margin:26px 0 4px;font-size:1.05rem;font-weight:800;letter-spacing:.08em;color:var(--sub)}
+.cyr:before,.cyr:after{content:"";flex:1;height:1px;background:var(--bd)}
 .cwd{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;font-weight:700;color:var(--sub);text-align:center;padding:8px 0 4px}
-.cwk{position:relative}
+.cwk{position:relative;overflow:visible}
 .cbg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(7,1fr)}
 .cd{background:#fff;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);position:relative}
 .cd:nth-child(1){border-left:1px solid var(--bd)}
@@ -88,18 +92,16 @@ button{cursor:pointer;border:none;background:none}
 .xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
 .cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 1px;position:relative;cursor:pointer;height:20px}
 .cbar .nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
-.cbar .pg{position:absolute;left:0;bottom:0;height:2px;background:rgba(0,0,0,.45)}
-.dbub{display:flex;flex-direction:column;gap:2px;padding:2px 4px 6px;align-items:flex-end;pointer-events:none;min-width:0}
-.cb{pointer-events:auto;position:relative;display:flex;align-items:center;gap:3px;max-width:calc(100% - 8px);margin:0 8px 3px 0;padding:3px 10px;border-radius:14px;font-size:.72rem;line-height:1.35}
-.cb:before,.cb:after{content:"";position:absolute;bottom:0;height:13px}
-.cb:before{right:-5px;width:12px;background:inherit;border-bottom-left-radius:11px 9px}
-.cb:after{right:-11px;width:11px;background:#fff;border-bottom-left-radius:7px}
-.cb.pay{background:#4fa8f0;color:#fff}
-.cb.sched{background:#a9805a;color:#fff}
-.cb.memo{background:#e9e9eb;color:#222}
+.cp{--bc:#e9e9eb;position:absolute;z-index:6;width:max-content;max-width:230px;display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:14px;font-size:.76rem;line-height:1.4;background:var(--bc);color:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+.cp:after{content:"";position:absolute;bottom:-7px;left:14px;border:7px solid transparent;border-top-color:var(--bc);border-bottom:0}
+.cp.r:after{left:auto;right:14px}
+.cp.pay{--bc:#4fa8f0;color:#fff}
+.cp.sched{--bc:#f2c16b;color:#3a2a05}
+.cp.memo{--bc:#ececee;color:#222}
+.cp:hover{z-index:7}
 .rnote{outline:none;min-width:12px;word-break:break-word}
-.bmore{opacity:0;font-size:.7rem;color:inherit;padding:0 2px;line-height:1}
-.cb:hover .bmore{opacity:.7}
+.bmore{opacity:0;font-size:.72rem;color:inherit;padding:0 2px;line-height:1}
+.cp:hover .bmore{opacity:.7}
 /* modal */
 #modal{position:fixed;inset:0;background:rgba(20,20,20,.38);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
 #modal.on{display:flex}
@@ -128,6 +130,7 @@ button{cursor:pointer;border:none;background:none}
 <body>
 <div class="top" id="top"></div>
 <div class="stats" id="stats"></div>
+<div id="rail" class="hide"></div>
 <div id="root"></div>
 <div id="modal"></div>
 <div class="toast" id="toast"></div>
@@ -152,12 +155,12 @@ const $ = s => document.querySelector(s);
 const ROWS = [
   { id: 'P', g: 'P', name: '피셋 전체', grp: true, c: '#2f7a68' },
   { id: 'LL', g: 'P', name: '언어논리', c: '#4c9a6a' },
-  { id: 'SP', g: 'P', name: '상황판단', c: '#3b8f9c' },
-  { id: 'DA', g: 'P', name: '자료해석', c: '#88a24c' },
-  { id: 'S', g: 'S', name: '2차 전체', grp: true, c: '#a0603a' },
-  { id: 'CO', g: 'S', name: '헌법', c: '#94512f' },
-  { id: 'IL', g: 'S', name: '국제법', c: '#cf8d57' },
-  { id: 'IP', g: 'S', name: '국제정치학', c: '#8f4f5e' },
+  { id: 'SP', g: 'P', name: '상황판단', c: '#7fb85a' },
+  { id: 'DA', g: 'P', name: '자료해석', c: '#c4b34a' },
+  { id: 'S', g: 'S', name: '2차 전체', grp: true, c: '#3558a8' },
+  { id: 'CO', g: 'S', name: '헌법', c: '#4a6fd0' },
+  { id: 'IL', g: 'S', name: '국제법', c: '#7fb0ee' },
+  { id: 'IP', g: 'S', name: '국제정치학', c: '#4fa3b8' },
 ];
 const ROW = Object.fromEntries(ROWS.map(r => [r.id, r]));
 const IMP = { 2: '필수', 1: '보통', 0: '여유' };
@@ -202,13 +205,13 @@ function seedState() {
     { id: uid(), date: '2027-01-18', text: '2차 개강', kind: 'sched', seed: true },
     { id: uid(), date: '2027-02-14', text: '상황판단 밀린 거 따라잡기', kind: 'memo', seed: true },
   ];
-  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, memos: {} };
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {} };
 }
 function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
-  x.memos = x.memos || {};
+  x.wmemos = x.wmemos || {};
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
   x.exams = x.exams || { p: '2027-07-10', s: '2027-09-11' };
@@ -282,6 +285,7 @@ function render() {
   $('#root').innerHTML = UI.v === 'g' ? monthView() : calView();
   const mv = $('.mv'); if (mv) mv.scrollLeft = sx;
   window.scrollTo(0, sy);
+  renderRail();
 }
 function renderTop() {
   $('#top').innerHTML = `
@@ -353,7 +357,7 @@ function monthView() {
         ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
         <span class="nm" ${b.done >= 100 ? 'style="opacity:.7"' : ''}>${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
         ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}
-        ${b.done > 0 ? `<span class="pg" style="width:${b.done}%"></span>` : ''}</div>`;
+        ${b.done > 0 && b.done < 100 ? `<span class="dl">${b.done}%</span>` : ''}</div>`;
       if (UI.ghost && m.moved) {
         const gl = X(pd(b.base[0])), gw = (pd(b.base[1]) - pd(b.base[0]) + 1) * px;
         inner += `<div class="ghost" style="left:${gl}px;top:${top + 28}px;width:${gw}px;background:${rgba(m.c, .3)};border:1px solid ${m.c}"></div>`;
@@ -374,8 +378,10 @@ function monthView() {
 const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY; };
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
-function noteBub(n) {
-  return `<div class="cb ${n.kind}"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
+function noteFloat(n, col, idx) {
+  const right = col >= 4;
+  const pos = right ? `right:calc(${6 - col} / 7 * 100% + 6px)` : `left:calc(${col} / 7 * 100% + 6px)`;
+  return `<div class="cp ${n.kind} ${right ? 'r' : ''}" style="${pos};bottom:calc(100% - 4px + ${idx * 32}px)"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
 }
 function bar(sg) {
   const b = sg.b, m = meta(b), rad = `${sg.st ? 5 : 0}px ${sg.en ? 5 : 0}px ${sg.en ? 5 : 0}px ${sg.st ? 5 : 0}px`;
@@ -383,7 +389,7 @@ function bar(sg) {
     ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
     <span class="nm"><b>${m.r.name}</b> ${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
     ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
-    ${b.done > 0 && b.done < 100 ? `<span class="pg" style="width:${b.done}%"></span>` : ''}</div>`;
+    ${b.done > 0 && b.done < 100 && sg.en ? `<span class="dl">${b.done}%</span>` : ''}</div>`;
 }
 function weekRow(ws, ms, me, ep, es) {
   const segs = [];
@@ -395,19 +401,18 @@ function weekRow(ws, ms, me, ep, es) {
   const lanes = [];
   segs.forEach(sg => { let i = lanes.findIndex(end => end < sg.c0); if (i < 0) { i = lanes.length; lanes.push(-1); } lanes[i] = sg.c1; sg.l = i; });
   const L = lanes.length;
-  let bg = '', fg = '';
+  let bg = '', fg = '', pops = '';
   for (let i = 0; i < 7; i++) {
     const d = ws + i;
     if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
     const ph = phaseAt(d);
-    const strip = ph ? `background-image:linear-gradient(to right,${rgba(ROW.P.c, .55)} 0 ${ph.pit}%,${rgba(ROW.S.c, .55)} ${ph.pit}% 100%);background-size:100% 3px;background-repeat:no-repeat;background-position:bottom` : '';
+    const strip = ph ? `background-image:linear-gradient(to right,${rgba(ROW.P.c, .4)} 0 ${ph.pit}%,${rgba(ROW.S.c, .4)} ${ph.pit}% 100%);background-size:100% 2px;background-repeat:no-repeat;background-position:bottom` : '';
     bg += `<div class="cd" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
-    const ns = S.notes.filter(n => pd(n.date) === d);
-    if (ns.length) fg += `<div class="dbub" style="grid-row:${L + 2};grid-column:${i + 1}">${ns.map(noteBub).join('')}</div>`;
+    S.notes.filter(n => pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
   segs.forEach(sg => { fg += bar(sg); });
-  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto repeat(${L},22px) auto">${fg}</div></div>`;
+  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto repeat(${L},22px) auto">${fg}</div>${pops}</div>`;
 }
 function calView() {
   const [r0, r1] = range();
@@ -415,12 +420,16 @@ function calView() {
   let h = '<div class="cv">';
   for (let ms = MON(r0); ms <= r1; ms = NEXTMON(ms)) {
     const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
+    if (mo === 0) h += `<div class="cyr"><span>${y}</span></div>`;
     const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
-    h += `<div class="cm"><div class="vmh"><span class="vmt">${mo + 1}월</span><span class="vy">${y}</span>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
-      <div class="cmb"><div class="ccal"><div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div>`;
-    for (let ws = ms - ((ms + 3) % 7); ws <= me; ws += 7) { if (ws + 6 < r0) continue; h += weekRow(ws, ms, me, ep, es); }
-    const mk = `${y}-${p2(mo + 1)}`;
-    h += `</div><div class="cmemo"><div class="mtext" contenteditable="true" data-mm="${mk}">${esc(S.memos[mk] || '')}</div></div></div></div>`;
+    h += `<div class="cm" id="cm-${y}-${p2(mo + 1)}" data-mo="${mo + 1}"><div class="vmh"><span class="vmt">${mo + 1}월</span>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
+      <div class="cwr"><div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div><div></div></div>`;
+    for (let ws = ms - ((ms + 3) % 7); ws <= me; ws += 7) {
+      if (ws + 6 < r0) continue;
+      const key = fd(ws), mine = (ws + 3 >= ms && ws + 3 <= me);   // 주 메모는 목요일이 속한 달에만 표시
+      h += `<div class="cwr">${weekRow(ws, ms, me, ep, es)}${mine ? `<div class="wm" contenteditable="true" data-wm="${key}">${esc(S.wmemos[key] || '')}</div>` : '<div></div>'}</div>`;
+    }
+    h += '</div>';
   }
   return h + '</div>';
 }
@@ -538,7 +547,7 @@ document.addEventListener('input', ev => {
   if (ev.target.id === 'f-pit') $('#f-dv').textContent = `피셋 ${ev.target.value} / 2차 ${100 - ev.target.value}`;
 });
 document.addEventListener('dblclick', ev => {
-  const dc = ev.target.closest('.cd[data-d]'); if (dc && !ev.target.closest('.cbar,.cb')) { quickNoteD(+dc.dataset.d); return; }
+  const dc = ev.target.closest('.cd[data-d]'); if (dc && !ev.target.closest('.cbar,.cp')) { quickNoteD(+dc.dataset.d); return; }
   const tr = ev.target.closest('.mtrack[data-row]'); if (!tr || ev.target.closest('.blk')) return;
   const n = CTX.r0 + Math.floor((ev.clientX - tr.getBoundingClientRect().left) / CTX.px);
   openBlock(null, { subj: tr.dataset.row, s: fd(n), e: fd(n + 13) });
@@ -570,7 +579,7 @@ function saveNote() {
 /* 말풍선 안에서 바로 고치기 */
 document.addEventListener('focusout', ev => {
   const t = ev.target;
-  if (t.dataset && t.dataset.mm) { const v = t.innerText.replace(/\n+$/, ''); if ((S.memos[t.dataset.mm] || '') !== v) { if (v) S.memos[t.dataset.mm] = v; else delete S.memos[t.dataset.mm]; save(); } return; }
+  if (t.dataset && t.dataset.wm) { const v = t.innerText.replace(/\n+$/, ''); if ((S.wmemos[t.dataset.wm] || '') !== v) { if (v) S.wmemos[t.dataset.wm] = v; else delete S.wmemos[t.dataset.wm]; save(); } return; }
   if (t.dataset && t.dataset.nn) {
     const n = S.notes.find(x => x.id === t.dataset.nn); if (!n) return;
     const v = t.innerText.trim();
@@ -585,10 +594,48 @@ document.addEventListener('keydown', ev => {
 });
 document.addEventListener('paste', ev => {
   const t = ev.target;
-  if (t.dataset && t.dataset.mm) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text')); return; }
+  if (t.dataset && t.dataset.wm) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text')); return; }
   if (t.dataset && t.dataset.nn) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ')); }
 });
-function scrollTodayC() { const el = $('#tdcell'); if (el) setTimeout(() => { const y = el.getBoundingClientRect().top + window.scrollY - 260; window.scrollTo({ top: y > 120 ? y : 0, behavior: 'auto' }); }, 60); }
+function scrollTodayC() { const t = new Date(TODAY * DAY); setTimeout(() => jumpMonth(`cm-${t.getUTCFullYear()}-${p2(t.getUTCMonth() + 1)}`, false), 60); }
+
+/* ---- 왼쪽 월 이동 바 ---- */
+function monthEls() { return [...document.querySelectorAll('.cm[id^="cm-"]')]; }
+function renderRail() {
+  const r = $('#rail'); if (!r) return;
+  const ms = monthEls();
+  if (UI.v !== 'c' || !ms.length) { r.classList.add('hide'); return; }
+  r.classList.remove('hide');
+  r.innerHTML = ms.map(m => `<div class="rm" data-rid="${m.id}">${m.dataset.mo}월</div>`).join('');
+  spyRail();
+}
+function jumpMonth(id, smooth) {
+  const el = document.getElementById(id); if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - 4;
+  window.scrollTo({ top: y < 140 ? 0 : y, behavior: smooth ? 'smooth' : 'auto' });
+}
+function spyRail() {
+  const r = $('#rail'); if (!r || r.classList.contains('hide')) return;
+  let cur = null;
+  monthEls().forEach(m => { if (m.getBoundingClientRect().top <= 90) cur = m.id; });
+  if (!cur) cur = (monthEls()[0] || {}).id;
+  r.querySelectorAll('.rm').forEach(x => x.classList.toggle('on', x.dataset.rid === cur));
+}
+(function () {
+  const r = $('#rail'); let drag = false;
+  const at = ev => {
+    const items = [...r.querySelectorAll('.rm')]; if (!items.length) return;
+    let best = items[0], bd = 1e9;
+    items.forEach(it => { const b = it.getBoundingClientRect(), d = Math.abs(ev.clientY - (b.top + b.height / 2)); if (d < bd) { bd = d; best = it; } });
+    jumpMonth(best.dataset.rid, false);
+  };
+  r.addEventListener('pointerdown', ev => { drag = true; r.setPointerCapture(ev.pointerId); r.style.cursor = 'grabbing'; at(ev); });
+  r.addEventListener('pointermove', ev => { if (drag) at(ev); });
+  const end = () => { drag = false; r.style.cursor = 'grab'; };
+  r.addEventListener('pointerup', end); r.addEventListener('pointercancel', end);
+  let tk = false;
+  window.addEventListener('scroll', () => { if (tk) return; tk = true; requestAnimationFrame(() => { tk = false; spyRail(); }); }, { passive: true });
+})();
 function scrollToday() { const mv = $('.mv'); if (mv) mv.scrollTo({ left: Math.max(0, (TODAY - CTX.r0) * CTX.px - 40), behavior: 'smooth' }); }
 
 /* ================= boot ================= */
