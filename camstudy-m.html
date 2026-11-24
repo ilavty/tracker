@@ -381,12 +381,32 @@ async function loadFriends() {
     render();
   } catch (e) {}
 }
+/* 폰 갤러리 사진을 안전하게 읽어 작은 사본으로 만든다 (앱에서 파일이 바로 저장 안 되는 문제 방지) */
+async function normalizeImage(file, keepAlpha) {
+  let bmp;
+  try { bmp = await createImageBitmap(file); }
+  catch (e) {
+    const url = URL.createObjectURL(file);
+    try {
+      const im = new Image(); im.src = url; await im.decode(); bmp = await createImageBitmap(im);
+    } finally { URL.revokeObjectURL(url); }
+  }
+  const mx = 1200, sc = Math.min(1, mx / Math.max(bmp.width, bmp.height));
+  const cv = document.createElement("canvas"); cv.width = Math.max(1, Math.round(bmp.width * sc)); cv.height = Math.max(1, Math.round(bmp.height * sc));
+  cv.getContext("2d").drawImage(bmp, 0, 0, cv.width, cv.height);
+  bmp.close && bmp.close();
+  const blob = await new Promise(r => cv.toBlob(r, keepAlpha ? "image/png" : "image/jpeg", .9));
+  if (!blob) throw new Error("변환 실패");
+  return blob;
+}
 async function addFriend(file) {
   const id = String(Date.now()) + String(Math.floor(Math.random() * 1000));
   try {
-    await new Promise((res, rej) => { const r = tx("readwrite", "friends").then(st => { const q = st.put(file, id); q.onsuccess = res; q.onerror = rej; }); });
-    friendImgs.push({ id, blob: file, bmp: await createImageBitmap(file), url: URL.createObjectURL(file) });
-  } catch (e) { toast("사진을 넣지 못했어요"); }
+    const blob = await normalizeImage(file, false);
+    const st = await tx("readwrite", "friends");
+    await idbReq(st.put(blob, id));
+    friendImgs.push({ id, blob, bmp: await createImageBitmap(blob), url: URL.createObjectURL(blob) });
+  } catch (e) { toast("사진을 넣지 못했어요 (" + (e && (e.name || e.message) || "오류") + ")"); }
 }
 async function delFriend(id) {
   (await tx("readwrite", "friends")).delete(id);
@@ -701,7 +721,7 @@ async function openExport() {
     const stkThumbs = () => { $("#stkL").innerHTML = stickerImgs.map(x => `<div style="position:relative"><img src="${x.url}" style="width:56px;height:56px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,.1)"><button data-sd="${x.id}" style="position:absolute;right:-5px;top:-5px;width:20px;height:20px;border-radius:10px;border:0;background:#fff;color:#1c1713;font-size:12px;line-height:20px;padding:0">×</button></div>`).join(""); };
     $("#eC").onchange = () => { $("#stk").style.display = $("#eC").value === "sticker" ? "block" : "none"; stkThumbs(); };
     $("#stkAdd").onclick = () => $("#stkF").click();
-    $("#stkF").onchange = async e => { for (const f of e.target.files) await addSticker(f); stkThumbs(); };
+    $("#stkF").onchange = async e => { const fl = [...e.target.files]; for (const f of fl) await addSticker(f); stkThumbs(); };
     $("#stkL").onclick = async e => { const id = e.target.dataset.sd; if (id) { await delSticker(id); stkThumbs(); } };
     loadStickers().then(stkThumbs);
   }
@@ -736,8 +756,11 @@ async function loadStickers() {
 }
 async function addSticker(file) {
   const id = String(Date.now()) + String(Math.floor(Math.random() * 1000));
-  (await tx("readwrite", "stickers")).put(file, id);
-  stickerImgs.push({ id, blob: file, bmp: await createImageBitmap(file), url: URL.createObjectURL(file) });
+  try {
+    const blob = await normalizeImage(file, true);
+    await idbReq((await tx("readwrite", "stickers")).put(blob, id));
+    stickerImgs.push({ id, blob, bmp: await createImageBitmap(blob), url: URL.createObjectURL(blob) });
+  } catch (e) { toast("스티커를 넣지 못했어요 (" + (e && (e.name || e.message) || "오류") + ")"); }
 }
 async function delSticker(id) { (await tx("readwrite", "stickers")).delete(id); stickerImgs = stickerImgs.filter(x => x.id !== id); }
 
@@ -839,7 +862,7 @@ function friendSheet() {
     <input type="file" id="fFile" accept="image/*" multiple hidden>`);
   const refresh = () => { $("#fl").innerHTML = thumbs(); };
   $("#fAdd").onclick = () => $("#fFile").click();
-  $("#fFile").onchange = async e => { for (const f of e.target.files) await addFriend(f); if (S.flay === "off" && friendImgs.length) { S.flay = "pip"; persistSettings(); } friendSheet(); render(); };
+  $("#fFile").onchange = async e => { const fl = [...e.target.files]; for (const f of fl) await addFriend(f); if (S.flay === "off" && friendImgs.length) { S.flay = "pip"; persistSettings(); } friendSheet(); render(); };
   sheet.onclick = async e => {
     const t = e.target.dataset || {};
     if (t.l) { S.flay = t.l; persistSettings(); render(); friendSheet(); }
