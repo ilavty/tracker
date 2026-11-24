@@ -16,16 +16,28 @@
 *::-webkit-scrollbar{display:none}
 html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:"Paperlogy",system-ui,sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:none}
 #stage{position:fixed;inset:0;background:var(--bg)}
-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--bg)}
+video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;background:var(--bg)}
 #ov{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 #bar{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;display:flex;align-items:center;gap:8px;background:linear-gradient(rgba(28,23,19,.78),rgba(28,23,19,0));z-index:5;transition:opacity .25s}
 #bar.hide,#dock.hide{opacity:0;pointer-events:none}
-#dock{position:absolute;left:0;right:0;bottom:0;padding:14px 12px calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;gap:12px;background:linear-gradient(rgba(28,23,19,0),rgba(28,23,19,.78));z-index:5;transition:opacity .25s}
-#dock .b{width:46px;height:46px;border-radius:23px}
+#dock{position:absolute;left:0;right:0;bottom:0;padding:14px 12px calc(env(safe-area-inset-bottom) + 14px);display:flex;justify-content:center;gap:8px;background:linear-gradient(rgba(28,23,19,0),rgba(28,23,19,.78));z-index:5;transition:opacity .25s}
+#dock .b{width:43px;height:43px;border-radius:22px}
+@media (orientation:landscape) and (max-height:520px){
+  #bar{padding:calc(env(safe-area-inset-top) + 6px) 64px 6px 12px}
+  #tm{font-size:19px}
+  #dock{left:auto;top:0;bottom:0;right:0;flex-direction:column;justify-content:center;align-items:center;gap:6px;padding:6px calc(env(safe-area-inset-right) + 8px) 6px 14px;background:linear-gradient(90deg,rgba(28,23,19,0),rgba(28,23,19,.72))}
+  #dock .b{width:36px;height:36px;border-radius:18px}
+  #dock .b svg{width:19px;height:19px}
+  #toast{bottom:calc(env(safe-area-inset-bottom) + 24px)}
+  #sheet{left:50%;right:auto;width:min(560px,92vw);max-height:92vh;transform:translate(-50%,105%)}
+  #sheet.open{transform:translate(-50%,0)}
+}
+#bFs{width:36px;height:36px;border-radius:18px}
 #tm{font-weight:700;font-size:26px;letter-spacing:.5px;color:var(--sky);display:flex;align-items:center;gap:8px;min-width:0}
 #dot{width:9px;height:9px;border-radius:50%;background:#6b5d52;flex:none}
 #dot.on{background:var(--sky)}
 #sp{flex:1}
+#bar{justify-content:flex-start}
 .b{width:42px;height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .b.on{background:var(--sky);color:var(--bg)}
 .b svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -60,8 +72,11 @@ input[type=range]{flex:1;accent-color:var(--sky)}
   <div id="start"><button id="camBtn">카메라 켜기</button></div>
   <div id="bar">
     <div id="tm"><span id="dot"></span><span id="clock">00:00:00</span></div>
+    <div id="sp"></div>
+    <button class="b" id="bFs" aria-label="전체화면"><svg viewBox="0 0 20 20"><path d="M3.5 7.5v-4h4M16.5 7.5v-4h-4M3.5 12.5v4h4M16.5 12.5v4h-4"/></svg></button>
   </div>
   <div id="dock">
+    <button class="b" id="bFriend" aria-label="친구"><svg viewBox="0 0 20 20"><circle class="f" cx="10" cy="7" r="3.3"/><path class="f" d="M3.6 17c0-4.6 12.8-4.6 12.8 0z"/></svg></button>
     <button class="b" id="bT" aria-label="글씨"><svg viewBox="0 0 20 20"><path d="M4.5 5.5V4h11v1.5M10 4v12M7.5 16h5"/></svg></button>
     <button class="b" id="bPlan" aria-label="오늘 계획"><svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="2"/><path d="M7 7.5h6M7 10.5h6M7 13.5h3.5"/></svg></button>
     <button class="b on" id="bTab" aria-label="타임테이블"><svg viewBox="0 0 20 20"><rect x="3" y="3.5" width="14" height="13" rx="2"/><path d="M3 8h14M3 12.3h14M8.6 8v8.5"/></svg></button>
@@ -88,9 +103,13 @@ function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch 
 let S = load("csm_settings", {
   tab: true, plan: "off",
   text: { str: "", size: 0.09, color: "#ffffff", ow: 3, fx: 0.08, fy: 0.42 },
-  items: { tab: { fx: 0.04, fy: 0.12, fw: 0.40 }, plan: { fx: 0.5, fy: 0.12, fw: 0.46 } },
-  interval: 3, cam: -1
+  items: { tab: { fx: 0.04, fy: 0.12, fw: 0.40, hs: 1 }, plan: { fx: 0.5, fy: 0.12, fw: 0.46 }, friend: { fx: 0.04, fy: 0.62, fw: 0.28 } },
+  interval: 3, cam: -1, facing: "user", flay: "off", rep: null
 });
+if (!S.items.friend) S.items.friend = { fx: 0.04, fy: 0.62, fw: 0.28 };
+if (S.items.tab.hs == null) S.items.tab.hs = 1;
+if (!S.facing) S.facing = "user";
+if (!S.flay) S.flay = "off";
 let DAYS = load("csm_days", {});          // { "2026-11-24": [144 cells of seconds] }
 function persistSettings() { save("csm_settings", S); }
 
@@ -114,14 +133,18 @@ let _db = null;
 function db() {
   if (_db) return _db;
   _db = new Promise((res, rej) => {
-    const r = indexedDB.open("csm", 1);
-    r.onupgradeneeded = () => r.result.createObjectStore("frames");
+    const r = indexedDB.open("csm", 2);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      if (!d.objectStoreNames.contains("frames")) d.createObjectStore("frames");
+      if (!d.objectStoreNames.contains("friends")) d.createObjectStore("friends");
+    };
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
   });
   return _db;
 }
-function tx(mode) { return db().then(d => d.transaction("frames", mode).objectStore("frames")); }
+function tx(mode, name = "frames") { return db().then(d => d.transaction(name, mode).objectStore(name)); }
 function idbReq(r) { return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
 const frameCount = {};                       // day -> next index
 async function putFrame(day, blob) {
@@ -152,7 +175,7 @@ async function startCam(idx) {
   stopCam();
   const c = { audio: false, video: { width: { ideal: 1280 }, height: { ideal: 720 } } };
   if (idx >= 0 && devices[idx] && devices[idx].deviceId) c.video.deviceId = { exact: devices[idx].deviceId };
-  else c.video.facingMode = "user";
+  else c.video.facingMode = { ideal: S.facing };
   stream = await navigator.mediaDevices.getUserMedia(c);
   v.srcObject = stream;
   await v.play().catch(() => {});
@@ -160,19 +183,36 @@ async function startCam(idx) {
   $("#start").style.display = "none";
   await listCams();
   S.cam = idx; persistSettings();
+  v.style.transform = "";
 }
 function stopCam() { if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; camOn = false; }
 $("#camBtn").onclick = async () => {
   try { await startCam(S.cam); } catch (e) { toast("카메라를 켤 수 없어요. 권한을 확인해주세요"); }
 };
+let flipTimer = 0, flipLong = false;
+$("#bFlip").addEventListener("pointerdown", () => {
+  flipLong = false; clearTimeout(flipTimer);
+  flipTimer = setTimeout(async () => {
+    flipLong = true;
+    await listCams();
+    if (!devices.length) { toast("카메라를 먼저 켜주세요"); return; }
+    const cur = stream ? stream.getVideoTracks()[0].getSettings().deviceId : null;
+    openSheet(`<div class="h">카메라 고르기</div>` + devices.map((d, i) =>
+      `<div class="row"><button class="pill ${d.deviceId === cur ? "on" : ""}" data-i="${i}">${(d.label || "카메라 " + (i + 1)).replace(/</g, "")}</button></div>`).join(""));
+    sheet.onclick = async e => {
+      const i = e.target.dataset && e.target.dataset.i; if (i == null) return;
+      try { await startCam(+i); closeSheet(); } catch (er) { toast("이 카메라는 쓸 수 없어요"); }
+    };
+  }, 550);
+});
+["pointerup", "pointercancel", "pointerleave"].forEach(ev => $("#bFlip").addEventListener(ev, () => clearTimeout(flipTimer)));
 $("#bFlip").onclick = async () => {
+  if (flipLong) return;
   try {
     if (!camOn) { await startCam(S.cam); return; }
-    await listCams();
-    if (devices.length < 2) { toast("연결된 카메라가 하나예요"); return; }
-    const cur = stream.getVideoTracks()[0].getSettings().deviceId;
-    let i = devices.findIndex(d => d.deviceId === cur);
-    await startCam((i + 1) % devices.length);
+    S.facing = S.facing === "user" ? "environment" : "user"; S.cam = -1; persistSettings();
+    await startCam(-1);
+    toast(S.facing === "user" ? "전면 카메라" : "후면 카메라 (길게 누르면 카메라 고르기)");
   } catch (e) { toast("카메라를 바꿀 수 없어요"); }
 };
 
@@ -188,8 +228,8 @@ addEventListener("resize", () => { fit(); render(); });
 
 function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, r) : c.rect(x, y, w, h); }
 
-function drawTable(c, x, y, w) {
-  const s = w / 300, pad = 12 * s, head = 34 * s, rowH = 11.2 * s;
+function drawTable(c, x, y, w, hs = 1) {
+  const s = w / 300, pad = 12 * s, head = 34 * s, rowH = 11.2 * s * hs;
   const cells = todayCells();
   const h = head + 24 * rowH + pad;
   c.save();
@@ -288,21 +328,87 @@ function drawText(c, w, h) {
   return { x, y, w: maxw, h: lines.length * px * 1.2 };
 }
 
+/* 친구 사진 */
+let friendImgs = [];      // { id, blob, bmp, url }
+async function loadFriends() {
+  try {
+    const st = await tx("readonly", "friends"), keys = await idbReq(st.getAllKeys());
+    friendImgs = [];
+    for (const k of keys.sort()) {
+      const blob = await idbReq((await tx("readonly", "friends")).get(k));
+      friendImgs.push({ id: k, blob, bmp: await createImageBitmap(blob), url: URL.createObjectURL(blob) });
+    }
+    render();
+  } catch (e) {}
+}
+async function addFriend(file) {
+  const id = String(Date.now()) + String(Math.floor(Math.random() * 1000));
+  try {
+    await new Promise((res, rej) => { const r = tx("readwrite", "friends").then(st => { const q = st.put(file, id); q.onsuccess = res; q.onerror = rej; }); });
+    friendImgs.push({ id, blob: file, bmp: await createImageBitmap(file), url: URL.createObjectURL(file) });
+  } catch (e) { toast("사진을 넣지 못했어요"); }
+}
+async function delFriend(id) {
+  (await tx("readwrite", "friends")).delete(id);
+  friendImgs = friendImgs.filter(f => f.id !== id);
+  if (S.rep === id) S.rep = null; persistSettings();
+}
+function repFriend() { return friendImgs.find(f => f.id === S.rep) || friendImgs[0] || null; }
+function cover(c, img, iw, ih, x, y, w, h) {
+  const ir = iw / ih, rr_ = w / h; let sw, sh, sx, sy;
+  if (ir > rr_) { sh = ih; sw = sh * rr_; sx = (iw - sw) / 2; sy = 0; } else { sw = iw; sh = sw / rr_; sx = 0; sy = (ih - sh) / 2; }
+  c.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+function splitRects(w, h) {   // 세로: 친구 위·나 아래 / 가로: 친구 왼쪽·나 오른쪽
+  if (w > h * 1.1) { const fw = Math.round(w * 0.34); return { f: { x: 0, y: 0, w: fw, h }, c: { x: fw, y: 0, w: w - fw, h } }; }
+  const th = Math.round(h * 0.4); return { f: { x: 0, y: 0, w, h: th }, c: { x: 0, y: th, w, h: h - th } };
+}
+
 /* 한 장 합성 (화면용 / 저장용 공통) */
 let boxes = {};
-function paint(c, w, h, withVideo) {
+function paint(c, w, h, withVideo, ui) {
   c.clearRect(0, 0, w, h);
+  const split = S.flay === "split" && friendImgs.length > 0;
+  const R = split ? splitRects(w, h) : { f: null, c: { x: 0, y: 0, w, h } }, cr = R.c;
+  if (split) {
+    const fr = R.f;
+    c.fillStyle = BG; c.fillRect(fr.x, fr.y, fr.w, fr.h);
+    const n = Math.min(friendImgs.length, 4), rows = n === 1 ? [1] : n === 2 ? [2] : n === 3 ? [2, 1] : [2, 2];
+    const gap = Math.max(3, Math.min(w, h) * 0.012), cols = Math.max(...rows);
+    const cw = n === 1 ? fr.w - gap * 2 : (fr.w - gap * (cols + 1)) / cols, ch = (fr.h - gap * (rows.length + 1)) / rows.length;
+    let k = 0;
+    rows.forEach((cnt, ri) => {
+      const rw = cnt * cw + (cnt - 1) * gap, x0 = fr.x + (fr.w - rw) / 2;
+      for (let j = 0; j < cnt; j++, k++) {
+        const f = friendImgs[k], x = x0 + j * (cw + gap), y = fr.y + gap + ri * (ch + gap);
+        c.save(); rr(c, x, y, cw, ch, 10 * (Math.min(w, h) / 360)); c.clip(); cover(c, f.bmp, f.bmp.width, f.bmp.height, x, y, cw, ch); c.restore();
+      }
+    });
+  }
   if (withVideo && v.videoWidth) {
-    const vr = v.videoWidth / v.videoHeight, sr = w / h;
-    let sw, sh, sx, sy;
-    if (vr > sr) { sh = v.videoHeight; sw = sh * sr; sx = (v.videoWidth - sw) / 2; sy = 0; }
-    else { sw = v.videoWidth; sh = sw / sr; sx = 0; sy = (v.videoHeight - sh) / 2; }
-    c.fillStyle = BG; c.fillRect(0, 0, w, h);
-    c.drawImage(v, sx, sy, sw, sh, 0, 0, w, h);
-  } else if (withVideo) { c.fillStyle = BG; c.fillRect(0, 0, w, h); }
+    c.save(); c.beginPath(); c.rect(cr.x, cr.y, cr.w, cr.h); c.clip();
+    c.fillStyle = BG; c.fillRect(cr.x, cr.y, cr.w, cr.h);
+    cover(c, v, v.videoWidth, v.videoHeight, cr.x, cr.y, cr.w, cr.h);
+    c.restore();
+  } else if (withVideo) { c.fillStyle = BG; c.fillRect(cr.x, cr.y, cr.w, cr.h); }
   const b = {};
+  if (S.flay === "pip" && repFriend()) {
+    const f = repFriend(), it = S.items.friend, fw = it.fw * w, fh = fw * 4 / 3, x = it.fx * w, y = it.fy * h;
+    c.save(); rr(c, x, y, fw, fh, 14 * (fw / 120)); c.clip(); cover(c, f.bmp, f.bmp.width, f.bmp.height, x, y, fw, fh); c.restore();
+    c.save(); rr(c, x, y, fw, fh, 14 * (fw / 120)); c.strokeStyle = "rgba(255,255,255,.55)"; c.lineWidth = 2; c.stroke(); c.restore();
+    b.friend = { x, y, w: fw, h: fh };
+  }
   if (S.tab) {
-    const it = S.items.tab, ww = it.fw * w; b.tab = { x: it.fx * w, y: it.fy * h, w: ww, h: drawTable(c, it.fx * w, it.fy * h, ww) };
+    const it = S.items.tab, ww = it.fw * w, sc = ww / 300;
+    const hsMax = Math.max(.25, (h * 0.94 - 46 * sc) / (24 * 11.2 * sc));   // 화면 높이를 넘지 않게
+    const hs = Math.min(it.hs || 1, hsMax), ty = Math.max(0, Math.min(it.fy * h, h - (46 + 24 * 11.2 * hs) * sc));
+    const th = drawTable(c, it.fx * w, ty, ww, hs);
+    b.tab = { x: it.fx * w, y: ty, w: ww, h: th };
+    if (ui) {
+      const gx = b.tab.x + ww - 6, gy = b.tab.y + th - 6;
+      c.save(); c.fillStyle = "rgba(190,233,242,.9)"; c.beginPath(); c.arc(gx, gy, 7, 0, 7); c.fill();
+      c.strokeStyle = "#1c1713"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(gx - 3, gy + 1.5); c.lineTo(gx + 1.5, gy - 3); c.stroke(); c.restore();
+    }
   }
   if (S.plan !== "off" && planData) {
     const it = S.items.plan, ww = it.fw * w; b.plan = { x: it.fx * w, y: it.fy * h, w: ww, h: drawPlan(c, it.fx * w, it.fy * h, ww) };
@@ -312,22 +418,31 @@ function paint(c, w, h, withVideo) {
 }
 function render() {
   octx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  boxes = paint(octx, W, H, false);
+  const split = S.flay === "split" && friendImgs.length > 0, cr = split ? splitRects(W, H).c : { x: 0, y: 0, w: W, h: H };
+  v.style.left = cr.x + "px"; v.style.top = cr.y + "px"; v.style.width = cr.w + "px"; v.style.height = cr.h + "px";
+  boxes = paint(octx, W, H, false, true);
 }
 
 /* ───────── 끌기·확대 ───────── */
 const ptrs = new Map(); let drag = null;
+function boxHs() { const sc = (S.items.tab.fw * W) / 300; return Math.min(S.items.tab.hs || 1, Math.max(.25, (H * 0.94 - 46 * sc) / (24 * 11.2 * sc))); }
 function hit(x, y) {
-  for (const k of ["text", "plan", "tab"]) { const b = boxes[k]; if (b && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return k; }
+  for (const k of ["text", "friend", "plan", "tab"]) { const b = boxes[k]; if (b && x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return k; }
   return null;
 }
 ov.addEventListener("pointerdown", e => {
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   ov.setPointerCapture(e.pointerId);
   if (ptrs.size === 1) {
+    const tb = boxes.tab;
+    if (tb && Math.hypot(e.clientX - (tb.x + tb.w - 6), e.clientY - (tb.y + tb.h - 6)) < 26) {
+      drag = { k: "tab", rs: true, sx: e.clientX, sy: e.clientY, w0: tb.w, h0: tb.h, hs0: boxHs() };
+      return;
+    }
     const k = hit(e.clientX, e.clientY);
-    if (k) { drag = { k, sx: e.clientX, sy: e.clientY, ox: (k === "text" ? S.text.fx : S.items[k].fx), oy: (k === "text" ? S.text.fy : S.items[k].fy) }; }
-    else { drag = null; ($("#bar").classList.toggle("hide"), $("#dock").classList.toggle("hide")); }
+    if (k === "friend") { drag = { k, sx: e.clientX, sy: e.clientY, ox: S.items.friend.fx, oy: S.items.friend.fy }; }
+    else if (k) { drag = { k, sx: e.clientX, sy: e.clientY, ox: (k === "text" ? S.text.fx : S.items[k].fx), oy: (k === "text" ? S.text.fy : S.items[k].fy) }; }
+    else { drag = null; showBars($("#bar").classList.contains("hide")); }
   } else if (ptrs.size === 2 && drag) {
     const [a, b] = [...ptrs.values()]; drag.d0 = Math.hypot(a.x - b.x, a.y - b.y);
     drag.s0 = drag.k === "text" ? S.text.size : S.items[drag.k].fw;
@@ -337,10 +452,15 @@ ov.addEventListener("pointermove", e => {
   if (!ptrs.has(e.pointerId)) return;
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (!drag) return;
+  if (drag.rs) {
+    S.items.tab.fw = Math.min(1, Math.max(.12, (drag.w0 + e.clientX - drag.sx) / W));
+    S.items.tab.hs = Math.min(3, Math.max(.25, drag.hs0 * (drag.h0 + e.clientY - drag.sy) / drag.h0));
+    render(); return;
+  }
   if (ptrs.size >= 2 && drag.d0) {
     const [a, b] = [...ptrs.values()], r = Math.hypot(a.x - b.x, a.y - b.y) / drag.d0;
     if (drag.k === "text") S.text.size = Math.min(.3, Math.max(.03, drag.s0 * r));
-    else S.items[drag.k].fw = Math.min(1, Math.max(.2, drag.s0 * r));
+    else S.items[drag.k].fw = Math.min(1, Math.max(.12, drag.s0 * r));
   } else if (ptrs.size === 1) {
     const fx = drag.ox + (e.clientX - drag.sx) / W, fy = drag.oy + (e.clientY - drag.sy) / H;
     if (drag.k === "text") { S.text.fx = fx; S.text.fy = fy; } else { S.items[drag.k].fx = fx; S.items[drag.k].fy = fy; }
@@ -359,7 +479,7 @@ function setRun(on) {
   $("#dot").classList.toggle("on", on);
   $("#bRun").classList.toggle("on", on);
   $("#runIc").innerHTML = on ? '<rect class="f" x="5" y="4.5" width="3.6" height="11" rx="1"/><rect class="f" x="11.4" y="4.5" width="3.6" height="11" rx="1"/>' : '<path class="f" d="M7 4.5v11l8.5-5.5z"/>';
-  if (on) keepAwake(); else if (wake) { wake.release().catch(() => {}); wake = null; }
+  if (on) { keepAwake(); showBars(true); } else if (wake) { wake.release().catch(() => {}); wake = null; }
   save("csm_days", DAYS);
 }
 $("#bRun").onclick = () => setRun(!running);
@@ -379,7 +499,7 @@ setInterval(() => {
 function shot() {
   const w = 540, h = Math.round(540 * H / W), cv = document.createElement("canvas");
   cv.width = w; cv.height = h;
-  paint(cv.getContext("2d"), w, h, true);
+  paint(cv.getContext("2d"), w, h, true, false);
   cv.toBlob(b => { if (b) putFrame(dayKey(), b).catch(() => {}); }, "image/jpeg", .8);
 }
 addEventListener("pagehide", () => save("csm_days", DAYS));
@@ -506,12 +626,48 @@ async function encode(pick, onp) {
   download(new Blob(chunks, { type: mp4 ? "video/mp4" : "video/webm" }), `timelapse_${dayKey()}.${mp4 ? "mp4" : "webm"}`);
 }
 
+/* ───────── 친구 ───────── */
+function friendSheet() {
+  const thumbs = () => friendImgs.map(f => `<div style="position:relative"><img data-r="${f.id}" src="${f.url}" style="width:64px;height:64px;object-fit:cover;border-radius:12px;${repFriend() && repFriend().id === f.id ? "outline:2px solid " + SKY + ";" : ""}"><button data-d="${f.id}" style="position:absolute;right:-5px;top:-5px;width:22px;height:22px;border-radius:11px;border:0;background:#fff;color:#1c1713;font-size:13px;line-height:22px;padding:0">×</button></div>`).join("");
+  openSheet(`<div class="h">친구 화면</div>
+    <div class="row">${[["off", "끄기"], ["pip", "작게"], ["split", "위아래"]].map(([k, t]) => `<button class="pill ${S.flay === k ? "on" : ""}" data-l="${k}">${t}</button>`).join("")}</div>
+    <div class="h">사진</div>
+    <div id="fl" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">${thumbs()}</div>
+    <div class="row"><button class="pill go" id="fAdd">사진 추가</button></div>
+    <div class="dim">작게: 대표 친구 한 명이 왼쪽 아래에 떠요 (끌어서 이동, 두 손가락으로 크기). 사진을 눌러 대표 친구를 바꿔요. 위아래: 친구들이 위, 내가 아래예요.</div>
+    <input type="file" id="fFile" accept="image/*" multiple hidden>`);
+  const refresh = () => { $("#fl").innerHTML = thumbs(); };
+  $("#fAdd").onclick = () => $("#fFile").click();
+  $("#fFile").onchange = async e => { for (const f of e.target.files) await addFriend(f); if (S.flay === "off" && friendImgs.length) { S.flay = "pip"; persistSettings(); } friendSheet(); render(); };
+  sheet.onclick = async e => {
+    const t = e.target.dataset || {};
+    if (t.l) { S.flay = t.l; persistSettings(); render(); friendSheet(); }
+    else if (t.r) { S.rep = t.r; persistSettings(); render(); refresh(); }
+    else if (t.d) { await delFriend(t.d); render(); refresh(); }
+  };
+}
+$("#bFriend").onclick = friendSheet;
+
+/* ───────── 전체화면 / 메뉴 자동 숨김 ───────── */
+$("#bFs").onclick = async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen({ navigationUI: "hide" });
+    else toast("이 브라우저는 전체화면을 지원하지 않아요. 홈 화면에 추가해서 열어보세요");
+  } catch (e) { toast("전체화면을 켤 수 없어요"); }
+};
+let hideT = 0;
+function showBars(on) { $("#bar").classList.toggle("hide", !on); $("#dock").classList.toggle("hide", !on); clearTimeout(hideT); if (on && running) hideT = setTimeout(() => { if (!sheet.classList.contains("open")) showBars(false); }, 5000); }
+addEventListener("pointerdown", () => { if ($("#bar").classList.contains("hide")) return; clearTimeout(hideT); if (running) hideT = setTimeout(() => { if (!sheet.classList.contains("open")) showBars(false); }, 5000); }, true);
+ov.addEventListener("click", e => { /* 빈 곳을 누르면 메뉴 보이기/숨기기 */ });
+
 /* ───────── 시작 ───────── */
 fit();
 $("#bTab").classList.toggle("on", S.tab);
 $("#bPlan").classList.toggle("on", S.plan !== "off");
 $("#clock").textContent = hms(total(todayCells()));
 if (S.plan !== "off") fetchPlan();
+loadFriends();
 render();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("camstudy-m-sw.js").catch(() => {});
 </script>
