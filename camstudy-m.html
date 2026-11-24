@@ -170,7 +170,7 @@ async function putFrame(day, blob, cam) {
   }
   const i = ++frameCount[day];
   const st = await tx("readwrite");
-  st.put({ b: blob, c: cam || [0, 0, 1, 1] }, day + "|" + String(i).padStart(6, "0"));
+  st.put({ b: blob, c: cam || [0, 0, 1, 1], t: Date.now() }, day + "|" + String(i).padStart(6, "0"));
 }
 async function loadFrame(k) {        // { bmp, c:[x,y,w,h] 카메라 영역(0~1) }
   const v_ = await getFrame(k), blob = v_ instanceof Blob ? v_ : v_.b, c = v_ instanceof Blob ? [0, 0, 1, 1] : v_.c;
@@ -679,6 +679,7 @@ function download(blob, name) {
 $("#bSave").onclick = () => {
   openSheet(`<div class="h">저장</div>
     <div class="row"><button class="pill" id="sPng">타임테이블 이미지 (PNG)</button></div>
+    <div class="row"><button class="pill" id="sRec">기록 내보내기 (컴퓨터로 합치기)</button></div>
     <div class="h">저장 영상 모양 (이후에 쌓이는 장면부터)</div>
     <div class="row"><button class="pill ${(S.saveLay || "desk") === "desk" ? "on" : ""}" data-sl="desk">컴퓨터처럼</button><button class="pill ${S.saveLay === "screen" ? "on" : ""}" data-sl="screen">화면 그대로</button></div>
     <div class="row"><button class="pill go" id="sVid">타임랩스 영상 만들기</button></div>
@@ -694,6 +695,7 @@ $("#bSave").onclick = () => {
     c.toBlob(async b => { try { await saveBlob(b, `timetable_${dayKey()}.png`); toast(NATIVE ? "사진 폴더에 저장했어요" : "저장했어요"); } catch (e) { toast("저장하지 못했어요"); } closeSheet(); });
   };
   $("#sVid").onclick = openExport;
+  $("#sRec").onclick = openRecExport;
   sheet.onclick = e => { const k = e.target.dataset && e.target.dataset.sl; if (!k) return; S.saveLay = k; persistSettings(); sheet.querySelectorAll("[data-sl]").forEach(b => b.classList.toggle("on", b.dataset.sl === k)); };
 };
 
@@ -852,6 +854,53 @@ async function encode(pick, onp, cmode) {
   await new Promise(r => setTimeout(r, 300));
   rec.stop(); await done;
   await saveBlob(new Blob(chunks, { type: mp4 ? "video/mp4" : "video/webm" }), `timelapse_${dayKey()}.${mp4 ? "mp4" : "webm"}`);
+}
+
+/* ───────── 기록 내보내기 (컴퓨터 캠스터디에서 가져와 한 날로 합친다) ───────── */
+function dayOrigin(day) { const [y, m, d] = day.split("-").map(Number); return new Date(y, m - 1, d, 5, 0, 0).getTime(); }
+async function openRecExport() {
+  const keys = await allFrameKeys(), set = new Set(Object.keys(DAYS).filter(d => total(DAYS[d]) > 0));
+  keys.forEach(k => set.add(String(k).split("|")[0]));
+  const days = [...set].sort().reverse();
+  if (!days.length) { openSheet(`<div class="h">기록 내보내기</div><div class="dim">아직 내보낼 기록이 없어요.</div>`); return; }
+  const opts = days.map(d => `<option value="${d}">${d} · ${hms(DAYS[d] ? total(DAYS[d]) : 0)}</option>`).join("");
+  openSheet(`<div class="h">기록 내보내기</div>
+    <div class="row"><select id="rF">${opts}</select><span class="dim">~</span><select id="rT">${opts}</select></div>
+    <div class="dim">공부 시간과 타임랩스 장면을 파일 하나(.csm)로 묶어요. 컴퓨터 캠스터디에서 "폰 기록 가져오기"로 열면 같은 날로 합쳐져요. 장면이 많으면 파일이 커요 (4시간 ≈ 200MB).</div>
+    <div id="prog"><i></i></div>
+    <div class="row"><button class="pill go" id="rGo">내보내기</button></div>`);
+  $("#rGo").onclick = async () => {
+    const a = [$("#rF").value, $("#rT").value].sort(), sel = days.filter(d => d >= a[0] && d <= a[1]).reverse();
+    $("#rGo").disabled = true; $("#prog").style.display = "block";
+    try {
+      const blob = await buildCsm(sel, p => { $("#prog i").style.width = p + "%"; });
+      await saveBlob(blob, `camstudy_${sel[0]}${sel.length > 1 ? "_" + sel[sel.length - 1] : ""}.csm`);
+      toast(NATIVE ? "다운로드/캠스터디 폴더에 저장했어요" : "저장했어요"); closeSheet();
+    } catch (e) { toast("내보내지 못했어요 (" + (e && (e.name || e.message) || "오류") + ")"); $("#rGo").disabled = false; }
+  };
+}
+async function buildCsm(daysSel, onp) {
+  const keys = await allFrameKeys(), parts = [], hdr = { v: 1, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()), days: {} };
+  const totalFrames = daysSel.reduce((n, d) => n + keys.filter(k => String(k).startsWith(d + "|")).length, 0) || 1; let done = 0;
+  for (const day of daysSel) {
+    const dk = keys.filter(k => String(k).startsWith(day + "|")).sort();
+    const cells = (DAYS[day] || new Array(144).fill(0)).map(x => Math.round(x * 10) / 10), T = cells.reduce((a, b) => a + b, 0), frames = [];
+    for (let i = 0; i < dk.length; i++) {
+      const v_ = await getFrame(dk[i]), blob = v_ instanceof Blob ? v_ : v_.b, c = v_ instanceof Blob ? [0, 0, 1, 1] : v_.c;
+      let t = v_ instanceof Blob ? null : v_.t;
+      if (!t) {      // 시각이 없는 예전 장면은 공부한 시간 흐름에 맞춰 위치를 추정한다
+        let want = (i + .5) / dk.length * T, ci = 0; while (ci < 143 && want > cells[ci]) { want -= cells[ci]; ci++; }
+        t = dayOrigin(day) + (ci * 600 + Math.min(600, want)) * 1000;
+      }
+      frames.push({ t, c, len: blob.size }); parts.push(blob);
+      if (++done % 20 === 0) onp(Math.round(done / totalFrames * 100));
+    }
+    hdr.days[day] = { cells, frames };
+  }
+  const hb = new TextEncoder().encode(JSON.stringify(hdr)), pre = new Uint8Array(8);
+  pre.set([67, 83, 77, 49]); new DataView(pre.buffer).setUint32(4, hb.length, true);
+  onp(100);
+  return new Blob([pre, hb, ...parts], { type: "application/octet-stream" });
 }
 
 /* ───────── 친구 ───────── */
