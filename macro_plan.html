@@ -13,7 +13,7 @@
 @font-face { font-family: 'GmkC'; font-weight: 800; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2'); }
 :root{
   --bg:#fcfbfa; --line:#222; --bd:#e2e5ea; --soft:#f4f5f7; --txt:#23272e; --sub:#6b7480; --grey:#7c90a6;
-  --P:#2f7a68; --S:#3f5fbf;
+  --P:#6fa58f; --S:#8fb0e0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{display:none!important} *{scrollbar-width:none!important}
@@ -92,14 +92,20 @@ button{cursor:pointer;border:none;background:none}
 .cd:hover .plus{opacity:.9}
 .cfg{position:relative;display:grid;grid-template-columns:repeat(7,1fr);align-content:start;min-height:84px;pointer-events:none}
 .dnum{padding:3px 6px 1px;font-size:.72rem;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:4px;min-height:21px;pointer-events:none}
-.dnum .td{background:var(--line);color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.dnum .td{background:#e5484d;color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
 .xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
-.cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 1px;position:relative;cursor:pointer;height:20px}
+.cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 2px;position:relative;cursor:pointer;height:20px}
+.cbar.dn .nm{text-decoration:line-through;opacity:.6}
+.ck{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.35);display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.6)}
+.ck.on{background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.45);color:#fff}
+.cph{pointer-events:auto;margin:1px 2px 2px;border-radius:5px;font-size:.62rem;font-weight:700;color:#4a4f57;padding:0 6px;overflow:hidden;white-space:nowrap;cursor:pointer;line-height:14px;height:14px}
+.tl{position:absolute;top:0;bottom:0;width:0;border-left:2px solid #e5484d;z-index:5;pointer-events:none}
+.tl:before{content:"";position:absolute;top:-1px;left:-6px;width:10px;height:10px;border-radius:50%;background:#e5484d}
 .cbar .nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .cp{--bc:#e9e9eb;position:absolute;z-index:6;width:max-content;max-width:230px;display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:14px;font-size:.76rem;line-height:1.4;background:var(--bc);color:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}
 .cp:after{content:"";position:absolute;bottom:-7px;left:14px;border:7px solid transparent;border-top-color:var(--bc);border-bottom:0}
 .cp.r:after{left:auto;right:14px}
-.cp.pay{--bc:#4fa8f0;color:#fff}
+.cp.pay{--bc:#a9d3f5;color:#1d3345}
 .cp.sched{--bc:#f2c16b;color:#3a2a05}
 .cp.memo{--bc:#ececee;color:#222}
 .cp:hover{z-index:7}
@@ -157,14 +163,14 @@ const $ = s => document.querySelector(s);
 
 /* 대분류(P=피셋, S=2차) 안에서 색조만 살짝 다르게 */
 const ROWS = [
-  { id: 'P', g: 'P', name: '피셋 전체', grp: true, c: '#2f7a68' },
-  { id: 'LL', g: 'P', name: '언어논리', c: '#4c9a6a' },
-  { id: 'SP', g: 'P', name: '상황판단', c: '#7fb85a' },
-  { id: 'DA', g: 'P', name: '자료해석', c: '#c4b34a' },
-  { id: 'S', g: 'S', name: '2차 전체', grp: true, c: '#3558a8' },
-  { id: 'CO', g: 'S', name: '헌법', c: '#4a6fd0' },
-  { id: 'IL', g: 'S', name: '국제법', c: '#7fb0ee' },
-  { id: 'IP', g: 'S', name: '국제정치학', c: '#4fa3b8' },
+  { id: 'P', g: 'P', name: '피셋 전체', grp: true, c: '#6fa58f' },
+  { id: 'LL', g: 'P', name: '언어논리', c: '#8fc3a4' },
+  { id: 'SP', g: 'P', name: '상황판단', c: '#9ccfd1' },
+  { id: 'DA', g: 'P', name: '자료해석', c: '#e6d487' },
+  { id: 'S', g: 'S', name: '2차 전체', grp: true, c: '#8fb0e0' },
+  { id: 'CO', g: 'S', name: '헌법', c: '#7fa2e0' },
+  { id: 'IL', g: 'S', name: '국제법', c: '#b3cdf2' },
+  { id: 'IP', g: 'S', name: '국제정치학', c: '#8fc7de' },
 ];
 const ROW = Object.fromEntries(ROWS.map(r => [r.id, r]));
 const IMP = { 2: '필수', 1: '보통', 0: '여유' };
@@ -256,8 +262,8 @@ function range() {
 }
 function meta(b) {
   const r = ROW[b.subj] || ROW.LL, c = r.c;
-  const a = 0.15 + 0.85 * b.inten / 100;
-  const dark = b.inten >= 80;
+  const a = 0.5 + 0.5 * b.inten / 100;
+  const dark = false;
   const e = pd(b.e), be = pd(b.base[1]);
   let d = 0;
   if (b.done >= 100 && b.doneAt != null) d = b.doneAt - be; else d = e - be;
@@ -267,8 +273,8 @@ function meta(b) {
 }
 function dlabel(d) { return d > 0 ? `+${d}` : d < 0 ? `−${-d}` : ''; }
 function blkStyle(b, m) {
-  const bd = b.imp === 2 ? `1.5px solid ${m.c}` : b.imp === 1 ? `1px solid ${m.c}` : `1px dashed ${m.c}`;
-  return `background:${rgba(m.c, m.a)};color:${m.dark ? '#fff' : '#1d1d1d'};border:${bd}`;
+  const bd = b.imp === 0 ? `1px dashed ${m.c}` : '1px solid transparent';
+  return `background:${rgba(m.c, m.a)};color:#2b2f36;border:${bd}`;
 }
 function blkTitle(b, m) {
   return `${m.r.name} · ${b.name} (${IMP[b.imp]}, 집중도 ${b.inten}%, 완료 ${b.done}%) ${b.s} ~ ${b.e}`;
@@ -388,10 +394,11 @@ function noteFloat(n, col, idx) {
   return `<div class="cp ${n.kind} ${right ? 'r' : ''}" style="${pos};bottom:calc(100% - 4px + ${idx * 32}px)"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
 }
 function bar(sg) {
-  const b = sg.b, m = meta(b), rad = `${sg.st ? 5 : 0}px ${sg.en ? 5 : 0}px ${sg.en ? 5 : 0}px ${sg.st ? 5 : 0}px`;
-  return `<div class="cbar" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="grid-row:${sg.l + 2};grid-column:${sg.c0 + 1}/span ${sg.c1 - sg.c0 + 1};${blkStyle(b, m)};border-radius:${rad}">
-    ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
-    <span class="nm"><b>${m.r.name}</b> ${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
+  const b = sg.b, m = meta(b);
+  return `<div class="cbar ${b.done >= 100 ? 'dn' : ''}" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="grid-row:${sg.l + 3};grid-column:${sg.c0 + 1}/span ${sg.c1 - sg.c0 + 1};${blkStyle(b, m)};border-radius:${sg.st ? 6 : 0}px ${sg.en ? 6 : 0}px ${sg.en ? 6 : 0}px ${sg.st ? 6 : 0}px">
+    ${sg.st ? `<span class="ck ${b.done >= 100 ? 'on' : ''}" data-act="tgdone" data-id="${b.id}">${b.done >= 100 ? '✓' : ''}</span>` : ''}
+    ${b.imp === 2 ? `<span class="must" style="background:#fff;color:#444;border:1px solid rgba(0,0,0,.25)">필수</span>` : ''}
+    <span class="nm"><b>${m.r.name}</b> ${esc(b.name)}</span>
     ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
     ${b.done > 0 && b.done < 100 && sg.en ? `<span class="dl">${b.done}%</span>` : ''}</div>`;
 }
@@ -405,7 +412,11 @@ function weekRow(ws, ms, me, ep, es) {
   const lanes = [];
   segs.forEach(sg => { let i = lanes.findIndex(end => end < sg.c0); if (i < 0) { i = lanes.length; lanes.push(-1); } lanes[i] = sg.c1; sg.l = i; });
   const L = lanes.length;
-  let bg = '', fg = '', pops = '';
+  let bg = '', fg = '', pops = '', tline = '';
+  S.phases.forEach(ph => {
+    const s0 = pd(ph.s), e0 = pd(ph.e), a = Math.max(s0, ws, ms), z = Math.min(e0, ws + 6, me);
+    if (a <= z) fg += `<div class="cph" data-p="${ph.id}" style="grid-row:2;grid-column:${a - ws + 1}/span ${z - a + 1};background:${phaseGrad(ph, .32)}">${(s0 >= ws && s0 <= ws + 6) || ws <= ms ? `${esc(ph.name)} ${ph.pit}/${100 - ph.pit}` : ''}</div>`;
+  });
   for (let i = 0; i < 7; i++) {
     const d = ws + i;
     if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
@@ -416,7 +427,8 @@ function weekRow(ws, ms, me, ep, es) {
     S.notes.filter(n => pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
   segs.forEach(sg => { fg += bar(sg); });
-  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto repeat(${L},22px) auto">${fg}</div>${pops}</div>`;
+  if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl" style="left:calc(${TODAY - ws} / 7 * 100% + 1px)"></div>`;
+  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 16px repeat(${L},22px) auto">${fg}</div>${tline}${pops}</div>`;
 }
 function calView() {
   const [r0, r1] = range();
@@ -528,6 +540,7 @@ document.addEventListener('click', ev => {
     else if (act === 'addnote') openNote(null);
     else if (act === 'qblockm') { const ms = +a.dataset.ms, me = NEXTMON(ms) - 1, st = (TODAY >= ms && TODAY <= me) ? TODAY : ms; openBlock(null, { s: fd(st), e: fd(Math.min(me, st + 13)) }); }
     else if (act === 'qnoted') quickNoteD(+a.dataset.d);
+    else if (act === 'tgdone') { const b = S.blocks.find(x => x.id === a.dataset.id); if (b) { setDone(b, b.done >= 100 ? 0 : 100); save(); render(); } }
     else if (act === 'savenote') saveNote();
     else if (act === 'delnote') { if (confirm('이 말풍선을 삭제할까?')) { S.notes = S.notes.filter(n => n.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'addphase') openPhase(null);
