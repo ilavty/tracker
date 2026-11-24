@@ -4377,7 +4377,7 @@ function pl_unmergeItem() {
             showPage('tracker');
         }
         // 네비 순서 고정: PLANNER · TRACKER · PSAT · CHRONO · CARDS (MAP은 DATABASE로 이동)
-        const __order = ['nav-overview','nav-calendar','nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues'];
+        const __order = ['nav-overview','nav-calendar','nav-planner','nav-tracker','nav-psat','nav-chrono','nav-cards','nav-issues','nav-plan'];
         const __reorder = ()=>{ if(!navLinks) return; __order.forEach(id=>{ const el=document.getElementById(id); if(el) navLinks.appendChild(el); }); };
         __reorder(); setTimeout(__reorder, 600); setTimeout(__reorder, 1500);
         calcDday();
@@ -4494,6 +4494,37 @@ function pl_unmergeItem() {
         };
         if (localStorage.getItem('lastPage') === 'issues') showPage('issues');
     }, 480);
+</script>
+
+<!-- ========== PLAN(거시 학습계획) — ISSUES 뒤에 탭 추가, macro_plan.html을 iframe으로 삽입 ========== -->
+<div id="plan-view" style="display:none; width:100%;">
+    <iframe id="plan-iframe" data-src="macro_plan.html" title="PLAN" style="width:100%; height:calc(100vh - 64px); height:calc(100dvh - 64px); min-height:560px; border:none; display:block; background:#fcfbfa;"></iframe>
+</div>
+<script>
+    __boot(() => {
+        const appWrapper = document.querySelector('.app-wrapper');
+        const navLinks = document.querySelector('.nav-links');
+        const planView = document.getElementById('plan-view');
+        if (appWrapper && planView) appWrapper.appendChild(planView);
+        if (navLinks && !document.getElementById('nav-plan')) {
+            const b = document.createElement('span');
+            b.id = 'nav-plan'; b.className = 'inactive'; b.innerText = 'PLAN';
+            b.onclick = () => showPage('plan');
+            navLinks.appendChild(b);
+        }
+        const __prevShowPage5 = window.showPage || function(){};
+        window.showPage = function(p) {
+            __prevShowPage5(p);
+            if (planView) {
+                planView.style.display = (p === 'plan') ? 'block' : 'none';
+                const f = document.getElementById('plan-iframe');
+                if (p === 'plan' && f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // 처음 열 때만 로드
+            }
+            const nb = document.getElementById('nav-plan');
+            if (nb) nb.className = (p === 'plan') ? 'active' : 'inactive';
+        };
+        if (localStorage.getItem('lastPage') === 'plan') showPage('plan');
+    }, 500);
 </script>
 
 <!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->

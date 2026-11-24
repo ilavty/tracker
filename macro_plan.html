@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLAN</title>
+<style>
+@font-face { font-family: 'GmkC'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2'); }
+@font-face { font-family: 'GmkC'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2'); }
+@font-face { font-family: 'GmkC'; font-weight: 500; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2'); }
+@font-face { font-family: 'GmkC'; font-weight: 600; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'GmkC'; font-weight: 700; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2'); }
+@font-face { font-family: 'GmkC'; font-weight: 800; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2') format('woff2'); }
+:root{
+  --bg:#fcfbfa; --line:#222; --bd:#e2e5ea; --soft:#f4f5f7; --txt:#23272e; --sub:#6b7480; --grey:#7c90a6;
+  --P:#2f7a68; --S:#a0603a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{display:none!important} *{scrollbar-width:none!important}
+html,body{background:var(--bg)}
+body{font-family:'GmkC',sans-serif;font-weight:400;color:var(--txt);font-size:14px;line-height:1.45;padding:18px 16px 60px;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+
+/* top */
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:1500px;margin:0 auto 12px}
+.brand{font-weight:800;font-size:1.35rem;letter-spacing:.06em;color:var(--line);margin-right:6px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
+.seg button{padding:5px 14px;font-weight:600;font-size:.85rem;color:var(--sub)}
+.seg button.on{background:var(--line);color:#fff}
+.pill{font-size:.82rem;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--bd);background:#fff;color:var(--txt);white-space:nowrap}
+.pill:hover{border-color:var(--line)}
+.pill.on{border-color:var(--line);background:var(--line);color:#fff}
+.sp{flex:1}
+.stats{display:flex;gap:6px;flex-wrap:wrap;max-width:1500px;margin:0 auto 14px}
+.st{font-size:.8rem;padding:4px 11px;border-radius:14px;background:var(--soft);color:var(--txt);font-weight:500}
+.st b{font-weight:800}
+.st.dd{background:#fff;border:1px solid var(--line);cursor:pointer}
+
+/* month view */
+.mv{max-width:1500px;margin:0 auto;overflow-x:auto;border:1px solid var(--bd);border-radius:12px;background:#fff}
+.mvin{position:relative}
+.mrow{display:flex;border-bottom:1px solid var(--bd)}
+.mrow:last-child{border-bottom:none}
+.mlab{position:sticky;left:0;z-index:6;flex:none;background:var(--bg);border-right:1px solid var(--bd);padding:8px 10px;font-size:.82rem;font-weight:600;display:flex;align-items:flex-start;gap:6px}
+.mlab.grp{font-weight:800}
+.mlab i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-top:4px;flex:none}
+.mtrack{position:relative;flex:none}
+.mh .mtrack{height:24px}
+.mcell{position:absolute;top:0;height:24px;border-left:1px solid var(--bd);padding:3px 6px;font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden}
+.mk .mtrack{height:22px}
+.mkb{position:absolute;top:2px;font-size:.7rem;font-weight:700;padding:1px 7px;border-radius:9px;background:#fff;border:1px solid var(--line);white-space:nowrap;cursor:pointer;z-index:4}
+.mkb.today{background:var(--line);color:#fff;cursor:default}
+.ph{position:absolute;top:3px;height:28px;border-radius:6px;font-size:.74rem;font-weight:600;padding:5px 8px;white-space:nowrap;overflow:hidden;cursor:pointer;border:1px solid rgba(0,0,0,.08)}
+.vl{position:absolute;top:0;bottom:0;width:0;z-index:2;pointer-events:none;border-left:1px dashed #c9ccd1}
+.vl.today{border-left:2px solid rgba(0,0,0,.55);z-index:4}
+.vl.exam{border-left:2px solid var(--line);z-index:4}
+.blk{position:absolute;height:26px;border-radius:6px;z-index:3;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0 7px;font-size:.76rem;font-weight:600;overflow:hidden;white-space:nowrap}
+.blk .nm{overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.blk .pg{position:absolute;left:0;bottom:0;height:3px;background:#111}
+.ghost{position:absolute;height:5px;border-radius:3px;z-index:2;pointer-events:none}
+.must{font-size:.62rem;font-weight:800;background:#111;color:#fff;border-radius:4px;padding:0 4px;line-height:15px;flex:none}
+.dl{font-size:.64rem;font-weight:700;background:rgba(255,255,255,.85);color:#222;border-radius:8px;padding:0 5px;line-height:15px;flex:none;border:1px solid rgba(0,0,0,.15)}
+.dl.od{background:#f3e7de;color:#7a4a2a}
+
+/* week view */
+.wv{max-width:1500px;margin:0 auto}
+.wrow{display:grid;grid-template-columns:96px 1fr 1fr;gap:8px;margin-bottom:4px;align-items:stretch}
+.wl{padding:6px 4px;font-size:.78rem;font-weight:700;line-height:1.3}
+.wl small{display:block;font-weight:500;color:var(--sub);font-size:.7rem}
+.wl .ex{display:inline-block;font-size:.66rem;font-weight:800;background:var(--line);color:#fff;border-radius:8px;padding:0 6px;margin-top:2px}
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;min-height:46px}
+.wgb{grid-column:1/-1;display:flex;flex-direction:column;gap:3px}
+.wc{background:var(--soft);border-radius:7px;padding:3px;display:flex;flex-direction:column;gap:3px;min-height:46px}
+.wh .wc{background:none;min-height:0;font-size:.74rem;font-weight:700;text-align:center;padding:0}
+.wh .wgt{grid-column:1/-1;font-weight:800;font-size:.8rem;padding:2px 4px;border-bottom:2px solid}
+.chip{border-radius:6px;padding:3px 7px;font-size:.74rem;font-weight:600;cursor:pointer;display:flex;gap:5px;align-items:center;line-height:1.3;overflow:hidden;position:relative}
+.chip .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip .em{font-size:.66rem;font-weight:500;opacity:.85;flex:none}
+.wrow.past{opacity:.5}
+.wrow.cur .wl{color:#000}
+.wrow.cur .wc,.wrow.cur .wgb{outline:1.5px solid var(--line);outline-offset:0;border-radius:7px}
+.wph{margin:14px 0 6px;padding:7px 12px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid rgba(0,0,0,.08)}
+.wph small{font-weight:500;margin-left:8px;color:#333}
+
+/* modal */
+#modal{position:fixed;inset:0;background:rgba(20,20,20,.38);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
+#modal.on{display:flex}
+.mbox{background:#fff;border-radius:14px;width:min(440px,100%);max-height:92vh;overflow-y:auto;padding:18px 20px 16px;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.mbox h3{font-size:1rem;font-weight:800;margin-bottom:10px}
+.mbox label{display:block;font-size:.72rem;font-weight:700;color:var(--sub);margin:10px 0 4px}
+.mbox input[type=text],.mbox input[type=date],.mbox select{width:100%;padding:7px 9px;border:1px solid var(--bd);border-radius:8px;background:#fff}
+.mbox input:focus,.mbox select:focus{outline:none;border-color:var(--line)}
+.mbox .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chips button{padding:5px 12px;border:1px solid var(--bd);border-radius:16px;font-size:.8rem;font-weight:600;background:#fff}
+.chips button.on{border-color:var(--line);background:var(--line);color:#fff}
+.mbox input[type=range]{width:100%;accent-color:#222}
+.ck{display:flex!important;align-items:center;gap:6px;font-weight:500!important;color:var(--txt)!important;font-size:.8rem!important;margin-top:12px!important}
+.info{margin-top:12px;padding:8px 10px;background:var(--soft);border-radius:8px;font-size:.76rem;color:var(--sub);line-height:1.6}
+.info b{color:var(--txt)}
+.btns{display:flex;gap:6px;margin-top:16px;flex-wrap:wrap}
+.btns .sv{background:var(--line);color:#fff;border-radius:18px;padding:7px 20px;font-weight:700}
+.btns .cx{border:1px solid var(--bd);border-radius:18px;padding:7px 16px;font-weight:600}
+.btns .dx{color:#a0504a;font-weight:600;padding:7px 10px}
+.btns .rb{color:var(--sub);font-weight:600;padding:7px 10px;font-size:.8rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--line);color:#fff;padding:8px 16px;border-radius:18px;font-size:.82rem;z-index:60;opacity:0;pointer-events:none;transition:.2s}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="top" id="top"></div>
+<div class="stats" id="stats"></div>
+<div id="root"></div>
+<div id="modal"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+/* ================= helpers ================= */
+const LS = 'macro_plan_v1', LSUI = 'macro_plan_ui_v1';
+const DAY = 864e5;
+const p2 = n => String(n).padStart(2, '0');
+const pd = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / DAY; };
+const fd = n => { const t = new Date(n * DAY); return `${t.getUTCFullYear()}-${p2(t.getUTCMonth() + 1)}-${p2(t.getUTCDate())}`; };
+const md = n => { const t = new Date(n * DAY); return `${t.getUTCMonth() + 1}.${t.getUTCDate()}`; };
+const TODAY = Math.floor((Date.now() + 9 * 36e5) / DAY);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const rgba = (h, a) => { const [r, g, b] = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); return `rgba(${r},${g},${b},${a})`; };
+const $ = s => document.querySelector(s);
+
+/* 대분류(P=피셋, S=2차) 안에서 색조만 살짝 다르게 */
+const ROWS = [
+  { id: 'P', g: 'P', name: '피셋 전체', grp: true, c: '#2f7a68' },
+  { id: 'LL', g: 'P', name: '언어논리', c: '#4c9a6a' },
+  { id: 'SP', g: 'P', name: '상황판단', c: '#3b8f9c' },
+  { id: 'DA', g: 'P', name: '자료해석', c: '#88a24c' },
+  { id: 'S', g: 'S', name: '2차 전체', grp: true, c: '#a0603a' },
+  { id: 'CO', g: 'S', name: '헌법', c: '#94512f' },
+  { id: 'IL', g: 'S', name: '국제법', c: '#cf8d57' },
+  { id: 'IP', g: 'S', name: '국제정치학', c: '#8f4f5e' },
+];
+const ROW = Object.fromEntries(ROWS.map(r => [r.id, r]));
+const IMP = { 2: '필수', 1: '보통', 0: '여유' };
+const INTEN = [20, 40, 60, 80, 100];
+const ZOOMS = [0, 5, 8];   // 0 = 화면 폭에 맞춤
+const LW = 112, LH = 36;
+
+/* ================= state ================= */
+let S, UI = { v: 'm', z: 0, ghost: true };
+let db = null, fbRef = null;
+
+function mkBlock(subj, name, s, e, inten, imp, done, baseShift, seed) {
+  const base = baseShift ? [s, fd(pd(e) + baseShift)] : [s, e];
+  return { id: uid(), subj, name, s, e, base, inten, imp, done: done || 0, doneAt: done >= 100 ? TODAY : null, log: [], seed: !!seed };
+}
+function seedState() {
+  const phases = [
+    { id: uid(), name: '기본 회독', s: '2026-11-24', e: '2027-02-28', pit: 40 },
+    { id: uid(), name: '문제풀이', s: '2027-03-01', e: '2027-04-30', pit: 60 },
+    { id: uid(), name: '피셋 집중', s: '2027-05-01', e: '2027-06-15', pit: 80 },
+    { id: uid(), name: '피셋 직전', s: '2027-06-16', e: '2027-07-10', pit: 100 },
+    { id: uid(), name: '2차 집중', s: '2027-07-11', e: '2027-08-31', pit: 0 },
+    { id: uid(), name: '2차 직전', s: '2027-09-01', e: '2027-09-11', pit: 0 },
+  ];
+  const blocks = [
+    mkBlock('LL', '기본서 1회독', '2026-11-24', '2027-01-31', 40, 1, 60, 0, 1),
+    mkBlock('SP', '기본서·유형 정리', '2026-12-01', '2027-02-28', 40, 2, 30, -14, 1),
+    mkBlock('DA', '기본 공식·유형', '2027-01-04', '2027-02-28', 40, 1, 0, 0, 1),
+    mkBlock('CO', '기본서 1회독', '2026-11-24', '2027-01-17', 60, 2, 60, 7, 1),
+    mkBlock('IL', '기본서 1회독', '2027-01-18', '2027-03-14', 60, 2, 0, 0, 1),
+    mkBlock('IP', '기본서 1회독', '2027-03-15', '2027-04-30', 40, 1, 0, 0, 1),
+    mkBlock('P', '기출 1회전', '2027-03-01', '2027-04-30', 60, 2, 0, 0, 1),
+    mkBlock('P', '실전 모의', '2027-05-01', '2027-06-15', 80, 2, 0, 0, 1),
+    mkBlock('P', '최종 마무리', '2027-06-16', '2027-07-10', 100, 2, 0, 0, 1),
+    mkBlock('LL', '매일 풀이', '2027-03-01', '2027-07-10', 40, 1, 0, 0, 1),
+    mkBlock('CO', '기출 회독', '2027-05-01', '2027-06-30', 20, 0, 0, 0, 1),
+    mkBlock('S', '전과목 회독', '2027-07-11', '2027-08-31', 80, 2, 0, 0, 1),
+    mkBlock('S', '직전 마무리', '2027-09-01', '2027-09-11', 100, 2, 0, 0, 1),
+  ];
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks };
+}
+function normalize(x) {
+  if (!x || !x.blocks) return seedState();
+  x.phases = x.phases || [];
+  x.exams = x.exams || { p: '2027-07-10', s: '2027-09-11' };
+  x.blocks.forEach(b => { b.log = b.log || []; if (!b.base) b.base = [b.s, b.e]; });
+  return x;
+}
+function loadLocal() { try { S = normalize(JSON.parse(localStorage.getItem(LS) || 'null')); } catch (e) { S = normalize(null); } }
+function writeLocal() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { } }
+function save() {
+  S.ts = Date.now(); writeLocal();
+  if (fbRef) { try { fbRef.set(JSON.parse(JSON.stringify(S))); } catch (e) { } }
+}
+function loadUI() { try { Object.assign(UI, JSON.parse(localStorage.getItem(LSUI) || '{}')); } catch (e) { } }
+function saveUI() { try { localStorage.setItem(LSUI, JSON.stringify(UI)); } catch (e) { } }
+function initFirebase() {
+  try {
+    const cfg = { apiKey: "AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o", projectId: "time-8d30b", databaseURL: "https://tracker-d3a39-default-rtdb.firebaseio.com/" };
+    if (!window.firebase) return;
+    const app = firebase.apps.find(a => a.name === 'macroplan') || firebase.initializeApp(cfg, 'macroplan');
+    db = app.database(); fbRef = db.ref('macro_plan/v1');
+    fbRef.on('value', snap => {
+      const r = snap.val();
+      if (r && (r.ts || 0) > (S.ts || 0)) { S = normalize(r); writeLocal(); render(); }
+      else if (!r && S.ts) { fbRef.set(JSON.parse(JSON.stringify(S))); }
+    });
+  } catch (e) { }
+}
+
+/* ================= derived ================= */
+function range() {
+  let lo = TODAY, hi = pd(S.exams.s);
+  hi = Math.max(hi, pd(S.exams.p));
+  S.phases.forEach(p => { lo = Math.min(lo, pd(p.s)); hi = Math.max(hi, pd(p.e)); });
+  S.blocks.forEach(b => { lo = Math.min(lo, pd(b.s), pd(b.base[0])); hi = Math.max(hi, pd(b.e), pd(b.base[1])); });
+  lo -= (lo + 3) % 7;           // 월요일로
+  hi += 12;
+  return [lo, hi];
+}
+function meta(b) {
+  const r = ROW[b.subj] || ROW.LL, c = r.c;
+  const a = 0.15 + 0.85 * b.inten / 100;
+  const dark = b.inten >= 80;
+  const e = pd(b.e), be = pd(b.base[1]);
+  let d = 0;
+  if (b.done >= 100 && b.doneAt != null) d = b.doneAt - be; else d = e - be;
+  const od = (b.done < 100 && TODAY > e) ? TODAY - e : 0;
+  const moved = (pd(b.s) !== pd(b.base[0])) || (e !== be);
+  return { c, a, dark, d, od, moved, r };
+}
+function dlabel(d) { return d > 0 ? `+${d}` : d < 0 ? `−${-d}` : ''; }
+function blkStyle(b, m) {
+  const bd = b.imp === 2 ? '2px solid #111' : b.imp === 1 ? `1px solid ${m.c}` : `1px dashed ${m.c}`;
+  return `background:${rgba(m.c, m.a)};color:${m.dark ? '#fff' : '#1d1d1d'};border:${bd}`;
+}
+function blkTitle(b, m) {
+  return `${m.r.name} · ${b.name} (${IMP[b.imp]}, 집중도 ${b.inten}%, 완료 ${b.done}%) ${b.s} ~ ${b.e}`;
+}
+function phaseAt(n) { return S.phases.find(p => pd(p.s) <= n && n <= pd(p.e)); }
+function phaseGrad(p, alpha) {
+  const a = alpha || .3;
+  if (p.pit >= 100) return rgba(ROW.P.c, a);
+  if (p.pit <= 0) return rgba(ROW.S.c, a);
+  return `linear-gradient(to bottom, ${rgba(ROW.P.c, a)} 0 ${p.pit}%, ${rgba(ROW.S.c, a)} ${p.pit}% 100%)`;
+}
+
+/* ================= render ================= */
+let CTX = {};
+function render() {
+  const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY;
+  renderTop(); renderStats();
+  $('#root').innerHTML = UI.v === 'm' ? monthView() : weekView();
+  const mv = $('.mv'); if (mv) mv.scrollLeft = sx;
+  window.scrollTo(0, sy);
+}
+function renderTop() {
+  $('#top').innerHTML = `
+    <span class="brand">PLAN</span>
+    <span class="seg"><button data-act="view" data-v="m" class="${UI.v === 'm' ? 'on' : ''}">월</button><button data-act="view" data-v="w" class="${UI.v === 'w' ? 'on' : ''}">주</button></span>
+    ${UI.v === 'm' ? `<span class="seg"><button data-act="zoom" data-d="-1">−</button><button data-act="zoom" data-d="1">+</button></span>` : ''}
+    <button class="pill" data-act="today">오늘</button>
+    <button class="pill ${UI.ghost ? 'on' : ''}" data-act="ghost">원계획</button>
+    <span class="sp"></span>
+    <button class="pill" data-act="addblock">+ 블록</button>
+    <button class="pill" data-act="addphase">+ 단계</button>
+    ${S.blocks.some(b => b.seed) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
+}
+function renderStats() {
+  const must = S.blocks.filter(b => b.imp === 2), mustDone = must.filter(b => b.done >= 100).length;
+  const late = S.blocks.filter(b => b.done < 100 && TODAY > pd(b.e)).length;
+  const slipped = S.blocks.filter(b => meta(b).d > 0).length, ahead = S.blocks.filter(b => meta(b).d < 0).length;
+  const dd = (n) => { const x = n - TODAY; return x > 0 ? `D-${x}` : x === 0 ? 'D-DAY' : `D+${-x}`; };
+  $('#stats').innerHTML = `
+    <span class="st dd" data-act="exams">1차 ${md(pd(S.exams.p))} <b>${dd(pd(S.exams.p))}</b></span>
+    <span class="st dd" data-act="exams">2차 ${md(pd(S.exams.s))} <b>${dd(pd(S.exams.s))}</b></span>
+    <span class="st">필수 <b>${mustDone}</b> / ${must.length} 완료</span>
+    <span class="st">이월 <b>${late}</b></span>
+    <span class="st">밀림 <b>${slipped}</b></span>
+    <span class="st">앞섬 <b>${ahead}</b></span>`;
+}
+
+/* ---- 월 뷰 ---- */
+function monthView() {
+  const [r0, r1] = range(), days = r1 - r0 + 1;
+  const px = ZOOMS[UI.z] || Math.max(2.5, ((document.documentElement.clientWidth - 34 - LW) / days));
+  const W = days * px;
+  const X = n => (n - r0) * px;
+  CTX = { r0, px, W };
+  let months = '', cur = r0;
+  while (cur <= r1) {
+    const t = new Date(cur * DAY), y = t.getUTCFullYear(), m = t.getUTCMonth();
+    const nm = Date.UTC(y, m + 1, 1) / DAY, end = Math.min(nm - 1, r1);
+    months += `<div class="mcell" style="left:${X(cur)}px;width:${(end - cur + 1) * px}px">${m === 0 ? y + '.' : ''}${m + 1}월</div>`;
+    cur = nm;
+  }
+  const grid = `background-image:linear-gradient(to right,rgba(0,0,0,.045) 1px,transparent 1px);background-size:${7 * px}px 100%`;
+  const mk = [];
+  if (TODAY >= r0 && TODAY <= r1) mk.push(`<div class="mkb today" style="left:${X(TODAY) + 3}px">오늘</div>`);
+  mk.push(`<div class="mkb" data-act="exams" style="left:${X(pd(S.exams.p)) + 3}px">1차 ${md(pd(S.exams.p))}</div>`);
+  mk.push(`<div class="mkb" data-act="exams" style="left:${X(pd(S.exams.s)) + 3}px">2차 ${md(pd(S.exams.s))}</div>`);
+
+  let h = `<div class="mv"><div class="mvin" style="width:${LW + W}px">
+    <div class="mrow mh"><div class="mlab" style="width:${LW}px"></div><div class="mtrack" style="width:${W}px">${months}</div></div>
+    <div class="mrow mk"><div class="mlab" style="width:${LW}px;padding:0"></div><div class="mtrack" style="width:${W}px">${mk.join('')}</div></div>
+    <div class="mrow"><div class="mlab" style="width:${LW}px">단계</div><div class="mtrack" style="width:${W}px;height:36px">
+      ${S.phases.map(p => `<div class="ph" data-p="${p.id}" style="left:${X(pd(p.s))}px;width:${(pd(p.e) - pd(p.s) + 1) * px - 2}px;background:${phaseGrad(p)}" title="${esc(p.name)} · 피셋 ${p.pit} / 2차 ${100 - p.pit}">${esc(p.name)} <span style="font-weight:500">${p.pit}/${100 - p.pit}</span></div>`).join('')}
+    </div></div>`;
+
+  ROWS.forEach(row => {
+    const bl = S.blocks.filter(b => b.subj === row.id).sort((a, b) => pd(a.s) - pd(b.s));
+    const lanes = [];
+    const pos = bl.map(b => {
+      let i = lanes.findIndex(end => end < pd(b.s));
+      if (i < 0) { i = lanes.length; lanes.push(0); }
+      lanes[i] = pd(b.e); return i;
+    });
+    const hgt = Math.max(1, lanes.length) * LH + 8;
+    let inner = '';
+    bl.forEach((b, k) => {
+      const m = meta(b), top = pos[k] * LH + 4, left = X(pd(b.s)), w = (pd(b.e) - pd(b.s) + 1) * px;
+      inner += `<div class="blk" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="left:${left}px;top:${top}px;width:${w}px;${blkStyle(b, m)}">
+        ${b.imp === 2 ? '<span class="must">필수</span>' : ''}
+        <span class="nm" ${b.done >= 100 ? 'style="opacity:.7"' : ''}>${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
+        ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}
+        ${b.done > 0 ? `<span class="pg" style="width:${b.done}%"></span>` : ''}</div>`;
+      if (UI.ghost && m.moved) {
+        const gl = X(pd(b.base[0])), gw = (pd(b.base[1]) - pd(b.base[0]) + 1) * px;
+        inner += `<div class="ghost" style="left:${gl}px;top:${top + 28}px;width:${gw}px;background:${rgba(m.c, .3)};border:1px solid ${m.c}"></div>`;
+      }
+    });
+    h += `<div class="mrow"><div class="mlab ${row.grp ? 'grp' : ''}" style="width:${LW}px"><i style="background:${row.c}"></i>${row.name}</div>
+      <div class="mtrack" data-row="${row.id}" style="width:${W}px;height:${hgt}px;${grid}">${inner}</div></div>`;
+  });
+
+  let lines = '';
+  S.phases.forEach((p, i) => { if (i) lines += `<div class="vl" style="left:${LW + X(pd(p.s))}px"></div>`; });
+  if (TODAY >= r0 && TODAY <= r1) lines += `<div class="vl today" style="left:${LW + X(TODAY)}px"></div>`;
+  lines += `<div class="vl exam" style="left:${LW + X(pd(S.exams.p) + 1)}px"></div><div class="vl exam" style="left:${LW + X(pd(S.exams.s) + 1)}px"></div>`;
+  return h + lines + `</div></div>`;
+}
+
+/* ---- 주 뷰 ---- */
+function weekView() {
+  const [r0, r1] = range();
+  const chip = (b, ws, we) => {
+    const m = meta(b), ends = pd(b.e) >= ws && pd(b.e) <= we;
+    return `<div class="chip" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="${blkStyle(b, m)}">
+      ${b.imp === 2 ? '<span class="must">필수</span>' : ''}
+      <span class="nm">${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
+      ${ends ? `<span class="em">~${md(pd(b.e))}</span>` : ''}
+      ${b.done > 0 && b.done < 100 ? `<span class="em">${b.done}%</span>` : ''}
+      ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}</div>`;
+  };
+  const head = (g) => `<div class="wg wh"><div class="wgt" style="border-color:${ROW[g].c};color:${ROW[g].c}">${g === 'P' ? '피셋' : '2차'}</div>${ROWS.filter(r => r.g === g && !r.grp).map(r => `<div class="wc" style="color:${r.c}">${r.name}</div>`).join('')}</div>`;
+  let h = `<div class="wv"><div class="wrow wh"><div></div>${head('P')}${head('S')}</div>`;
+  let prevPh = null;
+  const ep = pd(S.exams.p), es = pd(S.exams.s);
+  for (let ws = r0; ws <= r1; ws += 7) {
+    const we = ws + 6;
+    const ph = phaseAt(ws) || phaseAt(we);
+    if (ph && (!prevPh || prevPh.id !== ph.id)) {
+      h += `<div class="wph" data-p="${ph.id}" style="background:${phaseGrad(ph, .22)}">${esc(ph.name)}<small>피셋 ${ph.pit} / 2차 ${100 - ph.pit} · ${md(pd(ph.s))} – ${md(pd(ph.e))}</small></div>`;
+    }
+    prevPh = ph || prevPh;
+    const nextEx = ep >= ws ? ep : es >= ws ? es : null;
+    const exTag = (ep >= ws && ep <= we) ? '1차 시험' : (es >= ws && es <= we) ? '2차 시험' : '';
+    const group = g => {
+      const rows = ROWS.filter(r => r.g === g);
+      const act = id => S.blocks.filter(b => b.subj === id && pd(b.s) <= we && pd(b.e) >= ws);
+      const gb = act(g).map(b => chip(b, ws, we)).join('');
+      return `<div class="wg">${gb ? `<div class="wgb">${gb}</div>` : ''}${rows.filter(r => !r.grp).map(r => `<div class="wc">${act(r.id).map(b => chip(b, ws, we)).join('')}</div>`).join('')}</div>`;
+    };
+    const cls = we < TODAY ? 'past' : (ws <= TODAY && TODAY <= we ? 'cur' : '');
+    h += `<div class="wrow ${cls}" ${cls === 'cur' ? 'id="curweek"' : ''}><div class="wl">${md(ws)} – ${md(we)}<small>${nextEx ? `${nextEx === ep ? '1차' : '2차'} D-${Math.max(0, nextEx - Math.max(ws, TODAY))}` : ''}</small>${exTag ? `<span class="ex">${exTag}</span>` : ''}</div>${group('P')}${group('S')}</div>`;
+  }
+  return h + `</div>`;
+}
+
+/* ================= modal ================= */
+function openModal(html) { const m = $('#modal'); m.innerHTML = html; m.classList.add('on'); }
+function closeModal() { const m = $('#modal'); m.classList.remove('on'); m.innerHTML = ''; }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 1800); }
+function pick(id) { const on = $(`#${id} button.on`); return on ? +on.dataset.v : null; }
+
+function openBlock(id, pre) {
+  const old = id ? S.blocks.find(b => b.id === id) : null;
+  const b = old || Object.assign({ subj: 'LL', name: '', s: fd(TODAY), e: fd(TODAY + 13), inten: 60, imp: 1, done: 0, log: [] }, pre || {});
+  const logHtml = (b.log || []).slice().reverse().map(l => `${new Date(l.ts + 9 * 36e5).toISOString().slice(5, 10).replace('-', '.')} ${md(pd(l.from[0]))}–${md(pd(l.from[1]))} → ${md(pd(l.to[0]))}–${md(pd(l.to[1]))}${l.reason ? ' · ' + esc(l.reason) : ''}`).join('<br>');
+  openModal(`<div class="mbox" data-id="${old ? old.id : ''}">
+    <h3>${old ? '블록' : '블록 추가'}</h3>
+    <label>과목</label><select id="f-subj">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select>
+    <label>범위</label><input type="text" id="f-name" value="${esc(b.name)}">
+    <div class="two"><div><label>시작</label><input type="date" id="f-s" value="${b.s}"></div><div><label>끝</label><input type="date" id="f-e" value="${b.e}"></div></div>
+    <label>집중도</label><div class="chips" id="f-inten">${INTEN.map(v => `<button data-v="${v}" class="${v === b.inten ? 'on' : ''}">${v}%</button>`).join('')}</div>
+    <label>중요도</label><div class="chips" id="f-imp">${[2, 1, 0].map(v => `<button data-v="${v}" class="${v === b.imp ? 'on' : ''}">${IMP[v]}</button>`).join('')}</div>
+    <label>완료율 <span id="f-dv">${b.done}%</span></label><input type="range" id="f-done" min="0" max="100" step="5" value="${b.done}">
+    ${old ? `<label>수정 사유</label><input type="text" id="f-reason"><label class="ck"><input type="checkbox" id="f-follow"> 같은 과목 뒤 블록도 같이 밀기</label>
+    <div class="info"><b>원계획</b> ${md(pd(b.base[0]))} – ${md(pd(b.base[1]))}${b.done >= 100 && b.doneAt != null ? ` · <b>완료</b> ${md(b.doneAt)}` : ''}${logHtml ? `<br>${logHtml}` : ''}</div>` : ''}
+    <div class="btns"><button class="sv" data-act="saveblock">저장</button><button class="cx" data-act="close">취소</button><span class="sp" style="flex:1"></span>
+    ${old ? `<button class="rb" data-act="rebase">원계획을 현재로</button><button class="dx" data-act="delblock">삭제</button>` : ''}</div></div>`);
+}
+function saveBlock() {
+  const box = $('.mbox'), id = box.dataset.id;
+  const subj = $('#f-subj').value, name = $('#f-name').value.trim(), s = $('#f-s').value, e = $('#f-e').value;
+  if (!name) { toast('범위를 입력해줘'); return; }
+  if (!s || !e || pd(e) < pd(s)) { toast('날짜를 확인해줘'); return; }
+  const inten = pick('f-inten'), imp = pick('f-imp'), done = +$('#f-done').value;
+  if (!id) {
+    S.blocks.push({ id: uid(), subj, name, s, e, base: [s, e], inten, imp, done, doneAt: done >= 100 ? TODAY : null, log: [] });
+  } else {
+    const b = S.blocks.find(x => x.id === id), reason = ($('#f-reason').value || '').trim();
+    const os = b.s, oe = b.e;
+    if (os !== s || oe !== e) b.log.push({ ts: Date.now(), from: [os, oe], to: [s, e], reason });
+    if ($('#f-follow').checked && oe !== e) {
+      const dE = pd(e) - pd(oe);
+      S.blocks.forEach(o => {
+        if (o.id !== b.id && o.subj === b.subj && pd(o.s) >= pd(oe)) {
+          const f = [o.s, o.e]; o.s = fd(pd(o.s) + dE); o.e = fd(pd(o.e) + dE);
+          o.log.push({ ts: Date.now(), from: f, to: [o.s, o.e], reason: reason || '앞 블록 따라 이동' });
+        }
+      });
+    }
+    if (done >= 100 && b.done < 100) b.doneAt = TODAY;
+    if (done < 100) b.doneAt = null;
+    Object.assign(b, { subj, name, s, e, inten, imp, done });
+  }
+  save(); closeModal(); render();
+}
+function openPhase(id) {
+  const old = id ? S.phases.find(p => p.id === id) : null;
+  const p = old || { name: '', s: fd(TODAY), e: fd(TODAY + 30), pit: 50 };
+  openModal(`<div class="mbox" data-id="${old ? old.id : ''}">
+    <h3>${old ? '단계' : '단계 추가'}</h3>
+    <label>이름</label><input type="text" id="f-name" value="${esc(p.name)}">
+    <div class="two"><div><label>시작</label><input type="date" id="f-s" value="${p.s}"></div><div><label>끝</label><input type="date" id="f-e" value="${p.e}"></div></div>
+    <label>피셋 비율 <span id="f-dv">피셋 ${p.pit} / 2차 ${100 - p.pit}</span></label><input type="range" id="f-pit" min="0" max="100" step="10" value="${p.pit}">
+    <div class="btns"><button class="sv" data-act="savephase">저장</button><button class="cx" data-act="close">취소</button><span class="sp" style="flex:1"></span>${old ? `<button class="dx" data-act="delphase">삭제</button>` : ''}</div></div>`);
+}
+function savePhase() {
+  const id = $('.mbox').dataset.id, name = $('#f-name').value.trim(), s = $('#f-s').value, e = $('#f-e').value, pit = +$('#f-pit').value;
+  if (!name || !s || !e || pd(e) < pd(s)) { toast('이름과 날짜를 확인해줘'); return; }
+  if (id) Object.assign(S.phases.find(p => p.id === id), { name, s, e, pit }); else S.phases.push({ id: uid(), name, s, e, pit });
+  S.phases.sort((a, b) => pd(a.s) - pd(b.s));
+  save(); closeModal(); render();
+}
+function openExams() {
+  openModal(`<div class="mbox"><h3>시험일</h3>
+    <div class="two"><div><label>1차</label><input type="date" id="f-p" value="${S.exams.p}"></div><div><label>2차</label><input type="date" id="f-sx" value="${S.exams.s}"></div></div>
+    <div class="btns"><button class="sv" data-act="saveexams">저장</button><button class="cx" data-act="close">취소</button></div></div>`);
+}
+
+/* ================= events ================= */
+document.addEventListener('click', ev => {
+  const t = ev.target;
+  if (t.id === 'modal') { closeModal(); return; }
+  const chipBtn = t.closest('.chips button');
+  if (chipBtn) { chipBtn.parentNode.querySelectorAll('button').forEach(x => x.classList.remove('on')); chipBtn.classList.add('on'); return; }
+  const a = t.closest('[data-act]');
+  if (a) {
+    const act = a.dataset.act;
+    if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'w') scrollWeek(); }
+    else if (act === 'zoom') { UI.z = Math.min(2, Math.max(0, UI.z + +a.dataset.d)); saveUI(); render(); }
+    else if (act === 'today') { UI.v === 'm' ? scrollToday() : scrollWeek(); }
+    else if (act === 'ghost') { UI.ghost = !UI.ghost; saveUI(); render(); }
+    else if (act === 'addblock') openBlock(null);
+    else if (act === 'addphase') openPhase(null);
+    else if (act === 'exams') openExams();
+    else if (act === 'close') closeModal();
+    else if (act === 'saveblock') saveBlock();
+    else if (act === 'savephase') savePhase();
+    else if (act === 'saveexams') { const p = $('#f-p').value, s = $('#f-sx').value; if (p && s) { S.exams = { p, s }; save(); closeModal(); render(); } }
+    else if (act === 'delblock') { if (confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(b => b.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
+    else if (act === 'delphase') { if (confirm('이 단계를 삭제할까?')) { S.phases = S.phases.filter(p => p.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
+    else if (act === 'rebase') { const b = S.blocks.find(x => x.id === $('.mbox').dataset.id); if (b && confirm('원계획을 지금 계획으로 바꿀까? 밀림·앞섬 표시가 초기화돼.')) { b.base = [b.s, b.e]; b.doneAt = b.done >= 100 ? (b.doneAt || TODAY) : null; save(); closeModal(); render(); } }
+    else if (act === 'clearseed') { if (confirm('예시 블록을 모두 지울까?')) { S.blocks = S.blocks.filter(b => !b.seed); save(); render(); } }
+    return;
+  }
+  const blk = t.closest('[data-b]'); if (blk) { openBlock(blk.dataset.b); return; }
+  const ph = t.closest('[data-p]'); if (ph) { openPhase(ph.dataset.p); }
+});
+document.addEventListener('input', ev => {
+  if (ev.target.id === 'f-done') $('#f-dv').textContent = ev.target.value + '%';
+  if (ev.target.id === 'f-pit') $('#f-dv').textContent = `피셋 ${ev.target.value} / 2차 ${100 - ev.target.value}`;
+});
+document.addEventListener('dblclick', ev => {
+  const tr = ev.target.closest('.mtrack[data-row]'); if (!tr || ev.target.closest('.blk')) return;
+  const n = CTX.r0 + Math.floor((ev.clientX - tr.getBoundingClientRect().left) / CTX.px);
+  openBlock(null, { subj: tr.dataset.row, s: fd(n), e: fd(n + 13) });
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeModal(); });
+function scrollToday() { const mv = $('.mv'); if (mv) mv.scrollTo({ left: Math.max(0, (TODAY - CTX.r0) * CTX.px - 40), behavior: 'smooth' }); }
+function scrollWeek() { const w = $('#curweek'); if (w) w.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+
+/* ================= boot ================= */
+loadLocal(); loadUI(); render(); initFirebase();
+</script>
+</body>
+</html>
