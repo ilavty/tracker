@@ -2815,12 +2815,12 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     <div class="pl-top-dashboard" style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 15px; flex-wrap: wrap;">
         <button onclick="pl_openSubjectOnlyModal()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">SUBJECT</button>
         <button onclick="pl_openColorOnlyModal()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">COLORS</button>
-        <button onclick="openRoadmap()" class="action-btn" style="padding: 6px 14px; font-size: 0.8rem; white-space: nowrap;">ROADMAP</button>
         <div id="hl-quick-select" title="우클릭 시 형광펜 편집" style="display:flex; justify-content:space-evenly; align-items:center; padding: 4px 10px; border:1px solid #000; border-radius:20px; background:#fff; height: 34px; box-sizing: border-box;" oncontextmenu="pl_openHlModal(event)"></div>
         
         <div id="memo-emoji-bar" style="display:flex; gap:10px; padding: 4px 15px; border: 1px solid var(--primary-blue); border-radius: 20px; background: rgba(255,255,255,0.8); align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: 34px;">
             </div>
         <div id="pl-month-nav" style="margin-left:auto; display:flex; align-items:center; gap:2px; font-size:0.72rem; color:#9a9a9a; user-select:none;">
+            <span id="rm-toggle" onclick="toggleRoadmap()" title="로드맵" style="cursor:pointer; padding:4px 8px; margin-right:6px; letter-spacing:.02em;">ROADMAP</span>
             <span onclick="pl_shiftMonth(-1)" style="cursor:pointer; padding:4px 6px;">‹</span>
             <span id="pl-month-label" style="min-width:34px; text-align:center;"></span>
             <span onclick="pl_shiftMonth(1)" style="cursor:pointer; padding:4px 6px;">›</span>
@@ -2835,6 +2835,9 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
     <div id="floating-memos-container"></div>
     
     <div id="planner-scroll-container" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; padding-bottom:40px; width:100%; box-sizing:border-box;"></div>
+    <div id="roadmap-inline" style="display:none; width:100%;">
+        <iframe id="roadmap-iframe" data-src="macro_plan.html" title="ROADMAP" style="width:100%; height:calc(100vh - 150px); height:calc(100dvh - 150px); min-height:520px; border:none; display:block; background:transparent;"></iframe>
+    </div>
 
 <div id="pl-card-menu" class="pl-menu" onmouseleave="this.style.display='none'">
     <div id="pl-color-swatches" style="padding: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-blue);"></div>
@@ -4498,23 +4501,30 @@ function pl_unmergeItem() {
     }, 480);
 </script>
 
-<!-- ========== ROADMAP(거시 학습 로드맵) — PLANNER 상단 버튼으로 열리는 전체 화면, macro_plan.html을 iframe으로 삽입 ========== -->
-<div id="roadmap-overlay" style="display:none; position:fixed; inset:0; z-index:10001; background:#fcfbfa; flex-direction:column;">
-    <div style="flex:none; height:42px; display:flex; align-items:center; padding:0 16px; border-bottom:1px solid #e2e5ea;">
-        <span onclick="closeRoadmap()" style="cursor:pointer; font-size:0.85rem; font-weight:700; color:#555; user-select:none;">‹ PLANNER</span>
-    </div>
-    <iframe id="roadmap-iframe" data-src="macro_plan.html" title="ROADMAP" style="flex:1; width:100%; border:none; display:block; background:#fcfbfa;"></iframe>
-</div>
+<!-- ========== ROADMAP(거시 학습 로드맵) — PLANNER 안에서 제자리 전환, macro_plan.html을 iframe으로 표시 ========== -->
+<style>
+#planner-view.rm-mode .pl-top-dashboard > *:not(#pl-month-nav){display:none!important}
+#planner-view.rm-mode #pl-month-nav > *:not(#rm-toggle){display:none!important}
+#planner-view.rm-mode #planner-scroll-container,
+#planner-view.rm-mode #floating-memos-container,
+#planner-view.rm-mode #mobile-memo-overlay{display:none!important}
+#planner-view.rm-mode #roadmap-inline{display:block!important}
+#planner-view.rm-mode #rm-toggle{color:#222; font-weight:700}
+</style>
 <script>
-    function openRoadmap() {
-        const o = document.getElementById('roadmap-overlay'), f = document.getElementById('roadmap-iframe');
-        if (!f.getAttribute('src')) f.setAttribute('src', f.dataset.src); // 처음 열 때만 로드
-        o.style.display = 'flex'; document.body.style.overflow = 'hidden';
+    function toggleRoadmap(force) {
+        const pv = document.getElementById('planner-view'); if (!pv) return;
+        const on = (typeof force === 'boolean') ? force : !pv.classList.contains('rm-mode');
+        pv.classList.toggle('rm-mode', on);
+        const t = document.getElementById('rm-toggle'); if (t) t.textContent = on ? 'PLANNER' : 'ROADMAP';
+        if (on) { const f = document.getElementById('roadmap-iframe'); if (f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); }
     }
-    function closeRoadmap() {
-        document.getElementById('roadmap-overlay').style.display = 'none'; document.body.style.overflow = '';
-    }
-    window.addEventListener('message', (e) => { if (e.data && e.data.type === 'roadmapClose') closeRoadmap(); });
+    window.addEventListener('message', (e) => { if (e.data && e.data.type === 'roadmapClose') toggleRoadmap(false); });
+    // 다른 탭으로 나가면 플래너로 되돌려 놓기
+    __boot(() => {
+        const prev = window.showPage || function(){};
+        window.showPage = function(p) { if (p !== 'planner' && p !== 'calendar') toggleRoadmap(false); prev(p); };
+    }, 1000);
 </script>
 
 <!-- ========== 완벽 동기화 플랫 플로팅 버튼 ========== -->

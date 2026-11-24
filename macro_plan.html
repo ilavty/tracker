@@ -63,46 +63,37 @@ button{cursor:pointer;border:none;background:none}
 .dl{font-size:.64rem;font-weight:700;background:rgba(255,255,255,.85);color:#222;border-radius:8px;padding:0 5px;line-height:15px;flex:none;border:1px solid rgba(0,0,0,.15)}
 .dl.od{background:#f3e7de;color:#7a4a2a}
 
-/* vertical roadmap */
-.vr{max-width:840px;margin:0 auto}
-.vmh{position:sticky;top:0;z-index:8;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:20px 0 8px;margin-top:6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+/* calendar */
+.vmh{position:sticky;top:0;z-index:8;background:var(--bg);display:flex;align-items:center;gap:8px;padding:16px 0 8px;margin-top:6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
 .vmt{font-size:1.55rem;font-weight:800;line-height:1}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
-.vitems{display:flex;flex-direction:column;gap:6px;padding:10px 0 6px}
-.vph{padding:6px 12px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(0,0,0,.08);margin:6px 0 2px}
-.vph small{font-weight:500;margin-left:8px;color:#333}
-.vexam{background:var(--line);color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;display:flex;gap:8px;align-items:baseline;font-size:.85rem}
-.vexam small{font-weight:500;opacity:.8}
-.vtoday{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:700;color:var(--line)}
-.vtoday:before,.vtoday:after{content:"";flex:1;height:1.5px;background:rgba(0,0,0,.5)}
-.vb{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;flex-wrap:wrap}
-.vb.dn .rname{opacity:.55;text-decoration:line-through}
-.vsub{appearance:none;-webkit-appearance:none;border:none;background:transparent;font-weight:800;font-size:.76rem;cursor:pointer;padding:2px 0;width:auto;max-width:76px;outline:none}
-.rname{flex:1;min-width:120px;border:none;background:transparent;font-weight:600;font-size:.92rem;outline:none;padding:3px 2px;border-bottom:1.5px solid transparent}
-.rname:focus{border-bottom-color:rgba(0,0,0,.35)}
-.vper,.vint,.vdone,.vimp{font-size:.7rem;font-weight:700;border-radius:10px;padding:2px 9px;white-space:nowrap;line-height:1.5}
-.vper{color:var(--sub);background:rgba(255,255,255,.7)}
-.vint{min-width:34px}
-.vdone{background:rgba(255,255,255,.75);color:#333}
-.vimp.p2{color:#fff}
-.vimp.p1{background:rgba(255,255,255,.7);color:var(--sub)}
-.vimp.p0{background:transparent;color:var(--sub);border:1px dashed #aaa}
-.vc{display:flex;align-items:center;gap:8px;font-size:.78rem;padding:3px 10px;color:var(--sub);cursor:pointer;border-radius:6px}
-.vc b{font-weight:800}
-.vn{display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;padding:2px 12px 2px 0}
-.vnd{font-size:.68rem;font-weight:700;color:var(--sub);background:var(--soft);border-radius:9px;padding:2px 8px;margin-bottom:4px}
-.bub{position:relative;max-width:72%;padding:8px 14px;border-radius:18px;font-size:.9rem;line-height:1.4}
-.bub:before,.bub:after{content:"";position:absolute;bottom:0;height:20px}
-.bub:before{right:-7px;width:20px;background:inherit;border-bottom-left-radius:16px 14px}
-.bub:after{right:-26px;width:26px;background:var(--bg);border-bottom-left-radius:10px}
-.bub.pay{background:#9fd0ee;color:#17303f}
-.bub.sched{background:#a9805a;color:#fff}
-.bub.memo{background:#e9e9eb;color:#222}
-.rnote{outline:none;display:block;min-width:20px;word-break:break-word}
-.vadd{display:flex;gap:6px;padding:4px 0 10px}
-.vadd button{font-size:.75rem;font-weight:600;color:var(--sub);padding:3px 11px;border:1px dashed #c4c8ce;border-radius:12px}
-.vadd button:hover{border-color:var(--line);color:var(--line)}
+.cv{max-width:1100px;margin:0 auto}
+.cm{margin-bottom:30px}
+.cwd{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;font-weight:700;color:var(--sub);text-align:center;padding:8px 0 4px}
+.cwk{position:relative}
+.cbg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(7,1fr)}
+.cd{background:#fff;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);position:relative}
+.cd:nth-child(1){border-left:1px solid var(--bd)}
+.cwk:first-of-type .cd{border-top:1px solid var(--bd)}
+.cd.out{background:transparent;border-color:transparent}
+.cd .plus{position:absolute;right:4px;top:2px;font-size:.95rem;line-height:1;color:var(--sub);opacity:0;cursor:pointer;padding:0 3px;z-index:1}
+.cd:hover .plus{opacity:.9}
+.cfg{position:relative;display:grid;grid-template-columns:repeat(7,1fr);align-content:start;min-height:84px;pointer-events:none}
+.dnum{padding:3px 6px 1px;font-size:.72rem;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:4px;min-height:21px;pointer-events:none}
+.dnum .td{background:var(--line);color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
+.cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 1px;position:relative;cursor:pointer;height:20px}
+.cbar .nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cbar .pg{position:absolute;left:0;bottom:0;height:2px;background:rgba(0,0,0,.45)}
+.dbub{display:flex;flex-direction:column;gap:2px;padding:2px 4px 6px;align-items:flex-end;pointer-events:none;min-width:0}
+.cb{pointer-events:auto;display:flex;align-items:center;gap:3px;max-width:100%;padding:2px 8px;border-radius:11px;font-size:.7rem;line-height:1.35}
+.cb.pay{background:#9fd0ee;color:#17303f}
+.cb.sched{background:#a9805a;color:#fff}
+.cb.memo{background:#e9e9eb;color:#222}
+.rnote{outline:none;min-width:12px;word-break:break-word}
+.bmore{opacity:0;font-size:.7rem;color:inherit;padding:0 2px;line-height:1}
+.cb:hover .bmore{opacity:.7}
 /* modal */
 #modal{position:fixed;inset:0;background:rgba(20,20,20,.38);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
 #modal.on{display:flex}
@@ -169,7 +160,7 @@ const ZOOMS = [0, 5, 8];   // 0 = 화면 폭에 맞춤
 const LW = 112, LH = 36;
 
 /* ================= state ================= */
-let S, UI = { v: 'v', z: 0, ghost: true, last: 'LL' };
+let S, UI = { v: 'c', z: 0, ghost: true };
 let db = null, fbRef = null;
 
 function mkBlock(subj, name, s, e, inten, imp, done, baseShift, seed) {
@@ -281,14 +272,14 @@ let CTX = {};
 function render() {
   const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY;
   renderTop(); renderStats();
-  $('#root').innerHTML = UI.v === 'g' ? monthView() : verticalView();
+  $('#root').innerHTML = UI.v === 'g' ? monthView() : calView();
   const mv = $('.mv'); if (mv) mv.scrollLeft = sx;
   window.scrollTo(0, sy);
 }
 function renderTop() {
   $('#top').innerHTML = `
     <span class="brand">ROADMAP</span>
-    <span class="seg"><button data-act="view" data-v="v" class="${UI.v === 'v' ? 'on' : ''}">로드맵</button><button data-act="view" data-v="g" class="${UI.v === 'g' ? 'on' : ''}">한눈에</button></span>
+    <span class="seg"><button data-act="view" data-v="c" class="${UI.v === 'c' ? 'on' : ''}">달력</button><button data-act="view" data-v="g" class="${UI.v === 'g' ? 'on' : ''}">한눈에</button></span>
     ${UI.v === 'g' ? `<span class="seg"><button data-act="zoom" data-d="-1">−</button><button data-act="zoom" data-d="1">+</button></span>` : ''}
     <button class="pill" data-act="today">오늘</button>
     ${UI.v === 'g' ? `<button class="pill ${UI.ghost ? 'on' : ''}" data-act="ghost">원계획</button>` : ''}
@@ -372,51 +363,56 @@ function monthView() {
   return h + lines + `</div></div>`;
 }
 
-/* ---- 세로 로드맵 ---- */
+/* ---- 세로 달력 ---- */
 const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY; };
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
-function phaseRow(p) {
-  return `<div class="vph" data-p="${p.id}" style="background:${phaseGrad(p, .22)}">${esc(p.name)}<small>피셋 ${p.pit} / 2차 ${100 - p.pit} · ${md(pd(p.s))} – ${md(pd(p.e))}</small></div>`;
+const WD = ['월', '화', '수', '목', '금', '토', '일'];
+function noteBub(n) {
+  return `<div class="cb ${n.kind}"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
 }
-function blockRow(b) {
-  const m = meta(b);
-  return `<div class="vb ${b.done >= 100 ? 'dn' : ''}" style="background:${rgba(m.c, .07 + .2 * b.inten / 100)};border-left:5px solid ${rgba(m.c, m.a)}">
-    <select class="vsub" data-bs="${b.id}" style="color:${m.c}">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select>
-    <input class="rname" data-bn="${b.id}" value="${esc(b.name)}">
-    <button class="vper" data-b="${b.id}">${md(pd(b.s))} – ${md(pd(b.e))}</button>
-    ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}
-    <button class="vint" data-act="inten" data-id="${b.id}" style="background:${rgba(m.c, m.a)};color:${m.dark ? '#fff' : '#222'}">${b.inten}</button>
-    <button class="vdone" data-act="donecyc" data-id="${b.id}">${b.done >= 100 ? '✓' : b.done + '%'}</button>
-    <button class="vimp p${b.imp}" data-act="flag" data-id="${b.id}" style="${b.imp === 2 ? `background:${m.c}` : ''}">${IMP[b.imp]}</button></div>`;
+function bar(sg) {
+  const b = sg.b, m = meta(b), rad = `${sg.st ? 5 : 0}px ${sg.en ? 5 : 0}px ${sg.en ? 5 : 0}px ${sg.st ? 5 : 0}px`;
+  return `<div class="cbar" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="grid-row:${sg.l + 2};grid-column:${sg.c0 + 1}/span ${sg.c1 - sg.c0 + 1};${blkStyle(b, m)};border-radius:${rad}">
+    ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
+    <span class="nm"><b>${m.r.name}</b> ${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
+    ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
+    ${b.done > 0 && b.done < 100 ? `<span class="pg" style="width:${b.done}%"></span>` : ''}</div>`;
 }
-function contRow(b) {
-  const m = meta(b);
-  return `<div class="vc" data-b="${b.id}" style="border-left:3px solid ${rgba(m.c, .55)}"><b style="color:${m.c}">${m.r.name}</b> ${esc(b.name)} <span>↳ ~${md(pd(b.e))}</span></div>`;
+function weekRow(ws, ms, me, ep, es) {
+  const segs = [];
+  S.blocks.forEach(b => {
+    const s = pd(b.s), e = pd(b.e), a = Math.max(s, ws, ms), z = Math.min(e, ws + 6, me);
+    if (a <= z) segs.push({ b, c0: a - ws, c1: z - ws, st: s >= a, en: e <= z });
+  });
+  segs.sort((x, y) => x.c0 - y.c0 || (y.c1 - y.c0) - (x.c1 - x.c0));
+  const lanes = [];
+  segs.forEach(sg => { let i = lanes.findIndex(end => end < sg.c0); if (i < 0) { i = lanes.length; lanes.push(-1); } lanes[i] = sg.c1; sg.l = i; });
+  const L = lanes.length;
+  let bg = '', fg = '';
+  for (let i = 0; i < 7; i++) {
+    const d = ws + i;
+    if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
+    const ph = phaseAt(d);
+    const strip = ph ? `background-image:linear-gradient(to right,${rgba(ROW.P.c, .55)} 0 ${ph.pit}%,${rgba(ROW.S.c, .55)} ${ph.pit}% 100%);background-size:100% 3px;background-repeat:no-repeat;background-position:bottom` : '';
+    bg += `<div class="cd" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
+    fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
+    const ns = S.notes.filter(n => pd(n.date) === d);
+    if (ns.length) fg += `<div class="dbub" style="grid-row:${L + 2};grid-column:${i + 1}">${ns.map(noteBub).join('')}</div>`;
+  }
+  segs.forEach(sg => { fg += bar(sg); });
+  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto repeat(${L},22px) auto">${fg}</div></div>`;
 }
-function noteRow(n) {
-  return `<div class="vn"><button class="vnd" data-n="${n.id}">${md(pd(n.date))}</button><div class="bub ${n.kind}"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span></div></div>`;
-}
-function verticalView() {
+function calView() {
   const [r0, r1] = range();
   const ep = pd(S.exams.p), es = pd(S.exams.s);
-  let h = '<div class="vr">';
+  let h = '<div class="cv">';
   for (let ms = MON(r0); ms <= r1; ms = NEXTMON(ms)) {
     const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
-    const items = [];
-    S.phases.forEach(p => { const s = pd(p.s); if (s >= ms && s <= me) items.push({ d: s, o: 0, h: phaseRow(p) }); });
-    [[ep, '1차 시험'], [es, '2차 시험']].forEach(([n, l]) => { if (n >= ms && n <= me) items.push({ d: n, o: 1, h: `<div class="vexam">${l}<small>${md(n)}</small></div>` }); });
-    if (TODAY >= ms && TODAY <= me) items.push({ d: TODAY, o: 1.5, h: `<div class="vtoday" id="vtoday"><span>오늘 ${md(TODAY)}</span></div>` });
-    S.blocks.forEach(b => {
-      const s = pd(b.s), e = pd(b.e);
-      if (s >= ms && s <= me) items.push({ d: s, o: 2, h: blockRow(b) });
-      else if (s < ms && e >= ms) items.push({ d: ms - .5, o: 2, h: contRow(b) });
-    });
-    S.notes.forEach(n => { const d = pd(n.date); if (d >= ms && d <= me) items.push({ d, o: 3, h: noteRow(n) }); });
-    items.sort((a, b) => a.d - b.d || a.o - b.o);
-    const pills = S.phases.filter(p => pd(p.s) < ms && pd(p.e) >= ms).map(p => `<span class="vpill" style="background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit}</span>`).join('');
-    h += `<div class="vmh"><span class="vmt">${mo + 1}월</span><span class="vy">${y}</span>${pills}</div>
-      <div class="vitems">${items.map(i => i.h).join('')}</div>
-      <div class="vadd"><button data-act="qblock" data-ms="${ms}">+ 블록</button><button data-act="qnote" data-ms="${ms}">+ 말풍선</button></div>`;
+    const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
+    h += `<div class="cm"><div class="vmh"><span class="vmt">${mo + 1}월</span><span class="vy">${y}</span>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
+      <div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div>`;
+    for (let ws = ms - ((ms + 3) % 7); ws <= me; ws += 7) { if (ws + 6 < r0) continue; h += weekRow(ws, ms, me, ep, es); }
+    h += '</div>';
   }
   return h + '</div>';
 }
@@ -503,17 +499,14 @@ document.addEventListener('click', ev => {
   const a = t.closest('[data-act]');
   if (a) {
     const act = a.dataset.act;
-    if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'v') scrollTodayV(); }
+    if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'c') scrollTodayC(); }
     else if (act === 'zoom') { UI.z = Math.min(2, Math.max(0, UI.z + +a.dataset.d)); saveUI(); render(); }
-    else if (act === 'today') { UI.v === 'g' ? scrollToday() : scrollTodayV(); }
+    else if (act === 'today') { UI.v === 'g' ? scrollToday() : scrollTodayC(); }
     else if (act === 'ghost') { UI.ghost = !UI.ghost; saveUI(); render(); }
     else if (act === 'addblock') openBlock(null);
     else if (act === 'addnote') openNote(null);
-    else if (act === 'qblock') quickBlock(+a.dataset.ms);
-    else if (act === 'qnote') quickNote(+a.dataset.ms);
-    else if (act === 'inten') { const b = S.blocks.find(x => x.id === a.dataset.id); b.inten = INTEN[(INTEN.indexOf(b.inten) + 1) % INTEN.length]; save(); render(); }
-    else if (act === 'flag') { const b = S.blocks.find(x => x.id === a.dataset.id); b.imp = b.imp === 1 ? 2 : b.imp === 2 ? 0 : 1; save(); render(); }
-    else if (act === 'donecyc') { const b = S.blocks.find(x => x.id === a.dataset.id); setDone(b, b.done >= 100 ? 0 : (Math.floor(b.done / 25) + 1) * 25); save(); render(); }
+    else if (act === 'qblockm') { const ms = +a.dataset.ms, me = NEXTMON(ms) - 1, st = (TODAY >= ms && TODAY <= me) ? TODAY : ms; openBlock(null, { s: fd(st), e: fd(Math.min(me, st + 13)) }); }
+    else if (act === 'qnoted') quickNoteD(+a.dataset.d);
     else if (act === 'savenote') saveNote();
     else if (act === 'delnote') { if (confirm('이 말풍선을 삭제할까?')) { S.notes = S.notes.filter(n => n.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'addphase') openPhase(null);
@@ -537,28 +530,22 @@ document.addEventListener('input', ev => {
   if (ev.target.id === 'f-pit') $('#f-dv').textContent = `피셋 ${ev.target.value} / 2차 ${100 - ev.target.value}`;
 });
 document.addEventListener('dblclick', ev => {
+  const dc = ev.target.closest('.cd[data-d]'); if (dc && !ev.target.closest('.cbar,.cb')) { quickNoteD(+dc.dataset.d); return; }
   const tr = ev.target.closest('.mtrack[data-row]'); if (!tr || ev.target.closest('.blk')) return;
   const n = CTX.r0 + Math.floor((ev.clientX - tr.getBoundingClientRect().left) / CTX.px);
   openBlock(null, { subj: tr.dataset.row, s: fd(n), e: fd(n + 13) });
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#modal').classList.contains('on')) closeModal(); else { try { window.parent.postMessage({ type: 'roadmapClose' }, '*'); } catch (e) { } } } });
 function setDone(b, v) { if (v >= 100 && b.done < 100) b.doneAt = TODAY; if (v < 100) b.doneAt = null; b.done = v; }
-function quickBlock(ms) {
-  const me = NEXTMON(ms) - 1, st = (TODAY >= ms && TODAY <= me) ? TODAY : ms, en = Math.min(me, st + 13);
-  const b = { id: uid(), subj: UI.last || 'LL', name: '', s: fd(st), e: fd(en), base: [fd(st), fd(en)], inten: 60, imp: 1, done: 0, doneAt: null, log: [], fresh: true };
-  S.blocks.push(b); render();
-  const el = document.querySelector(`[data-bn="${b.id}"]`); if (el) el.focus();
-}
-function quickNote(ms) {
-  const me = NEXTMON(ms) - 1, d = (TODAY >= ms && TODAY <= me) ? TODAY : ms;
+function quickNoteD(d) {
   const n = { id: uid(), date: fd(d), text: '', kind: 'memo', fresh: true };
   S.notes.push(n); render();
   const el = document.querySelector(`[data-nn="${n.id}"]`); if (el) el.focus();
 }
 const KINDS = { pay: '결제', sched: '일정', memo: '메모' };
-function openNote(id) {
+function openNote(id, pre) {
   const old = id ? S.notes.find(n => n.id === id) : null;
-  const n = old || { date: fd(TODAY), text: '', kind: 'memo' };
+  const n = old || Object.assign({ date: fd(TODAY), text: '', kind: 'memo' }, pre || {});
   openModal(`<div class="mbox" data-id="${old ? old.id : ''}">
     <h3>${old ? '말풍선' : '말풍선 추가'}</h3>
     <label>종류</label><div class="chips" id="f-kind">${Object.keys(KINDS).map(k => `<button data-k="${k}" class="${k === n.kind ? 'on' : ''}">${KINDS[k]}</button>`).join('')}</div>
@@ -572,16 +559,10 @@ function saveNote() {
   if (id) Object.assign(S.notes.find(n => n.id === id), { date, text, kind }); else S.notes.push({ id: uid(), date, text, kind });
   save(); closeModal(); render();
 }
-/* 줄 안에서 바로 고치기 */
+/* 말풍선 안에서 바로 고치기 */
 document.addEventListener('focusout', ev => {
   const t = ev.target;
-  if (t.dataset && t.dataset.bn) {
-    const b = S.blocks.find(x => x.id === t.dataset.bn); if (!b) return;
-    const v = t.value.trim();
-    if (!v && b.fresh) { S.blocks = S.blocks.filter(x => x !== b); save(); render(); return; }
-    if (!v) { t.value = b.name; return; }
-    if (v !== b.name || b.fresh) { b.name = v; b.fresh = false; save(); }
-  } else if (t.dataset && t.dataset.nn) {
+  if (t.dataset && t.dataset.nn) {
     const n = S.notes.find(x => x.id === t.dataset.nn); if (!n) return;
     const v = t.innerText.trim();
     if (!v && n.fresh) { S.notes = S.notes.filter(x => x !== n); save(); render(); return; }
@@ -591,22 +572,18 @@ document.addEventListener('focusout', ev => {
 });
 document.addEventListener('keydown', ev => {
   const t = ev.target;
-  if (ev.key === 'Enter' && t.dataset && (t.dataset.bn || t.dataset.nn)) { ev.preventDefault(); t.blur(); }
+  if (ev.key === 'Enter' && t.dataset && t.dataset.nn) { ev.preventDefault(); t.blur(); }
 });
 document.addEventListener('paste', ev => {
   const t = ev.target;
   if (t.dataset && t.dataset.nn) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ')); }
 });
-document.addEventListener('change', ev => {
-  const t = ev.target;
-  if (t.dataset && t.dataset.bs) { const b = S.blocks.find(x => x.id === t.dataset.bs); if (b) { b.subj = t.value; UI.last = t.value; saveUI(); save(); render(); } }
-});
-function scrollTodayV() { const el = $('#vtoday'); if (el) setTimeout(() => { const y = el.getBoundingClientRect().top + window.scrollY - 120; window.scrollTo({ top: Math.max(0, y), behavior: 'auto' }); }, 60); }
+function scrollTodayC() { const el = $('#tdcell'); if (el) setTimeout(() => { const y = el.getBoundingClientRect().top + window.scrollY - 260; window.scrollTo({ top: y > 120 ? y : 0, behavior: 'auto' }); }, 60); }
 function scrollToday() { const mv = $('.mv'); if (mv) mv.scrollTo({ left: Math.max(0, (TODAY - CTX.r0) * CTX.px - 40), behavior: 'smooth' }); }
 
 /* ================= boot ================= */
-loadLocal(); loadUI(); if (UI.v !== 'v' && UI.v !== 'g') UI.v = UI.v === 'm' ? 'g' : 'v';
-render(); if (UI.v === 'v') scrollTodayV(); initFirebase();
+loadLocal(); loadUI(); if (UI.v !== 'c' && UI.v !== 'g') UI.v = 'c';
+render(); if (UI.v === 'c') scrollTodayC(); initFirebase();
 </script>
 </body>
 </html>
