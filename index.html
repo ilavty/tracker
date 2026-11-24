@@ -4516,6 +4516,7 @@ function pl_unmergeItem() {
         const pv = document.getElementById('planner-view'); if (!pv) return;
         const on = (typeof force === 'boolean') ? force : !pv.classList.contains('rm-mode');
         pv.classList.toggle('rm-mode', on);
+        try { sessionStorage.setItem('rmMode', on ? '1' : ''); } catch (e) {}
         const t = document.getElementById('rm-toggle'); if (t) t.textContent = on ? 'PLANNER' : 'ROADMAP';
         if (on) { const f = document.getElementById('roadmap-iframe'); if (f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); }
     }
@@ -4524,6 +4525,7 @@ function pl_unmergeItem() {
     __boot(() => {
         const prev = window.showPage || function(){};
         window.showPage = function(p) { if (p !== 'planner' && p !== 'calendar') toggleRoadmap(false); prev(p); };
+        try { if (sessionStorage.getItem('rmMode') === '1' && (localStorage.getItem('lastPage') || 'planner') === 'planner') toggleRoadmap(true); } catch (e) {}
     }, 1000);
 </script>
 
