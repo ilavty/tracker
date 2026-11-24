@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PLAN</title>
+<title>ROADMAP</title>
 <style>
 @font-face { font-family: 'GmkC'; font-weight: 300; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2'); }
 @font-face { font-family: 'GmkC'; font-weight: 400; font-display: swap; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2'); }
@@ -63,26 +63,46 @@ button{cursor:pointer;border:none;background:none}
 .dl{font-size:.64rem;font-weight:700;background:rgba(255,255,255,.85);color:#222;border-radius:8px;padding:0 5px;line-height:15px;flex:none;border:1px solid rgba(0,0,0,.15)}
 .dl.od{background:#f3e7de;color:#7a4a2a}
 
-/* week view */
-.wv{max-width:1500px;margin:0 auto}
-.wrow{display:grid;grid-template-columns:96px 1fr 1fr;gap:8px;margin-bottom:4px;align-items:stretch}
-.wl{padding:6px 4px;font-size:.78rem;font-weight:700;line-height:1.3}
-.wl small{display:block;font-weight:500;color:var(--sub);font-size:.7rem}
-.wl .ex{display:inline-block;font-size:.66rem;font-weight:800;background:var(--line);color:#fff;border-radius:8px;padding:0 6px;margin-top:2px}
-.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;min-height:46px}
-.wgb{grid-column:1/-1;display:flex;flex-direction:column;gap:3px}
-.wc{background:var(--soft);border-radius:7px;padding:3px;display:flex;flex-direction:column;gap:3px;min-height:46px}
-.wh .wc{background:none;min-height:0;font-size:.74rem;font-weight:700;text-align:center;padding:0}
-.wh .wgt{grid-column:1/-1;font-weight:800;font-size:.8rem;padding:2px 4px;border-bottom:2px solid}
-.chip{border-radius:6px;padding:3px 7px;font-size:.74rem;font-weight:600;cursor:pointer;display:flex;gap:5px;align-items:center;line-height:1.3;overflow:hidden;position:relative}
-.chip .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chip .em{font-size:.66rem;font-weight:500;opacity:.85;flex:none}
-.wrow.past{opacity:.5}
-.wrow.cur .wl{color:#000}
-.wrow.cur .wc,.wrow.cur .wgb{outline:1.5px solid var(--line);outline-offset:0;border-radius:7px}
-.wph{margin:14px 0 6px;padding:7px 12px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid rgba(0,0,0,.08)}
-.wph small{font-weight:500;margin-left:8px;color:#333}
-
+/* vertical roadmap */
+.vr{max-width:840px;margin:0 auto}
+.vmh{position:sticky;top:0;z-index:8;background:var(--bg);display:flex;align-items:baseline;gap:8px;padding:20px 0 8px;margin-top:6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+.vmt{font-size:1.55rem;font-weight:800;line-height:1}
+.vy{font-size:.78rem;color:var(--sub);font-weight:600}
+.vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
+.vitems{display:flex;flex-direction:column;gap:6px;padding:10px 0 6px}
+.vph{padding:6px 12px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(0,0,0,.08);margin:6px 0 2px}
+.vph small{font-weight:500;margin-left:8px;color:#333}
+.vexam{background:var(--line);color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;display:flex;gap:8px;align-items:baseline;font-size:.85rem}
+.vexam small{font-weight:500;opacity:.8}
+.vtoday{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:700;color:var(--line)}
+.vtoday:before,.vtoday:after{content:"";flex:1;height:1.5px;background:rgba(0,0,0,.5)}
+.vb{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;flex-wrap:wrap}
+.vb.dn .rname{opacity:.55;text-decoration:line-through}
+.vsub{appearance:none;-webkit-appearance:none;border:none;background:transparent;font-weight:800;font-size:.76rem;cursor:pointer;padding:2px 0;width:auto;max-width:76px;outline:none}
+.rname{flex:1;min-width:120px;border:none;background:transparent;font-weight:600;font-size:.92rem;outline:none;padding:3px 2px;border-bottom:1.5px solid transparent}
+.rname:focus{border-bottom-color:rgba(0,0,0,.35)}
+.vper,.vint,.vdone,.vimp{font-size:.7rem;font-weight:700;border-radius:10px;padding:2px 9px;white-space:nowrap;line-height:1.5}
+.vper{color:var(--sub);background:rgba(255,255,255,.7)}
+.vint{min-width:34px}
+.vdone{background:rgba(255,255,255,.75);color:#333}
+.vimp.p2{color:#fff}
+.vimp.p1{background:rgba(255,255,255,.7);color:var(--sub)}
+.vimp.p0{background:transparent;color:var(--sub);border:1px dashed #aaa}
+.vc{display:flex;align-items:center;gap:8px;font-size:.78rem;padding:3px 10px;color:var(--sub);cursor:pointer;border-radius:6px}
+.vc b{font-weight:800}
+.vn{display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;padding:2px 12px 2px 0}
+.vnd{font-size:.68rem;font-weight:700;color:var(--sub);background:var(--soft);border-radius:9px;padding:2px 8px;margin-bottom:4px}
+.bub{position:relative;max-width:72%;padding:8px 14px;border-radius:18px;font-size:.9rem;line-height:1.4}
+.bub:before,.bub:after{content:"";position:absolute;bottom:0;height:20px}
+.bub:before{right:-7px;width:20px;background:inherit;border-bottom-left-radius:16px 14px}
+.bub:after{right:-26px;width:26px;background:var(--bg);border-bottom-left-radius:10px}
+.bub.pay{background:#9fd0ee;color:#17303f}
+.bub.sched{background:#a9805a;color:#fff}
+.bub.memo{background:#e9e9eb;color:#222}
+.rnote{outline:none;display:block;min-width:20px;word-break:break-word}
+.vadd{display:flex;gap:6px;padding:4px 0 10px}
+.vadd button{font-size:.75rem;font-weight:600;color:var(--sub);padding:3px 11px;border:1px dashed #c4c8ce;border-radius:12px}
+.vadd button:hover{border-color:var(--line);color:var(--line)}
 /* modal */
 #modal{position:fixed;inset:0;background:rgba(20,20,20,.38);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
 #modal.on{display:flex}
@@ -149,7 +169,7 @@ const ZOOMS = [0, 5, 8];   // 0 = 화면 폭에 맞춤
 const LW = 112, LH = 36;
 
 /* ================= state ================= */
-let S, UI = { v: 'm', z: 0, ghost: true };
+let S, UI = { v: 'v', z: 0, ghost: true, last: 'LL' };
 let db = null, fbRef = null;
 
 function mkBlock(subj, name, s, e, inten, imp, done, baseShift, seed) {
@@ -180,11 +200,19 @@ function seedState() {
     mkBlock('S', '전과목 회독', '2027-07-11', '2027-08-31', 80, 2, 0, 0, 1),
     mkBlock('S', '직전 마무리', '2027-09-01', '2027-09-11', 100, 2, 0, 0, 1),
   ];
-  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks };
+  const notes = [
+    { id: uid(), date: '2026-12-20', text: '피셋 강의 결제', kind: 'pay', seed: true },
+    { id: uid(), date: '2027-01-18', text: '2차 개강', kind: 'sched', seed: true },
+    { id: uid(), date: '2027-02-14', text: '상황판단 밀린 거 따라잡기', kind: 'memo', seed: true },
+  ];
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes };
 }
 function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
+  x.notes = x.notes || [];
+  x.blocks.forEach(b => { delete b.fresh; });
+  x.notes.forEach(n => { delete n.fresh; });
   x.exams = x.exams || { p: '2027-07-10', s: '2027-09-11' };
   x.blocks.forEach(b => { b.log = b.log || []; if (!b.base) b.base = [b.s, b.e]; });
   return x;
@@ -253,21 +281,22 @@ let CTX = {};
 function render() {
   const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY;
   renderTop(); renderStats();
-  $('#root').innerHTML = UI.v === 'm' ? monthView() : weekView();
+  $('#root').innerHTML = UI.v === 'g' ? monthView() : verticalView();
   const mv = $('.mv'); if (mv) mv.scrollLeft = sx;
   window.scrollTo(0, sy);
 }
 function renderTop() {
   $('#top').innerHTML = `
-    <span class="brand">PLAN</span>
-    <span class="seg"><button data-act="view" data-v="m" class="${UI.v === 'm' ? 'on' : ''}">월</button><button data-act="view" data-v="w" class="${UI.v === 'w' ? 'on' : ''}">주</button></span>
-    ${UI.v === 'm' ? `<span class="seg"><button data-act="zoom" data-d="-1">−</button><button data-act="zoom" data-d="1">+</button></span>` : ''}
+    <span class="brand">ROADMAP</span>
+    <span class="seg"><button data-act="view" data-v="v" class="${UI.v === 'v' ? 'on' : ''}">로드맵</button><button data-act="view" data-v="g" class="${UI.v === 'g' ? 'on' : ''}">한눈에</button></span>
+    ${UI.v === 'g' ? `<span class="seg"><button data-act="zoom" data-d="-1">−</button><button data-act="zoom" data-d="1">+</button></span>` : ''}
     <button class="pill" data-act="today">오늘</button>
-    <button class="pill ${UI.ghost ? 'on' : ''}" data-act="ghost">원계획</button>
+    ${UI.v === 'g' ? `<button class="pill ${UI.ghost ? 'on' : ''}" data-act="ghost">원계획</button>` : ''}
     <span class="sp"></span>
     <button class="pill" data-act="addblock">+ 블록</button>
+    <button class="pill" data-act="addnote">+ 말풍선</button>
     <button class="pill" data-act="addphase">+ 단계</button>
-    ${S.blocks.some(b => b.seed) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
+    ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
 function renderStats() {
   const must = S.blocks.filter(b => b.imp === 2), mustDone = must.filter(b => b.done >= 100).length;
@@ -343,41 +372,53 @@ function monthView() {
   return h + lines + `</div></div>`;
 }
 
-/* ---- 주 뷰 ---- */
-function weekView() {
+/* ---- 세로 로드맵 ---- */
+const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY; };
+const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
+function phaseRow(p) {
+  return `<div class="vph" data-p="${p.id}" style="background:${phaseGrad(p, .22)}">${esc(p.name)}<small>피셋 ${p.pit} / 2차 ${100 - p.pit} · ${md(pd(p.s))} – ${md(pd(p.e))}</small></div>`;
+}
+function blockRow(b) {
+  const m = meta(b);
+  return `<div class="vb ${b.done >= 100 ? 'dn' : ''}" style="background:${rgba(m.c, .07 + .2 * b.inten / 100)};border-left:5px solid ${rgba(m.c, m.a)}">
+    <select class="vsub" data-bs="${b.id}" style="color:${m.c}">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select>
+    <input class="rname" data-bn="${b.id}" value="${esc(b.name)}">
+    <button class="vper" data-b="${b.id}">${md(pd(b.s))} – ${md(pd(b.e))}</button>
+    ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}
+    <button class="vint" data-act="inten" data-id="${b.id}" style="background:${rgba(m.c, m.a)};color:${m.dark ? '#fff' : '#222'}">${b.inten}</button>
+    <button class="vdone" data-act="donecyc" data-id="${b.id}">${b.done >= 100 ? '✓' : b.done + '%'}</button>
+    <button class="vimp p${b.imp}" data-act="flag" data-id="${b.id}" style="${b.imp === 2 ? `background:${m.c}` : ''}">${IMP[b.imp]}</button></div>`;
+}
+function contRow(b) {
+  const m = meta(b);
+  return `<div class="vc" data-b="${b.id}" style="border-left:3px solid ${rgba(m.c, .55)}"><b style="color:${m.c}">${m.r.name}</b> ${esc(b.name)} <span>↳ ~${md(pd(b.e))}</span></div>`;
+}
+function noteRow(n) {
+  return `<div class="vn"><button class="vnd" data-n="${n.id}">${md(pd(n.date))}</button><div class="bub ${n.kind}"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span></div></div>`;
+}
+function verticalView() {
   const [r0, r1] = range();
-  const chip = (b, ws, we) => {
-    const m = meta(b), ends = pd(b.e) >= ws && pd(b.e) <= we;
-    return `<div class="chip" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="${blkStyle(b, m)}">
-      ${b.imp === 2 ? `<span class="must" style="background:#fff;color:${m.c};border:1px solid ${m.c}">필수</span>` : ''}
-      <span class="nm">${b.done >= 100 ? '✓ ' : ''}${esc(b.name)}</span>
-      ${ends ? `<span class="em">~${md(pd(b.e))}</span>` : ''}
-      ${b.done > 0 && b.done < 100 ? `<span class="em">${b.done}%</span>` : ''}
-      ${m.d ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od ? `<span class="dl od">이월 ${m.od}</span>` : ''}</div>`;
-  };
-  const head = (g) => `<div class="wg wh"><div class="wgt" style="border-color:${ROW[g].c};color:${ROW[g].c}">${g === 'P' ? '피셋' : '2차'}</div>${ROWS.filter(r => r.g === g && !r.grp).map(r => `<div class="wc" style="color:${r.c}">${r.name}</div>`).join('')}</div>`;
-  let h = `<div class="wv"><div class="wrow wh"><div></div>${head('P')}${head('S')}</div>`;
-  let prevPh = null;
   const ep = pd(S.exams.p), es = pd(S.exams.s);
-  for (let ws = r0; ws <= r1; ws += 7) {
-    const we = ws + 6;
-    const ph = phaseAt(ws) || phaseAt(we);
-    if (ph && (!prevPh || prevPh.id !== ph.id)) {
-      h += `<div class="wph" data-p="${ph.id}" style="background:${phaseGrad(ph, .22)}">${esc(ph.name)}<small>피셋 ${ph.pit} / 2차 ${100 - ph.pit} · ${md(pd(ph.s))} – ${md(pd(ph.e))}</small></div>`;
-    }
-    prevPh = ph || prevPh;
-    const nextEx = ep >= ws ? ep : es >= ws ? es : null;
-    const exTag = (ep >= ws && ep <= we) ? '1차 시험' : (es >= ws && es <= we) ? '2차 시험' : '';
-    const group = g => {
-      const rows = ROWS.filter(r => r.g === g);
-      const act = id => S.blocks.filter(b => b.subj === id && pd(b.s) <= we && pd(b.e) >= ws);
-      const gb = act(g).map(b => chip(b, ws, we)).join('');
-      return `<div class="wg">${gb ? `<div class="wgb">${gb}</div>` : ''}${rows.filter(r => !r.grp).map(r => `<div class="wc">${act(r.id).map(b => chip(b, ws, we)).join('')}</div>`).join('')}</div>`;
-    };
-    const cls = we < TODAY ? 'past' : (ws <= TODAY && TODAY <= we ? 'cur' : '');
-    h += `<div class="wrow ${cls}" ${cls === 'cur' ? 'id="curweek"' : ''}><div class="wl">${md(ws)} – ${md(we)}<small>${nextEx ? `${nextEx === ep ? '1차' : '2차'} D-${Math.max(0, nextEx - Math.max(ws, TODAY))}` : ''}</small>${exTag ? `<span class="ex">${exTag}</span>` : ''}</div>${group('P')}${group('S')}</div>`;
+  let h = '<div class="vr">';
+  for (let ms = MON(r0); ms <= r1; ms = NEXTMON(ms)) {
+    const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
+    const items = [];
+    S.phases.forEach(p => { const s = pd(p.s); if (s >= ms && s <= me) items.push({ d: s, o: 0, h: phaseRow(p) }); });
+    [[ep, '1차 시험'], [es, '2차 시험']].forEach(([n, l]) => { if (n >= ms && n <= me) items.push({ d: n, o: 1, h: `<div class="vexam">${l}<small>${md(n)}</small></div>` }); });
+    if (TODAY >= ms && TODAY <= me) items.push({ d: TODAY, o: 1.5, h: `<div class="vtoday" id="vtoday"><span>오늘 ${md(TODAY)}</span></div>` });
+    S.blocks.forEach(b => {
+      const s = pd(b.s), e = pd(b.e);
+      if (s >= ms && s <= me) items.push({ d: s, o: 2, h: blockRow(b) });
+      else if (s < ms && e >= ms) items.push({ d: ms - .5, o: 2, h: contRow(b) });
+    });
+    S.notes.forEach(n => { const d = pd(n.date); if (d >= ms && d <= me) items.push({ d, o: 3, h: noteRow(n) }); });
+    items.sort((a, b) => a.d - b.d || a.o - b.o);
+    const pills = S.phases.filter(p => pd(p.s) < ms && pd(p.e) >= ms).map(p => `<span class="vpill" style="background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit}</span>`).join('');
+    h += `<div class="vmh"><span class="vmt">${mo + 1}월</span><span class="vy">${y}</span>${pills}</div>
+      <div class="vitems">${items.map(i => i.h).join('')}</div>
+      <div class="vadd"><button data-act="qblock" data-ms="${ms}">+ 블록</button><button data-act="qnote" data-ms="${ms}">+ 말풍선</button></div>`;
   }
-  return h + `</div>`;
+  return h + '</div>';
 }
 
 /* ================= modal ================= */
@@ -462,11 +503,19 @@ document.addEventListener('click', ev => {
   const a = t.closest('[data-act]');
   if (a) {
     const act = a.dataset.act;
-    if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'w') scrollWeek(); }
+    if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'v') scrollTodayV(); }
     else if (act === 'zoom') { UI.z = Math.min(2, Math.max(0, UI.z + +a.dataset.d)); saveUI(); render(); }
-    else if (act === 'today') { UI.v === 'm' ? scrollToday() : scrollWeek(); }
+    else if (act === 'today') { UI.v === 'g' ? scrollToday() : scrollTodayV(); }
     else if (act === 'ghost') { UI.ghost = !UI.ghost; saveUI(); render(); }
     else if (act === 'addblock') openBlock(null);
+    else if (act === 'addnote') openNote(null);
+    else if (act === 'qblock') quickBlock(+a.dataset.ms);
+    else if (act === 'qnote') quickNote(+a.dataset.ms);
+    else if (act === 'inten') { const b = S.blocks.find(x => x.id === a.dataset.id); b.inten = INTEN[(INTEN.indexOf(b.inten) + 1) % INTEN.length]; save(); render(); }
+    else if (act === 'flag') { const b = S.blocks.find(x => x.id === a.dataset.id); b.imp = b.imp === 1 ? 2 : b.imp === 2 ? 0 : 1; save(); render(); }
+    else if (act === 'donecyc') { const b = S.blocks.find(x => x.id === a.dataset.id); setDone(b, b.done >= 100 ? 0 : (Math.floor(b.done / 25) + 1) * 25); save(); render(); }
+    else if (act === 'savenote') saveNote();
+    else if (act === 'delnote') { if (confirm('이 말풍선을 삭제할까?')) { S.notes = S.notes.filter(n => n.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'addphase') openPhase(null);
     else if (act === 'exams') openExams();
     else if (act === 'close') closeModal();
@@ -476,10 +525,11 @@ document.addEventListener('click', ev => {
     else if (act === 'delblock') { if (confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(b => b.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'delphase') { if (confirm('이 단계를 삭제할까?')) { S.phases = S.phases.filter(p => p.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'rebase') { const b = S.blocks.find(x => x.id === $('.mbox').dataset.id); if (b && confirm('원계획을 지금 계획으로 바꿀까? 밀림·앞섬 표시가 초기화돼.')) { b.base = [b.s, b.e]; b.doneAt = b.done >= 100 ? (b.doneAt || TODAY) : null; save(); closeModal(); render(); } }
-    else if (act === 'clearseed') { if (confirm('예시 블록을 모두 지울까?')) { S.blocks = S.blocks.filter(b => !b.seed); save(); render(); } }
+    else if (act === 'clearseed') { if (confirm('예시 블록과 말풍선을 모두 지울까?')) { S.blocks = S.blocks.filter(b => !b.seed); S.notes = S.notes.filter(n => !n.seed); save(); render(); } }
     return;
   }
   const blk = t.closest('[data-b]'); if (blk) { openBlock(blk.dataset.b); return; }
+  const nt = t.closest('[data-n]'); if (nt) { openNote(nt.dataset.n); return; }
   const ph = t.closest('[data-p]'); if (ph) { openPhase(ph.dataset.p); }
 });
 document.addEventListener('input', ev => {
@@ -491,12 +541,72 @@ document.addEventListener('dblclick', ev => {
   const n = CTX.r0 + Math.floor((ev.clientX - tr.getBoundingClientRect().left) / CTX.px);
   openBlock(null, { subj: tr.dataset.row, s: fd(n), e: fd(n + 13) });
 });
-document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#modal').classList.contains('on')) closeModal(); else { try { window.parent.postMessage({ type: 'roadmapClose' }, '*'); } catch (e) { } } } });
+function setDone(b, v) { if (v >= 100 && b.done < 100) b.doneAt = TODAY; if (v < 100) b.doneAt = null; b.done = v; }
+function quickBlock(ms) {
+  const me = NEXTMON(ms) - 1, st = (TODAY >= ms && TODAY <= me) ? TODAY : ms, en = Math.min(me, st + 13);
+  const b = { id: uid(), subj: UI.last || 'LL', name: '', s: fd(st), e: fd(en), base: [fd(st), fd(en)], inten: 60, imp: 1, done: 0, doneAt: null, log: [], fresh: true };
+  S.blocks.push(b); render();
+  const el = document.querySelector(`[data-bn="${b.id}"]`); if (el) el.focus();
+}
+function quickNote(ms) {
+  const me = NEXTMON(ms) - 1, d = (TODAY >= ms && TODAY <= me) ? TODAY : ms;
+  const n = { id: uid(), date: fd(d), text: '', kind: 'memo', fresh: true };
+  S.notes.push(n); render();
+  const el = document.querySelector(`[data-nn="${n.id}"]`); if (el) el.focus();
+}
+const KINDS = { pay: '결제', sched: '일정', memo: '메모' };
+function openNote(id) {
+  const old = id ? S.notes.find(n => n.id === id) : null;
+  const n = old || { date: fd(TODAY), text: '', kind: 'memo' };
+  openModal(`<div class="mbox" data-id="${old ? old.id : ''}">
+    <h3>${old ? '말풍선' : '말풍선 추가'}</h3>
+    <label>종류</label><div class="chips" id="f-kind">${Object.keys(KINDS).map(k => `<button data-k="${k}" class="${k === n.kind ? 'on' : ''}">${KINDS[k]}</button>`).join('')}</div>
+    <label>날짜</label><input type="date" id="f-nd" value="${n.date}">
+    <label>내용</label><input type="text" id="f-nt" value="${esc(n.text)}">
+    <div class="btns"><button class="sv" data-act="savenote">저장</button><button class="cx" data-act="close">취소</button><span class="sp" style="flex:1"></span>${old ? `<button class="dx" data-act="delnote">삭제</button>` : ''}</div></div>`);
+}
+function saveNote() {
+  const id = $('.mbox').dataset.id, date = $('#f-nd').value, text = $('#f-nt').value.trim(), k = $('#f-kind button.on'), kind = k ? k.dataset.k : 'memo';
+  if (!date || !text) { toast('날짜와 내용을 확인해줘'); return; }
+  if (id) Object.assign(S.notes.find(n => n.id === id), { date, text, kind }); else S.notes.push({ id: uid(), date, text, kind });
+  save(); closeModal(); render();
+}
+/* 줄 안에서 바로 고치기 */
+document.addEventListener('focusout', ev => {
+  const t = ev.target;
+  if (t.dataset && t.dataset.bn) {
+    const b = S.blocks.find(x => x.id === t.dataset.bn); if (!b) return;
+    const v = t.value.trim();
+    if (!v && b.fresh) { S.blocks = S.blocks.filter(x => x !== b); save(); render(); return; }
+    if (!v) { t.value = b.name; return; }
+    if (v !== b.name || b.fresh) { b.name = v; b.fresh = false; save(); }
+  } else if (t.dataset && t.dataset.nn) {
+    const n = S.notes.find(x => x.id === t.dataset.nn); if (!n) return;
+    const v = t.innerText.trim();
+    if (!v && n.fresh) { S.notes = S.notes.filter(x => x !== n); save(); render(); return; }
+    if (!v) { t.textContent = n.text; return; }
+    if (v !== n.text || n.fresh) { n.text = v; n.fresh = false; save(); }
+  }
+});
+document.addEventListener('keydown', ev => {
+  const t = ev.target;
+  if (ev.key === 'Enter' && t.dataset && (t.dataset.bn || t.dataset.nn)) { ev.preventDefault(); t.blur(); }
+});
+document.addEventListener('paste', ev => {
+  const t = ev.target;
+  if (t.dataset && t.dataset.nn) { ev.preventDefault(); document.execCommand('insertText', false, (ev.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ')); }
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.dataset && t.dataset.bs) { const b = S.blocks.find(x => x.id === t.dataset.bs); if (b) { b.subj = t.value; UI.last = t.value; saveUI(); save(); render(); } }
+});
+function scrollTodayV() { const el = $('#vtoday'); if (el) setTimeout(() => { const y = el.getBoundingClientRect().top + window.scrollY - 120; window.scrollTo({ top: Math.max(0, y), behavior: 'auto' }); }, 60); }
 function scrollToday() { const mv = $('.mv'); if (mv) mv.scrollTo({ left: Math.max(0, (TODAY - CTX.r0) * CTX.px - 40), behavior: 'smooth' }); }
-function scrollWeek() { const w = $('#curweek'); if (w) w.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
 
 /* ================= boot ================= */
-loadLocal(); loadUI(); render(); initFirebase();
+loadLocal(); loadUI(); if (UI.v !== 'v' && UI.v !== 'g') UI.v = UI.v === 'm' ? 'g' : 'v';
+render(); if (UI.v === 'v') scrollTodayV(); initFirebase();
 </script>
 </body>
 </html>
