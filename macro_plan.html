@@ -600,6 +600,11 @@ document.addEventListener('change', ev => {
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
 document.addEventListener('pointerdown', ev => { const p = document.getElementById('stpop'); if (p && !ev.target.closest('#stpop') && !ev.target.closest('[data-act=stlist]')) p.remove(); }, true);
+document.addEventListener('click', ev => {
+  if (UI.v !== 'm' || !MSEL) return; const t = ev.target; if (!t.isConnected) return;
+  if (t.closest('.mside,.mb,.mpl,#ctxm,#stpop,.mbox,.modal,[data-act]')) return;
+  MSEL = null; render();
+});
 /* MAP: 달 메모 */
 document.addEventListener('click', ev => {
   const a = ev.target.closest && ev.target.closest('[data-act=mmedit],[data-act=mmadd]'); if (!a || UI.v !== 'm') return; ev.stopPropagation();
