@@ -460,7 +460,7 @@ function statsHtml() {
 
 
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
-const ZDEF = 1.1;
+const ZDEF = 1;
 let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236, MIDXE = null, MPOSA = [], MKEY = null, MDRAG = null;
 function mapSegs() {
   const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
