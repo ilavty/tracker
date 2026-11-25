@@ -106,17 +106,15 @@ button{cursor:pointer;border:none;background:none}
 .cyr:before,.cyr:after{content:"";flex:1;height:1px;background:var(--bd)}
 .cwd{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;font-weight:700;color:var(--sub);text-align:center;padding:8px 0 4px}
 .cwk{position:relative;overflow:visible}
-.cbg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(7,1fr)}
-.cd{background:#fff;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);position:relative}
-.cd:nth-child(1){border-left:1px solid var(--bd)}
+.cbg{position:absolute;inset:0;z-index:0;display:grid;grid-template-columns:repeat(7,1fr)}
+.cd{background:#fff;border-radius:11px;margin:2px;position:relative;box-shadow:0 1px 2px rgba(60,70,90,.07)}
 
-.cd.bt{border-top:1px solid #2f4a7a}
-.cd.bl{border-left:1px solid #2f4a7a}
 .dnum .m1{color:#2f4a7a;font-weight:700}
-.cd.out{background:transparent;border-color:transparent}
+.cd.out{background:transparent}
+.cd.today{box-shadow:0 8px 20px rgba(47,74,122,.22),0 2px 6px rgba(47,74,122,.12);z-index:1}
 .cd .plus{position:absolute;right:4px;top:2px;font-size:.95rem;line-height:1;color:var(--sub);opacity:0;cursor:pointer;padding:0 3px;z-index:1}
 .cd:hover .plus{opacity:.9}
-.cfg{position:relative;display:grid;grid-template-columns:repeat(7,1fr);align-content:start;min-height:84px;pointer-events:none}
+.cfg{position:relative;z-index:1;display:grid;grid-template-columns:repeat(7,1fr);align-content:start;min-height:84px;pointer-events:none}
 .dnum{padding:3px 6px 1px;font-size:.72rem;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:4px;min-height:21px;pointer-events:none}
 .dnum .td{background:#e5484d;color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
 .xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
@@ -539,7 +537,7 @@ function weekRow(ws, ms, me, ep, es) {
     const dt = new Date(d * DAY), dd = dt.getUTCDate(), mp = '', edge = (dd <= 7 && d - 7 >= r0x ? ' bt' : '') + (dd === 1 && i > 0 ? ' bl' : '');
     const ph = phaseAt(d);
     const strip = '';
-    bg += `<div class="cd${edge}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
+    bg += `<div class="cd${d === TODAY ? ' today' : ''}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${dd === 1 ? `<b class="m1">${dt.getUTCMonth() + 1}월</b> 1` : dd}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
     S.notes.filter(n => !(n.blk && S.blocks.some(x => x.id === n.blk)) && pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
@@ -547,7 +545,6 @@ function weekRow(ws, ms, me, ep, es) {
     fg += bar(sg);
     if (sg.st) S.notes.filter(n => n.blk === sg.b.id).forEach((n, k) => { fg += noteIn(n, sg, k); });
   });
-  if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl"></div>`;
   return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 0 repeat(${L + 1},22px) auto">${fg}</div>${tline}${pops}</div>`;
 }
 function openModal(html) { const m = $('#modal'); m.innerHTML = html; m.classList.add('on'); }
