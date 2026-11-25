@@ -183,9 +183,11 @@ button{cursor:pointer;border:none;background:none}
 .mside .r2{display:flex;gap:6px}
 .mside .r2>div{min-width:0}
 .mside .r2 input{min-width:0;padding:7px 5px;font-size:.72rem}
-.mside .chips{display:flex;gap:6px;flex-wrap:wrap}
-.mside .chips button{border:1.3px solid #d3d9e4;background:#fff;border-radius:999px;padding:4px 10px;font:inherit;font-size:.7rem;cursor:pointer;color:#2f4a7a}
-.mside .chips button.on{background:#2f4a7a;color:#fff;border-color:#2f4a7a}
+.mside .mchips{display:flex;gap:6px;flex-wrap:wrap}
+.mside .mchips button{border:1.3px solid #d3d9e4;background:#fff;border-radius:999px;padding:4px 10px;font:inherit;font-size:.7rem;cursor:pointer;color:#2f4a7a}
+.mside .mchips button.on{background:#2f4a7a;color:#fff;border-color:#2f4a7a}
+.mside .mchips button .tx{margin-left:5px;opacity:.45;font-size:.7rem}
+.mside .mchips button.on .tx{opacity:.8}
 .mside .x{cursor:pointer;color:#9aa6b8;font-size:.9rem}
 .mside .del{border:none;background:none;color:#c0605c;font:inherit;font-size:.72rem;cursor:pointer;text-align:left;padding:2px 0}
 .mgh{position:absolute;background:rgba(74,163,234,.18);border:1.4px dashed #4aa3ea;border-radius:8px;pointer-events:none}
@@ -217,6 +219,7 @@ button{cursor:pointer;border:none;background:none}
 .mb .pg{position:absolute;left:0;top:0;bottom:0;opacity:.45;pointer-events:none}
 .mb span{position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis}
 .mb .bn{flex:0 1 auto;min-width:0}
+.mb .bt{flex:none;margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid rgba(47,74,122,.35);font-size:.58rem;font-weight:600;color:#2f4a7a}
 .mb .bd{flex:none;margin-left:8px;font-weight:500;font-size:.62rem;color:#6b7a94}
 .mb.sel{box-shadow:0 0 0 3px rgba(74,163,234,.4)}
 .mb .rz2{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
@@ -303,13 +306,13 @@ function seedState() {
     { id: uid(), date: '2027-01-18', text: '2차 개강', kind: 'sched', seed: true },
     { id: uid(), date: '2027-02-14', text: '상황판단 밀린 거 따라잡기', kind: 'memo', seed: true },
   ];
-  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {}, mgoals: {} };
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {}, mgoals: {}, tags: ['강의', '블랭크', '기출', '노트정리'] };
 }
 function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
-  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {};
+  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
   Object.keys(x.wmemos).forEach(k => { const v = x.wmemos[k]; if (v && !x.mgoals['w:' + k]) x.mgoals['w:' + k] = [{ id: uid(), t: String(v).replace(/\n+/g, ' '), d: 0 }]; delete x.wmemos[k]; });
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
@@ -415,7 +418,7 @@ function renderStats() {
 
 
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
-let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 400;
+let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 290;
 function mapSegs() {
   const iv = S.blocks.map(b => [pd(b.s), pd(b.e)]);
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
@@ -428,7 +431,7 @@ function mapView() {
   let tot = 0; const cum = segs.map(sg => { const c = tot; tot += sg[1] - sg[0] + 1; return c; });
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx; MSEGS = segs; MCUM = cum;
-  const TL = 400, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8 - (MSEL ? 296 : 0), 1500) - TL);
+  const TL = 290, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8 - (MSEL ? 296 : 0), 1500) - TL);
   const px = Math.max(5, (AV - 6) / tot); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
@@ -455,14 +458,14 @@ function mapView() {
   });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
-  const NX = { r: 0, g: 150, s: 270 }, NW = { r: 124, g: 92, s: 108 };
+  const NX = { r: 0, g: 84, s: 160 }, NW = { r: 56, g: 48, s: 108 };
   const mids = r => r.y + (r.h - 6) / 2 - 14;
   let nodes = '', svg = `<svg width="${TW}" height="${H}">`;
   const link = (x1, y1, x2, y2) => { const xm = (x1 + x2) / 2, r = Math.min(10, Math.abs(y2 - y1) / 2), dir = y2 > y1 ? 1 : -1; return Math.abs(y2 - y1) < 1 ? `M${x1},${y1} H${x2}` : `M${x1},${y1} H${xm - r} Q${xm},${y1} ${xm},${y1 + dir * r} V${y2 - dir * r} Q${xm},${y2} ${xm + r},${y2} H${x2}`; };
   const gys = []; let gl = '';
   ['P', 'S'].forEach(g => {
     const rs = rows.filter(r => r.g === g), gc = (mids(rs[0]) + mids(rs[rs.length - 1])) / 2; gys.push(gc);
-    nodes += `<div class="mn grp" style="left:${NX.g}px;top:${gc}px;width:${NW.g}px;height:36px" data-act="madd" data-subj="${g}">${g === 'P' ? '1차 PSAT' : '2차'}<span class="mad">+</span></div>`;
+    nodes += `<div class="mn grp" style="left:${NX.g}px;top:${gc}px;width:${NW.g}px;height:36px" data-act="madd" data-subj="${g}">${g === 'P' ? '1차' : '2차'}<span class="mad">+</span></div>`;
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idx(ed) + 1) * px, ly = rs[0].y - 7;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
@@ -476,7 +479,7 @@ function mapView() {
     });
   });
   const rc = (gys[0] + gys[1]) / 2;
-  nodes += `<div class="mn root" style="left:${NX.r}px;top:${rc}px;width:${NW.r}px;height:36px">외무영사 7급</div>`;
+  nodes += `<div class="mn root" style="left:${NX.r}px;top:${rc}px;width:${NW.r}px;height:36px">합격</div>`;
   gys.forEach(gc => { svg += `<path d="${link(NX.r + NW.r, rc + 18, NX.g, gc + 18)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`; });
   svg += '</svg>';
   // 행 안내선 + 블록
@@ -485,7 +488,7 @@ function mapView() {
     bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${TW - TL}px;top:${mids(r) + 18}px"></div>`;
     r.bs.forEach(b => {
       const x = TL + idx(pd(b.s)) * px, w = Math.max(14, (idx(pd(b.e)) + 1 - idx(pd(b.s))) * px - 2), yy = r.y + 8 + b._l * (RH + LG);
-      bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
+      bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
     });
   });
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
@@ -499,8 +502,9 @@ function mapSide(b) {
     <div><label>이름</label><input data-f="name" value="${esc(b.name)}"></div>
     <div><label>과목</label><select data-f="subj">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select></div>
     <div class="r2"><div style="flex:1"><label>시작</label><input type="date" data-f="s" value="${b.s}"></div><div style="flex:1"><label>끝</label><input type="date" data-f="e" value="${b.e}"></div></div>
-    <div class="chips" style="margin-top:-4px"><button data-act="mext" data-x="7">+1주</button><button data-act="mext" data-x="14">+2주</button><button data-act="mext" data-x="30">+1달</button><button data-act="mext" data-x="-7">−1주</button></div>
-    <div><label>중요도</label><div class="chips">${imp.map(([v, n]) => `<button data-act="mimp" data-v="${v}" class="${b.imp === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    <div class="mchips" style="margin-top:-4px"><button data-act="mext" data-x="7">+1주</button><button data-act="mext" data-x="14">+2주</button><button data-act="mext" data-x="30">+1달</button><button data-act="mext" data-x="-7">−1주</button></div>
+    <div><label>중요도</label><div class="mchips">${imp.map(([v, n]) => `<button data-act="mimp" data-v="${v}" class="${b.imp === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    <div><label>태그</label><div class="mchips">${(S.tags || []).map(t => `<button data-act="mtag" data-t="${esc(t)}" class="${(b.tags || []).includes(t) ? 'on' : ''}">${esc(t)}<span class="tx" data-act="mtagdel" data-t="${esc(t)}">×</span></button>`).join('')}</div><input data-f="newtag" style="margin-top:7px"></div>
     <div><label>진도 %</label><input type="number" min="0" max="100" step="5" data-f="done" value="${b.done}"></div>
     <button class="del" data-act="mdel">이 블록 삭제</button>
   </div>`;
@@ -509,7 +513,8 @@ function mapDay(i) { for (let k = MSEGS.length - 1; k >= 0; k--) if (i >= MCUM[k
 document.addEventListener('change', ev => {
   const f = ev.target.closest && ev.target.closest('.mside [data-f]'); if (!f) return;
   const b = S.blocks.find(x => x.id === f.closest('.mside').dataset.id); if (!b) return; const k = f.dataset.f;
-  if (k === 'name') b.name = f.value.trim() || b.name;
+  if (k === 'newtag') { const t = f.value.trim(); if (!t) return; S.tags = S.tags || []; if (!S.tags.includes(t)) S.tags.push(t); b.tags = b.tags || []; if (!b.tags.includes(t)) b.tags.push(t); }
+  else if (k === 'name') b.name = f.value.trim() || b.name;
   else if (k === 'subj') b.subj = f.value;
   else if (k === 's' || k === 'e') { if (!f.value) return; b[k] = f.value; if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } }
   else if (k === 'done') { setDone(b, Math.max(0, Math.min(100, +f.value || 0))); }
@@ -879,6 +884,8 @@ document.addEventListener('click', ev => {
     if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'c') scrollTodayC(); else window.scrollTo(0, 0); }
     else if (act === 'mclose') { MSEL = null; render(); }
     else if (act === 'mext') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.e = fd(Math.max(pd(b.s), pd(b.e) + +a.dataset.x)); save(); render(); } }
+    else if (act === 'mtagdel') { const t = a.dataset.t; if (confirm('태그 "' + t + '"를 목록에서 지울까?')) { S.tags = (S.tags || []).filter(x => x !== t); S.blocks.forEach(b => { b.tags = (b.tags || []).filter(x => x !== t); }); save(); render(); } }
+    else if (act === 'mtag') { const b = S.blocks.find(x => x.id === MSEL); if (b) { const t = a.dataset.t; b.tags = b.tags || []; b.tags = b.tags.includes(t) ? b.tags.filter(x => x !== t) : [...b.tags, t]; save(); render(); } }
     else if (act === 'mimp') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.imp = +a.dataset.v; save(); render(); } }
     else if (act === 'mdel') { const b = S.blocks.find(x => x.id === MSEL); if (b && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } }
     else if (act === 'madd') { const sj = a.dataset.subj, bl = S.blocks.filter(b => b.subj === sj), st = bl.length ? Math.max(...bl.map(b => pd(b.e))) + 1 : TODAY; openBlock(null, { subj: sj, s: fd(st), e: fd(st + 13) }); }
