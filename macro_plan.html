@@ -355,7 +355,10 @@ function normalize(x) {
 }
 function loadLocal() { try { S = normalize(JSON.parse(localStorage.getItem(LS) || 'null')); } catch (e) { S = normalize(null); } }
 function writeLocal() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { } }
+const snap = () => JSON.stringify(Object.assign({}, S, { ts: 0 }));
+let UNDO = [], REDO = [], LAST = null;
 function save() {
+  const cur = snap(); if (LAST !== null && cur !== LAST) { UNDO.push(LAST); if (UNDO.length > 80) UNDO.shift(); REDO = []; } LAST = cur;
   S.ts = Date.now(); calPushChanged(); writeLocal();
   if (fbRef) { try { fbRef.set(JSON.parse(JSON.stringify(S))); } catch (e) { } }
 }
@@ -369,7 +372,7 @@ function initFirebase() {
     db = app.database(); fbRef = db.ref('macro_plan/v1');
     fbRef.on('value', snap => {
       const r = snap.val();
-      if (r && (r.ts || 0) > (S.ts || 0)) { S = normalize(r); writeLocal(); render(); }
+      if (r && (r.ts || 0) > (S.ts || 0)) { S = normalize(r); LAST = snap(); writeLocal(); render(); }
       else if (!r && S.ts) { fbRef.set(JSON.parse(JSON.stringify(S))); }
     });
   } catch (e) { }
@@ -416,6 +419,7 @@ function phaseGrad(p, alpha) {
 /* ================= render ================= */
 let CTX = {};
 function render() {
+  if (LAST === null) LAST = snap();
   const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY;
   renderTop();
   $('#root').innerHTML = UI.v === 'g' ? monthView() : UI.v === 'm' ? mapView() : calView();
@@ -707,7 +711,7 @@ function addBranch(b, after = true) {
       if (c === 'e') { MSEL = id; render(); }
       else if (c === 'b') addBranch(b);
       else if (c === 'u') addBranch(b, false);
-      else if (c === 'd' && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.blocks.forEach(x => { if (x.par === b.id) x.par = null; }); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } };
+      else if (c === 'd' ) { S.blocks = S.blocks.filter(x => x !== b); S.blocks.forEach(x => { if (x.par === b.id) x.par = null; }); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } };
   });
   document.addEventListener('pointerdown', ev => { if (!ev.target.closest('#ctxm')) close(); }, true);
 })();
@@ -1035,7 +1039,7 @@ document.addEventListener('click', ev => {
     else if (act === 'mtag') { const b = S.blocks.find(x => x.id === MSEL); if (b) { const t = a.dataset.t; b.tags = b.tags || []; b.tags = b.tags.includes(t) ? b.tags.filter(x => x !== t) : [...b.tags, t]; save(); render(); } }
     else if (act === 'mreset') { const b = S.blocks.find(x => x.id === MSEL); if (b && b.base) { b.e = b.base[1]; save(); render(); } }
     else if (act === 'mimp') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.imp = +a.dataset.v; save(); render(); } }
-    else if (act === 'mdel') { const b = S.blocks.find(x => x.id === MSEL); if (b && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.blocks.forEach(x => { if (x.par === b.id) x.par = null; }); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } }
+    else if (act === 'mdel') { const b = S.blocks.find(x => x.id === MSEL); if (b ) { S.blocks = S.blocks.filter(x => x !== b); S.blocks.forEach(x => { if (x.par === b.id) x.par = null; }); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } }
     else if (act === 'mnext') { const b = S.blocks.find(x => x.id === a.dataset.id); if (b) addBranch(b); }
     else if (act === 'madd') { const sj = a.dataset.subj, bl = S.blocks.filter(b => b.subj === sj), st = bl.length ? Math.max(...bl.map(b => pd(b.e))) + 1 : TODAY; openBlock(null, { subj: sj, s: fd(st), e: fd(st + 13) }); }
     else if (act === 'medit') { MSEL = a.dataset.id; render(); }
@@ -1075,15 +1079,15 @@ document.addEventListener('click', ev => {
     else if (act === 'qnoted') quickNoteD(+a.dataset.d);
     else if (act === 'tgdone') { const b = S.blocks.find(x => x.id === a.dataset.id); if (b) { setDone(b, b.done >= 100 ? 0 : 100); save(); render(); } }
     else if (act === 'savenote') saveNote();
-    else if (act === 'delnote') { if (confirm('이 말풍선을 삭제할까?')) { S.notes = S.notes.filter(n => n.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
+    else if (act === 'delnote') { if (true) { S.notes = S.notes.filter(n => n.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'addphase') openPhase(null);
     else if (act === 'exams') openExams();
     else if (act === 'close') closeModal();
     else if (act === 'saveblock') saveBlock();
     else if (act === 'savephase') savePhase();
     else if (act === 'saveexams') { const p = $('#f-p').value, s = $('#f-sx').value; if (p && s) { S.exams = { p, s }; save(); closeModal(); render(); } }
-    else if (act === 'delblock') { if (confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(b => b.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
-    else if (act === 'delphase') { if (confirm('이 단계를 삭제할까?')) { S.phases = S.phases.filter(p => p.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
+    else if (act === 'delblock') { if (true) { S.blocks = S.blocks.filter(b => b.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
+    else if (act === 'delphase') { if (true) { S.phases = S.phases.filter(p => p.id !== $('.mbox').dataset.id); save(); closeModal(); render(); } }
     else if (act === 'rebase') { const b = S.blocks.find(x => x.id === $('.mbox').dataset.id); if (b && confirm('원계획을 지금 계획으로 바꿀까? 밀림·앞섬 표시가 초기화돼.')) { b.base = [b.s, b.e]; b.doneAt = b.done >= 100 ? (b.doneAt || TODAY) : null; save(); closeModal(); render(); } }
     else if (act === 'clearseed') { if (confirm('예시 블록과 말풍선을 모두 지울까?')) { S.blocks = S.blocks.filter(b => !b.seed); S.notes = S.notes.filter(n => !n.seed); save(); render(); } }
     return;
@@ -1101,6 +1105,16 @@ document.addEventListener('dblclick', ev => {
   const tr = ev.target.closest('.mtrack[data-row]'); if (!tr || ev.target.closest('.blk')) return;
   const n = CTX.r0 + Math.floor((ev.clientX - tr.getBoundingClientRect().left) / CTX.px);
   openBlock(null, { subj: tr.dataset.row, s: fd(n), e: fd(n + 13) });
+});
+function undoRedo(redo) {
+  const from = redo ? REDO : UNDO, to = redo ? UNDO : REDO; if (!from.length) return;
+  const cur = snap(); to.push(cur); const prev = from.pop(); S = normalize(JSON.parse(prev)); LAST = snap(); S.ts = Date.now();
+  writeLocal(); if (fbRef) { try { fbRef.set(JSON.parse(JSON.stringify(S))); } catch (e) { } } calPushChanged(); MSEL = null; render();
+}
+document.addEventListener('keydown', ev => {
+  if (!(ev.ctrlKey || ev.metaKey) || ev.altKey) return; const k = ev.key.toLowerCase(), t = ev.target;
+  if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+  if (k === 'z') { ev.preventDefault(); undoRedo(ev.shiftKey); } else if (k === 'y') { ev.preventDefault(); undoRedo(true); }
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#modal').classList.contains('on')) closeModal(); else { try { window.parent.postMessage({ type: 'roadmapClose' }, '*'); } catch (e) { } } } });
 
