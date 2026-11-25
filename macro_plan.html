@@ -83,8 +83,17 @@ button{cursor:pointer;border:none;background:none}
 #rail .lb.on{color:#2f4a7a}
 .mlx{font-size:17px;font-weight:600;line-height:1;color:#8fa6c9;white-space:nowrap;margin-right:6px}
 .mlx.on{color:#2f4a7a}
-.rc{display:flex;flex-direction:column;gap:8px;min-width:0}
-.mgc{padding:4px 2px 0}
+.cgrid{display:grid;grid-template-columns:minmax(0,1fr) 250px;column-gap:14px}
+.wl{grid-column:1}
+.wslot{grid-column:2;position:relative;z-index:1;border-left:1px solid var(--bd)}
+.wsi{position:absolute;inset:0;overflow-y:auto;padding:4px 0 4px 10px;scrollbar-width:none}
+.wsi::-webkit-scrollbar{display:none}
+.wslot .gadd{opacity:0;position:absolute;right:4px;top:4px}
+.wslot:hover .gadd{opacity:1}
+.msec{grid-column:2;position:relative;z-index:2;pointer-events:none;contain:size;border-top:1px solid #c9d2e3}
+.msi{padding:6px 0 0 10px;pointer-events:none}
+.msi .mgl,.msi .gi,.msi .gadd{pointer-events:auto}
+.msi .mgl{max-width:100%}
 .cd.m1{background:#f1f4fa}
 .cwdr{position:sticky;top:0;z-index:9;background:var(--bg)}
 #rail .th{position:absolute;left:10px;width:13px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;background:#111;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #111}
@@ -244,6 +253,7 @@ function normalize(x) {
   x.phases = x.phases || [];
   x.notes = x.notes || [];
   x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {};
+  Object.keys(x.wmemos).forEach(k => { const v = x.wmemos[k]; if (v && !x.mgoals['w:' + k]) x.mgoals['w:' + k] = [{ id: uid(), t: String(v).replace(/\n+/g, ' '), d: 0 }]; delete x.wmemos[k]; });
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
   x.exams = x.exams || { p: '2027-07-10', s: '2027-09-11' };
@@ -414,9 +424,19 @@ function mgList(k) { let v = S.mgoals[k]; if (typeof v === 'string') v = S.mgoal
 function mgHtml(k) {
   return mgList(k).map(g => `<div class="gi ${g.d ? 'dn' : ''}"><span class="gc ${g.d ? 'on' : ''}" data-gc="${g.id}" data-k="${k}">${g.d ? '✓' : ''}</span><span class="gt" contenteditable="true" data-gt="${g.id}" data-k="${k}">${esc(g.t)}</span></div>`).join('') + `<button class="gadd" data-gadd="${k}">+</button>`;
 }
+function fixSlots() {
+  document.querySelectorAll('.msec').forEach(m => {
+    const mr = m.getBoundingClientRect(), mh = m.querySelector('.msi').offsetHeight;
+    const r0 = m.style.gridRowStart || m.style.gridRow.split('/')[0].trim(), n = +(m.style.gridRow.split('span')[1] || 1);
+    document.querySelectorAll('.wslot').forEach(sl => {
+      const r = sl.getBoundingClientRect();
+      if (r.top >= mr.top - 1 && r.bottom <= mr.bottom + 1) sl.querySelector('.wsi').style.paddingTop = Math.max(4, mh - (r.top - mr.top) + 4) + 'px';
+    });
+  });
+}
 function mgRefresh(k, focusId) {
   const box = document.querySelector(`.mgl[data-mgl="${k}"]`); if (!box) return;
-  box.innerHTML = mgHtml(k);
+  box.innerHTML = mgHtml(k); fixSlots();
   if (focusId) { const el = box.querySelector(`[data-gt="${focusId}"]`); if (el) el.focus(); }
 }
 function noteDate(n) { const b = n.blk && S.blocks.find(x => x.id === n.blk); return b ? b.s : n.date; }
@@ -441,25 +461,44 @@ function bar(sg) {
     ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
     ${b.done > 0 && b.done < 100 && sg.en ? `<span class="dl">${b.done}%</span>` : ''}</div>`;
 }
+function weekMonth(ws, first, ws0) {
+  // 주를 더 많은 날이 속한 달에 넣는다 (4:3이면 앞뒤 달 주 수가 고르게 되도록)
+  const cnt = {};
+  for (let d = ws; d <= ws + 6; d++) { const t = new Date(d * DAY), k = t.getUTCFullYear() + '-' + p2(t.getUTCMonth() + 1); cnt[k] = (cnt[k] || 0) + 1; }
+  const ks = Object.keys(cnt).sort();
+  if (ks.length === 1) return ks[0];
+  const [A, B] = ks;
+  if (cnt[A] !== 4 && cnt[A] !== 3) return cnt[A] > cnt[B] ? A : B;
+  return null;   // 4:3 → 나중에 정함
+}
 function calView() {
   const [r0, r1] = range();
   const ep = pd(S.exams.p), es = pd(S.exams.s);
-  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WD.map(w => `<div>${w}</div>`).join('') + '</div><div></div></div>';
   const first = r0 - ((r0 + 3) % 7);
-  for (let ws = first; ws <= r1; ws += 7) {
-    let ms = null;
-    for (let d = ws; d <= ws + 6; d++) if (new Date(d * DAY).getUTCDate() === 1 && d >= r0) ms = d;
-    if (ms == null && ws === first) { const t0 = new Date(r0 * DAY); ms = Date.UTC(t0.getUTCFullYear(), t0.getUTCMonth(), 1) / DAY; }
-    let mcard = '', mid = '';
-    if (ms != null) {
-      const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), key = y + '-' + p2(mo + 1);
-      mid = ` id="cm-${key}" data-mo="${mo + 1}" data-y="${y}"`;
-      mcard = `<div class="mgc"><span class="mlx" data-ml="cm-${key}">${mo + 1}월</span><div class="mgl" data-mgl="${key}">${mgHtml(key)}</div></div>`;
-    }
-    const key = fd(ws);
-    h += `<div class="cwr${ms != null ? ' mw' : ''}"${mid}>${weekRow(ws, Math.max(ws, r0), Math.min(ws + 6, r1), ep, es)}<div class="rc">${mcard}<div class="wm" contenteditable="true" data-wm="${key}">${esc(S.wmemos[key] || '')}</div></div></div>`;
+  const weeks = [];
+  for (let ws = first; ws <= r1; ws += 7) weeks.push({ ws, m: weekMonth(ws) });
+  // 4:3 주는 앞 달이 4주 미만이면 앞 달로, 아니면 뒤 달로
+  weeks.forEach((w, i) => {
+    if (w.m) return;
+    const t3 = new Date((w.ws + 3) * DAY), mk = t3.getUTCFullYear() + '-' + p2(t3.getUTCMonth() + 1);
+    const prev = weeks[i - 1], pk = prev && prev.m;
+    const prevCnt = pk ? weeks.slice(0, i).filter(x => x.m === pk).length : 0;
+    const d0 = new Date(w.ws * DAY), k0 = d0.getUTCFullYear() + '-' + p2(d0.getUTCMonth() + 1);
+    w.m = (pk && pk === k0 && prevCnt < 4) ? pk : mk;
+  });
+  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WD.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid">';
+  let i = 0;
+  while (i < weeks.length) {
+    let j = i; while (j + 1 < weeks.length && weeks[j + 1].m === weeks[i].m) j++;
+    const [yy, mm] = weeks[i].m.split('-'), n = j - i + 1;
+    h += `<div class="msec" id="cm-${weeks[i].m}" data-mo="${+mm}" data-y="${yy}" style="grid-row:${i + 1}/span ${n}"><div class="msi"><div class="mgl" data-mgl="${weeks[i].m}">${mgHtml(weeks[i].m)}</div></div></div>`;
+    i = j + 1;
   }
-  return h + '</div>';
+  weeks.forEach((w, k) => {
+    const wk = 'w:' + fd(w.ws);
+    h += `<div class="wl" style="grid-row:${k + 1}">${weekRow(w.ws, Math.max(w.ws, r0), Math.min(w.ws + 6, r1), ep, es)}</div><div class="wslot" style="grid-row:${k + 1}"><div class="wsi"><div class="mgl" data-mgl="${wk}">${mgHtml(wk)}</div></div></div>`;
+  });
+  return h + '</div></div>';
 }
 function weekRow(ws, ms, me, ep, es) {
   const segs = [];
@@ -743,14 +782,14 @@ function scrollTodayC() { const t = new Date(TODAY * DAY); setTimeout(() => jump
 /* ---- 왼쪽 월 이동 바 (눈금자 + 돋보기) ---- */
 const RAIL_OFF = 90;
 const RAIL = { items: [], ys: [], ws: [], frozen: false, H: 0 };
-function monthEls() { return [...document.querySelectorAll('.mw[id^="cm-"]')]; }
+function monthEls() { return [...document.querySelectorAll('.msec[id^="cm-"]')]; }
 function railTop() { return Math.max(0, 132 - window.scrollY); }
 function railH() { return Math.max(200, window.innerHeight - railTop() - 8); }
 function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
 function buildItems() {
   RAIL.items = [];
-  document.querySelectorAll('.mw[id^="cm-"], .cwk').forEach(m => {
-    if (m.classList.contains('mw')) RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, y: m.dataset.y, id: m.id });
+  document.querySelectorAll('.msec[id^="cm-"], .cwk').forEach(m => {
+    if (m.classList.contains('msec')) RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, y: m.dataset.y, id: m.id });
     else RAIL.items.push({ k: 'w', top: docTop(m) });
   });
 }
@@ -778,7 +817,7 @@ function renderRail() {
   if (UI.v !== 'c' || !monthEls().length) { r.classList.add('hide'); return; }
   r.classList.remove('hide');
   RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
-  buildItems(); drawRail();
+  fixSlots(); buildItems(); drawRail();
 }
 function drawRail() {
   const r = $('#rail'); if (!r || RAIL.frozen) return;
