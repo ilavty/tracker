@@ -97,6 +97,8 @@ button{cursor:pointer;border:none;background:none}
 .dnum .td{background:#e5484d;color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
 .xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
 .cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 2px;position:relative;cursor:pointer;height:20px}
+.rz{position:absolute;right:0;top:0;bottom:0;width:9px;cursor:ew-resize}
+.rz:after{content:"";position:absolute;right:3px;top:5px;bottom:5px;width:2px;border-radius:1px;background:rgba(0,0,0,.28)}
 .cbar.dn .nm{text-decoration:line-through;opacity:.6}
 .ckc{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.35);display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.6)}
 .ckc.on{background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.45);color:#fff}
@@ -415,6 +417,7 @@ function bar(sg) {
     ${sg.st ? `<span class="ckc ${b.done >= 100 ? 'on' : ''}" data-act="tgdone" data-id="${b.id}">${b.done >= 100 ? '✓' : ''}</span>` : ''}
     ${b.imp === 2 ? `<span class="must" style="background:#fff;color:#444;border:1px solid rgba(0,0,0,.25)">필수</span>` : ''}
     <span class="nm"><b>${m.r.name}</b> ${esc(b.name)}</span>
+    ${sg.en ? `<span class="rz" data-rz="${b.id}"></span>` : ''}
     ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
     ${b.done > 0 && b.done < 100 && sg.en ? `<span class="dl">${b.done}%</span>` : ''}</div>`;
 }
@@ -489,9 +492,8 @@ function openBlock(id, pre) {
     <label>과목</label><select id="f-subj">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select>
     <label>범위</label><input type="text" id="f-name" value="${esc(b.name)}">
     <div class="two"><div><label>시작</label><input type="date" id="f-s" value="${b.s}"></div><div><label>끝</label><input type="date" id="f-e" value="${b.e}"></div></div>
-    <label>집중도</label><div class="chips" id="f-inten">${INTEN.map(v => `<button data-v="${v}" class="${v === b.inten ? 'on' : ''}">${v}%</button>`).join('')}</div>
+    <div class="chips" id="f-ext" style="margin-top:6px"><button data-x="3">+3일</button><button data-x="7">+1주</button><button data-x="14">+2주</button><button data-x="30">+1개월</button></div>
     <label>중요도</label><div class="chips" id="f-imp">${[2, 1, 0].map(v => `<button data-v="${v}" class="${v === b.imp ? 'on' : ''}">${IMP[v]}</button>`).join('')}</div>
-    <label>완료율 <span id="f-dv">${b.done}%</span></label><input type="range" id="f-done" min="0" max="100" step="5" value="${b.done}">
     ${old ? `<label>수정 사유</label><input type="text" id="f-reason"><label class="ck"><input type="checkbox" id="f-follow"> 같은 과목 뒤 블록도 같이 밀기</label>
     <div class="info"><b>원계획</b> ${md(pd(b.base[0]))} – ${md(pd(b.base[1]))}${b.done >= 100 && b.doneAt != null ? ` · <b>완료</b> ${md(b.doneAt)}` : ''}${logHtml ? `<br>${logHtml}` : ''}</div>` : ''}
     <div class="btns"><button class="sv" data-act="saveblock">저장</button><button class="cx" data-act="close">취소</button><span class="sp" style="flex:1"></span>
@@ -502,7 +504,7 @@ function saveBlock() {
   const subj = $('#f-subj').value, name = $('#f-name').value.trim(), s = $('#f-s').value, e = $('#f-e').value;
   if (!name) { toast('범위를 입력해줘'); return; }
   if (!s || !e || pd(e) < pd(s)) { toast('날짜를 확인해줘'); return; }
-  const inten = pick('f-inten'), imp = pick('f-imp'), done = +$('#f-done').value;
+  const oldB = id ? S.blocks.find(x => x.id === id) : null, inten = oldB ? oldB.inten : 60, imp = pick('f-imp'), done = oldB ? oldB.done : 0;
   if (!id) {
     S.blocks.push({ id: uid(), subj, name, s, e, base: [s, e], inten, imp, done, doneAt: done >= 100 ? TODAY : null, log: [] });
   } else {
@@ -552,6 +554,7 @@ document.addEventListener('click', ev => {
   const t = ev.target;
   if (t.id === 'modal') { closeModal(); return; }
   const chipBtn = t.closest('.chips button');
+  if (chipBtn && chipBtn.dataset.x) { const e = $('#f-e'); if (e.value) e.value = fd(pd(e.value) + (+chipBtn.dataset.x)); return; }
   if (chipBtn) { chipBtn.parentNode.querySelectorAll('button').forEach(x => x.classList.remove('on')); chipBtn.classList.add('on'); return; }
   const a = t.closest('[data-act]');
   if (a) {
@@ -612,6 +615,8 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
     if (ev.button !== 0 || $('#modal').classList.contains('on')) return;
     const bub = ev.target.closest('.cp');
     if (bub) { if (ev.target.closest('button')) return; D = { t: 'n', el: bub, x: ev.clientX, y: ev.clientY, on: false }; return; }
+    const rzh = ev.target.closest('.rz');
+    if (rzh) { const b = S.blocks.find(x => x.id === rzh.dataset.rz); if (b) D = { t: 'z', b, x: ev.clientX, y: ev.clientY, on: false, e: pd(b.e) }; return; }
     const br = ev.target.closest('.cbar');
     if (br && !ev.target.closest('.ckc')) { D = { t: 'r', el: br, id: br.dataset.b, x: ev.clientX, y: ev.clientY, on: false }; return; }
     if (ev.target.closest('.cbar,.plus,.cph,.wm')) return;
@@ -623,14 +628,20 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
     if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'r') D.el.classList.add('dg');
     if (D.t === 'n') { D.el.classList.add('drag'); const nn = S.notes.find(x => x.id === D.el.querySelector('[data-nn]').dataset.nn) || {}; D.ox = nn.ox || 0; D.oy = nn.oy || 0; D.base = D.el.dataset.base || '0px'; D.nb = nn.blk; } }
     ev.preventDefault();
-    if (D.t === 'r') { D.dy = ev.clientY - D.y; D.el.style.transform = `translateY(${D.dy}px)`; clr(); const hb = barAt(ev.clientX, ev.clientY); D.hb = (hb && hb.dataset.b !== D.id) ? hb : null; if (D.hb) D.hb.classList.add('hit'); }
+    if (D.t === 'z') { const d = dayAt(ev.clientX, ev.clientY); if (d != null) D.e = Math.max(pd(D.b.s), d); clr(); document.querySelectorAll('.cd[data-d]').forEach(c => { const v = +c.dataset.d; if (v > pd(D.b.e) && v <= D.e || v <= pd(D.b.e) && v > D.e && v >= pd(D.b.s)) c.classList.add('sel'); }); }
+    else if (D.t === 'r') { D.dy = ev.clientY - D.y; D.el.style.transform = `translateY(${D.dy}px)`; clr(); const hb = barAt(ev.clientX, ev.clientY); D.hb = (hb && hb.dataset.b !== D.id) ? hb : null; if (D.hb) D.hb.classList.add('hit'); }
     else if (D.t === 'n') { D.dx = ev.clientX - D.x; D.dy = ev.clientY - D.y; document.querySelectorAll('.cbar.hit').forEach(x => x.classList.remove('hit')); { const hb = barAt(ev.clientX, ev.clientY); D.hb = hb; if (hb && !(D.el.classList.contains('in') && hb.dataset.b === D.nb)) hb.classList.add('hit'); } D.el.style.transform = `translate(${D.ox + D.dx}px,calc(${D.oy + D.dy}px + ${D.base}))`; }
     else { const d = dayAt(ev.clientX, ev.clientY); if (d != null) D.b = d; clr(); const lo = Math.min(D.a, D.b), hi = Math.max(D.a, D.b); document.querySelectorAll('.cd[data-d]').forEach(c => { const v = +c.dataset.d; if (v >= lo && v <= hi) c.classList.add('sel'); }); }
   });
   const end = ev => {
     if (!D) return; const d0 = D; D = null; clr(); document.body.style.userSelect = ''; document.body.style.webkitUserSelect = '';
     if (!d0.on) return;
-    if (d0.t === 'r') {
+    if (d0.t === 'z') {
+      window.__sup = true; setTimeout(() => { window.__sup = false; }, 60);
+      const ne = fd(d0.e), b = d0.b;
+      if (ne !== b.e) { b.log.push({ ts: Date.now(), from: [b.s, b.e], to: [b.s, ne], reason: '' }); b.e = ne; save(); }
+      render();
+    } else if (d0.t === 'r') {
       window.__sup = true; setTimeout(() => { window.__sup = false; }, 60);
       if (d0.hb) { const ti = S.blocks.findIndex(x => x.id === d0.hb.dataset.b), fi = S.blocks.findIndex(x => x.id === d0.id); if (ti >= 0 && fi >= 0) { const [m] = S.blocks.splice(fi, 1); const at = S.blocks.findIndex(x => x.id === d0.hb.dataset.b); const r = d0.hb.getBoundingClientRect(); S.blocks.splice(ev.clientY < r.top + r.height / 2 ? at : at + 1, 0, m); save(); } }
       render();
