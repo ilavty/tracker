@@ -444,17 +444,18 @@ function mapSegs() {
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
   (S.months || []).forEach(k => { const [y, m] = k.split('-').map(Number); iv.push([Date.UTC(y, m - 1, 1) / DAY, Date.UTC(y, m, 0) / DAY]); });   // 직접 추가한 달
   iv.sort((a, b) => a[0] - b[0]); const out = [];
-  iv.forEach(([a, b]) => { const l = out[out.length - 1]; if (l && a <= l[1] + 1) l[1] = Math.max(l[1], b); else out.push([a, b]); });
+  const mi = d => { const t = new Date(d * DAY); return t.getUTCFullYear() * 12 + t.getUTCMonth(); };
+  iv.forEach(([a, b]) => { const l = out[out.length - 1]; if (l && (a <= l[1] + 1 || mi(a) - mi(l[1]) <= 1)) l[1] = Math.max(l[1], b); else out.push([a, b]); });   // 이웃한 달 사이 빈 날은 메우기
   return out;
 }
 function mapView() {
   const segs = mapSegs();
-  let tot = 0; const cum = segs.map((sg, i) => { if (i) { const gd = sg[0] - segs[i - 1][1] - 1; tot += gd <= 7 ? 0 : Math.min(24, Math.round(Math.sqrt(gd) * 1.2)); } const c = tot; tot += sg[1] - sg[0] + 1; return c; });
+  let tot = 0; const cum = segs.map((sg, i) => { if (i) { const gd = sg[0] - segs[i - 1][1] - 1; tot += gd <= 7 ? 0 : Math.min(12, Math.round(Math.sqrt(gd) * 0.7)); } const c = tot; tot += sg[1] - sg[0] + 1; return c; });
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx; MSEGS = segs; MCUM = cum;
   const TL = 236, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = Math.max(5, (AV - 6) / tot); MPX = px;
-  MTL = TL; const TW = TL + tot * px + 4, TOP = 44 + 20 * Math.max(1, ...Object.values(S.mmemo || {}).map(a => a.length));
+  MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -466,7 +467,7 @@ function mapView() {
     const lanes = []; r.bs.sort((a, b) => pd(a.s) - pd(b.s)).forEach(b => { let k = lanes.findIndex(e => e < pd(b.s)); if (k < 0) { k = lanes.length; lanes.push(0); } lanes[k] = pd(b.e); b._l = k; });
     r.n = Math.max(1, lanes.length); r.h = r.n * (RH + LG) + 16; r.y = y; y += r.h + (rows[rows.indexOf(r) + 1] && rows[rows.indexOf(r) + 1].g !== r.g ? 16 : 0);
   });
-  const H = y + 10;
+  const MY = y + 16, MN = Math.max(1, ...Object.values(S.mmemo || {}).map(a => a.length)), H = MY + 20 * MN + 14;
   // 월 띠 (생긴 날짜만, 번갈아 색)
   const cols = []; let ci = -1, lastM = null;
   segs.forEach((sg, i) => { let d = sg[0]; while (d <= sg[1]) { const t = new Date(d * DAY), mo = t.getUTCFullYear() * 12 + t.getUTCMonth(), end = Math.min(sg[1], Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0) / DAY)); if (mo !== lastM) { ci++; lastM = mo; } cols.push({ a: d, b: end, ci, mo: t.getUTCMonth(), yr: t.getUTCFullYear() }); d = end + 1; } });
@@ -474,7 +475,7 @@ function mapView() {
   cols.forEach((c, i) => {
     const x0 = TL + idx(c.a) * px, x1 = TL + (idx(c.b) + 1) * px;
     bg += `<div class="mbd ${c.ci % 2 ? 'b' : 'a'}" style="left:${x0}px;width:${x1 - x0}px;height:${H}px"></div>`;
-    if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" data-k="${mk}" style="left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
+    if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" data-k="${mk}" style="top:${MY}px;left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
     lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
     const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; { const miss = []; let yy = c.yr, mm = c.mo + 2; if (mm > 12) { mm = 1; yy++; } while (yy < nx.yr || (yy === nx.yr && mm < nx.mo + 1)) { miss.push(yy + '-' + mm); if (++mm > 12) { mm = 1; yy++; } } if (miss.length && xn - x1 > 3) dv += `<div class="mgp" data-act="mgap" data-m="${miss.join(',')}" style="left:${x1}px;width:${xn - x1}px"></div>`; }
     if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
@@ -483,7 +484,7 @@ function mapView() {
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
   const NX = { r: 0, g: 80, s: 144 }, NW = { r: 56, g: 44, s: 62 };
   const mids = r => r.y + (r.h - 6) / 2 - 14;
-  let nodes = '', svg = `<svg width="${TW}" height="${H}">`;
+  let nodes = `<div class="mgt" style="left:0;top:${MY + 2}px">MEMO</div>`, svg = `<svg width="${TW}" height="${H}">`;
   const link = (x1, y1, x2, y2) => { const xm = (x1 + x2) / 2, r = Math.min(10, Math.abs(y2 - y1) / 2), dir = y2 > y1 ? 1 : -1; return Math.abs(y2 - y1) < 1 ? `M${x1},${y1} H${x2}` : `M${x1},${y1} H${xm - r} Q${xm},${y1} ${xm},${y1 + dir * r} V${y2 - dir * r} Q${xm},${y2} ${xm + r},${y2} H${x2}`; };
   const gys = []; let gl = '';
   ['P', 'S'].forEach(g => {
