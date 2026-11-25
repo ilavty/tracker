@@ -4533,7 +4533,7 @@ function pl_unmergeItem() {
 #planner-view.rm-mode #floating-memos-container,
 #planner-view.rm-mode #mobile-memo-overlay{display:none!important}
 #planner-view.rm-mode #roadmap-inline{display:block!important}
-#planner-view.rm-mode #roadmap-inline{margin-top:-67px;position:relative;z-index:0}
+#planner-view.rm-mode #roadmap-inline{position:relative;z-index:0}
 #planner-view.rm-mode .pl-top-dashboard{position:relative;z-index:5}
 #planner-view.rm-mode #pl-month-nav{position:relative;z-index:6}
 #planner-view.rm-mode #rm-toggle{color:#222; font-weight:700}
@@ -4546,7 +4546,17 @@ function pl_unmergeItem() {
         try { sessionStorage.setItem('rmMode', on ? '1' : ''); } catch (e) {}
         const t = document.getElementById('rm-toggle'); if (t) t.textContent = on ? 'PLANNER' : 'ROADMAP';
         if (on) { const f = document.getElementById('roadmap-iframe'); if (f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); }
+        setTimeout(rmAlign, 0); setTimeout(rmAlign, 400);
     }
+    // 안쪽 버튼 줄을 바깥 PLANNER 글자와 같은 높이에 맞춤 (화면 크기·브라우저가 달라도 어긋나지 않게 실제 위치로 계산)
+    function rmAlign() {
+        const pv = document.getElementById('planner-view'), box = document.getElementById('roadmap-inline'), nav = document.getElementById('pl-month-nav'); if (!pv || !box || !nav || !pv.classList.contains('rm-mode')) return;
+        box.style.marginTop = '0px';
+        const n = nav.getBoundingClientRect(), b = box.getBoundingClientRect();
+        box.style.marginTop = Math.min(0, Math.round((n.top + n.height / 2 - 35) - b.top)) + 'px';
+    }
+    window.addEventListener('resize', rmAlign);
+    window.addEventListener('load', () => { const f = document.getElementById('roadmap-iframe'); if (f) f.addEventListener('load', rmAlign); setTimeout(rmAlign, 300); });
     window.addEventListener('message', (e) => { if (e.data && e.data.type === 'roadmapClose') toggleRoadmap(false); });
     // 다른 탭으로 나가면 플래너로 되돌려 놓기
     __boot(() => {
