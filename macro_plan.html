@@ -83,18 +83,19 @@ button{cursor:pointer;border:none;background:none}
 #rail .lb.on{color:#2f4a7a}
 .mlx{font-size:17px;font-weight:600;line-height:1;color:#8fa6c9;white-space:nowrap;margin-right:6px}
 .mlx.on{color:#2f4a7a}
-.cgrid{display:grid;grid-template-columns:minmax(0,1fr) 250px;column-gap:14px}
-.wl{grid-column:1}
-.wslot{grid-column:2;position:relative;z-index:1;border-left:1px solid var(--bd)}
+.cgrid{display:grid;grid-template-columns:minmax(0,1fr) 250px;column-gap:0}
+.wl{grid-column:1;margin-right:0}
+.pv{z-index:3;margin-top:3px;margin-bottom:3px;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(47,74,122,.18)}
+.pv span{writing-mode:vertical-rl;font-size:.66rem;font-weight:700;color:#3d4a63;white-space:nowrap;letter-spacing:.02em}
+.wslot{grid-column:3;position:relative;z-index:1;border-left:1px solid var(--bd);margin-left:0}
 .wsi{position:absolute;inset:0;overflow-y:auto;padding:4px 0 4px 10px;scrollbar-width:none}
 .wsi::-webkit-scrollbar{display:none}
 .wslot .gadd{opacity:0;position:absolute;right:4px;top:4px}
 .wslot:hover .gadd{opacity:1}
-.msec{grid-column:2;position:relative;z-index:2;pointer-events:none;contain:size;border-top:1px solid #c9d2e3}
+.msec{grid-column:3;position:relative;z-index:2;pointer-events:none;contain:size;border-top:1px solid #c9d2e3}
 .msi{padding:6px 0 0 10px;pointer-events:none}
 .msi .mgl,.msi .gi,.msi .gadd{pointer-events:auto}
 .msi .mgl{max-width:100%}
-.cd.m1{background:#f1f4fa}
 .cwdr{position:sticky;top:0;z-index:9;background:var(--bg)}
 #rail .th{position:absolute;left:10px;width:13px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;background:#111;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #111}
 #rail.hide{display:none}
@@ -109,6 +110,9 @@ button{cursor:pointer;border:none;background:none}
 .cd{background:#fff;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);position:relative}
 .cd:nth-child(1){border-left:1px solid var(--bd)}
 
+.cd.bt{border-top:1px solid #2f4a7a}
+.cd.bl{border-left:1px solid #2f4a7a}
+.dnum .m1{color:#2f4a7a;font-weight:700}
 .cd.out{background:transparent;border-color:transparent}
 .cd .plus{position:absolute;right:4px;top:2px;font-size:.95rem;line-height:1;color:var(--sub);opacity:0;cursor:pointer;padding:0 3px;z-index:1}
 .cd:hover .plus{opacity:.9}
@@ -486,7 +490,19 @@ function calView() {
     const d0 = new Date(w.ws * DAY), k0 = d0.getUTCFullYear() + '-' + p2(d0.getUTCMonth() + 1);
     w.m = (pk && pk === k0 && prevCnt < 4) ? pk : mk;
   });
-  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WD.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid">';
+  const pl = [];   // 단계: 오른쪽 세로 막대
+  S.phases.slice().sort((x, y) => pd(x.s) - pd(y.s)).forEach(ph => {
+    const a = Math.max(0, Math.floor((pd(ph.s) - first) / 7)), z = Math.min(weeks.length - 1, Math.floor((pd(ph.e) - first) / 7));
+    if (z < 0 || a > weeks.length - 1 || a > z) return;
+    let lane = 0; while (pl.some(q => q.lane === lane && !(z < q.a || a > q.z))) lane++;
+    pl.push({ ph, a, z, lane });
+  });
+  const nl = pl.reduce((m, q) => Math.max(m, q.lane + 1), 0), LW = 22;
+  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WD.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid" style="grid-template-columns:minmax(0,1fr) ' + (nl ? nl * LW + 12 : 0) + 'px 250px">';
+  pl.forEach(q => {
+    const g = q.ph.pit >= 100 ? rgba(ROW.P.c, .55) : q.ph.pit <= 0 ? rgba(ROW.S.c, .55) : `linear-gradient(to right, ${rgba(ROW.P.c, .55)} 0 ${q.ph.pit}%, ${rgba(ROW.S.c, .55)} ${q.ph.pit}% 100%)`;
+    h += `<div class="pv" data-p="${q.ph.id}" title="${esc(q.ph.name)} ${q.ph.pit}/${100 - q.ph.pit} · ${md(pd(q.ph.s))}–${md(pd(q.ph.e))}" style="grid-column:2;grid-row:${q.a + 1}/span ${q.z - q.a + 1};margin-left:${12 + q.lane * LW}px;width:${LW - 5}px;background:${g}"><span>${esc(q.ph.name)} ${q.ph.pit}/${100 - q.ph.pit}</span></div>`;
+  });
   let i = 0;
   while (i < weeks.length) {
     let j = i; while (j + 1 < weeks.length && weeks[j + 1].m === weeks[i].m) j++;
@@ -501,6 +517,7 @@ function calView() {
   return h + '</div></div>';
 }
 function weekRow(ws, ms, me, ep, es) {
+  const r0x = range()[0];
   const segs = [];
   S.blocks.forEach(b => {
     const s = pd(b.s), e = pd(b.e), a = Math.max(s, ws, ms), z = Math.min(e, ws + 6, me);
@@ -516,18 +533,14 @@ function weekRow(ws, ms, me, ep, es) {
   });
   const L = lanes.length;
   let bg = '', fg = '', pops = '', tline = '';
-  S.phases.forEach(ph => {
-    const s0 = pd(ph.s), e0 = pd(ph.e), a = Math.max(s0, ws, ms), z = Math.min(e0, ws + 6, me);
-    if (a <= z) fg += `<div class="cph" data-p="${ph.id}" style="grid-row:2;grid-column:${a - ws + 1}/span ${z - a + 1};background:${phaseGrad(ph, .32)}">${(s0 >= ws && s0 <= ws + 6) || ws <= ms + 0 ? `${esc(ph.name)} ${ph.pit}/${100 - ph.pit}` : ''}</div>`;
-  });
   for (let i = 0; i < 7; i++) {
     const d = ws + i;
     if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
-    const mp = new Date(d * DAY).getUTCMonth() % 2;
+    const dt = new Date(d * DAY), dd = dt.getUTCDate(), mp = '', edge = (dd <= 7 && d - 7 >= r0x ? ' bt' : '') + (dd === 1 && i > 0 ? ' bl' : '');
     const ph = phaseAt(d);
     const strip = '';
-    bg += `<div class="cd m${mp}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
-    fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
+    bg += `<div class="cd${edge}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
+    fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${dd === 1 ? `<b class="m1">${dt.getUTCMonth() + 1}월</b> 1` : dd}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
     S.notes.filter(n => !(n.blk && S.blocks.some(x => x.id === n.blk)) && pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
   segs.forEach(sg => {
@@ -535,7 +548,7 @@ function weekRow(ws, ms, me, ep, es) {
     if (sg.st) S.notes.filter(n => n.blk === sg.b.id).forEach((n, k) => { fg += noteIn(n, sg, k); });
   });
   if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl"></div>`;
-  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 16px repeat(${L + 1},22px) auto">${fg}</div>${tline}${pops}</div>`;
+  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 0 repeat(${L + 1},22px) auto">${fg}</div>${tline}${pops}</div>`;
 }
 function openModal(html) { const m = $('#modal'); m.innerHTML = html; m.classList.add('on'); }
 function closeModal() { const m = $('#modal'); m.classList.remove('on'); m.innerHTML = ''; }
