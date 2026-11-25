@@ -392,7 +392,7 @@ const WD = ['월', '화', '수', '목', '금', '토', '일'];
 function noteFloat(n, col, idx) {
   const right = col >= 4;
   const pos = right ? `right:calc(${6 - col} / 7 * 100% + 6px)` : `left:calc(${col} / 7 * 100% + 6px)`;
-  return `<div class="cp ${n.kind} ${right ? 'r' : ''}" style="${pos};bottom:calc(100% - 4px + ${idx * 32}px)"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
+  return `<div class="cp ${n.kind} ${right ? 'r' : ''}" style="${pos};bottom:calc(100% - 4px + ${idx * 32}px);transform:translate(${n.ox || 0}px,${n.oy || 0}px)"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
 }
 function bar(sg) {
   const b = sg.b, m = meta(b);
@@ -422,7 +422,7 @@ function weekRow(ws, ms, me, ep, es) {
     const d = ws + i;
     if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
     const ph = phaseAt(d);
-    const strip = ph ? `background-image:linear-gradient(to right,${rgba(ROW.P.c, .4)} 0 ${ph.pit}%,${rgba(ROW.S.c, .4)} ${ph.pit}% 100%);background-size:100% 2px;background-repeat:no-repeat;background-position:bottom` : '';
+    const strip = '';
     bg += `<div class="cd" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
     S.notes.filter(n => pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
@@ -594,9 +594,9 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
   });
   document.addEventListener('pointermove', ev => {
     if (!D) return;
-    if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'n') D.el.classList.add('drag'); }
+    if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'n') { D.el.classList.add('drag'); const nn = S.notes.find(x => x.id === D.el.querySelector('[data-nn]').dataset.nn) || {}; D.ox = nn.ox || 0; D.oy = nn.oy || 0; } }
     ev.preventDefault();
-    if (D.t === 'n') { D.el.style.transform = `translate(${ev.clientX - D.x}px,${ev.clientY - D.y}px)`; D.d = dayAt(ev.clientX, ev.clientY); clr(); if (D.d != null) document.querySelector(`.cd[data-d="${D.d}"]`).classList.add('sel'); }
+    if (D.t === 'n') { D.dx = ev.clientX - D.x; D.dy = ev.clientY - D.y; D.el.style.transform = `translate(${D.ox + D.dx}px,${D.oy + D.dy}px)`; }
     else { const d = dayAt(ev.clientX, ev.clientY); if (d != null) D.b = d; clr(); const lo = Math.min(D.a, D.b), hi = Math.max(D.a, D.b); document.querySelectorAll('.cd[data-d]').forEach(c => { const v = +c.dataset.d; if (v >= lo && v <= hi) c.classList.add('sel'); }); }
   });
   const end = ev => {
@@ -604,7 +604,7 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
     if (!d0.on) return;
     if (d0.t === 'n') {
       const id = d0.el.querySelector('[data-nn]').dataset.nn, n = S.notes.find(x => x.id === id);
-      if (n && d0.d != null) { n.date = fd(d0.d); save(); }
+      if (n) { n.ox = Math.round(d0.ox + d0.dx); n.oy = Math.round(d0.oy + d0.dy); save(); }
       render();
     } else if (d0.a !== d0.b) { openBlock(null, { s: fd(Math.min(d0.a, d0.b)), e: fd(Math.max(d0.a, d0.b)) }); }
   };
