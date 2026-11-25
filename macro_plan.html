@@ -584,7 +584,7 @@ function mapSide(b, left, top) {
     <div><label>이름</label><input data-f="name" value="${esc(b.name)}"></div>
     <div><label>과목</label><select data-f="subj">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select></div>
     <div class="r2"><div style="flex:1"><label>시작</label><input type="date" data-f="s" value="${b.s}"></div><div style="flex:1"><label>끝</label><input type="date" data-f="e" value="${b.e}"></div></div>
-    <div class="mchips" style="margin-top:-4px"><button data-act="mext" data-x="7">+1주</button><button data-act="mext" data-x="14">+2주</button><button data-act="mext" data-x="30">+1달</button><button data-act="mext" data-x="-7">−1주</button></div>
+    <div><label>연장 · 일찍 끝</label><div class="mchips"><button data-act="mext" data-x="7">연장 +1주</button><button data-act="mext" data-x="14">+2주</button><button data-act="mext" data-x="30">+1달</button><button data-act="mext" data-x="-7">일찍 −1주</button></div></div>
     <div><label>중요도</label><div class="mchips">${imp.map(([v, n]) => `<button data-act="mimp" data-v="${v}" class="${b.imp === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
     <div><label>태그</label><div class="mchips">${(S.tags || []).map(t => `<button data-act="mtag" data-t="${esc(t)}" class="${(b.tags || []).includes(t) ? 'on' : ''}">${esc(t)}<span class="tx" data-act="mtagdel" data-t="${esc(t)}">×</span></button>`).join('')}</div><input data-f="newtag" style="margin-top:7px"></div>
     ${b.base && pd(b.e) !== pd(b.base[1]) ? `<div class="bs">원계획 끝 ${md(pd(b.base[1]))} · ${pd(b.e) > pd(b.base[1]) ? '연장 +' : '일찍 −'}${Math.abs(pd(b.e) - pd(b.base[1]))}일 <button data-act="mreset">원계획으로</button></div>` : ''}
@@ -598,7 +598,7 @@ document.addEventListener('change', ev => {
   if (k === 'newtag') { const t = f.value.trim(); if (!t) return; S.tags = S.tags || []; if (!S.tags.includes(t)) S.tags.push(t); b.tags = b.tags || []; if (!b.tags.includes(t)) b.tags.push(t); }
   else if (k === 'name') b.name = f.value.trim() || b.name;
   else if (k === 'subj') b.subj = f.value;
-  else if (k === 's' || k === 'e') { if (!f.value) return; const s0 = pd(b.s), e0 = pd(b.e); b[k] = f.value; if (k === 's' && b.base) b.base[0] = f.value; if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } moveKids(b, k === 's' ? 0 : 0, pd(b.e) - e0); }
+  else if (k === 's' || k === 'e') { if (!f.value) return; const s0 = pd(b.s), e0 = pd(b.e); b[k] = f.value; if (b.base) { if (k === 's') b.base[0] = f.value; else b.base[1] = f.value; } if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } moveKids(b, k === 's' ? 0 : 0, pd(b.e) - e0); }
   else if (k === 'done') { setDone(b, Math.max(0, Math.min(100, +f.value || 0))); }
   save(); render();
 });
@@ -641,7 +641,7 @@ document.addEventListener('change', ev => {
     if (!dr) return; const { bar, b, z, mv, x0 } = dr; dr = null;
     if (!mv) { MSEL = MSEL === b.id ? null : b.id; render(); return; }
     const dd = Math.round((ev.clientX - x0) / MPX);
-    if (dd) { if (z) { const e0 = pd(b.e); b.e = fd(Math.max(pd(b.s), e0 + dd)); moveKids(b, 0, pd(b.e) - e0); } else { moveKids(b, dd, dd); b.s = fd(pd(b.s) + dd); b.e = fd(pd(b.e) + dd); if (b.base) b.base = [fd(pd(b.base[0]) + dd), fd(pd(b.base[1]) + dd)]; } save(); }
+    if (dd) { if (z) { const e0 = pd(b.e); b.e = fd(Math.max(pd(b.s), e0 + dd)); if (b.base) b.base[1] = b.e; moveKids(b, 0, pd(b.e) - e0); } else { moveKids(b, dd, dd); b.s = fd(pd(b.s) + dd); b.e = fd(pd(b.e) + dd); if (b.base) b.base = [fd(pd(b.base[0]) + dd), fd(pd(b.base[1]) + dd)]; } save(); }
     render();
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
