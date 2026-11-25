@@ -210,6 +210,8 @@ button{cursor:pointer;border:none;background:none}
 .mt svg{position:absolute;left:0;top:0;pointer-events:none}
 .mbd{position:absolute;top:0;border-radius:14px}
 .mbd.a,.mbd.b{background:transparent}
+.mgp{position:absolute;top:0;height:60px;z-index:4;cursor:pointer}
+.mgp:hover{background:rgba(74,163,234,.08)}
 .mmw{position:absolute;top:28px;display:flex;flex-direction:column;gap:2px;z-index:4}
 .mm{height:18px;line-height:16px;box-sizing:border-box;padding:0 8px;border-radius:9px;background:#fff;border:1px solid #b8c0cf;font-size:.62rem;font-weight:600;color:#2f4a7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .mm.add{width:20px;padding:0;text-align:center;border-style:dashed;color:#9aa6b8;opacity:0}
@@ -416,7 +418,6 @@ function render() {
 function renderTop() {
   $('#top').innerHTML = statsHtml() + `
     <span class="sp"></span>
-    <button class="pill" data-act="addmonth">+ 월</button>
     <button class="pill" data-act="addblock">+ 블록</button>
     ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
@@ -475,7 +476,8 @@ function mapView() {
     bg += `<div class="mbd ${c.ci % 2 ? 'b' : 'a'}" style="left:${x0}px;width:${x1 - x0}px;height:${H}px"></div>`;
     if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" data-k="${mk}" style="left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
     lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
-    const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
+    const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; { const miss = []; let yy = c.yr, mm = c.mo + 2; if (mm > 12) { mm = 1; yy++; } while (yy < nx.yr || (yy === nx.yr && mm < nx.mo + 1)) { miss.push(yy + '-' + mm); if (++mm > 12) { mm = 1; yy++; } } if (miss.length && xn - x1 > 3) dv += `<div class="mgp" data-act="mgap" data-m="${miss.join(',')}" style="left:${x1}px;width:${xn - x1}px"></div>`; }
+    if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
   });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
@@ -599,7 +601,7 @@ document.addEventListener('change', ev => {
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
-document.addEventListener('pointerdown', ev => { const p = document.getElementById('stpop'); if (p && !ev.target.closest('#stpop') && !ev.target.closest('[data-act=stlist]')) p.remove(); }, true);
+document.addEventListener('pointerdown', ev => { const p = document.getElementById('stpop'); if (p && !ev.target.closest('#stpop') && !ev.target.closest('[data-act=stlist],[data-act=mgap]')) p.remove(); }, true);
 document.addEventListener('click', ev => {
   if (UI.v !== 'm' || !MSEL) return; const t = ev.target; if (!t.isConnected) return;
   if (t.closest('.mside,.mb,.mpl,#ctxm,#stpop,.mbox,.modal,[data-act]')) return;
@@ -976,6 +978,13 @@ document.addEventListener('click', ev => {
       pop.innerHTML = L.length ? L.map(b => `<div class="it" data-id="${b.id}"><i style="background:${(ROW[b.subj] || ROW.LL).c}"></i><span><b>${esc(b.name)}</b> ${esc((ROW[b.subj] || {}).name || '')}</span><small>${note(b)}</small></div>`).join('') : '<div class="em">없음</div>';
       const r = a.getBoundingClientRect(); pop.style.left = Math.min(r.left, innerWidth - 350) + 'px'; pop.style.top = (r.bottom + 6) + 'px'; document.body.appendChild(pop);
       pop.onclick = e => { const it = e.target.closest('.it'); if (!it) return; pop.remove(); MSEL = it.dataset.id; render(); const bar = document.querySelector(`.mb[data-id="${it.dataset.id}"]`); if (bar) bar.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' }); };
+    }
+    else if (act === 'mgap') {
+      const old = document.getElementById('stpop'); if (old) old.remove();
+      const pop = document.createElement('div'); pop.id = 'stpop'; pop.dataset.k = 'gap';
+      pop.innerHTML = a.dataset.m.split(',').map(k => { const [y, m] = k.split('-'); return `<div class="it" data-m="${k}"><span><b>${y}년 ${m}월</b></span></div>`; }).join('');
+      const r = a.getBoundingClientRect(); pop.style.left = Math.min(r.left, innerWidth - 260) + 'px'; pop.style.top = (r.top + 40) + 'px'; document.body.appendChild(pop);
+      pop.onclick = e => { const it = e.target.closest('.it'); if (!it) return; pop.remove(); S.months = S.months || []; S.months.push(it.dataset.m); save(); render(); };
     }
     else if (act === 'addmonth') {
       const have = new Set(mapSegs().flatMap(sg => { const o = []; for (let d = sg[0]; d <= sg[1]; d += 1) { const t = new Date(d * DAY); o.push(t.getUTCFullYear() + '-' + (t.getUTCMonth() + 1)); d = Math.min(sg[1], Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0) / DAY)); } return o; }));
