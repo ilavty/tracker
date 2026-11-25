@@ -63,8 +63,14 @@ button{cursor:pointer;border:none;background:none}
 .dl.od{background:#f3e7de;color:#7a4a2a}
 
 /* calendar */
-.mg{outline:none;min-width:220px;max-width:46%;min-height:26px;padding:4px 12px;border-radius:13px;background:#f1efe9;font-size:.85rem;font-weight:700;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.vmh{position:sticky;top:0;z-index:8;background:var(--bg);display:flex;align-items:center;gap:8px;padding:16px 0 8px;margin-top:6px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+\.mgl{display:flex;flex-direction:column;gap:3px;padding:8px 2px 4px}
+.gi{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600}
+.gc{flex:none;width:15px;height:15px;border-radius:50%;border:1.5px solid #8fa6c9;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
+.gc.on{background:#8fa6c9}
+.gt{outline:none;min-width:40px;flex:1;line-height:1.5;word-break:break-word}
+.gi.dn .gt{text-decoration:line-through;opacity:.5}
+.gadd{align-self:flex-start;width:18px;height:18px;border-radius:50%;border:1px dashed #b9c4d8;color:#8fa6c9;font-size:.8rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;padding:0}
+.vmh{display:flex;align-items:center;gap:8px;padding:2px 0;flex-wrap:wrap}
 .vmt{font-size:1.55rem;font-weight:800;line-height:1}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
@@ -75,8 +81,12 @@ button{cursor:pointer;border:none;background:none}
 #rail .tk.mo{background:#111}
 #rail .lb{position:absolute;transform:translateY(-50%);font-weight:600;color:#8fa6c9;white-space:nowrap;line-height:1}
 #rail .lb.on{color:#2f4a7a}
-.mlx{position:absolute;right:100%;margin-right:8px;bottom:3px;font-size:18px;font-weight:500;line-height:1;color:#8fa6c9;white-space:nowrap}
-.mlx.on{color:#2f4a7a;font-weight:600}
+.mlx{font-size:17px;font-weight:600;line-height:1;color:#8fa6c9;white-space:nowrap;margin-right:6px}
+.mlx.on{color:#2f4a7a}
+.cm{position:relative;margin-top:12px;padding:10px 12px 6px;border-radius:10px 10px 0 0}
+.cm.m1{background:#f1f4fa}
+.cd.m1{background:#f1f4fa}
+.cwdr{position:sticky;top:0;z-index:9;background:var(--bg)}
 #rail .th{position:absolute;left:10px;width:13px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;background:#111;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #111}
 #rail.hide{display:none}
 .cwr{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:stretch}
@@ -89,7 +99,7 @@ button{cursor:pointer;border:none;background:none}
 .cbg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(7,1fr)}
 .cd{background:#fff;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);position:relative}
 .cd:nth-child(1){border-left:1px solid var(--bd)}
-.cwk:first-of-type .cd{border-top:1px solid var(--bd)}
+
 .cd.out{background:transparent;border-color:transparent}
 .cd .plus{position:absolute;right:4px;top:2px;font-size:.95rem;line-height:1;color:var(--sub);opacity:0;cursor:pointer;padding:0 3px;z-index:1}
 .cd:hover .plus{opacity:.9}
@@ -400,6 +410,15 @@ function monthView() {
 const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY; };
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
+function mgList(k) { let v = S.mgoals[k]; if (typeof v === 'string') v = S.mgoals[k] = v ? [{ id: uid(), t: v, d: 0 }] : []; return v || (S.mgoals[k] = []); }
+function mgHtml(k) {
+  return mgList(k).map(g => `<div class="gi ${g.d ? 'dn' : ''}"><span class="gc ${g.d ? 'on' : ''}" data-gc="${g.id}" data-k="${k}">${g.d ? '✓' : ''}</span><span class="gt" contenteditable="true" data-gt="${g.id}" data-k="${k}">${esc(g.t)}</span></div>`).join('') + `<button class="gadd" data-gadd="${k}">+</button>`;
+}
+function mgRefresh(k, focusId) {
+  const box = document.querySelector(`.mgl[data-mgl="${k}"]`); if (!box) return;
+  box.innerHTML = mgHtml(k);
+  if (focusId) { const el = box.querySelector(`[data-gt="${focusId}"]`); if (el) el.focus(); }
+}
 function noteDate(n) { const b = n.blk && S.blocks.find(x => x.id === n.blk); return b ? b.s : n.date; }
 function noteIn(n, sg, k) {
   const lc = (ROW[sg.b.subj] || {}).c, right = sg.c0 >= 5;
@@ -422,6 +441,27 @@ function bar(sg) {
     ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
     ${b.done > 0 && b.done < 100 && sg.en ? `<span class="dl">${b.done}%</span>` : ''}</div>`;
 }
+function calView() {
+  const [r0, r1] = range();
+  const ep = pd(S.exams.p), es = pd(S.exams.s);
+  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WD.map(w => `<div>${w}</div>`).join('') + '</div><div></div></div>';
+  const first = r0 - ((r0 + 3) % 7);
+  for (let ws = first; ws <= r1; ws += 7) {
+    let ms = null;
+    for (let d = ws; d <= ws + 6; d++) if (new Date(d * DAY).getUTCDate() === 1 && d >= r0) ms = d;
+    if (ms == null && ws === first) { const t0 = new Date(r0 * DAY); ms = Date.UTC(t0.getUTCFullYear(), t0.getUTCMonth(), 1) / DAY; }
+    if (ms != null) {
+      const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
+      if (mo === 0) h += `<div class="cyr"><span>${y}</span></div>`;
+      const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
+      const key = y + '-' + p2(mo + 1);
+      h += `<div class="cm m${mo % 2}" id="cm-${key}" data-mo="${mo + 1}"><div class="vmh"><span class="mlx" data-ml="cm-${key}">${mo + 1}월</span>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div><div class="mgl" data-mgl="${key}">${mgHtml(key)}</div></div>`;
+    }
+    const key = fd(ws);
+    h += `<div class="cwr">${weekRow(ws, Math.max(ws, r0), Math.min(ws + 6, r1), ep, es)}<div class="wm" contenteditable="true" data-wm="${key}">${esc(S.wmemos[key] || '')}</div></div>`;
+  }
+  return h + '</div>';
+}
 function weekRow(ws, ms, me, ep, es) {
   const segs = [];
   S.blocks.forEach(b => {
@@ -440,14 +480,15 @@ function weekRow(ws, ms, me, ep, es) {
   let bg = '', fg = '', pops = '', tline = '';
   S.phases.forEach(ph => {
     const s0 = pd(ph.s), e0 = pd(ph.e), a = Math.max(s0, ws, ms), z = Math.min(e0, ws + 6, me);
-    if (a <= z) fg += `<div class="cph" data-p="${ph.id}" style="grid-row:2;grid-column:${a - ws + 1}/span ${z - a + 1};background:${phaseGrad(ph, .32)}">${(s0 >= ws && s0 <= ws + 6) || ws <= ms ? `${esc(ph.name)} ${ph.pit}/${100 - ph.pit}` : ''}</div>`;
+    if (a <= z) fg += `<div class="cph" data-p="${ph.id}" style="grid-row:2;grid-column:${a - ws + 1}/span ${z - a + 1};background:${phaseGrad(ph, .32)}">${(s0 >= ws && s0 <= ws + 6) || ws <= ms + 0 ? `${esc(ph.name)} ${ph.pit}/${100 - ph.pit}` : ''}</div>`;
   });
   for (let i = 0; i < 7; i++) {
     const d = ws + i;
     if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
+    const mp = new Date(d * DAY).getUTCMonth() % 2;
     const ph = phaseAt(d);
     const strip = '';
-    bg += `<div class="cd" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
+    bg += `<div class="cd m${mp}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
     S.notes.filter(n => !(n.blk && S.blocks.some(x => x.id === n.blk)) && pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
@@ -458,27 +499,6 @@ function weekRow(ws, ms, me, ep, es) {
   if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl"></div>`;
   return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 16px repeat(${L + 1},22px) auto">${fg}</div>${tline}${pops}</div>`;
 }
-function calView() {
-  const [r0, r1] = range();
-  const ep = pd(S.exams.p), es = pd(S.exams.s);
-  let h = '<div class="cv">';
-  for (let ms = MON(r0); ms <= r1; ms = NEXTMON(ms)) {
-    const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
-    if (mo === 0) h += `<div class="cyr"><span>${y}</span></div>`;
-    const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
-    h += `<div class="cm" id="cm-${y}-${p2(mo + 1)}" data-mo="${mo + 1}"><div class="vmh"><span class="mlx" data-ml="cm-${y}-${p2(mo + 1)}">${mo + 1}월</span><div class="mg" contenteditable="true" data-mg="${y}-${p2(mo + 1)}">${esc(S.mgoals[y + '-' + p2(mo + 1)] || '')}</div>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
-      <div class="cwr"><div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div><div></div></div>`;
-    for (let ws = ms - ((ms + 3) % 7); ws <= me; ws += 7) {
-      if (ws + 6 < r0) continue;
-      const key = fd(ws), mine = (ws + 3 >= ms && ws + 3 <= me);   // 주 메모는 목요일이 속한 달에만 표시
-      h += `<div class="cwr">${weekRow(ws, ms, me, ep, es)}${mine ? `<div class="wm" contenteditable="true" data-wm="${key}">${esc(S.wmemos[key] || '')}</div>` : '<div></div>'}</div>`;
-    }
-    h += '</div>';
-  }
-  return h + '</div>';
-}
-
-/* ================= modal ================= */
 function openModal(html) { const m = $('#modal'); m.innerHTML = html; m.classList.add('on'); }
 function closeModal() { const m = $('#modal'); m.classList.remove('on'); m.innerHTML = ''; }
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 1800); }
@@ -554,6 +574,10 @@ function openExams() {
 document.addEventListener('click', ev => {
   const t = ev.target;
   if (t.id === 'modal') { closeModal(); return; }
+  const gc = t.closest('.gc');
+  if (gc) { const g = mgList(gc.dataset.k).find(x => x.id === gc.dataset.gc); if (g) { g.d = g.d ? 0 : 1; save(); mgRefresh(gc.dataset.k); } return; }
+  const ga = t.closest('.gadd');
+  if (ga) { const k = ga.dataset.gadd, ng = { id: uid(), t: '·', d: 0 }; mgList(k).push(ng); save(); mgRefresh(k, ng.id); const el = document.querySelector(`[data-gt="${ng.id}"]`); if (el) el.textContent = ''; return; }
   const chipBtn = t.closest('.chips button');
   if (chipBtn && chipBtn.dataset.x) { const e = $('#f-e'); if (e.value) e.value = fd(pd(e.value) + (+chipBtn.dataset.x)); return; }
   if (chipBtn) { chipBtn.parentNode.querySelectorAll('button').forEach(x => x.classList.remove('on')); chipBtn.classList.add('on'); return; }
@@ -683,7 +707,13 @@ function saveNote() {
 /* 말풍선 안에서 바로 고치기 */
 document.addEventListener('focusout', ev => {
   const t = ev.target;
-  if (t.dataset && t.dataset.mg) { const v = t.innerText.replace(/\n+$/, ''); if ((S.mgoals[t.dataset.mg] || '') !== v) { if (v) S.mgoals[t.dataset.mg] = v; else delete S.mgoals[t.dataset.mg]; save(); } return; }
+  if (t.dataset && t.dataset.gt) {
+    const L = mgList(t.dataset.k), g = L.find(x => x.id === t.dataset.gt); if (!g) return;
+    const v = t.innerText.replace(/\n+/g, ' ').trim();
+    if (!v) { S.mgoals[t.dataset.k] = L.filter(x => x !== g); save(); mgRefresh(t.dataset.k); return; }
+    if (v !== g.t) { g.t = v; save(); }
+    return;
+  }
   if (t.dataset && t.dataset.wm) { const v = t.innerText.replace(/\n+$/, ''); if ((S.wmemos[t.dataset.wm] || '') !== v) { if (v) S.wmemos[t.dataset.wm] = v; else delete S.wmemos[t.dataset.wm]; save(); } return; }
   if (t.dataset && t.dataset.nn) {
     const n = S.notes.find(x => x.id === t.dataset.nn); if (!n) return;
@@ -696,6 +726,13 @@ document.addEventListener('focusout', ev => {
 document.addEventListener('keydown', ev => {
   const t = ev.target;
   if (ev.key === 'Enter' && t.dataset && t.dataset.nn) { ev.preventDefault(); t.blur(); }
+  if (ev.key === 'Enter' && t.dataset && t.dataset.gt) {
+    ev.preventDefault();
+    const L = mgList(t.dataset.k), i = L.findIndex(x => x.id === t.dataset.gt); if (i < 0) return;
+    const cur = L[i]; cur.t = t.innerText.replace(/\n+/g, ' ').trim() || cur.t;
+    const ng = { id: uid(), t: '·', d: 0 }; L.splice(i + 1, 0, ng); save(); mgRefresh(t.dataset.k, ng.id);
+    const el = document.querySelector(`[data-gt="${ng.id}"]`); if (el) { el.textContent = ''; }
+  }
 });
 document.addEventListener('paste', ev => {
   const t = ev.target;
@@ -713,9 +750,9 @@ function railH() { return Math.max(200, window.innerHeight - railTop() - 8); }
 function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
 function buildItems() {
   RAIL.items = [];
-  monthEls().forEach(m => {
-    RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, id: m.id });
-    m.querySelectorAll('.cwk').forEach(w => RAIL.items.push({ k: 'w', top: docTop(w) }));
+  document.querySelectorAll('.cm[id^="cm-"], .cwk').forEach(m => {
+    if (m.classList.contains('cm')) RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, id: m.id });
+    else RAIL.items.push({ k: 'w', top: docTop(m) });
   });
 }
 function focusF() {
@@ -742,7 +779,6 @@ function renderRail() {
   if (UI.v !== 'c' || !monthEls().length) { r.classList.add('hide'); return; }
   r.classList.remove('hide');
   RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
-  { const hv = document.querySelector('.vmh'); if (hv) document.documentElement.style.setProperty('--ext', Math.max(0, hv.getBoundingClientRect().left - 16) + 'px'); }
   buildItems(); drawRail();
 }
 function drawRail() {
