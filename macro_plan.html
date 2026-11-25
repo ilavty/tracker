@@ -18,6 +18,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 ::-webkit-scrollbar{display:none!important} *{scrollbar-width:none!important}
 html,body{background:var(--bg)}
+html.emb,html.emb body{background:transparent}
+html.emb .cwdr{background:rgba(252,251,250,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 body{font-family:'GmkC',sans-serif;font-weight:400;color:var(--txt);font-size:14px;line-height:1.45;padding:18px 16px 60px;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
@@ -64,10 +66,10 @@ button{cursor:pointer;border:none;background:none}
 
 /* calendar */
 \.mgl{display:flex;flex-direction:column;gap:3px;padding:6px 0 2px}
-.gi{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600}
+.gi{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:500;margin:7px 0}
 .gc{flex:none;width:15px;height:15px;border-radius:50%;border:1.5px solid #8fa6c9;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
 .gc.on{background:#8fa6c9}
-.gt{outline:none;min-width:40px;flex:1;line-height:1.5;word-break:break-word}
+.gt{outline:none;min-width:40px;flex:1;line-height:1.6;word-break:break-word}
 .gi.dn .gt{text-decoration:line-through;opacity:.5}
 .gadd{align-self:flex-start;width:18px;height:18px;border-radius:50%;border:1px dashed #b9c4d8;color:#8fa6c9;font-size:.8rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;padding:0}
 .vmh{display:flex;align-items:center;gap:8px;padding:2px 0;flex-wrap:wrap}
@@ -183,6 +185,7 @@ button{cursor:pointer;border:none;background:none}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
+try { if (window.parent !== window) document.documentElement.classList.add('emb'); } catch (e) { }
 /* ================= helpers ================= */
 const LS = 'macro_plan_v1', LSUI = 'macro_plan_ui_v1';
 const DAY = 864e5;
