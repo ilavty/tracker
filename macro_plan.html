@@ -400,7 +400,9 @@ function renderStats() {
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
 let MSEL = null, MPX = 4, MIDX = null;
 function mapSegs() {
-  const iv = S.blocks.map(b => [pd(b.s), pd(b.e)]).sort((a, b) => a[0] - b[0]), out = [];
+  const iv = S.blocks.map(b => [pd(b.s), pd(b.e)]);
+  [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
+  iv.sort((a, b) => a[0] - b[0]); const out = [];
   iv.forEach(([a, b]) => { const l = out[out.length - 1]; if (l && a <= l[1] + 1) l[1] = Math.max(l[1], b); else out.push([a, b]); });
   return out;
 }
