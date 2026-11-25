@@ -63,7 +63,7 @@ button{cursor:pointer;border:none;background:none}
 .dl.od{background:#f3e7de;color:#7a4a2a}
 
 /* calendar */
-\.mgl{display:flex;flex-direction:column;gap:3px;padding:8px 2px 4px}
+\.mgl{display:flex;flex-direction:column;gap:3px;padding:6px 0 2px}
 .gi{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600}
 .gc{flex:none;width:15px;height:15px;border-radius:50%;border:1.5px solid #8fa6c9;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
 .gc.on{background:#8fa6c9}
@@ -83,8 +83,8 @@ button{cursor:pointer;border:none;background:none}
 #rail .lb.on{color:#2f4a7a}
 .mlx{font-size:17px;font-weight:600;line-height:1;color:#8fa6c9;white-space:nowrap;margin-right:6px}
 .mlx.on{color:#2f4a7a}
-.cm{position:relative;margin-top:12px;padding:10px 12px 6px;border-radius:10px 10px 0 0}
-.cm.m1{background:#f1f4fa}
+.rc{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mgc{padding:4px 2px 0}
 .cd.m1{background:#f1f4fa}
 .cwdr{position:sticky;top:0;z-index:9;background:var(--bg)}
 #rail .th{position:absolute;left:10px;width:13px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;background:#111;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #111}
@@ -450,15 +450,14 @@ function calView() {
     let ms = null;
     for (let d = ws; d <= ws + 6; d++) if (new Date(d * DAY).getUTCDate() === 1 && d >= r0) ms = d;
     if (ms == null && ws === first) { const t0 = new Date(r0 * DAY); ms = Date.UTC(t0.getUTCFullYear(), t0.getUTCMonth(), 1) / DAY; }
+    let mcard = '', mid = '';
     if (ms != null) {
-      const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
-      if (mo === 0) h += `<div class="cyr"><span>${y}</span></div>`;
-      const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
-      const key = y + '-' + p2(mo + 1);
-      h += `<div class="cm m${mo % 2}" id="cm-${key}" data-mo="${mo + 1}"><div class="vmh"><span class="mlx" data-ml="cm-${key}">${mo + 1}월</span>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div><div class="mgl" data-mgl="${key}">${mgHtml(key)}</div></div>`;
+      const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), key = y + '-' + p2(mo + 1);
+      mid = ` id="cm-${key}" data-mo="${mo + 1}" data-y="${y}"`;
+      mcard = `<div class="mgc"><span class="mlx" data-ml="cm-${key}">${mo + 1}월</span><div class="mgl" data-mgl="${key}">${mgHtml(key)}</div></div>`;
     }
     const key = fd(ws);
-    h += `<div class="cwr">${weekRow(ws, Math.max(ws, r0), Math.min(ws + 6, r1), ep, es)}<div class="wm" contenteditable="true" data-wm="${key}">${esc(S.wmemos[key] || '')}</div></div>`;
+    h += `<div class="cwr${ms != null ? ' mw' : ''}"${mid}>${weekRow(ws, Math.max(ws, r0), Math.min(ws + 6, r1), ep, es)}<div class="rc">${mcard}<div class="wm" contenteditable="true" data-wm="${key}">${esc(S.wmemos[key] || '')}</div></div></div>`;
   }
   return h + '</div>';
 }
@@ -744,14 +743,14 @@ function scrollTodayC() { const t = new Date(TODAY * DAY); setTimeout(() => jump
 /* ---- 왼쪽 월 이동 바 (눈금자 + 돋보기) ---- */
 const RAIL_OFF = 90;
 const RAIL = { items: [], ys: [], ws: [], frozen: false, H: 0 };
-function monthEls() { return [...document.querySelectorAll('.cm[id^="cm-"]')]; }
+function monthEls() { return [...document.querySelectorAll('.mw[id^="cm-"]')]; }
 function railTop() { return Math.max(0, 132 - window.scrollY); }
 function railH() { return Math.max(200, window.innerHeight - railTop() - 8); }
 function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
 function buildItems() {
   RAIL.items = [];
-  document.querySelectorAll('.cm[id^="cm-"], .cwk').forEach(m => {
-    if (m.classList.contains('cm')) RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, id: m.id });
+  document.querySelectorAll('.mw[id^="cm-"], .cwk').forEach(m => {
+    if (m.classList.contains('mw')) RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, y: m.dataset.y, id: m.id });
     else RAIL.items.push({ k: 'w', top: docTop(m) });
   });
 }
@@ -787,6 +786,7 @@ function drawRail() {
   const f = focusF(); layoutRail(f);
   const it = RAIL.items; let html = '<div class="rl"></div>', lastY = -99, curMo = null;
   it.forEach((x, i) => { if (x.k === 'm' && x.top - window.scrollY <= RAIL_OFF) curMo = i; });
+  if (curMo == null) { const f0 = it.findIndex(x => x.k === 'm'); if (f0 >= 0) curMo = f0; }
   const cy = curMo != null ? RAIL.ys[curMo] : -99;
   it.forEach((x, i) => {
     const y = RAIL.ys[i], w = RAIL.ws[i], g = (w - 1) / 6.5;
@@ -794,8 +794,8 @@ function drawRail() {
     html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${ty}px;width:${len.toFixed(0)}px"></div>`;
     if (x.k === 'm') {
       const cur = i === curMo, fs = cur ? 18 : 10;
-      const show = !cur && (Math.abs(y - cy) >= 24 && y - lastY >= 14);
-      if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo}월</div>`; }
+      const show = cur || (Math.abs(y - cy) >= 24 && y - lastY >= 14);
+      if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo === '1' ? "’" + String(x.y).slice(2) + ' ' : ''}${x.mo}월</div>`; }
     }
   });
   document.querySelectorAll('.mlx').forEach(l => l.classList.toggle('on', curMo != null && RAIL.items[curMo].id === l.dataset.ml));
