@@ -1646,8 +1646,31 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
             pushUndoState();
             let cat = trackerData.data[trackerData.currentSubject].cycles[cIdx].cats[catIdx];
             let topicName = cat.topics[tIdx].name;
-            let baseName = topicName.replace(/\(\d+\)$/, '').trim(); // 기존에 (1)이 있으면 떼어냄
-            
+            let m = topicName.match(/^(.*?)\s*\((\d+)\)$/);
+            if (m) {
+                // 이미 (n)이 붙은 경우: 기존 칸은 그대로 두고, 같은 이름 중 가장 큰 번호+1을 바로 뒤에 추가
+                let baseName = m[1].trim();
+                let esc = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let re = new RegExp('^' + esc + '\\s*\\((\\d+)\\)$');
+                let maxN = 0;
+                cat.topics.forEach(t => { let mm = (t.name || '').match(re); if (mm) maxN = Math.max(maxN, parseInt(mm[1], 10)); });
+                let newT = { id: Date.now() + Math.random(), name: baseName + '(' + (maxN + 1) + ')' };
+                cat.topics.splice(tIdx + 1, 0, newT);
+                // 같은 이름 묶음은 순서대로 (1),(2),(3)… 으로 다시 매김 (이미 겹친 번호도 정리됨)
+                let seq = 0;
+                cat.topics.forEach(t => { if (re.test(t.name || '')) { seq++; t.name = baseName + '(' + seq + ')'; } });
+                cat.sessions.forEach(sess => {
+                    if (!sess.bars) return;
+                    sess.bars.forEach(bar => {
+                        if (bar.start > tIdx) bar.start++;
+                        if (bar.end > tIdx) bar.end++;
+                    });
+                });
+                renderTrackerCycles();
+                saveDataToFirebase();
+                return;
+            }
+            let baseName = topicName.trim();
             let newT1 = { id: Date.now() + Math.random(), name: baseName + '(1)' };
             let newT2 = { id: Date.now() + Math.random(), name: baseName + '(2)' };
             
