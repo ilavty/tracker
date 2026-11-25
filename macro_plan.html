@@ -64,8 +64,8 @@ button{cursor:pointer;border:none;background:none}
 
 /* calendar */
 .mg{outline:none;min-width:220px;max-width:46%;min-height:26px;padding:4px 12px;border-radius:13px;background:#f1efe9;font-size:.85rem;font-weight:700;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.vmh:before{content:"";position:absolute;right:100%;bottom:-2px;height:2px;width:var(--ext,84px);background:var(--line)}
-.vmh{position:sticky;top:0;z-index:8;background:var(--bg);display:flex;align-items:center;gap:8px;padding:16px 0 8px;margin-top:6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+.vmh:before{content:"";position:absolute;right:100%;bottom:-1.5px;height:1.5px;width:var(--ext,84px);background:var(--line)}
+.vmh{position:sticky;top:0;z-index:8;background:var(--bg);display:flex;align-items:center;gap:8px;padding:16px 0 8px;margin-top:6px;border-bottom:1.5px solid var(--line);flex-wrap:wrap}
 .vmt{font-size:1.55rem;font-weight:800;line-height:1}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
@@ -74,8 +74,10 @@ button{cursor:pointer;border:none;background:none}
 #rail .rl{position:absolute;left:10px;top:0;bottom:0;width:1.5px;background:#c3c7ce;border-radius:1px}
 #rail .tk{position:absolute;left:10px;height:1px;background:#c3c7ce}
 #rail .tk.mo{background:#6b717a}
-#rail .lb{position:absolute;transform:translateY(-50%);font-weight:800;color:#8a929c;white-space:nowrap;line-height:1}
-#rail .lb.on{color:#000}
+#rail .lb{position:absolute;transform:translateY(-50%);font-weight:600;color:#8fa6c9;white-space:nowrap;line-height:1}
+#rail .lb.on{color:#2f4a7a}
+.mlx{position:absolute;right:100%;margin-right:8px;bottom:3px;font-size:18px;font-weight:500;line-height:1;color:#8fa6c9;white-space:nowrap}
+.mlx.on{color:#2f4a7a;font-weight:600}
 #rail .th{position:absolute;left:10px;width:13px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;background:#111;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #111}
 #rail.hide{display:none}
 .cwr{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:stretch}
@@ -465,7 +467,7 @@ function calView() {
     const t = new Date(ms * DAY), y = t.getUTCFullYear(), mo = t.getUTCMonth(), me = NEXTMON(ms) - 1;
     if (mo === 0) h += `<div class="cyr"><span>${y}</span></div>`;
     const pills = S.phases.filter(p => pd(p.s) <= me && pd(p.e) >= ms).map(p => `<span class="vpill" data-p="${p.id}" style="cursor:pointer;background:${phaseGrad(p, .25)}">${esc(p.name)} ${p.pit}/${100 - p.pit} · ${md(pd(p.s))}–${md(pd(p.e))}</span>`).join('');
-    h += `<div class="cm" id="cm-${y}-${p2(mo + 1)}" data-mo="${mo + 1}"><div class="vmh"><div class="mg" contenteditable="true" data-mg="${y}-${p2(mo + 1)}">${esc(S.mgoals[y + '-' + p2(mo + 1)] || '')}</div>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
+    h += `<div class="cm" id="cm-${y}-${p2(mo + 1)}" data-mo="${mo + 1}"><div class="vmh"><span class="mlx" data-ml="cm-${y}-${p2(mo + 1)}">${mo + 1}월</span><div class="mg" contenteditable="true" data-mg="${y}-${p2(mo + 1)}">${esc(S.mgoals[y + '-' + p2(mo + 1)] || '')}</div>${pills}<span style="flex:1"></span><button class="pill" data-act="qblockm" data-ms="${ms}">+ 블록</button></div>
       <div class="cwr"><div class="cwd">${WD.map(w => `<div>${w}</div>`).join('')}</div><div></div></div>`;
     for (let ws = ms - ((ms + 3) % 7); ws <= me; ws += 7) {
       if (ws + 6 < r0) continue;
@@ -756,11 +758,12 @@ function drawRail() {
     const len = x.k === 'm' ? 12 + 8 * g : 5 + 5 * g, ty = Math.round(y);
     html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${ty}px;width:${len.toFixed(0)}px"></div>`;
     if (x.k === 'm') {
-      const cur = i === curMo, fs = cur ? 20 : 10;
-      const show = cur || (Math.abs(y - cy) >= 24 && y - lastY >= 14);
+      const cur = i === curMo, fs = cur ? 18 : 10;
+      const show = !cur && (Math.abs(y - cy) >= 24 && y - lastY >= 14);
       if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo}월</div>`; }
     }
   });
+  document.querySelectorAll('.mlx').forEach(l => l.classList.toggle('on', curMo != null && RAIL.items[curMo].id === l.dataset.ml));
   html += `<div class="th" id="rth" style="top:${yAtF(f).toFixed(1)}px"></div>`;
   r.innerHTML = html;
 }
