@@ -199,6 +199,11 @@ button{cursor:pointer;border:none;background:none}
 .mt svg{position:absolute;left:0;top:0;pointer-events:none}
 .mbd{position:absolute;top:0;border-radius:14px}
 .mbd.a,.mbd.b{background:transparent}
+.mmw{position:absolute;top:28px;display:flex;flex-direction:column;gap:2px;z-index:4}
+.mm{height:18px;line-height:16px;box-sizing:border-box;padding:0 8px;border-radius:9px;background:#fff;border:1px solid #b8c0cf;font-size:.62rem;font-weight:600;color:#2f4a7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.mm.add{width:20px;padding:0;text-align:center;border-style:dashed;color:#9aa6b8;opacity:0}
+.mmw:hover .mm.add,.mm.add:hover{opacity:1}
+.mmi{height:18px;box-sizing:border-box;width:100%;font:600 .62rem inherit;font-family:inherit;border:1.3px solid #4aa3ea;border-radius:9px;padding:0 8px;outline:none;color:#2f4a7a;background:#fff}
 .mbl{position:absolute;top:8px;text-align:center;font-size:.68rem;font-weight:700;color:#2f4a7a;line-height:1.25;letter-spacing:.06em;pointer-events:none}
 .mbl small{display:block;font-weight:500;letter-spacing:0;color:#7c90a6;font-size:.6rem}
 .mdv{position:absolute;top:36px;width:0;border-left:1.4px dashed #b8c0cf;opacity:.9}
@@ -313,13 +318,13 @@ function seedState() {
     { id: uid(), date: '2027-01-18', text: '2차 개강', kind: 'sched', seed: true },
     { id: uid(), date: '2027-02-14', text: '상황판단 밀린 거 따라잡기', kind: 'memo', seed: true },
   ];
-  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {}, mgoals: {}, tags: ['강의', '블랭크', '기출', '노트정리'] };
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {}, mgoals: {}, mmemo: {}, tags: ['강의', '블랭크', '기출', '노트정리'] };
 }
 function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
-  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
+  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
   Object.keys(x.wmemos).forEach(k => { const v = x.wmemos[k]; if (v && !x.mgoals['w:' + k]) x.mgoals['w:' + k] = [{ id: uid(), t: String(v).replace(/\n+/g, ' '), d: 0 }]; delete x.wmemos[k]; });
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
@@ -429,12 +434,12 @@ function mapSegs() {
 }
 function mapView() {
   const segs = mapSegs();
-  let tot = 0; const cum = segs.map(sg => { const c = tot; tot += sg[1] - sg[0] + 1; return c; });
+  let tot = 0; const cum = segs.map((sg, i) => { if (i) { const gd = sg[0] - segs[i - 1][1] - 1; tot += gd <= 7 ? 0 : Math.min(24, Math.round(Math.sqrt(gd) * 1.2)); } const c = tot; tot += sg[1] - sg[0] + 1; return c; });
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx; MSEGS = segs; MCUM = cum;
   const TL = 290, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = Math.max(5, (AV - 6) / tot); MPX = px;
-  MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
+  MTL = TL; const TW = TL + tot * px + 4, TOP = 44 + 20 * Math.max(1, ...Object.values(S.mmemo || {}).map(a => a.length));
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -454,8 +459,9 @@ function mapView() {
   cols.forEach((c, i) => {
     const x0 = TL + idx(c.a) * px, x1 = TL + (idx(c.b) + 1) * px;
     bg += `<div class="mbd ${c.ci % 2 ? 'b' : 'a'}" style="left:${x0}px;width:${x1 - x0}px;height:${H}px"></div>`;
+    if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" style="left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
     lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
-    const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (gap > 0) dv += `<div class="mdg" style="left:${x1}px">⋯${gap}일</div>`; }
+    const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
   });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
@@ -579,6 +585,15 @@ document.addEventListener('change', ev => {
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
+/* MAP: 달 메모 */
+document.addEventListener('click', ev => {
+  const a = ev.target.closest && ev.target.closest('[data-act=mmedit],[data-act=mmadd]'); if (!a || UI.v !== 'm') return; ev.stopPropagation();
+  const k = a.dataset.k, add = a.dataset.act === 'mmadd'; S.mmemo = S.mmemo || {}; const L = S.mmemo[k] = S.mmemo[k] || [];
+  const i = add ? L.length : +a.dataset.i, inp = document.createElement('input'); inp.className = 'mmi'; inp.value = add ? '' : L[i];
+  a.replaceWith(inp); inp.focus(); inp.select(); let done = false;
+  const fin = () => { if (done) return; done = true; const v = inp.value.trim(); if (v) L[i] = v; else if (!add) L.splice(i, 1); if (!L.length) delete S.mmemo[k]; save(); render(); };
+  inp.onblur = fin; inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { inp.value = add ? '' : L[i]; inp.blur(); } };
+}, true);
 /* MAP: 오른쪽 클릭 → 수정/삭제 */
 (function () {
   const close = () => { const m = document.getElementById('ctxm'); if (m) m.remove(); };
