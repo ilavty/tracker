@@ -4540,14 +4540,15 @@ function pl_unmergeItem() {
 #planner-view.rm-mode #rm-toggle{color:#222; font-weight:700}
 </style>
 <script>
+    var __rmWin = null;
     function toggleRoadmap(force) {
-        const pv = document.getElementById('planner-view'); if (!pv) return;
-        const on = (typeof force === 'boolean') ? force : !pv.classList.contains('rm-mode');
-        pv.classList.toggle('rm-mode', on);
-        try { sessionStorage.setItem('rmMode', on ? '1' : ''); } catch (e) {}
-        const t = document.getElementById('rm-toggle'); if (t) t.textContent = on ? 'PLANNER' : 'ROADMAP';
-        if (on) { const f = document.getElementById('roadmap-iframe'); if (f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src); }
-        setTimeout(rmAlign, 0); setTimeout(rmAlign, 400);
+        if (typeof force === 'boolean') return;   // 예전 인라인 방식 호출은 무시 (이제 새 창으로만 열림)
+        try {
+            if (__rmWin && !__rmWin.closed) { __rmWin.focus(); return; }
+            const w = Math.min(screen.availWidth || 1500, 1600), h = Math.min(screen.availHeight || 900, 960);
+            __rmWin = window.open('macro_plan.html', 'roadmap_win', 'popup=yes,width=' + w + ',height=' + h + ',left=' + Math.max(0, ((screen.availWidth || w) - w) / 2) + ',top=' + Math.max(0, ((screen.availHeight || h) - h) / 4) + ',resizable=yes,scrollbars=yes');
+            if (__rmWin) __rmWin.focus();
+        } catch (e) { window.open('macro_plan.html', '_blank'); }
     }
     // 안쪽 버튼 줄을 바깥 PLANNER 글자와 같은 높이에 맞춤 (화면 크기·브라우저가 달라도 어긋나지 않게 실제 위치로 계산)
     function rmAlign() {
