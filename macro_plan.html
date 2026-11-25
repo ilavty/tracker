@@ -705,9 +705,9 @@ document.addEventListener('paste', ev => {
 });
 function scrollTodayC() { const t = new Date(TODAY * DAY); setTimeout(() => jumpMonth(`cm-${t.getUTCFullYear()}-${p2(t.getUTCMonth() + 1)}`, false), 60); }
 
-/* ---- 왼쪽 월 이동 바: 보이는 영역은 실제 위치 그대로, 화면 밖 달·주는 위/아래에 촘촘히 ---- */
-const RAIL_OFF = 90, BAND = 36, STEP = 4;
-const RAIL = { items: [], up: [], dn: [], H: 0, rt: 0 };
+/* ---- 왼쪽 월 이동 바 (눈금자 + 돋보기) ---- */
+const RAIL_OFF = 90;
+const RAIL = { items: [], ys: [], ws: [], frozen: false, H: 0 };
 function monthEls() { return [...document.querySelectorAll('.cm[id^="cm-"]')]; }
 function railTop() { return Math.max(0, 132 - window.scrollY); }
 function railH() { return Math.max(200, window.innerHeight - railTop() - 8); }
@@ -715,62 +715,75 @@ function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
 function buildItems() {
   RAIL.items = [];
   monthEls().forEach(m => {
-    RAIL.items.push({ k: 'm', el: m.querySelector('.vmh'), jt: docTop(m), mo: m.dataset.mo, id: m.id });
-    m.querySelectorAll('.cwk').forEach(w => RAIL.items.push({ k: 'w', el: w, jt: docTop(w) }));
+    RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, id: m.id });
+    m.querySelectorAll('.cwk').forEach(w => RAIL.items.push({ k: 'w', top: docTop(w) }));
   });
+}
+function focusF() {
+  const it = RAIL.items, y = window.scrollY + RAIL_OFF;
+  if (!it.length) return 0;
+  if (y <= it[0].top) return 0;
+  for (let i = 0; i < it.length - 1; i++) if (y < it[i + 1].top) return i + (y - it[i].top) / Math.max(1, it[i + 1].top - it[i].top);
+  return it.length - 1;
+}
+function layoutRail(f) {
+  const n = RAIL.items.length, H = RAIL.H, ws = [], ys = [];
+  let tot = 0;
+  for (let i = 0; i < n; i++) { const d = (i - f) / 8, w = 1 + 6.5 * Math.exp(-d * d); ws.push(w); tot += w; }
+  let c = 0;
+  for (let i = 0; i < n; i++) { ys.push((c + ws[i] / 2) / tot * H); c += ws[i]; }
+  RAIL.ws = ws; RAIL.ys = ys;
+}
+function yAtF(f) {
+  const ys = RAIL.ys, i = Math.max(0, Math.min(ys.length - 2, Math.floor(f))), t = Math.max(0, Math.min(1, f - i));
+  return ys[i] + t * (ys[i + 1] - ys[i]);
 }
 function renderRail() {
   const r = $('#rail'); if (!r) return;
   if (UI.v !== 'c' || !monthEls().length) { r.classList.add('hide'); return; }
   r.classList.remove('hide');
+  RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
   { const hv = document.querySelector('.vmh'); if (hv) document.documentElement.style.setProperty('--ext', Math.max(0, hv.getBoundingClientRect().left - 16) + 'px'); }
   buildItems(); drawRail();
 }
 function drawRail() {
-  const r = $('#rail'); if (!r || r.classList.contains('hide')) return;
-  const rt = railTop(), H = railH(); RAIL.rt = rt; RAIL.H = H;
-  r.style.top = rt + 'px'; r.style.height = H + 'px';
-  const Z0 = BAND, Z1 = H - BAND, it = RAIL.items;
-  const ys = it.map(x => (x.k === 'm' ? x.el.getBoundingClientRect().bottom : x.el.getBoundingClientRect().top) - rt);
-  const pos = new Array(it.length), up = [], dn = [];
-  let ku = 0, kd = 0;
-  for (let i = it.length - 1; i >= 0; i--) if (ys[i] < Z0) { pos[i] = Math.max(3, Z0 - 4 - STEP * ku++); up.push(i); }
-  for (let i = 0; i < it.length; i++) if (ys[i] > Z1) { pos[i] = Math.min(H - 3, Z1 + 4 + STEP * kd++); dn.push(i); }
-  for (let i = 0; i < it.length; i++) if (pos[i] == null) pos[i] = ys[i];
-  RAIL.up = up; RAIL.dn = dn; RAIL.pos = pos;
-  let html = '<div class="rl"></div>', lastY = -99, curMo = null;
-  it.forEach((x, i) => { if (x.k === 'm' && ys[i] <= RAIL_OFF - rt + 60 && (curMo == null || ys[i] > ys[curMo])) curMo = i; });
+  const r = $('#rail'); if (!r || RAIL.frozen) return;
+  RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
+  const f = focusF(); layoutRail(f);
+  const it = RAIL.items; let html = '<div class="rl"></div>', lastY = -99, curMo = null;
+  it.forEach((x, i) => { if (x.k === 'm' && x.top - window.scrollY <= RAIL_OFF) curMo = i; });
+  const cy = curMo != null ? RAIL.ys[curMo] : -99;
   it.forEach((x, i) => {
-    const y = Math.round(pos[i]), band = ys[i] < Z0 || ys[i] > Z1;
-    const len = x.k === 'm' ? (band ? 14 : 8) : (band ? 6 : 8);
-    html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${y}px;width:${len}px"></div>`;
-    if (x.k === 'm' && band && Math.abs(y - lastY) >= 13) { lastY = y; html += `<div class="lb" style="top:${y}px;left:${10 + len + 6}px;font-size:10px">${x.mo}월</div>`; }
+    const y = RAIL.ys[i], w = RAIL.ws[i], g = (w - 1) / 6.5;
+    const len = x.k === 'm' ? 12 + 8 * g : 5 + 5 * g, ty = Math.round(y);
+    html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${ty}px;width:${len.toFixed(0)}px"></div>`;
+    if (x.k === 'm') {
+      const cur = i === curMo, fs = cur ? 18 : 10;
+      const show = !cur && (Math.abs(y - cy) >= 24 && y - lastY >= 14);
+      if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo}월</div>`; }
+    }
   });
-  const ty = Math.max(Z0, Math.min(Z1, RAIL_OFF - rt));
-  html += `<div class="th" id="rth" style="top:${ty}px"></div>`;
+  document.querySelectorAll('.mlx').forEach(l => l.classList.toggle('on', curMo != null && RAIL.items[curMo].id === l.dataset.ml));
+  html += `<div class="th" id="rth" style="top:${yAtF(f).toFixed(1)}px"></div>`;
   r.innerHTML = html;
-  document.querySelectorAll('.mlx').forEach(l => l.classList.toggle('on', curMo != null && it[curMo].id === l.dataset.ml));
 }
 (function () {
   const r = $('#rail');
-  let G = null;
-  const yOf = ev => Math.max(0, Math.min(RAIL.H, ev.clientY - r.getBoundingClientRect().top));
-  const nearest = (list, y) => { let best = null, bd = 1e9; list.forEach(i => { const d = Math.abs(RAIL.pos[i] - y); if (d < bd) { bd = d; best = i; } }); return best; };
   const seek = ev => {
-    const y = yOf(ev);
-    if (y < BAND || y > RAIL.H - BAND) {
-      const i = nearest(y < BAND ? RAIL.up : RAIL.dn, y);
-      if (i != null) window.scrollTo({ top: RAIL.items[i].jt - 4, behavior: 'auto' });
-      G.s0 = window.scrollY; G.y0 = y;
-    } else window.scrollTo({ top: Math.max(0, G.s0 + (y - G.y0)), behavior: 'auto' });
+    const box = r.getBoundingClientRect(), y = Math.max(0, Math.min(box.height, ev.clientY - box.top));
+    const ys = RAIL.ys, it = RAIL.items; if (!ys.length) return;
+    let i = 0; while (i < ys.length - 2 && y > ys[i + 1]) i++;
+    const t = Math.max(0, Math.min(1, (y - ys[i]) / Math.max(1, ys[i + 1] - ys[i])));
+    window.scrollTo({ top: it[i].top + t * (it[i + 1].top - it[i].top) - RAIL_OFF, behavior: 'auto' });
+    const th = $('#rth'); if (th) th.style.top = y + 'px';
   };
   r.addEventListener('selectstart', e => e.preventDefault());
-  r.addEventListener('pointerdown', ev => { ev.preventDefault(); document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; r.setPointerCapture(ev.pointerId); r.style.cursor = 'grabbing'; G = { s0: window.scrollY, y0: yOf(ev) }; seek(ev); });
-  r.addEventListener('pointermove', ev => { if (G) seek(ev); });
-  const end = () => { if (!G) return; G = null; r.style.cursor = 'grab'; document.body.style.userSelect = ''; document.body.style.webkitUserSelect = ''; };
+  r.addEventListener('pointerdown', ev => { ev.preventDefault(); document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; RAIL.frozen = true; r.setPointerCapture(ev.pointerId); r.style.cursor = 'grabbing'; seek(ev); });
+  r.addEventListener('pointermove', ev => { if (RAIL.frozen) seek(ev); });
+  const end = () => { if (!RAIL.frozen) return; RAIL.frozen = false; r.style.cursor = 'grab'; document.body.style.userSelect = ''; document.body.style.webkitUserSelect = ''; drawRail(); };
   r.addEventListener('pointerup', end); r.addEventListener('pointercancel', end);
   let tk = false;
-  window.addEventListener('scroll', () => { if (tk) return; tk = true; requestAnimationFrame(() => { tk = false; drawRail(); }); }, { passive: true });
+  window.addEventListener('scroll', () => { if (tk || RAIL.frozen) return; tk = true; requestAnimationFrame(() => { tk = false; drawRail(); }); }, { passive: true });
   window.addEventListener('resize', renderRail);
   window.addEventListener('load', renderRail);
 })();
