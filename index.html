@@ -4545,7 +4545,8 @@ function pl_unmergeItem() {
         if (typeof force === 'boolean') return;   // 예전 인라인 방식 호출은 무시 (이제 새 창으로만 열림)
         try {
             if (__rmWin && !__rmWin.closed) { __rmWin.focus(); return; }
-            const w = Math.min(screen.availWidth || 1500, 1600), h = Math.min(screen.availHeight || 900, 960);
+            let w = Math.min(Math.round((screen.availWidth || 1500) * 0.95), 1600), h = Math.min(Math.round(w / 2.28), (screen.availHeight || 900));
+            try { const sv = JSON.parse(localStorage.getItem('rm_win_v1') || 'null'); if (sv && sv.w > 600 && sv.h > 300) { w = Math.min(sv.w, screen.availWidth || sv.w); h = Math.min(sv.h, screen.availHeight || sv.h); } } catch (e) { }
             __rmWin = window.open('macro_plan.html', 'roadmap_win', 'popup=yes,width=' + w + ',height=' + h + ',left=' + Math.max(0, ((screen.availWidth || w) - w) / 2) + ',top=' + Math.max(0, ((screen.availHeight || h) - h) / 4) + ',resizable=yes,scrollbars=yes');
             if (__rmWin) __rmWin.focus();
         } catch (e) { window.open('macro_plan.html', '_blank'); }

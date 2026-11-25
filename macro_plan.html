@@ -439,7 +439,7 @@ function render() {
 function renderTop() {
   $('#top').innerHTML = statsHtml() + `
     <span class="sp"></span>
-    <span class="zm"><button data-act="zstep" data-d="-1">−</button><input type="range" data-f="zoom" min="30" max="300" step="5" value="${Math.round((UI.zm || 1) * 100)}"><button data-act="zstep" data-d="1">+</button><span class="zv" data-act="zreset" title="100%로">${Math.round((UI.zm || 1) * 100)}%</span></span>
+    <span class="zm"><button data-act="zstep" data-d="-1">−</button><input type="range" data-f="zoom" min="30" max="300" step="5" value="${Math.round((UI.zm || ZDEF) * 100)}"><button data-act="zstep" data-d="1">+</button><span class="zv" data-act="zreset" title="기본 크기로">${Math.round((UI.zm || ZDEF) * 100)}%</span></span>
     <button class="pill" data-act="addblock">+ 블록</button>
     ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
@@ -460,6 +460,7 @@ function statsHtml() {
 
 
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
+const ZDEF = 1.1;
 let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236, MIDXE = null, MPOSA = [], MKEY = null, MDRAG = null;
 function mapSegs() {
   const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
@@ -481,7 +482,7 @@ function mapView() {
   const idxE = d => POS.has(d) ? POS.get(d) + wt(d) : idx(d);
   MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
   const TL = 236, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
-  const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || 1)); MPX = px;
+  const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || ZDEF)); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
@@ -656,6 +657,8 @@ document.addEventListener('click', ev => {
   if (t.closest('.mside,.mb,.mpl,#ctxm,#stpop,.mbox,.modal,[data-act]')) return;
   MSEL = null; render();
 });
+/* 팝업 창 크기 기억 */
+(function () { if (!window.opener) return; const sv = () => { try { localStorage.setItem('rm_win_v1', JSON.stringify({ w: window.outerWidth, h: window.outerHeight })); } catch (e) { } }; window.addEventListener('resize', () => { clearTimeout(sv.t); sv.t = setTimeout(sv, 300); }); window.addEventListener('beforeunload', sv); })();
 /* MAP: 확대/축소 */
 function setZoom(v) {
   v = Math.max(0.3, Math.min(3, Math.round(v * 100) / 100)); UI.zm = v; saveUI();
@@ -664,8 +667,8 @@ function setZoom(v) {
   const inp = $('.zm input'); if (inp) inp.value = Math.round(v * 100); const zv = $('.zm .zv'); if (zv) zv.textContent = Math.round(v * 100) + '%';
 }
 document.addEventListener('input', ev => { const f = ev.target.closest && ev.target.closest('.zm input'); if (f && UI.v === 'm') setZoom(+f.value / 100); });
-document.addEventListener('click', ev => { const a = ev.target.closest && ev.target.closest('[data-act=zstep],[data-act=zreset]'); if (!a) return; if (a.dataset.act === 'zreset') setZoom(1); else setZoom((UI.zm || 1) + a.dataset.d * 0.1); });
-document.addEventListener('wheel', ev => { if (!(ev.ctrlKey || ev.metaKey) || UI.v !== 'm') return; ev.preventDefault(); setZoom((UI.zm || 1) * (ev.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
+document.addEventListener('click', ev => { const a = ev.target.closest && ev.target.closest('[data-act=zstep],[data-act=zreset]'); if (!a) return; if (a.dataset.act === 'zreset') setZoom(ZDEF); else setZoom((UI.zm || ZDEF) + a.dataset.d * 0.1); });
+document.addEventListener('wheel', ev => { if (!(ev.ctrlKey || ev.metaKey) || UI.v !== 'm') return; ev.preventDefault(); setZoom((UI.zm || ZDEF) * (ev.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
 /* MAP: 점선 끌어서 달/공백 폭 조절 (더블클릭: 원래대로) */
 (function () {
   let d = null, raf = 0;
