@@ -176,7 +176,7 @@ button{cursor:pointer;border:none;background:none}
 /* ---- MAP(마인드맵 + 날짜) ---- */
 .mw{display:flex;gap:16px;align-items:flex-start;max-width:1500px;margin:0 auto}
 .mp{flex:1;min-width:0;padding:6px 4px 60px;overflow-x:auto;scrollbar-width:none}
-.mside{flex:none;width:280px;position:sticky;top:12px;margin-top:6px;background:#fff;border:1.5px solid #2f4a7a;border-radius:14px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px}
+.mside{width:270px;position:absolute;z-index:30;box-shadow:0 12px 34px rgba(47,74,122,.2);background:#fff;border:1.5px solid #2f4a7a;border-radius:14px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px}
 .mside h4{margin:0;font-size:.8rem;letter-spacing:.06em;color:#2f4a7a;display:flex;justify-content:space-between;align-items:center}
 .mside label{font-size:.66rem;font-weight:700;color:#7c90a6;display:block;margin-bottom:3px}
 .mside input,.mside select{width:100%;box-sizing:border-box;border:1.3px solid #d3d9e4;border-radius:9px;padding:7px 9px;font:inherit;font-size:.8rem;color:#23272e;background:#fff}
@@ -431,7 +431,7 @@ function mapView() {
   let tot = 0; const cum = segs.map(sg => { const c = tot; tot += sg[1] - sg[0] + 1; return c; });
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx; MSEGS = segs; MCUM = cum;
-  const TL = 290, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8 - (MSEL ? 296 : 0), 1500) - TL);
+  const TL = 290, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = Math.max(5, (AV - 6) / tot); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
@@ -483,21 +483,30 @@ function mapView() {
   gys.forEach(gc => { svg += `<path d="${link(NX.r + NW.r, rc + 18, NX.g, gc + 18)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`; });
   svg += '</svg>';
   // 행 안내선 + 블록
-  let bars = '';
+  let bars = '', selPos = null;
   rows.forEach(r => {
     bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${TW - TL}px;top:${mids(r) + 18}px"></div>`;
     r.bs.forEach(b => {
       const x = TL + idx(pd(b.s)) * px, w = Math.max(14, (idx(pd(b.e)) + 1 - idx(pd(b.s))) * px - 2), yy = r.y + 8 + b._l * (RH + LG);
+      if (MSEL === b.id) selPos = { x, y: yy, w };
       bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
     });
   });
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
-  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${H}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${nodes}</div></div>${sb ? mapSide(sb) : ''}</div>`;
+  let pop = '', HH = H;
+  if (sb && selPos) {
+    const PW = 270, PH = 520;
+    let left = selPos.x + selPos.w + 10, top = selPos.y - 8;
+    if (left + PW > TW) { left = selPos.x - PW - 10; }
+    if (left < 4) { left = Math.max(4, Math.min(selPos.x, TW - PW - 4)); top = selPos.y + RH + 10; }
+    HH = Math.max(H, top + PH);
+    pop = mapSide(sb, left, top);
+  }
+  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${nodes}${pop}</div></div></div>`;
 }
-
-function mapSide(b) {
+function mapSide(b, left, top) {
   const imp = [[2, '필수'], [1, '보통'], [0, '여유']];
-  return `<div class="mside" data-id="${b.id}">
+  return `<div class="mside" data-id="${b.id}" style="left:${left}px;top:${top}px">
     <h4>BLOCK<span class="x" data-act="mclose">✕</span></h4>
     <div><label>이름</label><input data-f="name" value="${esc(b.name)}"></div>
     <div><label>과목</label><select data-f="subj">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select></div>
