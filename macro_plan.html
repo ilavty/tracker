@@ -542,15 +542,18 @@ function mapView() {
       bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${bc};background:${rgba(r.c, .22)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div><div class="mpl" data-act="mnext" data-id="${b.id}" style="left:${x + w + 4}px;top:${yy + 3}px" title="아래에 블록 추가">+</div>`;
     });
   });
-  let conn = ''; const cb = {}; S.blocks.forEach(b => { if (b.par && BPOS[b.par] && BPOS[b.id]) (cb[b.par] = cb[b.par] || []).push(b); });
+  let conn = '', csvg = ''; const cb = {}; S.blocks.forEach(b => { if (b.par && BPOS[b.par] && BPOS[b.id]) (cb[b.par] = cb[b.par] || []).push(b); });
   Object.keys(cb).forEach(pid => {
-    const P = BPOS[pid], C = cb[pid].sort((a, b) => BPOS[a.id].y - BPOS[b.id].y), n = C.length, ln = 'position:absolute;pointer-events:none;border-color:rgba(47,74,122,.55);';
+    const P = BPOS[pid], A = cb[pid].filter(c => c.after), C = cb[pid].filter(c => !c.after).sort((a, b) => BPOS[a.id].y - BPOS[b.id].y), n = C.length, ln = 'position:absolute;pointer-events:none;border-color:rgba(47,74,122,.55);';
+    A.forEach(c => { const q = BPOS[c.id]; csvg += `<path d="${link(P.x + P.w, P.y + 13, q.x, q.y + 13)}" fill="none" stroke="#2f4a7a" stroke-opacity=".6" stroke-width="1.5"/>`; });
+    if (!n) return;
     if (n === 1) { const c = BPOS[C[0].id], x = Math.min(P.x + P.w - 8, Math.max(P.x, c.x) + 12); conn += `<div style="${ln}left:${x}px;top:${P.y + 25}px;height:${c.y - P.y - 25}px;border-left:1.6px solid"></div>`; return; }
     const xs = Math.min(P.x, ...C.map(c => BPOS[c.id].x)) - 10, last = BPOS[C[n - 1].id];
     conn += `<div style="${ln}left:${xs}px;top:${P.y + 13}px;height:${last.y + 13 - P.y - 13}px;border-left:1.6px solid"></div>`;
     conn += `<div style="${ln}left:${xs}px;top:${P.y + 13}px;width:${P.x - xs}px;border-top:1.6px solid"></div>`;
     C.forEach(c => { const q = BPOS[c.id]; conn += `<div style="${ln}left:${xs}px;top:${q.y + 13}px;width:${q.x - xs}px;border-top:1.6px solid"></div>`; });
   });
+  if (csvg) conn += `<svg style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible" width="${TW}" height="${H}">${csvg}</svg>`;
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
   let pop = '', HH = H;
   if (sb && selPos) {
@@ -584,7 +587,7 @@ document.addEventListener('change', ev => {
   if (k === 'newtag') { const t = f.value.trim(); if (!t) return; S.tags = S.tags || []; if (!S.tags.includes(t)) S.tags.push(t); b.tags = b.tags || []; if (!b.tags.includes(t)) b.tags.push(t); }
   else if (k === 'name') b.name = f.value.trim() || b.name;
   else if (k === 'subj') b.subj = f.value;
-  else if (k === 's' || k === 'e') { if (!f.value) return; b[k] = f.value; if (k === 's' && b.base) b.base[0] = f.value; if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } }
+  else if (k === 's' || k === 'e') { if (!f.value) return; const s0 = pd(b.s), e0 = pd(b.e); b[k] = f.value; if (k === 's' && b.base) b.base[0] = f.value; if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } moveKids(b, k === 's' ? 0 : 0, pd(b.e) - e0); }
   else if (k === 'done') { setDone(b, Math.max(0, Math.min(100, +f.value || 0))); }
   save(); render();
 });
@@ -627,7 +630,7 @@ document.addEventListener('change', ev => {
     if (!dr) return; const { bar, b, z, mv, x0 } = dr; dr = null;
     if (!mv) { MSEL = MSEL === b.id ? null : b.id; render(); return; }
     const dd = Math.round((ev.clientX - x0) / MPX);
-    if (dd) { if (z) b.e = fd(Math.max(pd(b.s), pd(b.e) + dd)); else { b.s = fd(pd(b.s) + dd); b.e = fd(pd(b.e) + dd); if (b.base) b.base = [fd(pd(b.base[0]) + dd), fd(pd(b.base[1]) + dd)]; } save(); }
+    if (dd) { if (z) { const e0 = pd(b.e); b.e = fd(Math.max(pd(b.s), e0 + dd)); moveKids(b, 0, pd(b.e) - e0); } else { moveKids(b, dd, dd); b.s = fd(pd(b.s) + dd); b.e = fd(pd(b.e) + dd); if (b.base) b.base = [fd(pd(b.base[0]) + dd), fd(pd(b.base[1]) + dd)]; } save(); }
     render();
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
@@ -675,9 +678,12 @@ document.addEventListener('click', ev => {
   const fin = () => { if (done) return; done = true; const v = inp.value.trim(); if (v) L[i] = v; else if (!add) L.splice(i, 1); if (!L.length) delete S.mmemo[k]; save(); render(); };
   inp.onblur = fin; inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { inp.value = add ? '' : L[i]; inp.blur(); } };
 }, true);
-function addBranch(b) {
+function moveKids(b, dS, dE) {
+  S.blocks.filter(c => c.par === b.id).forEach(c => { const d = c.after ? dE : dS; if (!d) return; c.s = fd(pd(c.s) + d); c.e = fd(pd(c.e) + d); if (c.base) c.base = [fd(pd(c.base[0]) + d), fd(pd(c.base[1]) + d)]; moveKids(c, d, d); });
+}
+function addBranch(b, after = true) {
   const root = b.par && S.blocks.find(x => x.id === b.par) ? S.blocks.find(x => x.id === b.par) : b;
-  const nb = { id: uid(), subj: root.subj, name: '새 블록', s: root.s, e: fd(Math.min(pd(root.e), pd(root.s) + 6)), inten: 60, imp: 1, done: 0, log: [], base: null, par: root.id };
+  const s0 = after ? pd(root.e) + 1 : pd(root.s), nb = { id: uid(), subj: root.subj, name: '새 블록', s: fd(s0), e: fd(after ? s0 + 6 : Math.min(pd(root.e), s0 + 6)), inten: 60, imp: 1, done: 0, log: [], base: null, par: root.id, after };
   nb.base = [nb.s, nb.e]; S.blocks.push(nb); save(); MSEL = nb.id; render();
   const inp = document.querySelector('.mside [data-f="name"]'); if (inp) { inp.focus(); inp.select(); }
 }
@@ -694,11 +700,12 @@ function addBranch(b) {
     }
     if (!bar || UI.v !== 'm') return;
     ev.preventDefault(); const id = bar.dataset.id;
-    const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div data-c="e">수정</div><div data-c="b">분기 추가</div><div data-c="d">삭제</div>';
+    const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div data-c="e">수정</div><div data-c="b">분기 추가</div><div data-c="u">아래에 추가</div><div data-c="d">삭제</div>';
     m.style.left = Math.min(ev.clientX, innerWidth - 110) + 'px'; m.style.top = ev.clientY + 'px'; document.body.appendChild(m);
     m.onclick = e => { const c = e.target.dataset.c; close(); const b = S.blocks.find(x => x.id === id); if (!b) return;
       if (c === 'e') { MSEL = id; render(); }
       else if (c === 'b') addBranch(b);
+      else if (c === 'u') addBranch(b, false);
       else if (c === 'd' && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.blocks.forEach(x => { if (x.par === b.id) x.par = null; }); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } };
   });
   document.addEventListener('pointerdown', ev => { if (!ev.target.closest('#ctxm')) close(); }, true);
@@ -1022,7 +1029,7 @@ document.addEventListener('click', ev => {
     const act = a.dataset.act;
     if (act === 'view') { UI.v = a.dataset.v; saveUI(); render(); if (UI.v === 'c') scrollTodayC(); else window.scrollTo(0, 0); }
     else if (act === 'mclose') { MSEL = null; render(); }
-    else if (act === 'mext') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.e = fd(Math.max(pd(b.s), pd(b.e) + +a.dataset.x)); save(); render(); } }
+    else if (act === 'mext') { const b = S.blocks.find(x => x.id === MSEL); if (b) { const e0 = pd(b.e); b.e = fd(Math.max(pd(b.s), e0 + +a.dataset.x)); moveKids(b, 0, pd(b.e) - e0); save(); render(); } }
     else if (act === 'mtagdel') { const t = a.dataset.t; if (confirm('태그 "' + t + '"를 목록에서 지울까?')) { S.tags = (S.tags || []).filter(x => x !== t); S.blocks.forEach(b => { b.tags = (b.tags || []).filter(x => x !== t); }); save(); render(); } }
     else if (act === 'mtag') { const b = S.blocks.find(x => x.id === MSEL); if (b) { const t = a.dataset.t; b.tags = b.tags || []; b.tags = b.tags.includes(t) ? b.tags.filter(x => x !== t) : [...b.tags, t]; save(); render(); } }
     else if (act === 'mreset') { const b = S.blocks.find(x => x.id === MSEL); if (b && b.base) { b.e = b.base[1]; save(); render(); } }
