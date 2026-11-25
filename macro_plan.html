@@ -214,6 +214,8 @@ button{cursor:pointer;border:none;background:none}
 .mdh:hover{background:rgba(74,163,234,.12)}
 .mgp{position:absolute;top:0;height:60px;z-index:4;cursor:pointer}
 .mgp:hover{background:rgba(74,163,234,.08)}
+.gmo{position:absolute;box-sizing:border-box;background:#eeebe6;border-radius:12px;padding:6px 13px;font-size:.78rem;line-height:19px;color:#3c4a63;white-space:pre-wrap;word-break:break-all;cursor:text;z-index:2}
+.gmo-i{position:absolute;box-sizing:border-box;background:#e6e2dc;border:0;outline:0;border-radius:12px;padding:6px 13px;font:inherit;font-family:inherit;font-size:.78rem;line-height:19px;color:#3c4a63;resize:none;overflow:hidden;z-index:3}
 .mmw{position:absolute;top:28px;display:flex;flex-direction:column;gap:2px;z-index:4}
 .mm{height:18px;line-height:16px;box-sizing:border-box;padding:0 8px;border-radius:9px;background:#fff;border:1px solid #b8c0cf;font-size:.62rem;font-weight:600;color:#2f4a7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .mm.add{width:20px;padding:0;text-align:center;border-style:dashed;color:#9aa6b8;opacity:0}
@@ -339,7 +341,7 @@ function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
-  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.months = Array.isArray(x.months) ? x.months : []; x.mw = x.mw || {}; x.gw = x.gw || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
+  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.months = Array.isArray(x.months) ? x.months : []; x.gmemo = x.gmemo || {}; x.mw = x.mw || {}; x.gw = x.gw || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
   Object.keys(x.wmemos).forEach(k => { const v = x.wmemos[k]; if (v && !x.mgoals['w:' + k]) x.mgoals['w:' + k] = [{ id: uid(), t: String(v).replace(/\n+/g, ' '), d: 0 }]; delete x.wmemos[k]; });
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
@@ -470,9 +472,11 @@ function mapView() {
     const gb = S.blocks.filter(b => b.subj === g); if (gb.length) rows.push({ g, id: g, c: ROW[g].c, label: '전체', bs: gb, wide: true });
   });
   let y = TOP; const RH = 26, LG = 5;
+  const GM = {};
   rows.forEach(r => {
     const lanes = []; r.bs.sort((a, b) => pd(a.s) - pd(b.s)).forEach(b => { let k = lanes.findIndex(e => e < pd(b.s)); if (k < 0) { k = lanes.length; lanes.push(0); } lanes[k] = pd(b.e); b._l = k; });
-    r.n = Math.max(1, lanes.length); r.h = r.n * (RH + LG) + 16; r.y = y; y += r.h + (rows[rows.indexOf(r) + 1] && rows[rows.indexOf(r) + 1].g !== r.g ? 16 : 0);
+    r.n = Math.max(1, lanes.length); r.h = r.n * (RH + LG) + 16; r.y = y; y += r.h; const nxr = rows[rows.indexOf(r) + 1];
+    if (!nxr || nxr.g !== r.g) { const gt = (S.gmemo || {})[r.g] || '', cpl = Math.max(10, Math.floor((TW - TL - 28) / 12)), ln = gt ? gt.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / cpl)), 0) : 0, mh = gt ? ln * 19 + 16 : 26; GM[r.g] = { y: y + 2, h: mh, t: gt }; y += mh + 10 + (nxr ? 16 : 0); }
   });
   const MY = y + 16, MN = Math.max(1, ...Object.values(S.mmemo || {}).map(a => a.length)), H = MY + 20 * MN + 14;
   // 월 띠 (생긴 날짜만, 번갈아 색)
@@ -538,7 +542,7 @@ function mapView() {
     HH = Math.max(H, top + PH);
     pop = mapSide(sb, left, top);
   }
-  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${nodes}${pop}</div></div></div>`;
+  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${Object.keys(GM).map(g => `<div class="gmo" data-act="gmedit" data-g="${g}" style="left:${TL}px;top:${GM[g].y}px;width:${TW - TL - 8}px;min-height:${GM[g].h}px">${esc(GM[g].t)}</div>`).join('')}${nodes}${pop}</div></div></div>`;
 }
 function mapSide(b, left, top) {
   const imp = [[2, '필수'], [1, '보통'], [0, '여유']];
@@ -633,6 +637,16 @@ document.addEventListener('click', ev => {
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
   document.addEventListener('dblclick', ev => { const h = ev.target.closest && ev.target.closest('.mdh'); if (!h) return; (h.classList.contains('gp') ? S.gw : S.mw) && delete (h.classList.contains('gp') ? S.gw : S.mw)[h.dataset.k]; save(); render(); });
 })();
+/* MAP: 1차/2차 아래 자유 메모 */
+document.addEventListener('click', ev => {
+  const a = ev.target.closest && ev.target.closest('[data-act=gmedit]'); if (!a || UI.v !== 'm') return; ev.stopPropagation();
+  const g = a.dataset.g, t = document.createElement('textarea'); t.className = 'gmo-i'; t.value = (S.gmemo || {})[g] || '';
+  t.style.cssText = `left:${a.style.left};top:${a.style.top};width:${a.style.width};height:${Math.max(a.offsetHeight, 26)}px`;
+  a.parentNode.appendChild(t); a.style.visibility = 'hidden'; t.focus(); let done = false;
+  const grow = () => { t.style.height = 'auto'; t.style.height = Math.max(26, t.scrollHeight) + 'px'; }; t.oninput = grow;
+  t.onblur = () => { if (done) return; done = true; S.gmemo = S.gmemo || {}; const v = t.value.replace(/\s+$/, ''); if (v) S.gmemo[g] = v; else delete S.gmemo[g]; save(); render(); };
+  t.onkeydown = e => { if (e.key === 'Escape') { t.value = (S.gmemo || {})[g] || ''; t.blur(); } };
+}, true);
 /* MAP: 달 메모 */
 document.addEventListener('click', ev => {
   const a = ev.target.closest && ev.target.closest('[data-act=mmedit],[data-act=mmadd]'); if (!a || UI.v !== 'm') return; ev.stopPropagation();
