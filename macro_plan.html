@@ -224,6 +224,11 @@ button{cursor:pointer;border:none;background:none}
 .mb .bn{flex:0 1 auto;min-width:0}
 .mb .bt{flex:none;margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid rgba(47,74,122,.35);font-size:.58rem;font-weight:600;color:#2f4a7a}
 .mb .bd{flex:none;margin-left:8px;font-weight:500;font-size:.62rem;color:#6b7a94}
+.mpl{position:absolute;width:20px;height:20px;border-radius:50%;border:1.3px solid #2f4a7a;background:#fff;color:#2f4a7a;font-size:.8rem;font-weight:700;line-height:17px;text-align:center;cursor:pointer;opacity:0;z-index:3}
+.mb:hover+.mpl,.mpl:hover,.mb.sel+.mpl{opacity:1}
+#ctxm{position:fixed;z-index:9999;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.14);padding:4px;min-width:90px}
+#ctxm div{padding:6px 12px;font-size:.8rem;font-weight:600;border-radius:7px;cursor:pointer}
+#ctxm div:hover{background:var(--soft)}
 .mb.sel{box-shadow:0 0 0 3px rgba(74,163,234,.4)}
 .mb .rz2{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
 .mb .med{position:relative;z-index:1;margin-left:auto;padding-left:6px;font-size:.62rem;color:#9aa6b8;opacity:0}
@@ -232,7 +237,6 @@ button{cursor:pointer;border:none;background:none}
 </head>
 <body>
 <div class="top" id="top"></div>
-<div class="stats" id="stats"></div>
 <div id="rail" class="hide"></div>
 <div id="root"></div>
 <div id="modal"></div>
@@ -387,24 +391,24 @@ function phaseGrad(p, alpha) {
 let CTX = {};
 function render() {
   const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY;
-  renderTop(); renderStats();
+  renderTop();
   $('#root').innerHTML = UI.v === 'g' ? monthView() : UI.v === 'm' ? mapView() : calView();
   const mv = $('.mv'); if (mv) mv.scrollLeft = sx;
   window.scrollTo(0, sy);
   renderRail();
 }
 function renderTop() {
-  $('#top').innerHTML = `
+  $('#top').innerHTML = statsHtml() + `
     <span class="sp"></span>
     <button class="pill" data-act="addblock">+ 블록</button>
     ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
-function renderStats() {
+function statsHtml() {
   const must = S.blocks.filter(b => b.imp === 2), mustDone = must.filter(b => b.done >= 100).length;
   const late = S.blocks.filter(b => b.done < 100 && TODAY > pd(b.e)).length;
   const slipped = S.blocks.filter(b => meta(b).d > 0).length, ahead = S.blocks.filter(b => meta(b).d < 0).length;
   const dd = (n) => { const x = n - TODAY; return x > 0 ? `D-${x}` : x === 0 ? 'D-DAY' : `D+${-x}`; };
-  $('#stats').innerHTML = `
+  return `
     <span class="st dd" data-act="exams">1차 ${md(pd(S.exams.p))} <b>${dd(pd(S.exams.p))}</b></span>
     <span class="st dd" data-act="exams">2차 ${md(pd(S.exams.s))} <b>${dd(pd(S.exams.s))}</b></span>
     <span class="st">필수 <b>${mustDone}</b> / ${must.length} 완료</span>
@@ -491,7 +495,7 @@ function mapView() {
       let ext = '', early = '';
       if (pd(b.e) > be0) { const ex0 = TL + (idx(be0) + 1) * px - x; ext = `<div class="ex" style="left:${Math.max(0, ex0)}px;background:${rgba(r.c, .5)}"></div>`; }
       if (pd(b.e) < be0) { const ex1 = TL + idx(pd(b.e) + 1) * px, ew = (idx(be0) + 1 - idx(pd(b.e) + 1)) * px - 2; if (ew > 2) early = `<div class="mgh2" style="left:${ex1}px;top:${yy}px;width:${ew}px;border-color:${bc}"></div>`; }
-      bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${bc};background:${rgba(r.c, .22)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
+      bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${bc};background:${rgba(r.c, .22)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div><div class="mpl" data-act="mnext" data-id="${b.id}" style="left:${x + w + 4}px;top:${yy + 3}px" title="이어서 블록 추가">+</div>`;
     });
   });
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
@@ -574,6 +578,20 @@ document.addEventListener('change', ev => {
     render();
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+})();
+/* MAP: 오른쪽 클릭 → 수정/삭제 */
+(function () {
+  const close = () => { const m = document.getElementById('ctxm'); if (m) m.remove(); };
+  document.addEventListener('contextmenu', ev => {
+    const bar = ev.target.closest && ev.target.closest('.mb'); close(); if (!bar || UI.v !== 'm') return;
+    ev.preventDefault(); const id = bar.dataset.id;
+    const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div data-c="e">수정</div><div data-c="d">삭제</div>';
+    m.style.left = Math.min(ev.clientX, innerWidth - 110) + 'px'; m.style.top = ev.clientY + 'px'; document.body.appendChild(m);
+    m.onclick = e => { const c = e.target.dataset.c; close(); const b = S.blocks.find(x => x.id === id); if (!b) return;
+      if (c === 'e') { MSEL = id; render(); }
+      else if (c === 'd' && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } };
+  });
+  document.addEventListener('pointerdown', ev => { if (!ev.target.closest('#ctxm')) close(); }, true);
 })();
 /* ---- 월 뷰 ---- */
 function monthView() {
@@ -900,6 +918,7 @@ document.addEventListener('click', ev => {
     else if (act === 'mreset') { const b = S.blocks.find(x => x.id === MSEL); if (b && b.base) { b.e = b.base[1]; save(); render(); } }
     else if (act === 'mimp') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.imp = +a.dataset.v; save(); render(); } }
     else if (act === 'mdel') { const b = S.blocks.find(x => x.id === MSEL); if (b && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } }
+    else if (act === 'mnext') { const b = S.blocks.find(x => x.id === a.dataset.id); if (b) openBlock(null, { subj: b.subj, s: fd(pd(b.e) + 1), e: fd(pd(b.e) + 14) }); }
     else if (act === 'madd') { const sj = a.dataset.subj, bl = S.blocks.filter(b => b.subj === sj), st = bl.length ? Math.max(...bl.map(b => pd(b.e))) + 1 : TODAY; openBlock(null, { subj: sj, s: fd(st), e: fd(st + 13) }); }
     else if (act === 'medit') { MSEL = a.dataset.id; render(); }
     else if (act === 'zoom') { UI.z = Math.min(2, Math.max(0, UI.z + +a.dataset.d)); saveUI(); render(); }
