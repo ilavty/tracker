@@ -68,10 +68,10 @@ button{cursor:pointer;border:none;background:none}
 .vy{font-size:.78rem;color:var(--sub);font-weight:600}
 .vpill{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
 .cv{max-width:1320px;margin:0 auto;padding-left:100px}
-#rail{position:fixed;left:6px;top:132px;z-index:20;width:92px;touch-action:none;user-select:none;cursor:grab}
+#rail{position:fixed;left:6px;top:132px;z-index:20;width:92px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
 #rail .rl{position:absolute;left:10px;top:0;bottom:0;width:1.5px;background:#c3c7ce;border-radius:1px}
-#rail .tk{position:absolute;left:10px;height:1px;background:#aeb3bb;transform:translateY(-50%)}
-#rail .tk.mo{height:1.5px;background:#4a4f57}
+#rail .tk{position:absolute;left:10px;height:1px;background:#c3c7ce}
+#rail .tk.mo{background:#6b717a}
 #rail .lb{position:absolute;transform:translateY(-50%);font-weight:800;color:#8a929c;white-space:nowrap;line-height:1}
 #rail .lb.on{color:#000}
 #rail .th{position:absolute;left:10px;width:13px;height:13px;margin:-6.5px 0 0 -6px;border-radius:50%;background:#111;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #111}
@@ -659,13 +659,15 @@ function drawRail() {
   const f = focusF(); layoutRail(f);
   const it = RAIL.items; let html = '<div class="rl"></div>', lastY = -99, curMo = null;
   it.forEach((x, i) => { if (x.k === 'm' && x.top - window.scrollY <= RAIL_OFF) curMo = i; });
+  const cy = curMo != null ? RAIL.ys[curMo] : -99;
   it.forEach((x, i) => {
     const y = RAIL.ys[i], w = RAIL.ws[i], g = (w - 1) / 6.5;
-    const len = x.k === 'm' ? 12 + 10 * g : 5 + 6 * g;
-    html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${y.toFixed(1)}px;width:${len.toFixed(1)}px"></div>`;
+    const len = x.k === 'm' ? 12 + 8 * g : 5 + 5 * g, ty = Math.round(y);
+    html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${ty}px;width:${len.toFixed(0)}px"></div>`;
     if (x.k === 'm') {
-      const fs = 9.5 + 12 * g, show = i === curMo || (y - lastY >= fs * 1.2 && g > 0.02);
-      if (show) { lastY = y; html += `<div class="lb ${i === curMo ? 'on' : ''}" data-rid="${x.id}" style="top:${y.toFixed(1)}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs.toFixed(1)}px">${x.mo}월</div>`; }
+      const cur = i === curMo, fs = cur ? 20 : 10;
+      const show = cur || (Math.abs(y - cy) >= 24 && y - lastY >= 14);
+      if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo}월</div>`; }
     }
   });
   html += `<div class="th" id="rth" style="top:${yAtF(f).toFixed(1)}px"></div>`;
@@ -681,9 +683,10 @@ function drawRail() {
     window.scrollTo({ top: it[i].top + t * (it[i + 1].top - it[i].top) - RAIL_OFF, behavior: 'auto' });
     const th = $('#rth'); if (th) th.style.top = y + 'px';
   };
-  r.addEventListener('pointerdown', ev => { RAIL.frozen = true; r.setPointerCapture(ev.pointerId); r.style.cursor = 'grabbing'; seek(ev); });
+  r.addEventListener('selectstart', e => e.preventDefault());
+  r.addEventListener('pointerdown', ev => { ev.preventDefault(); document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; RAIL.frozen = true; r.setPointerCapture(ev.pointerId); r.style.cursor = 'grabbing'; seek(ev); });
   r.addEventListener('pointermove', ev => { if (RAIL.frozen) seek(ev); });
-  const end = () => { if (!RAIL.frozen) return; RAIL.frozen = false; r.style.cursor = 'grab'; drawRail(); };
+  const end = () => { if (!RAIL.frozen) return; RAIL.frozen = false; r.style.cursor = 'grab'; document.body.style.userSelect = ''; document.body.style.webkitUserSelect = ''; drawRail(); };
   r.addEventListener('pointerup', end); r.addEventListener('pointercancel', end);
   let tk = false;
   window.addEventListener('scroll', () => { if (tk || RAIL.frozen) return; tk = true; requestAnimationFrame(() => { tk = false; drawRail(); }); }, { passive: true });
