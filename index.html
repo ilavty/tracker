@@ -3497,6 +3497,7 @@ html.plc-fs-on,html.plc-fs-on body{overflow:hidden}
 
     /* ── 달력 아래 칸: 달마다 (_pnl/{달}), 안 정한 달은 가장 최근 달 모양 그대로. 위젯 = 못한 것 / 투두 (투두 내용은 위젯별 _todo/{id}) ── */
     const PN = { cfg: (() => { try { return JSON.parse(localStorage.getItem('pl_pnl') || '{}') || {}; } catch (e) { return {}; } })(), todo: (() => { try { return JSON.parse(localStorage.getItem('pl_todo') || '{}') || {}; } catch (e) { return {}; } })() };
+    window.PN = PN;
     const pnIdx = k => { const [y, m] = k.split('-').map(Number); return y * 12 + m; };
     function pnCfg(k) { if (!k) return null; const v = PN.cfg[k]; if (v === false) return null; if (v) return v; let best = null, bi = -1; Object.keys(PN.cfg).forEach(x => { const i = pnIdx(x); if (PN.cfg[x] && i < pnIdx(k) && i > bi) { bi = i; best = PN.cfg[x]; } }); return best; }
     const pnRef = p => (typeof db !== 'undefined' && db) ? db.ref('planner_deco_v1/' + p) : null;

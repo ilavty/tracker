@@ -267,7 +267,7 @@ function normalize(x) {
 function loadLocal() { try { S = normalize(JSON.parse(localStorage.getItem(LS) || 'null')); } catch (e) { S = normalize(null); } }
 function writeLocal() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { } }
 function save() {
-  S.ts = Date.now(); writeLocal();
+  S.ts = Date.now(); calPushChanged(); writeLocal();
   if (fbRef) { try { fbRef.set(JSON.parse(JSON.stringify(S))); } catch (e) { } }
 }
 function loadUI() { try { Object.assign(UI, JSON.parse(localStorage.getItem(LSUI) || '{}')); } catch (e) { } }
@@ -425,7 +425,49 @@ const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
 const EN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], WDE = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-function mgList(k) { let v = S.mgoals[k]; if (typeof v === 'string') v = S.mgoals[k] = v ? [{ id: uid(), t: v, d: 0 }] : []; return v || (S.mgoals[k] = []); }
+/* ---- CALENDAR(플래너)의 달 투두 위젯과 월 목록 공유 ---- */
+const CALSIG = {};
+const sigOf = L => JSON.stringify((L || []).map(x => [x.t, x.d ? 1 : 0]));
+function calLink(k) {
+  try {
+    const P = window.parent; if (!P || P === window || !P.PN || !P.pnCfg || !P.pnBoxes || !/^\d{4}-\d{2}$/.test(k)) return null;
+    const y = +k.slice(0, 4), m = +k.slice(5), C = P.pnBoxes(P.pnCfg(y + '-' + m));
+    const bs = Object.values(C.bx || {}).sort((a, b) => (a.ord || 0) - (b.ord || 0));
+    for (const b of bs) { const ws = Object.entries(b.ws || {}).filter(([, w]) => w.t === 'todo').sort((a, b) => (a[1].ord || 0) - (b[1].ord || 0)); if (ws.length) return ws[0][0]; }
+  } catch (e) { }
+  return null;
+}
+function calPull(k) {
+  const wid = calLink(k); if (!wid) return false;
+  const P = window.parent, rem = (P.PN.todo[wid] || []).filter(Boolean), old = Array.isArray(S.mgoals[k]) ? S.mgoals[k] : [];
+  if (!rem.length && old.length && CALSIG[k] === undefined) { calPush(k, wid, old); CALSIG[k] = sigOf(old); return true; }
+  S.mgoals[k] = rem.map((x, i) => ({ id: old[i] && old[i].t === x.t ? old[i].id : uid(), t: x.t, d: x.d ? 1 : 0 }));
+  CALSIG[k] = sigOf(S.mgoals[k]); return true;
+}
+function calPush(k, wid, L) {
+  try {
+    const P = window.parent;
+    P.pnTodoPut(wid, L.map(g => g.d ? { t: g.t, d: 1 } : { t: g.t }));
+    if (P.PN.vy) P.pnDraw(P.PN.vy, P.PN.vm);
+  } catch (e) { }
+}
+function calPushChanged() {
+  Object.keys(S.mgoals).forEach(k => {
+    if (!/^\d{4}-\d{2}$/.test(k) || CALSIG[k] === undefined) return;
+    const L = S.mgoals[k]; if (!Array.isArray(L) || sigOf(L) === CALSIG[k]) return;
+    const wid = calLink(k); if (!wid) return;
+    calPush(k, wid, L); CALSIG[k] = sigOf(L);
+  });
+}
+setInterval(() => {
+  const a = document.activeElement; if (a && a.closest && a.closest('.mgl')) return;
+  document.querySelectorAll('.mgl[data-mgl]').forEach(b => {
+    const k = b.dataset.mgl, wid = calLink(k); if (!wid) return;
+    const rem = (window.parent.PN.todo[wid] || []).filter(Boolean);
+    if (CALSIG[k] !== undefined && sigOf(rem) !== CALSIG[k]) mgRefresh(k);
+  });
+}, 1200);
+function mgList(k) { if (typeof S.mgoals[k] === 'string') S.mgoals[k] = S.mgoals[k] ? [{ id: uid(), t: S.mgoals[k], d: 0 }] : []; calPull(k); return S.mgoals[k] || (S.mgoals[k] = []); }
 function mgHtml(k) {
   return mgList(k).map(g => `<div class="gi ${g.d ? 'dn' : ''}"><span class="gc ${g.d ? 'on' : ''}" data-gc="${g.id}" data-k="${k}">${g.d ? '✓' : ''}</span><span class="gt" contenteditable="true" data-gt="${g.id}" data-k="${k}">${esc(g.t)}</span></div>`).join('') + `<button class="gadd" data-gadd="${k}">+</button>`;
 }
