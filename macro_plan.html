@@ -186,6 +186,10 @@ html.emb .top{padding-right:96px}
 .toast.on{opacity:1}
 
 /* ---- MAP(마인드맵 + 날짜) ---- */
+.zm{display:flex;align-items:center;gap:6px;padding:3px 8px;border:1px solid var(--bd);border-radius:20px;background:#fff}
+.zm button{border:0;background:none;font-size:1rem;line-height:1;color:var(--txt);padding:0 3px;cursor:pointer}
+.zm input{width:110px;accent-color:#2f4a7a}
+.zm .zv{font-size:.72rem;font-weight:600;min-width:34px;text-align:right;cursor:pointer;color:#2f4a7a}
 .mw{display:flex;gap:16px;align-items:flex-start;max-width:1500px;margin:0 auto}
 .mp{flex:1;min-width:0;padding:6px 4px 60px;overflow-x:auto;scrollbar-width:none}
 .mside{width:270px;position:absolute;z-index:30;box-shadow:0 12px 34px rgba(47,74,122,.2);background:#fff;border:1.5px solid #2f4a7a;border-radius:14px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px}
@@ -420,16 +424,18 @@ function phaseGrad(p, alpha) {
 let CTX = {};
 function render() {
   if (LAST === null) LAST = snap();
-  const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY;
+  const sx = ($('.mv') || {}).scrollLeft || 0, sy = window.scrollY, sp = ($('.mp') || {}).scrollLeft || 0;
   renderTop();
   $('#root').innerHTML = UI.v === 'g' ? monthView() : UI.v === 'm' ? mapView() : calView();
   const mv = $('.mv'); if (mv) mv.scrollLeft = sx;
+  const mp = $('.mp'); if (mp) mp.scrollLeft = sp;
   window.scrollTo(0, sy);
   renderRail();
 }
 function renderTop() {
   $('#top').innerHTML = statsHtml() + `
     <span class="sp"></span>
+    <span class="zm"><button data-act="zstep" data-d="-1">−</button><input type="range" data-f="zoom" min="30" max="300" step="5" value="${Math.round((UI.zm || 1) * 100)}"><button data-act="zstep" data-d="1">+</button><span class="zv" data-act="zreset" title="100%로">${Math.round((UI.zm || 1) * 100)}%</span></span>
     <button class="pill" data-act="addblock">+ 블록</button>
     ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
@@ -471,7 +477,7 @@ function mapView() {
   const idxE = d => POS.has(d) ? POS.get(d) + wt(d) : idx(d);
   MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
   const TL = 236, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
-  const px = MDRAG ? MDRAG.px : Math.max(5, (AV - 6) / tot); MPX = px;
+  const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || 1)); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
@@ -646,6 +652,16 @@ document.addEventListener('click', ev => {
   if (t.closest('.mside,.mb,.mpl,#ctxm,#stpop,.mbox,.modal,[data-act]')) return;
   MSEL = null; render();
 });
+/* MAP: 확대/축소 */
+function setZoom(v) {
+  v = Math.max(0.3, Math.min(3, Math.round(v * 100) / 100)); UI.zm = v; saveUI();
+  const mp = $('.mp'), sl = mp ? mp.scrollLeft : 0, cw = mp ? mp.clientWidth : 0, z0 = MPX;
+  $('#root').innerHTML = mapView(); const m2 = $('.mp'); if (m2) { const r = MPX / z0; m2.scrollLeft = (sl + cw / 2) * r - cw / 2; }
+  const inp = $('.zm input'); if (inp) inp.value = Math.round(v * 100); const zv = $('.zm .zv'); if (zv) zv.textContent = Math.round(v * 100) + '%';
+}
+document.addEventListener('input', ev => { const f = ev.target.closest && ev.target.closest('.zm input'); if (f && UI.v === 'm') setZoom(+f.value / 100); });
+document.addEventListener('click', ev => { const a = ev.target.closest && ev.target.closest('[data-act=zstep],[data-act=zreset]'); if (!a) return; if (a.dataset.act === 'zreset') setZoom(1); else setZoom((UI.zm || 1) + a.dataset.d * 0.1); });
+document.addEventListener('wheel', ev => { if (!(ev.ctrlKey || ev.metaKey) || UI.v !== 'm') return; ev.preventDefault(); setZoom((UI.zm || 1) * (ev.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
 /* MAP: 점선 끌어서 달/공백 폭 조절 (더블클릭: 원래대로) */
 (function () {
   let d = null, raf = 0;
