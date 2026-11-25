@@ -267,13 +267,13 @@ const $ = s => document.querySelector(s);
 /* 대분류(P=피셋, S=2차) 안에서 색조만 살짝 다르게 */
 const ROWS = [
   { id: 'P', g: 'P', name: '피셋 전체', grp: true, c: '#6fa58f' },
-  { id: 'LL', g: 'P', name: '언어논리', c: '#8fc3a4' },
-  { id: 'SP', g: 'P', name: '상황판단', c: '#9ccfd1' },
-  { id: 'DA', g: 'P', name: '자료해석', c: '#e6d487' },
+  { id: 'LL', g: 'P', name: '언논', c: '#8fc3a4' },
+  { id: 'SP', g: 'P', name: '상판', c: '#9ccfd1' },
+  { id: 'DA', g: 'P', name: '자료', c: '#e6d487' },
   { id: 'S', g: 'S', name: '2차 전체', grp: true, c: '#8fb0e0' },
   { id: 'CO', g: 'S', name: '헌법', c: '#7fa2e0' },
-  { id: 'IL', g: 'S', name: '국제법', c: '#b3cdf2' },
-  { id: 'IP', g: 'S', name: '국제정치학', c: '#8fc7de' },
+  { id: 'IL', g: 'S', name: '국법', c: '#b3cdf2' },
+  { id: 'IP', g: 'S', name: '국정', c: '#8fc7de' },
 ];
 const ROW = Object.fromEntries(ROWS.map(r => [r.id, r]));
 const IMP = { 2: '필수', 1: '보통', 0: '여유' };
@@ -424,7 +424,7 @@ function statsHtml() {
 
 
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
-let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 290;
+let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236;
 function mapSegs() {
   const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
@@ -437,7 +437,7 @@ function mapView() {
   let tot = 0; const cum = segs.map((sg, i) => { if (i) { const gd = sg[0] - segs[i - 1][1] - 1; tot += gd <= 7 ? 0 : Math.min(24, Math.round(Math.sqrt(gd) * 1.2)); } const c = tot; tot += sg[1] - sg[0] + 1; return c; });
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx; MSEGS = segs; MCUM = cum;
-  const TL = 290, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
+  const TL = 236, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = Math.max(5, (AV - 6) / tot); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 44 + 20 * Math.max(1, ...Object.values(S.mmemo || {}).map(a => a.length));
   // 행: 과목마다 한 줄, 그룹 전체용 줄
@@ -465,7 +465,7 @@ function mapView() {
   });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
-  const NX = { r: 0, g: 84, s: 160 }, NW = { r: 56, g: 48, s: 108 };
+  const NX = { r: 0, g: 80, s: 144 }, NW = { r: 56, g: 44, s: 62 };
   const mids = r => r.y + (r.h - 6) / 2 - 14;
   let nodes = '', svg = `<svg width="${TW}" height="${H}">`;
   const link = (x1, y1, x2, y2) => { const xm = (x1 + x2) / 2, r = Math.min(10, Math.abs(y2 - y1) / 2), dir = y2 > y1 ? 1 : -1; return Math.abs(y2 - y1) < 1 ? `M${x1},${y1} H${x2}` : `M${x1},${y1} H${xm - r} Q${xm},${y1} ${xm},${y1 + dir * r} V${y2 - dir * r} Q${xm},${y2} ${xm + r},${y2} H${x2}`; };
