@@ -183,7 +183,7 @@ button{cursor:pointer;border:none;background:none}
 .mbl{position:absolute;top:8px;text-align:center;font-size:.68rem;font-weight:700;color:#2f4a7a;line-height:1.25;letter-spacing:.06em;pointer-events:none}
 .mbl small{display:block;font-weight:500;letter-spacing:0;color:#7c90a6;font-size:.6rem}
 .mdv{position:absolute;top:36px;width:0;border-left:1.4px dashed #b8c0cf;opacity:.9}
-.mdg{position:absolute;top:30px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
+.mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.58rem;color:#4aa3ea;font-weight:700;white-space:nowrap}
 .mgl2{position:absolute;height:0;border-top:2px solid #2f4a7a;pointer-events:none}
@@ -412,9 +412,9 @@ function mapView() {
   let tot = 0; const cum = segs.map(sg => { const c = tot; tot += sg[1] - sg[0] + 1; return c; });
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx;
-  const TL = 400, AV = Math.max(560, Math.min(window.innerWidth - 60, 1500) - TL);
-  const px = Math.max(5, (AV - 70) / tot); MPX = px;
-  const TW = TL + tot * px + 64, TOP = 64;
+  const TL = 400, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
+  const px = Math.max(5, (AV - 6) / tot); MPX = px;
+  const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -450,7 +450,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idx(ed) + 1) * px, ly = rs[0].y - 7;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${ex - TL}px"></div><div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex + 8}px;top:${ly - 8}px">${EN[new Date(ed * DAY).getUTCMonth()]}</div>`;
+    gl += `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${ex - TL}px"></div><div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex - 2}px;top:${ly - 21}px;transform:translateX(-100%)">${EN[new Date(ed * DAY).getUTCMonth()]}</div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
