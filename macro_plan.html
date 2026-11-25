@@ -186,6 +186,9 @@ button{cursor:pointer;border:none;background:none}
 .mdg{position:absolute;top:30px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.58rem;color:#4aa3ea;font-weight:700;white-space:nowrap}
+.mgl2{position:absolute;height:0;border-top:2px solid #2f4a7a;pointer-events:none}
+.mgd{position:absolute;width:9px;height:9px;border-radius:50%;background:#2f4a7a;pointer-events:none}
+.mgt{position:absolute;font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;pointer-events:none}
 .mrl{position:absolute;height:0;border-top:1px solid #d7dce6;pointer-events:none}
 .mn{position:absolute;box-sizing:border-box;border:1.6px solid #2f4a7a;background:#fff;border-radius:10px;padding:4px 10px;font-size:.8rem;font-weight:700;color:#2f4a7a;display:flex;flex-direction:column;justify-content:center;text-align:left;cursor:pointer}
 .mn small{font-weight:500;font-size:.62rem;color:#7c90a6}
@@ -409,7 +412,7 @@ function mapView() {
   MIDX = idx;
   const TL = 400, AV = Math.max(560, Math.min(window.innerWidth - 60, 1500) - TL);
   const px = Math.max(2.6, Math.min(12, AV / tot)); MPX = px;
-  const TW = TL + tot * px + 24, TOP = 64;
+  const TW = TL + tot * px + 64, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -438,11 +441,14 @@ function mapView() {
   const mids = r => r.y + (r.h - 6) / 2 - 14;
   let nodes = '', svg = `<svg width="${TW}" height="${H}">`;
   const link = (x1, y1, x2, y2) => { const xm = (x1 + x2) / 2, r = Math.min(10, Math.abs(y2 - y1) / 2), dir = y2 > y1 ? 1 : -1; return Math.abs(y2 - y1) < 1 ? `M${x1},${y1} H${x2}` : `M${x1},${y1} H${xm - r} Q${xm},${y1} ${xm},${y1 + dir * r} V${y2 - dir * r} Q${xm},${y2} ${xm + r},${y2} H${x2}`; };
-  const gys = [];
+  const gys = []; let gl = '';
   ['P', 'S'].forEach(g => {
     const rs = rows.filter(r => r.g === g), gc = (mids(rs[0]) + mids(rs[rs.length - 1])) / 2; gys.push(gc);
-    const sub = g === 'P' ? `${md(pd(S.exams.p))} 시험` : `${md(pd(S.exams.s))} 시험`;
-    nodes += `<div class="mn grp" style="left:${NX.g}px;top:${gc}px;width:${NW.g}px;height:36px" data-act="madd" data-subj="${g}">${g === 'P' ? '1차 PSAT' : '2차'}<small>${sub}</small><span class="mad">+</span></div>`;
+    nodes += `<div class="mn grp" style="left:${NX.g}px;top:${gc}px;width:${NW.g}px;height:36px" data-act="madd" data-subj="${g}">${g === 'P' ? '1차 PSAT' : '2차'}<span class="mad">+</span></div>`;
+    // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
+    const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idx(ed) + 1) * px, ly = rs[0].y - 7;
+    svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
+    gl += `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${ex - TL}px"></div><div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex + 8}px;top:${ly - 8}px">${md(ed)}</div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
@@ -464,7 +470,7 @@ function mapView() {
       bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span>${esc(b.name)}</span><span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
     });
   });
-  return `<div class="mp"><div class="mt" style="width:${TW}px;height:${H}px">${bg}${svg}${lab}${dv}${td}${bars}${nodes}</div></div>`;
+  return `<div class="mp"><div class="mt" style="width:${TW}px;height:${H}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${nodes}</div></div>`;
 }
 /* MAP: 블록 좌우로 끌어 날짜 이동 / 오른쪽 끝을 끌어 기간 조절 */
 (function () {
