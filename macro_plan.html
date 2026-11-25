@@ -189,6 +189,8 @@ button{cursor:pointer;border:none;background:none}
 .mside .mchips button .tx{margin-left:5px;opacity:.45;font-size:.7rem}
 .mside .mchips button.on .tx{opacity:.8}
 .mside .x{cursor:pointer;color:#9aa6b8;font-size:.9rem}
+.mside .bs{font-size:.7rem;color:#6b7a94}
+.mside .bs button{border:none;background:none;color:#2f4a7a;font:inherit;font-size:.7rem;text-decoration:underline;cursor:pointer;padding:0 0 0 6px}
 .mside .del{border:none;background:none;color:#c0605c;font:inherit;font-size:.72rem;cursor:pointer;text-align:left;padding:2px 0}
 .mgh{position:absolute;background:rgba(74,163,234,.18);border:1.4px dashed #4aa3ea;border-radius:8px;pointer-events:none}
 .mrh{position:absolute;cursor:crosshair}
@@ -216,7 +218,8 @@ button{cursor:pointer;border:none;background:none}
 .mn .mad{position:absolute;right:-9px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:1.3px solid #2f4a7a;color:#2f4a7a;font-size:.8rem;line-height:15px;text-align:center;cursor:pointer;opacity:0}
 .mn:hover .mad{opacity:1}
 .mb{position:absolute;box-sizing:border-box;height:26px;border:1.4px solid #2f4a7a;border-radius:8px;background:#fff;font-size:.72rem;font-weight:700;color:#2f4a7a;display:flex;align-items:center;padding:0 8px;cursor:grab;overflow:hidden;white-space:nowrap;touch-action:none;user-select:none;-webkit-user-select:none}
-.mb .pg{position:absolute;left:0;top:0;bottom:0;opacity:.45;pointer-events:none}
+.mb .ex{position:absolute;top:0;bottom:0;right:0;pointer-events:none;border-left:1.3px solid rgba(47,74,122,.25)}
+.mgh2{position:absolute;height:26px;box-sizing:border-box;border:1.4px dashed;border-radius:8px;opacity:.7;pointer-events:none;background:transparent}
 .mb span{position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis}
 .mb .bn{flex:0 1 auto;min-width:0}
 .mb .bt{flex:none;margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid rgba(47,74,122,.35);font-size:.58rem;font-weight:600;color:#2f4a7a}
@@ -420,7 +423,7 @@ function renderStats() {
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
 let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 290;
 function mapSegs() {
-  const iv = S.blocks.map(b => [pd(b.s), pd(b.e)]);
+  const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
   iv.sort((a, b) => a[0] - b[0]); const out = [];
   iv.forEach(([a, b]) => { const l = out[out.length - 1]; if (l && a <= l[1] + 1) l[1] = Math.max(l[1], b); else out.push([a, b]); });
@@ -487,9 +490,14 @@ function mapView() {
   rows.forEach(r => {
     bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${TW - TL}px;top:${mids(r) + 18}px"></div>`;
     r.bs.forEach(b => {
+      const bs0 = b.base ? pd(b.base[0]) : pd(b.s), be0 = b.base ? pd(b.base[1]) : pd(b.e);
       const x = TL + idx(pd(b.s)) * px, w = Math.max(14, (idx(pd(b.e)) + 1 - idx(pd(b.s))) * px - 2), yy = r.y + 8 + b._l * (RH + LG);
-      if (MSEL === b.id) selPos = { x, y: yy, w };
-      bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
+      const bc = r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c;
+      if (selPos === null && MSEL === b.id) selPos = { x, y: yy, w };
+      let ext = '', early = '';
+      if (pd(b.e) > be0) { const ex0 = TL + (idx(be0) + 1) * px - x; ext = `<div class="ex" style="left:${Math.max(0, ex0)}px;background:${rgba(r.c, .5)}"></div>`; }
+      if (pd(b.e) < be0) { const ex1 = TL + idx(pd(b.e) + 1) * px, ew = (idx(be0) + 1 - idx(pd(b.e) + 1)) * px - 2; if (ew > 2) early = `<div class="mgh2" style="left:${ex1}px;top:${yy}px;width:${ew}px;border-color:${bc}"></div>`; }
+      bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${bc};background:${rgba(r.c, .22)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
     });
   });
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
@@ -514,7 +522,7 @@ function mapSide(b, left, top) {
     <div class="mchips" style="margin-top:-4px"><button data-act="mext" data-x="7">+1주</button><button data-act="mext" data-x="14">+2주</button><button data-act="mext" data-x="30">+1달</button><button data-act="mext" data-x="-7">−1주</button></div>
     <div><label>중요도</label><div class="mchips">${imp.map(([v, n]) => `<button data-act="mimp" data-v="${v}" class="${b.imp === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
     <div><label>태그</label><div class="mchips">${(S.tags || []).map(t => `<button data-act="mtag" data-t="${esc(t)}" class="${(b.tags || []).includes(t) ? 'on' : ''}">${esc(t)}<span class="tx" data-act="mtagdel" data-t="${esc(t)}">×</span></button>`).join('')}</div><input data-f="newtag" style="margin-top:7px"></div>
-    <div><label>진도 %</label><input type="number" min="0" max="100" step="5" data-f="done" value="${b.done}"></div>
+    ${b.base && pd(b.e) !== pd(b.base[1]) ? `<div class="bs">원계획 끝 ${md(pd(b.base[1]))} · ${pd(b.e) > pd(b.base[1]) ? '연장 +' : '일찍 −'}${Math.abs(pd(b.e) - pd(b.base[1]))}일 <button data-act="mreset">원계획으로</button></div>` : ''}
     <button class="del" data-act="mdel">이 블록 삭제</button>
   </div>`;
 }
@@ -525,7 +533,7 @@ document.addEventListener('change', ev => {
   if (k === 'newtag') { const t = f.value.trim(); if (!t) return; S.tags = S.tags || []; if (!S.tags.includes(t)) S.tags.push(t); b.tags = b.tags || []; if (!b.tags.includes(t)) b.tags.push(t); }
   else if (k === 'name') b.name = f.value.trim() || b.name;
   else if (k === 'subj') b.subj = f.value;
-  else if (k === 's' || k === 'e') { if (!f.value) return; b[k] = f.value; if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } }
+  else if (k === 's' || k === 'e') { if (!f.value) return; b[k] = f.value; if (k === 's' && b.base) b.base[0] = f.value; if (pd(b.e) < pd(b.s)) { if (k === 's') b.e = b.s; else b.s = b.e; } }
   else if (k === 'done') { setDone(b, Math.max(0, Math.min(100, +f.value || 0))); }
   save(); render();
 });
@@ -568,7 +576,7 @@ document.addEventListener('change', ev => {
     if (!dr) return; const { bar, b, z, mv, x0 } = dr; dr = null;
     if (!mv) { MSEL = MSEL === b.id ? null : b.id; render(); return; }
     const dd = Math.round((ev.clientX - x0) / MPX);
-    if (dd) { if (z) b.e = fd(Math.max(pd(b.s), pd(b.e) + dd)); else { b.s = fd(pd(b.s) + dd); b.e = fd(pd(b.e) + dd); } save(); }
+    if (dd) { if (z) b.e = fd(Math.max(pd(b.s), pd(b.e) + dd)); else { b.s = fd(pd(b.s) + dd); b.e = fd(pd(b.e) + dd); if (b.base) b.base = [fd(pd(b.base[0]) + dd), fd(pd(b.base[1]) + dd)]; } save(); }
     render();
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
@@ -895,6 +903,7 @@ document.addEventListener('click', ev => {
     else if (act === 'mext') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.e = fd(Math.max(pd(b.s), pd(b.e) + +a.dataset.x)); save(); render(); } }
     else if (act === 'mtagdel') { const t = a.dataset.t; if (confirm('태그 "' + t + '"를 목록에서 지울까?')) { S.tags = (S.tags || []).filter(x => x !== t); S.blocks.forEach(b => { b.tags = (b.tags || []).filter(x => x !== t); }); save(); render(); } }
     else if (act === 'mtag') { const b = S.blocks.find(x => x.id === MSEL); if (b) { const t = a.dataset.t; b.tags = b.tags || []; b.tags = b.tags.includes(t) ? b.tags.filter(x => x !== t) : [...b.tags, t]; save(); render(); } }
+    else if (act === 'mreset') { const b = S.blocks.find(x => x.id === MSEL); if (b && b.base) { b.e = b.base[1]; save(); render(); } }
     else if (act === 'mimp') { const b = S.blocks.find(x => x.id === MSEL); if (b) { b.imp = +a.dataset.v; save(); render(); } }
     else if (act === 'mdel') { const b = S.blocks.find(x => x.id === MSEL); if (b && confirm('이 블록을 삭제할까?')) { S.blocks = S.blocks.filter(x => x !== b); S.notes.forEach(n => { if (n.blk === b.id) n.blk = null; }); MSEL = null; save(); render(); } }
     else if (act === 'madd') { const sj = a.dataset.subj, bl = S.blocks.filter(b => b.subj === sj), st = bl.length ? Math.max(...bl.map(b => pd(b.e))) + 1 : TODAY; openBlock(null, { subj: sj, s: fd(st), e: fd(st + 13) }); }
