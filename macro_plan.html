@@ -38,6 +38,7 @@ button{cursor:pointer;border:none;background:none}
 .st{font-size:.8rem;padding:4px 11px;border-radius:14px;background:var(--soft);color:var(--txt);font-weight:500}
 .st b{font-weight:800}
 .st.lk{cursor:pointer}
+.st.tg{font-weight:700}
 .st.lk:hover{background:#e8ecf3}
 #stpop{position:fixed;z-index:9998;background:#fff;border:1px solid var(--bd);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:6px;min-width:230px;max-width:340px;max-height:320px;overflow:auto;scrollbar-width:none}
 #stpop::-webkit-scrollbar{display:none}
@@ -427,10 +428,11 @@ function statsHtml() {
   return `
     <span class="st dd" data-act="exams">1차 ${md(pd(S.exams.p))} <b>${dd(pd(S.exams.p))}</b></span>
     <span class="st dd" data-act="exams">2차 ${md(pd(S.exams.s))} <b>${dd(pd(S.exams.s))}</b></span>
+    <span class="st lk tg" data-act="sttoggle">현황 ${UI.sc ? '◂' : '▸'}</span>${UI.sc ? `
     <span class="st lk" data-act="stlist" data-k="must">필수 <b>${mustDone}</b> / ${must.length} 완료</span>
     <span class="st lk" data-act="stlist" data-k="late">이월 <b>${late}</b></span>
     <span class="st lk" data-act="stlist" data-k="slip">밀림 <b>${slipped}</b></span>
-    <span class="st lk" data-act="stlist" data-k="ahead">앞섬 <b>${ahead}</b></span>`;
+    <span class="st lk" data-act="stlist" data-k="ahead">앞섬 <b>${ahead}</b></span>` : ''}`;
 }
 
 
@@ -959,6 +961,7 @@ document.addEventListener('click', ev => {
     else if (act === 'zoom') { UI.z = Math.min(2, Math.max(0, UI.z + +a.dataset.d)); saveUI(); render(); }
     else if (act === 'today') { UI.v === 'g' ? scrollToday() : scrollTodayC(); }
     else if (act === 'ghost') { UI.ghost = !UI.ghost; saveUI(); render(); }
+    else if (act === 'sttoggle') { UI.sc = !UI.sc; const pp = document.getElementById('stpop'); if (pp) pp.remove(); saveUI(); renderTop(); }
     else if (act === 'stlist') {
       const old = document.getElementById('stpop'); if (old) { const same = old.dataset.k === a.dataset.k; old.remove(); if (same) return; }
       const k = a.dataset.k, B = S.blocks;
