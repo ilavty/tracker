@@ -106,6 +106,8 @@ button{cursor:pointer;border:none;background:none}
 .cbar.lnk:after{content:"";position:absolute;right:3px;top:3px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
 .cbar.dg{z-index:30;pointer-events:none;box-shadow:0 6px 16px rgba(0,0,0,.25)}
 .cbar.hit{outline:2px solid #4fa8f0}
+.cfg .cp.in{position:relative;pointer-events:auto;align-self:start;margin:0 6px;z-index:7}
+.cfg .cp{pointer-events:auto}
 .cp.drag{opacity:.85;z-index:30;pointer-events:none;box-shadow:0 8px 22px rgba(0,0,0,.25)}
 .cp{cursor:grab;--bc:#e9e9eb;position:absolute;z-index:6;width:max-content;max-width:230px;display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:14px;font-size:.76rem;line-height:1.4;background:var(--bc);color:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}
 .cp:after{content:"";position:absolute;bottom:-7px;left:14px;border:7px solid transparent;border-top-color:var(--bc);border-bottom:0}
@@ -394,6 +396,11 @@ const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
 function noteDate(n) { const b = n.blk && S.blocks.find(x => x.id === n.blk); return b ? b.s : n.date; }
+function noteIn(n, sg, k) {
+  const lc = (ROW[sg.b.subj] || {}).c, right = sg.c0 >= 5;
+  const base = `-100% + 3px - ${k * 30}px`;
+  return `<div class="cp in ${n.kind} ${right ? 'r' : ''}" data-base="calc(${base})" style="grid-row:${sg.l + 3};grid-column:${sg.c0 + 1};justify-self:${right ? 'end' : 'start'};transform:translate(${n.ox || 0}px,calc(${n.oy || 0}px + ${base}))"><i class="lk" style="background:${lc}"></i><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
+}
 function noteFloat(n, col, idx) {
   const lb = n.blk && S.blocks.find(x => x.id === n.blk), lc = lb ? (ROW[lb.subj] || {}).c : null;
   const right = col >= 4;
@@ -436,9 +443,12 @@ function weekRow(ws, ms, me, ep, es) {
     const strip = '';
     bg += `<div class="cd" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
-    S.notes.filter(n => pd(noteDate(n)) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
+    S.notes.filter(n => !(n.blk && S.blocks.some(x => x.id === n.blk)) && pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
-  segs.forEach(sg => { fg += bar(sg); });
+  segs.forEach(sg => {
+    fg += bar(sg);
+    if (sg.st) S.notes.filter(n => n.blk === sg.b.id).forEach((n, k) => { fg += noteIn(n, sg, k); });
+  });
   if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl"></div>`;
   return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 16px repeat(${L + 1},22px) auto">${fg}</div>${tline}${pops}</div>`;
 }
@@ -609,10 +619,10 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
   document.addEventListener('pointermove', ev => {
     if (!D) return;
     if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'r') D.el.classList.add('dg');
-    if (D.t === 'n') { D.el.classList.add('drag'); const nn = S.notes.find(x => x.id === D.el.querySelector('[data-nn]').dataset.nn) || {}; D.ox = nn.ox || 0; D.oy = nn.oy || 0; } }
+    if (D.t === 'n') { D.el.classList.add('drag'); const nn = S.notes.find(x => x.id === D.el.querySelector('[data-nn]').dataset.nn) || {}; D.ox = nn.ox || 0; D.oy = nn.oy || 0; D.base = D.el.dataset.base || '0px'; D.nb = nn.blk; } }
     ev.preventDefault();
     if (D.t === 'r') { D.dy = ev.clientY - D.y; D.el.style.transform = `translateY(${D.dy}px)`; clr(); const hb = barAt(ev.clientX, ev.clientY); D.hb = (hb && hb.dataset.b !== D.id) ? hb : null; if (D.hb) D.hb.classList.add('hit'); }
-    else if (D.t === 'n') { D.dx = ev.clientX - D.x; D.dy = ev.clientY - D.y; document.querySelectorAll('.cbar.hit').forEach(x => x.classList.remove('hit')); { const hb = barAt(ev.clientX, ev.clientY); D.hb = hb; if (hb) hb.classList.add('hit'); } D.el.style.transform = `translate(${D.ox + D.dx}px,${D.oy + D.dy}px)`; }
+    else if (D.t === 'n') { D.dx = ev.clientX - D.x; D.dy = ev.clientY - D.y; document.querySelectorAll('.cbar.hit').forEach(x => x.classList.remove('hit')); { const hb = barAt(ev.clientX, ev.clientY); D.hb = hb; if (hb && !(D.el.classList.contains('in') && hb.dataset.b === D.nb)) hb.classList.add('hit'); } D.el.style.transform = `translate(${D.ox + D.dx}px,calc(${D.oy + D.dy}px + ${D.base}))`; }
     else { const d = dayAt(ev.clientX, ev.clientY); if (d != null) D.b = d; clr(); const lo = Math.min(D.a, D.b), hi = Math.max(D.a, D.b); document.querySelectorAll('.cd[data-d]').forEach(c => { const v = +c.dataset.d; if (v >= lo && v <= hi) c.classList.add('sel'); }); }
   });
   const end = ev => {
@@ -624,7 +634,7 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
       render();
     } else if (d0.t === 'n') {
       const id = d0.el.querySelector('[data-nn]').dataset.nn, n = S.notes.find(x => x.id === id);
-      if (n) { if (d0.hb) { n.blk = d0.hb.dataset.b; n.ox = 0; n.oy = 0; } else { n.ox = Math.round(d0.ox + d0.dx); n.oy = Math.round(d0.oy + d0.dy); } save(); }
+      if (n) { if (d0.hb && d0.hb.dataset.b !== n.blk) { n.blk = d0.hb.dataset.b; n.ox = 0; n.oy = 0; } else { n.ox = Math.round(d0.ox + d0.dx); n.oy = Math.round(d0.oy + d0.dy); } save(); }
       render();
     } else if (d0.a !== d0.b) { openBlock(null, { s: fd(Math.min(d0.a, d0.b)), e: fd(Math.max(d0.a, d0.b)) }); }
   };
@@ -683,7 +693,8 @@ function scrollTodayC() { const t = new Date(TODAY * DAY); setTimeout(() => jump
 const RAIL_OFF = 90;
 const RAIL = { items: [], ys: [], ws: [], frozen: false, H: 0 };
 function monthEls() { return [...document.querySelectorAll('.cm[id^="cm-"]')]; }
-function railH() { return Math.max(200, Math.min(window.innerHeight - 160, 700)); }
+function railTop() { return Math.max(0, 132 - window.scrollY); }
+function railH() { return Math.max(200, window.innerHeight - railTop() - 8); }
 function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
 function buildItems() {
   RAIL.items = [];
@@ -715,11 +726,12 @@ function renderRail() {
   const r = $('#rail'); if (!r) return;
   if (UI.v !== 'c' || !monthEls().length) { r.classList.add('hide'); return; }
   r.classList.remove('hide');
-  RAIL.H = railH(); r.style.height = RAIL.H + 'px';
+  RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
   buildItems(); drawRail();
 }
 function drawRail() {
   const r = $('#rail'); if (!r || RAIL.frozen) return;
+  RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
   const f = focusF(); layoutRail(f);
   const it = RAIL.items; let html = '<div class="rl"></div>', lastY = -99, curMo = null;
   it.forEach((x, i) => { if (x.k === 'm' && x.top - window.scrollY <= RAIL_OFF) curMo = i; });
