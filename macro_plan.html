@@ -185,7 +185,7 @@ button{cursor:pointer;border:none;background:none}
 .mdv{position:absolute;top:36px;width:0;border-left:1.4px dashed #b8c0cf;opacity:.9}
 .mdg{position:absolute;top:30px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
-.mtd i{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.58rem;color:#4aa3ea;font-weight:700;white-space:nowrap}
+.mtd i{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.58rem;color:#4aa3ea;font-weight:700;white-space:nowrap}
 .mgl2{position:absolute;height:0;border-top:2px solid #2f4a7a;pointer-events:none}
 .mgd{position:absolute;width:9px;height:9px;border-radius:50%;background:#2f4a7a;pointer-events:none}
 .mgt{position:absolute;font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;pointer-events:none}
@@ -432,7 +432,7 @@ function mapView() {
   cols.forEach((c, i) => {
     const x0 = TL + idx(c.a) * px, x1 = TL + (idx(c.b) + 1) * px;
     bg += `<div class="mbd ${c.ci % 2 ? 'b' : 'a'}" style="left:${x0}px;width:${x1 - x0}px;height:${H}px"></div>`;
-    lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}<small>${md(c.a)}${c.b > c.a ? '–' + md(c.b) : ''}</small></div>`;
+    lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
     const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (gap > 0) dv += `<div class="mdg" style="left:${x1}px">⋯${gap}일</div>`; }
   });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
@@ -448,7 +448,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idx(ed) + 1) * px, ly = rs[0].y - 7;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${ex - TL}px"></div><div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex + 8}px;top:${ly - 8}px">${md(ed)}</div>`;
+    gl += `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${ex - TL}px"></div><div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex + 8}px;top:${ly - 8}px">${EN[new Date(ed * DAY).getUTCMonth()]}</div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
