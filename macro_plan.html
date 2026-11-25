@@ -395,14 +395,8 @@ function render() {
 }
 function renderTop() {
   $('#top').innerHTML = `
-    <span class="seg"><button data-act="view" data-v="c" class="${UI.v === 'c' ? 'on' : ''}">DAILY</button><button data-act="view" data-v="g" class="${UI.v === 'g' ? 'on' : ''}">OVERVIEW</button><button data-act="view" data-v="m" class="${UI.v === 'm' ? 'on' : ''}">MAP</button></span>
-    ${UI.v === 'g' ? `<span class="seg"><button data-act="zoom" data-d="-1">−</button><button data-act="zoom" data-d="1">+</button></span>` : ''}
-    <button class="pill" data-act="today">오늘</button>
-    ${UI.v === 'g' ? `<button class="pill ${UI.ghost ? 'on' : ''}" data-act="ghost">원계획</button>` : ''}
     <span class="sp"></span>
     <button class="pill" data-act="addblock">+ 블록</button>
-    <button class="pill" data-act="addnote">+ 말풍선</button>
-    <button class="pill" data-act="addphase">+ 단계</button>
     ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
 function renderStats() {
@@ -1160,7 +1154,7 @@ function jumpMonth(id, smooth) {
 function scrollToday() { const mv = $('.mv'); if (mv) mv.scrollTo({ left: Math.max(0, (TODAY - CTX.r0) * CTX.px - 40), behavior: 'smooth' }); }
 
 /* ================= boot ================= */
-loadLocal(); loadUI(); if (UI.v !== 'c' && UI.v !== 'g' && UI.v !== 'm') UI.v = 'c';
+loadLocal(); loadUI(); UI.v = 'm';
 render(); if (UI.v === 'c') scrollTodayC(); initFirebase();
 </script>
 </body>
