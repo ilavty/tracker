@@ -411,7 +411,7 @@ function mapView() {
   const idx = d => { for (let i = 0; i < segs.length; i++) { if (d <= segs[i][1]) return cum[i] + Math.max(0, d - segs[i][0]); } return tot; };
   MIDX = idx;
   const TL = 400, AV = Math.max(560, Math.min(window.innerWidth - 60, 1500) - TL);
-  const px = Math.max(2.6, Math.min(12, AV / tot)); MPX = px;
+  const px = Math.max(5, (AV - 70) / tot); MPX = px;
   const TW = TL + tot * px + 64, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
