@@ -259,6 +259,10 @@ html.emb .top{padding-right:96px}
 #ctxm{position:fixed;z-index:9999;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.14);padding:4px;min-width:90px}
 #ctxm div{padding:6px 12px;font-size:.8rem;font-weight:600;border-radius:7px;cursor:pointer}
 #ctxm div:hover{background:var(--soft)}
+#ctxm .cx:hover{background:none}
+#ctxm .cx div:hover{background:none}
+#ctxm .cxb{width:28px;height:28px;border-radius:50%;border:1px solid var(--bd);background:#fff;font-size:1rem;cursor:pointer;color:#2f4a7a}
+#ctxm .cxb:hover{background:var(--soft)}
 .mb.sel{box-shadow:0 0 0 3px rgba(74,163,234,.4)}
 .mb .rz2{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
 .mb .med{position:relative;z-index:1;margin-left:auto;padding-left:6px;font-size:.62rem;color:#9aa6b8;opacity:0}
@@ -584,7 +588,7 @@ function mapSide(b, left, top) {
     <div><label>이름</label><input data-f="name" value="${esc(b.name)}"></div>
     <div><label>과목</label><select data-f="subj">${ROWS.map(r => `<option value="${r.id}" ${r.id === b.subj ? 'selected' : ''}>${r.name}</option>`).join('')}</select></div>
     <div class="r2"><div style="flex:1"><label>시작</label><input type="date" data-f="s" value="${b.s}"></div><div style="flex:1"><label>끝</label><input type="date" data-f="e" value="${b.e}"></div></div>
-    <div><label>연장 · 일찍 끝</label><div class="mchips"><button data-act="mext" data-x="7">연장 +1주</button><button data-act="mext" data-x="14">+2주</button><button data-act="mext" data-x="30">+1달</button><button data-act="mext" data-x="-7">일찍 −1주</button></div></div>
+    
     <div><label>중요도</label><div class="mchips">${imp.map(([v, n]) => `<button data-act="mimp" data-v="${v}" class="${b.imp === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
     <div><label>태그</label><div class="mchips">${(S.tags || []).map(t => `<button data-act="mtag" data-t="${esc(t)}" class="${(b.tags || []).includes(t) ? 'on' : ''}">${esc(t)}<span class="tx" data-act="mtagdel" data-t="${esc(t)}">×</span></button>`).join('')}</div><input data-f="newtag" style="margin-top:7px"></div>
     ${b.base && pd(b.e) !== pd(b.base[1]) ? `<div class="bs">원계획 끝 ${md(pd(b.base[1]))} · ${pd(b.e) > pd(b.base[1]) ? '연장 +' : '일찍 −'}${Math.abs(pd(b.e) - pd(b.base[1]))}일 <button data-act="mreset">원계획으로</button></div>` : ''}
@@ -702,6 +706,14 @@ document.addEventListener('click', ev => {
 function moveKids(b, dS, dE) {
   S.blocks.filter(c => c.par === b.id).forEach(c => { const d = c.after ? dE : dS; if (!d) return; c.s = fd(pd(c.s) + d); c.e = fd(pd(c.e) + d); if (c.base) c.base = [fd(pd(c.base[0]) + d), fd(pd(c.base[1]) + d)]; moveKids(c, d, d); });
 }
+function ctxExt(m, id) {
+  const b = S.blocks.find(x => x.id === id); if (!b) return;
+  const diff = () => pd(b.e) - pd(b.base ? b.base[1] : b.e), lab = () => { const d = diff(); return d > 0 ? '+' + d + '일' : d < 0 ? '−' + (-d) + '일' : '0일'; };
+  m.innerHTML = `<div class="cx" style="cursor:default"><div style="display:flex;align-items:center;gap:6px;padding:2px 0"><button data-s="-1" class="cxb">−</button><b class="cxl" style="min-width:56px;text-align:center">${lab()}</b><button data-s="1" class="cxb">+</button></div><input type="date" class="cxd" value="${b.e}" style="margin-top:6px;width:132px;font:inherit;font-size:.74rem;border:1px solid var(--bd);border-radius:8px;padding:3px 6px"></div>`;
+  const step = n => { const e0 = pd(b.e); b.e = fd(Math.max(pd(b.s), e0 + n)); moveKids(b, 0, pd(b.e) - e0); save(); m.querySelector('.cxl').textContent = lab(); m.querySelector('.cxd').value = b.e; const sc = document.querySelector('.mp'), sl = sc ? sc.scrollLeft : 0; render(); const s2 = document.querySelector('.mp'); if (s2) s2.scrollLeft = sl; };
+  m.querySelectorAll('.cxb').forEach(bt => bt.onclick = ev => { ev.stopPropagation(); step(+bt.dataset.s); });
+  m.querySelector('.cxd').onchange = ev => { const v = ev.target.value; if (!v) return; step(pd(v) - pd(b.e)); };
+}
 function addBranch(b, after = true) {
   const root = b.par && S.blocks.find(x => x.id === b.par) ? S.blocks.find(x => x.id === b.par) : b;
   const s0 = after ? pd(root.e) + 1 : pd(root.s), nb = { id: uid(), subj: root.subj, name: '새 블록', s: fd(s0), e: fd(after ? s0 + 6 : Math.min(pd(root.e), s0 + 6)), inten: 60, imp: 1, done: 0, log: [], base: null, par: root.id, after };
@@ -721,9 +733,9 @@ function addBranch(b, after = true) {
     }
     if (!bar || UI.v !== 'm') return;
     ev.preventDefault(); const id = bar.dataset.id;
-    const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div data-c="e">수정</div><div data-c="b">분기 추가</div><div data-c="u">아래에 추가</div><div data-c="d">삭제</div>';
+    const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div data-c="e">수정</div><div data-c="b">분기 추가</div><div data-c="u">아래에 추가</div><div data-c="x">연장 / 축소</div><div data-c="d">삭제</div>';
     m.style.left = Math.min(ev.clientX, innerWidth - 110) + 'px'; m.style.top = ev.clientY + 'px'; document.body.appendChild(m);
-    m.onclick = e => { const c = e.target.dataset.c; close(); const b = S.blocks.find(x => x.id === id); if (!b) return;
+    m.onclick = e => { const c = e.target.dataset.c; if (c === 'x') { ctxExt(m, id); return; } if (e.target.closest('.cx')) return; close(); const b = S.blocks.find(x => x.id === id); if (!b) return;
       if (c === 'e') { MSEL = id; render(); }
       else if (c === 'b') addBranch(b);
       else if (c === 'u') addBranch(b, false);
