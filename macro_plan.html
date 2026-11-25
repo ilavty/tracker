@@ -107,18 +107,20 @@ button{cursor:pointer;border:none;background:none}
 .cwd{display:grid;grid-template-columns:repeat(7,1fr);font-size:.7rem;font-weight:700;color:var(--sub);text-align:center;padding:8px 0 4px}
 .cwk{position:relative;overflow:visible}
 .cbg{position:absolute;inset:0;z-index:0;display:grid;grid-template-columns:repeat(7,1fr)}
-.cd{background:#fff;border-radius:11px;margin:2px;position:relative;box-shadow:0 1px 2px rgba(60,70,90,.07)}
+.cd.gb{margin-bottom:12px}
+.cd.gr{margin-right:12px}
+.cd{background:#fff;border-radius:11px;margin:4px;position:relative;box-shadow:0 1px 2px rgba(60,70,90,.07)}
 
 .dnum .m1{color:#2f4a7a;font-weight:700}
 .cd.out{background:transparent}
-.cd.today{box-shadow:0 8px 20px rgba(47,74,122,.22),0 2px 6px rgba(47,74,122,.12);z-index:1}
+.cd.today{box-shadow:0 8px 20px rgba(90,160,230,.35),0 2px 6px rgba(90,160,230,.2);z-index:1}
 .cd .plus{position:absolute;right:4px;top:2px;font-size:.95rem;line-height:1;color:var(--sub);opacity:0;cursor:pointer;padding:0 3px;z-index:1}
 .cd:hover .plus{opacity:.9}
 .cfg{position:relative;z-index:1;display:grid;grid-template-columns:repeat(7,1fr);align-content:start;min-height:84px;pointer-events:none}
 .dnum{padding:3px 6px 1px;font-size:.72rem;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:4px;min-height:21px;pointer-events:none}
-.dnum .td{background:#e5484d;color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.dnum .td{background:#6bb5f2;color:#fff;border-radius:50%;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
 .xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
-.cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 2px;position:relative;cursor:pointer;height:20px}
+.cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 4px;position:relative;cursor:pointer;height:20px}
 .rz{position:absolute;right:0;top:0;bottom:0;width:9px;cursor:ew-resize}
 .rz:after{content:"";position:absolute;right:3px;top:5px;bottom:5px;width:2px;border-radius:1px;background:rgba(0,0,0,.28)}
 .cbar.dn .nm{text-decoration:line-through;opacity:.6}
@@ -534,10 +536,10 @@ function weekRow(ws, ms, me, ep, es) {
   for (let i = 0; i < 7; i++) {
     const d = ws + i;
     if (d < ms || d > me) { bg += '<div class="cd out"></div>'; continue; }
-    const dt = new Date(d * DAY), dd = dt.getUTCDate(), mp = '', edge = (dd <= 7 && d - 7 >= r0x ? ' bt' : '') + (dd === 1 && i > 0 ? ' bl' : '');
+    const dt = new Date(d * DAY), dd = dt.getUTCDate(), mp = '', edge = (new Date((d + 7) * DAY).getUTCMonth() !== dt.getUTCMonth() ? ' gb' : '') + (i < 6 && new Date((d + 1) * DAY).getUTCMonth() !== dt.getUTCMonth() ? ' gr' : '');
     const ph = phaseAt(d);
     const strip = '';
-    bg += `<div class="cd${d === TODAY ? ' today' : ''}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
+    bg += `<div class="cd${edge}${d === TODAY ? ' today' : ''}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${dd === 1 ? `<b class="m1">${dt.getUTCMonth() + 1}월</b> 1` : dd}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
     S.notes.filter(n => !(n.blk && S.blocks.some(x => x.id === n.blk)) && pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
