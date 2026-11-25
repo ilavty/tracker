@@ -668,7 +668,7 @@ function setZoom(v) {
 }
 document.addEventListener('input', ev => { const f = ev.target.closest && ev.target.closest('.zm input'); if (f && UI.v === 'm') setZoom(+f.value / 100); });
 document.addEventListener('click', ev => { const a = ev.target.closest && ev.target.closest('[data-act=zstep],[data-act=zreset]'); if (!a) return; if (a.dataset.act === 'zreset') setZoom(ZDEF); else setZoom((UI.zm || ZDEF) + a.dataset.d * 0.1); });
-document.addEventListener('wheel', ev => { if (!(ev.ctrlKey || ev.metaKey) || UI.v !== 'm') return; ev.preventDefault(); setZoom((UI.zm || ZDEF) * (ev.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
+document.addEventListener('wheel', ev => { if (!(ev.ctrlKey || ev.metaKey || ev.altKey) || UI.v !== 'm') return; ev.preventDefault(); const dy = ev.deltaY || ev.deltaX; if (!dy) return; setZoom((UI.zm || ZDEF) * (dy < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
 /* MAP: 점선 끌어서 달/공백 폭 조절 (더블클릭: 원래대로) */
 (function () {
   let d = null, raf = 0;
