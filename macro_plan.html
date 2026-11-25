@@ -96,12 +96,16 @@ button{cursor:pointer;border:none;background:none}
 .xm{font-style:normal;font-size:.6rem;font-weight:800;background:var(--line);color:#fff;border-radius:7px;padding:0 6px;line-height:15px}
 .cbar{pointer-events:auto;display:flex;align-items:center;gap:4px;padding:0 6px;font-size:.68rem;font-weight:600;overflow:hidden;white-space:nowrap;margin:1px 2px;position:relative;cursor:pointer;height:20px}
 .cbar.dn .nm{text-decoration:line-through;opacity:.6}
-.ck{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.35);display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.6)}
-.ck.on{background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.45);color:#fff}
+.ckc{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.35);display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.6)}
+.ckc.on{background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.45);color:#fff}
 .cph{pointer-events:auto;margin:1px 2px 2px;border-radius:5px;font-size:.62rem;font-weight:700;color:#4a4f57;padding:0 6px;overflow:hidden;white-space:nowrap;cursor:pointer;line-height:14px;height:14px}
 .tl{position:absolute;bottom:0;left:0;right:0;height:0;border-top:2px solid #e5484d;z-index:5;pointer-events:none}
 .cbar .nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .cd.sel{background-color:#dcebfd!important}
+.cp .lk{flex:none;width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 1.5px #fff}
+.cbar.lnk:after{content:"";position:absolute;right:3px;top:3px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.cbar.dg{z-index:30;pointer-events:none;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.cbar.hit{outline:2px solid #4fa8f0}
 .cp.drag{opacity:.85;z-index:30;pointer-events:none;box-shadow:0 8px 22px rgba(0,0,0,.25)}
 .cp{cursor:grab;--bc:#e9e9eb;position:absolute;z-index:6;width:max-content;max-width:230px;display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:14px;font-size:.76rem;line-height:1.4;background:var(--bc);color:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}
 .cp:after{content:"";position:absolute;bottom:-7px;left:14px;border:7px solid transparent;border-top-color:var(--bc);border-bottom:0}
@@ -389,15 +393,17 @@ function monthView() {
 const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY; };
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
+function noteDate(n) { const b = n.blk && S.blocks.find(x => x.id === n.blk); return b ? b.s : n.date; }
 function noteFloat(n, col, idx) {
+  const lb = n.blk && S.blocks.find(x => x.id === n.blk), lc = lb ? (ROW[lb.subj] || {}).c : null;
   const right = col >= 4;
   const pos = right ? `right:calc(${6 - col} / 7 * 100% + 6px)` : `left:calc(${col} / 7 * 100% + 6px)`;
-  return `<div class="cp ${n.kind} ${right ? 'r' : ''}" style="${pos};bottom:calc(100% - 4px + ${idx * 32}px);transform:translate(${n.ox || 0}px,${n.oy || 0}px)"><span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
+  return `<div class="cp ${n.kind} ${right ? 'r' : ''}" style="${pos};bottom:calc(100% - 4px + ${idx * 32}px);transform:translate(${n.ox || 0}px,${n.oy || 0}px)">${lc ? `<i class="lk" style="background:${lc}"></i>` : ''}<span class="rnote" contenteditable="true" data-nn="${n.id}">${esc(n.text)}</span><button class="bmore" data-n="${n.id}">⋯</button></div>`;
 }
 function bar(sg) {
   const b = sg.b, m = meta(b);
-  return `<div class="cbar ${b.done >= 100 ? 'dn' : ''}" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="grid-row:${sg.l + 3};grid-column:${sg.c0 + 1}/span ${sg.c1 - sg.c0 + 1};${blkStyle(b, m)};border-radius:${sg.st ? 6 : 0}px ${sg.en ? 6 : 0}px ${sg.en ? 6 : 0}px ${sg.st ? 6 : 0}px">
-    ${sg.st ? `<span class="ck ${b.done >= 100 ? 'on' : ''}" data-act="tgdone" data-id="${b.id}">${b.done >= 100 ? '✓' : ''}</span>` : ''}
+  return `<div class="cbar ${b.done >= 100 ? 'dn' : ''} ${S.notes.some(n => n.blk === b.id) ? 'lnk' : ''}" data-b="${b.id}" title="${esc(blkTitle(b, m))}" style="grid-row:${sg.l + 3};grid-column:${sg.c0 + 1}/span ${sg.c1 - sg.c0 + 1};${blkStyle(b, m)};border-radius:${sg.st ? 6 : 0}px ${sg.en ? 6 : 0}px ${sg.en ? 6 : 0}px ${sg.st ? 6 : 0}px">
+    ${sg.st ? `<span class="ckc ${b.done >= 100 ? 'on' : ''}" data-act="tgdone" data-id="${b.id}">${b.done >= 100 ? '✓' : ''}</span>` : ''}
     ${b.imp === 2 ? `<span class="must" style="background:#fff;color:#444;border:1px solid rgba(0,0,0,.25)">필수</span>` : ''}
     <span class="nm"><b>${m.r.name}</b> ${esc(b.name)}</span>
     ${m.d && sg.en ? `<span class="dl">${dlabel(m.d)}</span>` : ''}${m.od && sg.en ? `<span class="dl od">이월 ${m.od}</span>` : ''}
@@ -409,9 +415,14 @@ function weekRow(ws, ms, me, ep, es) {
     const s = pd(b.s), e = pd(b.e), a = Math.max(s, ws, ms), z = Math.min(e, ws + 6, me);
     if (a <= z) segs.push({ b, c0: a - ws, c1: z - ws, st: s >= a, en: e <= z });
   });
-  segs.sort((x, y) => x.c0 - y.c0 || (y.c1 - y.c0) - (x.c1 - x.c0));
+  const ordIdx = id => S.blocks.findIndex(x => x.id === id);
+  segs.sort((x, y) => ordIdx(x.b.id) - ordIdx(y.b.id));
   const lanes = [];
-  segs.forEach(sg => { let i = lanes.findIndex(end => end < sg.c0); if (i < 0) { i = lanes.length; lanes.push(-1); } lanes[i] = sg.c1; sg.l = i; });
+  segs.forEach(sg => {
+    let i = lanes.findIndex(occ => { for (let c = sg.c0; c <= sg.c1; c++) if (occ[c]) return false; return true; });
+    if (i < 0) { i = lanes.length; lanes.push([]); }
+    for (let c = sg.c0; c <= sg.c1; c++) lanes[i][c] = 1; sg.l = i;
+  });
   const L = lanes.length;
   let bg = '', fg = '', pops = '', tline = '';
   S.phases.forEach(ph => {
@@ -425,7 +436,7 @@ function weekRow(ws, ms, me, ep, es) {
     const strip = '';
     bg += `<div class="cd" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
     fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${new Date(d * DAY).getUTCDate()}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
-    S.notes.filter(n => pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
+    S.notes.filter(n => pd(noteDate(n)) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
   segs.forEach(sg => { fg += bar(sg); });
   if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl"></div>`;
@@ -582,32 +593,42 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#
     }
     return null;
   };
-  const clr = () => document.querySelectorAll('.cd.sel').forEach(c => c.classList.remove('sel'));
+  const barAt = (x, y) => { for (const el of document.elementsFromPoint(x, y)) { const b = el.closest && el.closest('.cbar'); if (b) return b; } return null; };
+  const clr = () => document.querySelectorAll('.cbar.hit').forEach(x => x.classList.remove('hit')) ||  document.querySelectorAll('.cd.sel').forEach(c => c.classList.remove('sel'));
   let D = null;
   document.addEventListener('pointerdown', ev => {
     if (ev.button !== 0 || $('#modal').classList.contains('on')) return;
     const bub = ev.target.closest('.cp');
     if (bub) { if (ev.target.closest('button')) return; D = { t: 'n', el: bub, x: ev.clientX, y: ev.clientY, on: false }; return; }
+    const br = ev.target.closest('.cbar');
+    if (br && !ev.target.closest('.ckc')) { D = { t: 'r', el: br, id: br.dataset.b, x: ev.clientX, y: ev.clientY, on: false }; return; }
     if (ev.target.closest('.cbar,.plus,.cph,.wm')) return;
     const cell = ev.target.closest('.cd[data-d]');
     if (cell) { D = { t: 'b', a: +cell.dataset.d, b: +cell.dataset.d, on: false, x: ev.clientX, y: ev.clientY }; }
   });
   document.addEventListener('pointermove', ev => {
     if (!D) return;
-    if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'n') { D.el.classList.add('drag'); const nn = S.notes.find(x => x.id === D.el.querySelector('[data-nn]').dataset.nn) || {}; D.ox = nn.ox || 0; D.oy = nn.oy || 0; } }
+    if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'r') D.el.classList.add('dg');
+    if (D.t === 'n') { D.el.classList.add('drag'); const nn = S.notes.find(x => x.id === D.el.querySelector('[data-nn]').dataset.nn) || {}; D.ox = nn.ox || 0; D.oy = nn.oy || 0; } }
     ev.preventDefault();
-    if (D.t === 'n') { D.dx = ev.clientX - D.x; D.dy = ev.clientY - D.y; D.el.style.transform = `translate(${D.ox + D.dx}px,${D.oy + D.dy}px)`; }
+    if (D.t === 'r') { D.dy = ev.clientY - D.y; D.el.style.transform = `translateY(${D.dy}px)`; clr(); const hb = barAt(ev.clientX, ev.clientY); D.hb = (hb && hb.dataset.b !== D.id) ? hb : null; if (D.hb) D.hb.classList.add('hit'); }
+    else if (D.t === 'n') { D.dx = ev.clientX - D.x; D.dy = ev.clientY - D.y; document.querySelectorAll('.cbar.hit').forEach(x => x.classList.remove('hit')); { const hb = barAt(ev.clientX, ev.clientY); D.hb = hb; if (hb) hb.classList.add('hit'); } D.el.style.transform = `translate(${D.ox + D.dx}px,${D.oy + D.dy}px)`; }
     else { const d = dayAt(ev.clientX, ev.clientY); if (d != null) D.b = d; clr(); const lo = Math.min(D.a, D.b), hi = Math.max(D.a, D.b); document.querySelectorAll('.cd[data-d]').forEach(c => { const v = +c.dataset.d; if (v >= lo && v <= hi) c.classList.add('sel'); }); }
   });
   const end = ev => {
     if (!D) return; const d0 = D; D = null; clr(); document.body.style.userSelect = ''; document.body.style.webkitUserSelect = '';
     if (!d0.on) return;
-    if (d0.t === 'n') {
+    if (d0.t === 'r') {
+      window.__sup = true; setTimeout(() => { window.__sup = false; }, 60);
+      if (d0.hb) { const ti = S.blocks.findIndex(x => x.id === d0.hb.dataset.b), fi = S.blocks.findIndex(x => x.id === d0.id); if (ti >= 0 && fi >= 0) { const [m] = S.blocks.splice(fi, 1); const at = S.blocks.findIndex(x => x.id === d0.hb.dataset.b); const r = d0.hb.getBoundingClientRect(); S.blocks.splice(ev.clientY < r.top + r.height / 2 ? at : at + 1, 0, m); save(); } }
+      render();
+    } else if (d0.t === 'n') {
       const id = d0.el.querySelector('[data-nn]').dataset.nn, n = S.notes.find(x => x.id === id);
-      if (n) { n.ox = Math.round(d0.ox + d0.dx); n.oy = Math.round(d0.oy + d0.dy); save(); }
+      if (n) { if (d0.hb) { n.blk = d0.hb.dataset.b; n.ox = 0; n.oy = 0; } else { n.ox = Math.round(d0.ox + d0.dx); n.oy = Math.round(d0.oy + d0.dy); } save(); }
       render();
     } else if (d0.a !== d0.b) { openBlock(null, { s: fd(Math.min(d0.a, d0.b)), e: fd(Math.max(d0.a, d0.b)) }); }
   };
+  document.addEventListener('click', e => { if (window.__sup) { e.stopPropagation(); e.preventDefault(); } }, true);
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
 function setDone(b, v) { if (v >= 100 && b.done < 100) b.doneAt = TODAY; if (v < 100) b.doneAt = null; b.done = v; }
@@ -624,13 +645,15 @@ function openNote(id, pre) {
     <h3>${old ? '말풍선' : '말풍선 추가'}</h3>
     <label>종류</label><div class="chips" id="f-kind">${Object.keys(KINDS).map(k => `<button data-k="${k}" class="${k === n.kind ? 'on' : ''}">${KINDS[k]}</button>`).join('')}</div>
     <label>날짜</label><input type="date" id="f-nd" value="${n.date}">
+    <label>블록에 연결</label><select id="f-nb"><option value="">연결 안 함</option>${S.blocks.map(b => `<option value="${b.id}" ${b.id === n.blk ? 'selected' : ''}>${ROW[b.subj].name} ${esc(b.name)}</option>`).join('')}</select>
     <label>내용</label><input type="text" id="f-nt" value="${esc(n.text)}">
     <div class="btns"><button class="sv" data-act="savenote">저장</button><button class="cx" data-act="close">취소</button><span class="sp" style="flex:1"></span>${old ? `<button class="dx" data-act="delnote">삭제</button>` : ''}</div></div>`);
 }
 function saveNote() {
   const id = $('.mbox').dataset.id, date = $('#f-nd').value, text = $('#f-nt').value.trim(), k = $('#f-kind button.on'), kind = k ? k.dataset.k : 'memo';
   if (!date || !text) { toast('날짜와 내용을 확인해줘'); return; }
-  if (id) Object.assign(S.notes.find(n => n.id === id), { date, text, kind }); else S.notes.push({ id: uid(), date, text, kind });
+  const blk = $('#f-nb').value || null;
+  if (id) { const o = S.notes.find(n => n.id === id); Object.assign(o, { date, text, kind, blk }); if (!blk) delete o.blk; } else S.notes.push(blk ? { id: uid(), date, text, kind, blk } : { id: uid(), date, text, kind });
   save(); closeModal(); render();
 }
 /* 말풍선 안에서 바로 고치기 */
