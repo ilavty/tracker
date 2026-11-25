@@ -816,7 +816,7 @@ function focusF() {
 function layoutRail(f) {
   const n = RAIL.items.length, H = RAIL.H, ws = [], ys = [];
   let tot = 0;
-  for (let i = 0; i < n; i++) { const d = (i - f) / 15, w = 1 + 7 * Math.exp(-d * d); ws.push(w); tot += w; }
+  for (let i = 0; i < n; i++) { const d = (i - f) / 4.5, w = 1 + 13 * Math.exp(-d * d); ws.push(w); tot += w; }
   let c = 0;
   for (let i = 0; i < n; i++) { ys.push((c + ws[i] / 2) / tot * H); c += ws[i]; }
   RAIL.ws = ws; RAIL.ys = ys;
@@ -841,7 +841,7 @@ function drawRail() {
   if (curMo == null) { const f0 = it.findIndex(x => x.k === 'm'); if (f0 >= 0) curMo = f0; }
   const cy = curMo != null ? RAIL.ys[curMo] : -99;
   it.forEach((x, i) => {
-    const y = RAIL.ys[i], w = RAIL.ws[i], g = Math.min(1, (w - 1) / 6.5);
+    const y = RAIL.ys[i], w = RAIL.ws[i], g = Math.min(1, (w - 1) / 9);
     const len = x.k === 'm' ? 12 + 8 * g : 5 + 5 * g, ty = Math.round(y);
     html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${ty}px;width:${len.toFixed(0)}px"></div>`;
     if (x.k === 'm') {
