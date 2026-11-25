@@ -79,7 +79,7 @@ button{cursor:pointer;border:none;background:none}
 #rail .rl{position:absolute;left:10px;top:0;bottom:0;width:1.5px;background:#c3c7ce;border-radius:1px}
 #rail .tk{position:absolute;left:10px;height:1px;background:#c3c7ce}
 #rail .tk.mo{background:#111}
-#rail .lb{position:absolute;transform:translateY(-50%);font-weight:600;color:#8fa6c9;white-space:nowrap;line-height:1}
+#rail .lb{position:absolute;transform:translateY(-50%);font-weight:700;letter-spacing:.08em;color:#8fa6c9;white-space:nowrap;line-height:1}
 #rail .lb.on{color:#2f4a7a}
 .mlx{font-size:17px;font-weight:600;line-height:1;color:#8fa6c9;white-space:nowrap;margin-right:6px}
 .mlx.on{color:#2f4a7a}
@@ -425,6 +425,7 @@ function monthView() {
 const MON = n => { const t = new Date(n * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY; };
 const NEXTMON = ms => { const t = new Date(ms * DAY); return Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1) / DAY; };
 const WD = ['월', '화', '수', '목', '금', '토', '일'];
+const EN = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'], WDE = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
 function mgList(k) { let v = S.mgoals[k]; if (typeof v === 'string') v = S.mgoals[k] = v ? [{ id: uid(), t: v, d: 0 }] : []; return v || (S.mgoals[k] = []); }
 function mgHtml(k) {
   return mgList(k).map(g => `<div class="gi ${g.d ? 'dn' : ''}"><span class="gc ${g.d ? 'on' : ''}" data-gc="${g.id}" data-k="${k}">${g.d ? '✓' : ''}</span><span class="gt" contenteditable="true" data-gt="${g.id}" data-k="${k}">${esc(g.t)}</span></div>`).join('') + `<button class="gadd" data-gadd="${k}">+</button>`;
@@ -499,7 +500,7 @@ function calView() {
     pl.push({ ph, a, z, lane });
   });
   const nl = pl.reduce((m, q) => Math.max(m, q.lane + 1), 0), LW = 22;
-  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WD.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid" style="grid-template-columns:minmax(0,1fr) ' + (nl ? nl * LW + 12 : 0) + 'px 250px">';
+  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WDE.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid" style="grid-template-columns:minmax(0,1fr) ' + (nl ? nl * LW + 12 : 0) + 'px 250px">';
   pl.forEach(q => {
     const g = q.ph.pit >= 100 ? rgba(ROW.P.c, .55) : q.ph.pit <= 0 ? rgba(ROW.S.c, .55) : `linear-gradient(to right, ${rgba(ROW.P.c, .55)} 0 ${q.ph.pit}%, ${rgba(ROW.S.c, .55)} ${q.ph.pit}% 100%)`;
     h += `<div class="pv" data-p="${q.ph.id}" title="${esc(q.ph.name)} ${q.ph.pit}/${100 - q.ph.pit} · ${md(pd(q.ph.s))}–${md(pd(q.ph.e))}" style="grid-column:2;grid-row:${q.a + 1}/span ${q.z - q.a + 1};margin-left:${12 + q.lane * LW}px;width:${LW - 5}px;background:${g}"><span>${esc(q.ph.name)} ${q.ph.pit}/${100 - q.ph.pit}</span></div>`;
@@ -541,7 +542,7 @@ function weekRow(ws, ms, me, ep, es) {
     const ph = phaseAt(d);
     const strip = '';
     bg += `<div class="cd${edge}${d === TODAY ? ' today' : ''}" data-d="${d}" ${d === TODAY ? 'id="tdcell"' : ''} style="${strip}"><span class="plus" data-act="qnoted" data-d="${d}">+</span></div>`;
-    fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${dd === 1 ? `<b class="m1">${dt.getUTCMonth() + 1}월</b> 1` : dd}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
+    fg += `<div class="dnum" style="grid-row:1;grid-column:${i + 1}"><span class="${d === TODAY ? 'td' : ''}">${dd === 1 ? `<b class="m1">${EN[dt.getUTCMonth()]}</b> 1` : dd}</span>${d === ep ? '<em class="xm">1차 시험</em>' : d === es ? '<em class="xm">2차 시험</em>' : ''}</div>`;
     S.notes.filter(n => !(n.blk && S.blocks.some(x => x.id === n.blk)) && pd(n.date) === d).forEach((n, k) => { pops += noteFloat(n, i, k); });
   }
   segs.forEach(sg => {
@@ -852,7 +853,7 @@ function drawRail() {
     if (x.k === 'm') {
       const cur = i === curMo, fs = cur ? 18 : 10;
       const show = cur || (Math.abs(y - cy) >= 24 && y - lastY >= 14);
-      if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo === '1' ? "’" + String(x.y).slice(2) + ' ' : ''}${x.mo}월</div>`; }
+      if (show) { lastY = y; html += `<div class="lb ${cur ? 'on' : ''}" style="top:${ty}px;left:${(10 + len + 6).toFixed(0)}px;font-size:${fs}px">${x.mo === '1' ? "’" + String(x.y).slice(2) + ' ' : ''}${EN[+x.mo - 1]}</div>`; }
     }
   });
   document.querySelectorAll('.mlx').forEach(l => l.classList.toggle('on', curMo != null && RAIL.items[curMo].id === l.dataset.ml));
