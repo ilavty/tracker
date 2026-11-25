@@ -488,9 +488,9 @@ function mapView() {
     const lanes = []; r.bs.sort((a, b) => pd(a.s) - pd(b.s));
     const has = id => r.bs.some(x => x.id === id), kids = {}; r.bs.forEach(b => { if (b.par && has(b.par)) (kids[b.par] = kids[b.par] || []).push(b); });
     r.bs.filter(b => !(b.par && has(b.par))).forEach(b => {
-      const ch = kids[b.id] || [], n = ch.length, st = Math.min(pd(b.s), ...ch.map(c => pd(c.s))), en = Math.max(pd(b.e), ...ch.map(c => pd(c.e)));
+      const ch = kids[b.id] || [], A = ch.filter(c => c.after), B = ch.filter(c => !c.after), na = Math.max(1, A.length), n = na + B.length - 1, st = Math.min(pd(b.s), ...ch.map(c => pd(c.s))), en = Math.max(pd(b.e), ...ch.map(c => pd(c.e)));
       let k = 0; for (; ; k++) { let ok = true; for (let j = 0; j <= n; j++) if (lanes[k + j] !== undefined && lanes[k + j] >= st) { ok = false; break; } if (ok) break; }
-      b._l = k; ch.forEach((c, i) => c._l = k + 1 + i); for (let j = 0; j <= n; j++) lanes[k + j] = en;
+      b._l = k + (na - 1) / 2; A.forEach((c, i) => c._l = k + i); B.forEach((c, i) => c._l = k + na + i); for (let j = 0; j <= n; j++) lanes[k + j] = en;
     });
     r.n = Math.max(1, lanes.length); r.h = r.n * (RH + LG) + 16; r.y = y; y += r.h; const nxr = rows[rows.indexOf(r) + 1];
     if (!nxr || nxr.g !== r.g) { const items = []; let mh = 0; MCOL.forEach(m => { const gt = (S.gmemo || {})[r.g + '|' + m.k] || '', cpl = Math.max(4, Math.floor((m.w - 30) / 12)), ln = gt ? gt.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / cpl)), 0) : 0, h = gt ? ln * 19 + 14 : 0; mh = Math.max(mh, h); items.push({ k: m.k, x: m.x, w: m.w, t: gt, h }); }); mh = Math.max(24, mh); GM[r.g] = { y: y + 4, h: mh, items }; y += mh + 10 + (nxr ? 16 : 0); }
