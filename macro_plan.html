@@ -500,7 +500,7 @@ function calView() {
     pl.push({ ph, a, z, lane });
   });
   const nl = pl.reduce((m, q) => Math.max(m, q.lane + 1), 0), LW = 22;
-  let h = '<div class="cv"><div class="cwr cwdr"><div class="cwd">' + WDE.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid" style="grid-template-columns:minmax(0,1fr) ' + (nl ? nl * LW + 12 : 0) + 'px 250px">';
+  let h = '<div class="cv"><div class="cwr cwdr" style="grid-template-columns:minmax(0,1fr) ' + (nl ? nl * LW + 12 : 0) + 'px 250px;gap:0"><div class="cwd">' + WDE.map(w => `<div>${w}</div>`).join('') + '</div></div><div class="cgrid" style="grid-template-columns:minmax(0,1fr) ' + (nl ? nl * LW + 12 : 0) + 'px 250px">';
   pl.forEach(q => {
     const g = q.ph.pit >= 100 ? rgba(ROW.P.c, .55) : q.ph.pit <= 0 ? rgba(ROW.S.c, .55) : `linear-gradient(to right, ${rgba(ROW.P.c, .55)} 0 ${q.ph.pit}%, ${rgba(ROW.S.c, .55)} ${q.ph.pit}% 100%)`;
     h += `<div class="pv" data-p="${q.ph.id}" title="${esc(q.ph.name)} ${q.ph.pit}/${100 - q.ph.pit} · ${md(pd(q.ph.s))}–${md(pd(q.ph.e))}" style="grid-column:2;grid-row:${q.a + 1}/span ${q.z - q.a + 1};margin-left:${12 + q.lane * LW}px;width:${LW - 5}px;background:${g}"><span>${esc(q.ph.name)} ${q.ph.pit}/${100 - q.ph.pit}</span></div>`;
