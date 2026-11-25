@@ -99,9 +99,11 @@ button{cursor:pointer;border:none;background:none}
 .ck{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.35);display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.6)}
 .ck.on{background:rgba(0,0,0,.45);border-color:rgba(0,0,0,.45);color:#fff}
 .cph{pointer-events:auto;margin:1px 2px 2px;border-radius:5px;font-size:.62rem;font-weight:700;color:#4a4f57;padding:0 6px;overflow:hidden;white-space:nowrap;cursor:pointer;line-height:14px;height:14px}
-.tl{position:absolute;top:0;left:0;right:0;height:0;border-top:2px solid #e5484d;z-index:5;pointer-events:none}
+.tl{position:absolute;bottom:0;left:0;right:0;height:0;border-top:2px solid #e5484d;z-index:5;pointer-events:none}
 .cbar .nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
-.cp{--bc:#e9e9eb;position:absolute;z-index:6;width:max-content;max-width:230px;display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:14px;font-size:.76rem;line-height:1.4;background:var(--bc);color:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+.cd.sel{background-color:#dcebfd!important}
+.cp.drag{opacity:.85;z-index:30;pointer-events:none;box-shadow:0 8px 22px rgba(0,0,0,.25)}
+.cp{cursor:grab;--bc:#e9e9eb;position:absolute;z-index:6;width:max-content;max-width:230px;display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:14px;font-size:.76rem;line-height:1.4;background:var(--bc);color:#222;box-shadow:0 2px 8px rgba(0,0,0,.14)}
 .cp:after{content:"";position:absolute;bottom:-7px;left:14px;border:7px solid transparent;border-top-color:var(--bc);border-bottom:0}
 .cp.r:after{left:auto;right:14px}
 .cp.pay{--bc:#a9d3f5;color:#1d3345}
@@ -427,7 +429,7 @@ function weekRow(ws, ms, me, ep, es) {
   }
   segs.forEach(sg => { fg += bar(sg); });
   if (TODAY >= ws && TODAY <= ws + 6 && TODAY >= ms && TODAY <= me) tline = `<div class="tl"></div>`;
-  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 16px repeat(${L},22px) auto">${fg}</div>${tline}${pops}</div>`;
+  return `<div class="cwk"><div class="cbg">${bg}</div><div class="cfg" style="grid-template-rows:auto 16px repeat(${L + 1},22px) auto">${fg}</div>${tline}${pops}</div>`;
 }
 function calView() {
   const [r0, r1] = range();
@@ -569,6 +571,45 @@ document.addEventListener('dblclick', ev => {
   openBlock(null, { subj: tr.dataset.row, s: fd(n), e: fd(n + 13) });
 });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { if ($('#modal').classList.contains('on')) closeModal(); else { try { window.parent.postMessage({ type: 'roadmapClose' }, '*'); } catch (e) { } } } });
+
+/* ---- 드래그: 날짜 칸 끌어서 블록 추가 / 말풍선 끌어서 날짜 이동 ---- */
+(function () {
+  const dayAt = (x, y) => {
+    for (const el of document.elementsFromPoint(x, y)) {
+      const w = el.closest && el.closest('.cwk'); if (!w) continue;
+      for (const c of w.querySelectorAll('.cd[data-d]')) { const r = c.getBoundingClientRect(); if (x >= r.left && x <= r.right) return +c.dataset.d; }
+      return null;
+    }
+    return null;
+  };
+  const clr = () => document.querySelectorAll('.cd.sel').forEach(c => c.classList.remove('sel'));
+  let D = null;
+  document.addEventListener('pointerdown', ev => {
+    if (ev.button !== 0 || $('#modal').classList.contains('on')) return;
+    const bub = ev.target.closest('.cp');
+    if (bub) { if (ev.target.closest('button')) return; D = { t: 'n', el: bub, x: ev.clientX, y: ev.clientY, on: false }; return; }
+    if (ev.target.closest('.cbar,.plus,.cph,.wm')) return;
+    const cell = ev.target.closest('.cd[data-d]');
+    if (cell) { D = { t: 'b', a: +cell.dataset.d, b: +cell.dataset.d, on: false, x: ev.clientX, y: ev.clientY }; }
+  });
+  document.addEventListener('pointermove', ev => {
+    if (!D) return;
+    if (!D.on) { if (Math.hypot(ev.clientX - D.x, ev.clientY - D.y) < 5) return; D.on = true; document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; try { getSelection().removeAllRanges(); } catch (e) { } if (D.t === 'n') D.el.classList.add('drag'); }
+    ev.preventDefault();
+    if (D.t === 'n') { D.el.style.transform = `translate(${ev.clientX - D.x}px,${ev.clientY - D.y}px)`; D.d = dayAt(ev.clientX, ev.clientY); clr(); if (D.d != null) document.querySelector(`.cd[data-d="${D.d}"]`).classList.add('sel'); }
+    else { const d = dayAt(ev.clientX, ev.clientY); if (d != null) D.b = d; clr(); const lo = Math.min(D.a, D.b), hi = Math.max(D.a, D.b); document.querySelectorAll('.cd[data-d]').forEach(c => { const v = +c.dataset.d; if (v >= lo && v <= hi) c.classList.add('sel'); }); }
+  });
+  const end = ev => {
+    if (!D) return; const d0 = D; D = null; clr(); document.body.style.userSelect = ''; document.body.style.webkitUserSelect = '';
+    if (!d0.on) return;
+    if (d0.t === 'n') {
+      const id = d0.el.querySelector('[data-nn]').dataset.nn, n = S.notes.find(x => x.id === id);
+      if (n && d0.d != null) { n.date = fd(d0.d); save(); }
+      render();
+    } else if (d0.a !== d0.b) { openBlock(null, { s: fd(Math.min(d0.a, d0.b)), e: fd(Math.max(d0.a, d0.b)) }); }
+  };
+  document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+})();
 function setDone(b, v) { if (v >= 100 && b.done < 100) b.doneAt = TODAY; if (v < 100) b.doneAt = null; b.done = v; }
 function quickNoteD(d) {
   const n = { id: uid(), date: fd(d), text: '', kind: 'memo', fresh: true };
