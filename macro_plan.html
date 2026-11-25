@@ -113,7 +113,7 @@ button{cursor:pointer;border:none;background:none}
 
 .dnum .m1{color:#2f4a7a;font-weight:700}
 .cd.out{background:transparent}
-.cd.today{box-shadow:0 3px 8px rgba(90,160,230,.28),0 1px 2px rgba(90,160,230,.18);z-index:1}
+.cd.today{box-shadow:0 0 9px 1px rgba(100,170,235,.5);z-index:1}
 .cd .plus{position:absolute;right:4px;top:2px;font-size:.95rem;line-height:1;color:var(--sub);opacity:0;cursor:pointer;padding:0 3px;z-index:1}
 .cd:hover .plus{opacity:.9}
 .cfg{position:relative;z-index:1;display:grid;grid-template-columns:repeat(7,1fr);align-content:start;min-height:84px;pointer-events:none}
@@ -816,7 +816,7 @@ function focusF() {
 function layoutRail(f) {
   const n = RAIL.items.length, H = RAIL.H, ws = [], ys = [];
   let tot = 0;
-  for (let i = 0; i < n; i++) { const d = (i - f) / 8, w = 1 + 6.5 * Math.exp(-d * d); ws.push(w); tot += w; }
+  for (let i = 0; i < n; i++) { const d = (i - f) / 15, w = 1 + 7 * Math.exp(-d * d); ws.push(w); tot += w; }
   let c = 0;
   for (let i = 0; i < n; i++) { ys.push((c + ws[i] / 2) / tot * H); c += ws[i]; }
   RAIL.ws = ws; RAIL.ys = ys;
@@ -841,7 +841,7 @@ function drawRail() {
   if (curMo == null) { const f0 = it.findIndex(x => x.k === 'm'); if (f0 >= 0) curMo = f0; }
   const cy = curMo != null ? RAIL.ys[curMo] : -99;
   it.forEach((x, i) => {
-    const y = RAIL.ys[i], w = RAIL.ws[i], g = (w - 1) / 6.5;
+    const y = RAIL.ys[i], w = RAIL.ws[i], g = Math.min(1, (w - 1) / 6.5);
     const len = x.k === 'm' ? 12 + 8 * g : 5 + 5 * g, ty = Math.round(y);
     html += `<div class="tk ${x.k === 'm' ? 'mo' : ''}" style="top:${ty}px;width:${len.toFixed(0)}px"></div>`;
     if (x.k === 'm') {
