@@ -216,6 +216,8 @@ button{cursor:pointer;border:none;background:none}
 .mb{position:absolute;box-sizing:border-box;height:26px;border:1.4px solid #2f4a7a;border-radius:8px;background:#fff;font-size:.72rem;font-weight:700;color:#2f4a7a;display:flex;align-items:center;padding:0 8px;cursor:grab;overflow:hidden;white-space:nowrap;touch-action:none;user-select:none;-webkit-user-select:none}
 .mb .pg{position:absolute;left:0;top:0;bottom:0;opacity:.45;pointer-events:none}
 .mb span{position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis}
+.mb .bn{flex:0 1 auto;min-width:0}
+.mb .bd{flex:none;margin-left:8px;font-weight:500;font-size:.62rem;color:#6b7a94}
 .mb.sel{box-shadow:0 0 0 3px rgba(74,163,234,.4)}
 .mb .rz2{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
 .mb .med{position:relative;z-index:1;margin-left:auto;padding-left:6px;font-size:.62rem;color:#9aa6b8;opacity:0}
@@ -483,7 +485,7 @@ function mapView() {
     bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${TW - TL}px;top:${mids(r) + 18}px"></div>`;
     r.bs.forEach(b => {
       const x = TL + idx(pd(b.s)) * px, w = Math.max(14, (idx(pd(b.e)) + 1 - idx(pd(b.s))) * px - 2), yy = r.y + 8 + b._l * (RH + LG);
-      bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span>${esc(b.name)}</span><span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
+      bars += `<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c};background:${rgba(r.c, .22)}"><div class="pg" style="width:${b.done}%;background:${r.c}"></div><span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div>`;
     });
   });
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
