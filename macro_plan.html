@@ -805,9 +805,14 @@ function buildItems() {
     if (m.classList.contains('msec')) RAIL.items.push({ k: 'm', top: docTop(m), mo: m.dataset.mo, y: m.dataset.y, id: m.id });
     else RAIL.items.push({ k: 'w', top: docTop(m) });
   });
+  RAIL.items.sort((p, q) => p.top - q.top || (p.k === 'm' ? -1 : 1));
+}
+function railOff() {
+  const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight), p = Math.max(0, Math.min(1, window.scrollY / max));
+  return RAIL_OFF + (window.innerHeight - RAIL_OFF) * p;
 }
 function focusF() {
-  const it = RAIL.items, y = window.scrollY + RAIL_OFF;
+  const it = RAIL.items, y = window.scrollY + railOff();
   if (!it.length) return 0;
   if (y <= it[0].top) return 0;
   for (let i = 0; i < it.length - 1; i++) if (y < it[i + 1].top) return i + (y - it[i].top) / Math.max(1, it[i + 1].top - it[i].top);
@@ -837,7 +842,7 @@ function drawRail() {
   RAIL.H = railH(); r.style.top = railTop() + 'px'; r.style.height = RAIL.H + 'px';
   const f = focusF(); layoutRail(f);
   const it = RAIL.items; let html = '<div class="rl"></div>', lastY = -99, curMo = null;
-  it.forEach((x, i) => { if (x.k === 'm' && x.top - window.scrollY <= RAIL_OFF) curMo = i; });
+  it.forEach((x, i) => { if (x.k === 'm' && x.top - window.scrollY <= railOff()) curMo = i; });
   if (curMo == null) { const f0 = it.findIndex(x => x.k === 'm'); if (f0 >= 0) curMo = f0; }
   const cy = curMo != null ? RAIL.ys[curMo] : -99;
   it.forEach((x, i) => {
@@ -861,7 +866,8 @@ function drawRail() {
     const ys = RAIL.ys, it = RAIL.items; if (!ys.length) return;
     let i = 0; while (i < ys.length - 2 && y > ys[i + 1]) i++;
     const t = Math.max(0, Math.min(1, (y - ys[i]) / Math.max(1, ys[i + 1] - ys[i])));
-    window.scrollTo({ top: it[i].top + t * (it[i + 1].top - it[i].top) - RAIL_OFF, behavior: 'auto' });
+    const Y = it[i].top + t * (it[i + 1].top - it[i].top), mx = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    window.scrollTo({ top: Math.max(0, Math.min(mx, (Y - RAIL_OFF) / (1 + (window.innerHeight - RAIL_OFF) / mx))), behavior: 'auto' });
     const th = $('#rth'); if (th) th.style.top = y + 'px';
   };
   r.addEventListener('selectstart', e => e.preventDefault());
