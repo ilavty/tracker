@@ -37,6 +37,16 @@ button{cursor:pointer;border:none;background:none}
 .stats{display:flex;gap:6px;flex-wrap:wrap;max-width:1500px;margin:0 auto 14px}
 .st{font-size:.8rem;padding:4px 11px;border-radius:14px;background:var(--soft);color:var(--txt);font-weight:500}
 .st b{font-weight:800}
+.st.lk{cursor:pointer}
+.st.lk:hover{background:#e8ecf3}
+#stpop{position:fixed;z-index:9998;background:#fff;border:1px solid var(--bd);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:6px;min-width:230px;max-width:340px;max-height:320px;overflow:auto;scrollbar-width:none}
+#stpop::-webkit-scrollbar{display:none}
+#stpop .it{display:flex;gap:8px;align-items:center;padding:6px 9px;border-radius:8px;cursor:pointer;font-size:.78rem}
+#stpop .it:hover{background:var(--soft)}
+#stpop .it i{width:9px;height:9px;border-radius:50%;flex:none}
+#stpop .it b{font-weight:700}
+#stpop .it small{margin-left:auto;color:#6b7a94;font-size:.66rem;white-space:nowrap}
+#stpop .em{padding:8px 10px;color:#9aa6b8;font-size:.76rem}
 .st.dd{background:#fff;border:1px solid var(--line);cursor:pointer}
 
 /* month view */
@@ -318,13 +328,13 @@ function seedState() {
     { id: uid(), date: '2027-01-18', text: '2차 개강', kind: 'sched', seed: true },
     { id: uid(), date: '2027-02-14', text: '상황판단 밀린 거 따라잡기', kind: 'memo', seed: true },
   ];
-  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {}, mgoals: {}, mmemo: {}, tags: ['강의', '블랭크', '기출', '노트정리'] };
+  return { ts: 0, exams: { p: '2027-07-10', s: '2027-09-11' }, phases, blocks, notes, wmemos: {}, mgoals: {}, mmemo: {}, months: [], tags: ['강의', '블랭크', '기출', '노트정리'] };
 }
 function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
-  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
+  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.months = Array.isArray(x.months) ? x.months : []; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
   Object.keys(x.wmemos).forEach(k => { const v = x.wmemos[k]; if (v && !x.mgoals['w:' + k]) x.mgoals['w:' + k] = [{ id: uid(), t: String(v).replace(/\n+/g, ' '), d: 0 }]; delete x.wmemos[k]; });
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
@@ -405,6 +415,7 @@ function render() {
 function renderTop() {
   $('#top').innerHTML = statsHtml() + `
     <span class="sp"></span>
+    <button class="pill" data-act="addmonth">+ 월</button>
     <button class="pill" data-act="addblock">+ 블록</button>
     ${(S.blocks.some(b => b.seed) || S.notes.some(n => n.seed)) ? `<button class="pill" data-act="clearseed">예시 비우기</button>` : ''}`;
 }
@@ -416,10 +427,10 @@ function statsHtml() {
   return `
     <span class="st dd" data-act="exams">1차 ${md(pd(S.exams.p))} <b>${dd(pd(S.exams.p))}</b></span>
     <span class="st dd" data-act="exams">2차 ${md(pd(S.exams.s))} <b>${dd(pd(S.exams.s))}</b></span>
-    <span class="st">필수 <b>${mustDone}</b> / ${must.length} 완료</span>
-    <span class="st">이월 <b>${late}</b></span>
-    <span class="st">밀림 <b>${slipped}</b></span>
-    <span class="st">앞섬 <b>${ahead}</b></span>`;
+    <span class="st lk" data-act="stlist" data-k="must">필수 <b>${mustDone}</b> / ${must.length} 완료</span>
+    <span class="st lk" data-act="stlist" data-k="late">이월 <b>${late}</b></span>
+    <span class="st lk" data-act="stlist" data-k="slip">밀림 <b>${slipped}</b></span>
+    <span class="st lk" data-act="stlist" data-k="ahead">앞섬 <b>${ahead}</b></span>`;
 }
 
 
@@ -428,6 +439,7 @@ let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236;
 function mapSegs() {
   const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
+  (S.months || []).forEach(k => { const [y, m] = k.split('-').map(Number); iv.push([Date.UTC(y, m - 1, 1) / DAY, Date.UTC(y, m, 0) / DAY]); });   // 직접 추가한 달
   iv.sort((a, b) => a[0] - b[0]); const out = [];
   iv.forEach(([a, b]) => { const l = out[out.length - 1]; if (l && a <= l[1] + 1) l[1] = Math.max(l[1], b); else out.push([a, b]); });
   return out;
@@ -459,7 +471,7 @@ function mapView() {
   cols.forEach((c, i) => {
     const x0 = TL + idx(c.a) * px, x1 = TL + (idx(c.b) + 1) * px;
     bg += `<div class="mbd ${c.ci % 2 ? 'b' : 'a'}" style="left:${x0}px;width:${x1 - x0}px;height:${H}px"></div>`;
-    if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" style="left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
+    if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" data-k="${mk}" style="left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
     lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
     const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
   });
@@ -585,6 +597,7 @@ document.addEventListener('change', ev => {
   };
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
+document.addEventListener('pointerdown', ev => { const p = document.getElementById('stpop'); if (p && !ev.target.closest('#stpop') && !ev.target.closest('[data-act=stlist]')) p.remove(); }, true);
 /* MAP: 달 메모 */
 document.addEventListener('click', ev => {
   const a = ev.target.closest && ev.target.closest('[data-act=mmedit],[data-act=mmadd]'); if (!a || UI.v !== 'm') return; ev.stopPropagation();
@@ -598,7 +611,14 @@ document.addEventListener('click', ev => {
 (function () {
   const close = () => { const m = document.getElementById('ctxm'); if (m) m.remove(); };
   document.addEventListener('contextmenu', ev => {
-    const bar = ev.target.closest && ev.target.closest('.mb'); close(); if (!bar || UI.v !== 'm') return;
+    const bar = ev.target.closest && ev.target.closest('.mb'); close();
+    const mw = ev.target.closest && ev.target.closest('.mmw');
+    if (!bar && mw && UI.v === 'm' && (S.months || []).includes(mw.dataset.k)) {
+      ev.preventDefault(); const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div>월 삭제</div>';
+      m.style.left = Math.min(ev.clientX, innerWidth - 110) + 'px'; m.style.top = ev.clientY + 'px'; document.body.appendChild(m);
+      m.onclick = () => { close(); S.months = S.months.filter(k => k !== mw.dataset.k); save(); render(); }; return;
+    }
+    if (!bar || UI.v !== 'm') return;
     ev.preventDefault(); const id = bar.dataset.id;
     const m = document.createElement('div'); m.id = 'ctxm'; m.innerHTML = '<div data-c="e">수정</div><div data-c="d">삭제</div>';
     m.style.left = Math.min(ev.clientX, innerWidth - 110) + 'px'; m.style.top = ev.clientY + 'px'; document.body.appendChild(m);
@@ -939,6 +959,25 @@ document.addEventListener('click', ev => {
     else if (act === 'zoom') { UI.z = Math.min(2, Math.max(0, UI.z + +a.dataset.d)); saveUI(); render(); }
     else if (act === 'today') { UI.v === 'g' ? scrollToday() : scrollTodayC(); }
     else if (act === 'ghost') { UI.ghost = !UI.ghost; saveUI(); render(); }
+    else if (act === 'stlist') {
+      const old = document.getElementById('stpop'); if (old) { const same = old.dataset.k === a.dataset.k; old.remove(); if (same) return; }
+      const k = a.dataset.k, B = S.blocks;
+      const L = k === 'must' ? B.filter(b => b.imp === 2) : k === 'late' ? B.filter(b => b.done < 100 && TODAY > pd(b.e)) : k === 'slip' ? B.filter(b => meta(b).d > 0) : B.filter(b => meta(b).d < 0);
+      const note = b => k === 'slip' ? `+${meta(b).d}일` : k === 'ahead' ? `${meta(b).d}일` : k === 'late' ? `${TODAY - pd(b.e)}일 지남` : md(pd(b.s)) + ' – ' + md(pd(b.e));
+      const pop = document.createElement('div'); pop.id = 'stpop'; pop.dataset.k = k;
+      pop.innerHTML = L.length ? L.map(b => `<div class="it" data-id="${b.id}"><i style="background:${(ROW[b.subj] || ROW.LL).c}"></i><span><b>${esc(b.name)}</b> ${esc((ROW[b.subj] || {}).name || '')}</span><small>${note(b)}</small></div>`).join('') : '<div class="em">없음</div>';
+      const r = a.getBoundingClientRect(); pop.style.left = Math.min(r.left, innerWidth - 350) + 'px'; pop.style.top = (r.bottom + 6) + 'px'; document.body.appendChild(pop);
+      pop.onclick = e => { const it = e.target.closest('.it'); if (!it) return; pop.remove(); MSEL = it.dataset.id; render(); const bar = document.querySelector(`.mb[data-id="${it.dataset.id}"]`); if (bar) bar.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' }); };
+    }
+    else if (act === 'addmonth') {
+      const have = new Set(mapSegs().flatMap(sg => { const o = []; for (let d = sg[0]; d <= sg[1]; d += 1) { const t = new Date(d * DAY); o.push(t.getUTCFullYear() + '-' + (t.getUTCMonth() + 1)); d = Math.min(sg[1], Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0) / DAY)); } return o; }));
+      const sel = document.createElement('select'); sel.className = 'pill'; sel.innerHTML = '<option value="">월 선택</option>';
+      const t0 = new Date(TODAY * DAY); let y = t0.getUTCFullYear(), m = t0.getUTCMonth() + 1;
+      const ex = new Date(pd(S.exams.s) * DAY), ey = ex.getUTCFullYear(), em = ex.getUTCMonth() + 1;
+      while (y < ey || (y === ey && m <= em)) { const k = y + '-' + m; if (!have.has(k)) sel.innerHTML += `<option value="${k}">${y}년 ${m}월</option>`; if (++m > 12) { m = 1; y++; } }
+      a.replaceWith(sel); sel.focus();
+      sel.onchange = () => { if (sel.value) { S.months = S.months || []; S.months.push(sel.value); save(); } render(); }; sel.onblur = () => setTimeout(render, 150);
+    }
     else if (act === 'addblock') openBlock(null);
     else if (act === 'addnote') openNote(null);
     else if (act === 'qblockm') { const ms = +a.dataset.ms, me = NEXTMON(ms) - 1, st = (TODAY >= ms && TODAY <= me) ? TODAY : ms; openBlock(null, { s: fd(st), e: fd(Math.min(me, st + 13)) }); }
