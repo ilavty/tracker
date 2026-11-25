@@ -214,8 +214,11 @@ button{cursor:pointer;border:none;background:none}
 .mdh:hover{background:rgba(74,163,234,.12)}
 .mgp{position:absolute;top:0;height:60px;z-index:4;cursor:pointer}
 .mgp:hover{background:rgba(74,163,234,.08)}
-.gmo{position:absolute;box-sizing:border-box;background:#eeebe6;border-radius:12px;padding:6px 13px;font-size:.78rem;line-height:19px;color:#3c4a63;white-space:pre-wrap;word-break:break-all;cursor:text;z-index:2}
-.gmo-i{position:absolute;box-sizing:border-box;background:#e6e2dc;border:0;outline:0;border-radius:12px;padding:6px 13px;font:inherit;font-family:inherit;font-size:.78rem;line-height:19px;color:#3c4a63;resize:none;overflow:hidden;z-index:3}
+.gmo.e{background:transparent;color:#b8c0cf;text-align:center;opacity:0;padding:0}
+.gmo.e b{font-weight:600}
+.gmo.e:hover{opacity:1;background:rgba(0,0,0,.035)}
+.gmo{position:absolute;box-sizing:border-box;background:rgba(222,217,208,.42);border-radius:12px;padding:6px 13px;font-size:.78rem;line-height:19px;color:#3c4a63;white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all;cursor:text;z-index:2}
+.gmo-i{position:absolute;box-sizing:border-box;background:rgba(214,208,197,.8);border:0;outline:0;border-radius:12px;padding:6px 13px;font:inherit;font-family:inherit;font-size:.78rem;line-height:19px;color:#3c4a63;resize:none;overflow:hidden;z-index:3}
 .mmw{position:absolute;top:28px;display:flex;flex-direction:column;gap:2px;z-index:4}
 .mm{height:18px;line-height:16px;box-sizing:border-box;padding:0 8px;border-radius:9px;background:#fff;border:1px solid #b8c0cf;font-size:.62rem;font-weight:600;color:#2f4a7a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .mm.add{width:20px;padding:0;text-align:center;border-style:dashed;color:#9aa6b8;opacity:0}
@@ -471,17 +474,18 @@ function mapView() {
     ROWS.filter(r => r.g === g && !r.grp).forEach(r => rows.push({ g, id: r.id, c: r.c, label: r.name, bs: S.blocks.filter(b => b.subj === r.id) }));
     const gb = S.blocks.filter(b => b.subj === g); if (gb.length) rows.push({ g, id: g, c: ROW[g].c, label: '전체', bs: gb, wide: true });
   });
+  const cols = []; let ci = -1, lastM = null;
+  segs.forEach((sg, i) => { let d = sg[0]; while (d <= sg[1]) { const t = new Date(d * DAY), mo = t.getUTCFullYear() * 12 + t.getUTCMonth(), end = Math.min(sg[1], Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0) / DAY)); if (mo !== lastM) { ci++; lastM = mo; } cols.push({ a: d, b: end, ci, mo: t.getUTCMonth(), yr: t.getUTCFullYear() }); d = end + 1; } });
+  const MCOL = []; cols.forEach((c, i) => { if (!i || cols[i - 1].ci !== c.ci) MCOL.push({ k: c.yr + '-' + (c.mo + 1), x: TL + idx(c.a) * px, w: TL + idxE(c.b) * px - (TL + idx(c.a) * px) }); });
   let y = TOP; const RH = 26, LG = 5;
   const GM = {};
   rows.forEach(r => {
     const lanes = []; r.bs.sort((a, b) => pd(a.s) - pd(b.s)).forEach(b => { let k = lanes.findIndex(e => e < pd(b.s)); if (k < 0) { k = lanes.length; lanes.push(0); } lanes[k] = pd(b.e); b._l = k; });
     r.n = Math.max(1, lanes.length); r.h = r.n * (RH + LG) + 16; r.y = y; y += r.h; const nxr = rows[rows.indexOf(r) + 1];
-    if (!nxr || nxr.g !== r.g) { const gt = (S.gmemo || {})[r.g] || '', cpl = Math.max(10, Math.floor((TW - TL - 28) / 12)), ln = gt ? gt.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / cpl)), 0) : 0, mh = gt ? ln * 19 + 16 : 26; GM[r.g] = { y: y + 2, h: mh, t: gt }; y += mh + 10 + (nxr ? 16 : 0); }
+    if (!nxr || nxr.g !== r.g) { const items = []; let mh = 0; MCOL.forEach(m => { const gt = (S.gmemo || {})[r.g + '|' + m.k] || '', cpl = Math.max(4, Math.floor((m.w - 30) / 12)), ln = gt ? gt.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / cpl)), 0) : 0, h = gt ? ln * 19 + 14 : 0; mh = Math.max(mh, h); items.push({ k: m.k, x: m.x, w: m.w, t: gt, h }); }); mh = Math.max(24, mh); GM[r.g] = { y: y + 4, h: mh, items }; y += mh + 10 + (nxr ? 16 : 0); }
   });
   const MY = y + 16, MN = Math.max(1, ...Object.values(S.mmemo || {}).map(a => a.length)), H = MY + 20 * MN + 14;
   // 월 띠 (생긴 날짜만, 번갈아 색)
-  const cols = []; let ci = -1, lastM = null;
-  segs.forEach((sg, i) => { let d = sg[0]; while (d <= sg[1]) { const t = new Date(d * DAY), mo = t.getUTCFullYear() * 12 + t.getUTCMonth(), end = Math.min(sg[1], Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0) / DAY)); if (mo !== lastM) { ci++; lastM = mo; } cols.push({ a: d, b: end, ci, mo: t.getUTCMonth(), yr: t.getUTCFullYear() }); d = end + 1; } });
   let bg = '', lab = '', dv = '';
   cols.forEach((c, i) => {
     const x0 = TL + idx(c.a) * px, x1 = TL + idxE(c.b) * px;
@@ -502,9 +506,9 @@ function mapView() {
     const rs = rows.filter(r => r.g === g), gc = (mids(rs[0]) + mids(rs[rs.length - 1])) / 2; gys.push(gc);
     nodes += `<div class="mn grp" style="left:${NX.g}px;top:${gc}px;width:${NW.g}px;height:36px" data-act="madd" data-subj="${g}">${g === 'P' ? '1차' : '2차'}<span class="mad">+</span></div>`;
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
-    const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rs[0].y - 7;
+    const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${ex - TL}px"></div><div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex - 2}px;top:${ly - 21}px;transform:translateX(-100%)">${EN[new Date(ed * DAY).getUTCMonth()]}</div>`;
+    gl += `${g === 'P' ? `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>` : ''}<div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex - 2}px;top:${ly - 21}px;transform:translateX(-100%)">${EN[new Date(ed * DAY).getUTCMonth()]}</div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
@@ -542,7 +546,7 @@ function mapView() {
     HH = Math.max(H, top + PH);
     pop = mapSide(sb, left, top);
   }
-  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${Object.keys(GM).map(g => `<div class="gmo" data-act="gmedit" data-g="${g}" style="left:${TL}px;top:${GM[g].y}px;width:${TW - TL - 8}px;min-height:${GM[g].h}px">${esc(GM[g].t)}</div>`).join('')}${nodes}${pop}</div></div></div>`;
+  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px">${bg}${svg}${lab}${dv}${td}${gl}${bars}${Object.keys(GM).map(g => GM[g].items.map(m => `<div class="gmo ${m.t ? '' : 'e'}" data-act="gmedit" data-g="${g}" data-k="${m.k}" style="left:${m.x + 3}px;top:${GM[g].y}px;width:${m.w - 6}px;${m.t ? `min-height:${m.h}px` : 'height:22px'}">${esc(m.t)}${m.t ? '' : '<b>+</b>'}</div>`).join('')).join('')}${nodes}${pop}</div></div></div>`;
 }
 function mapSide(b, left, top) {
   const imp = [[2, '필수'], [1, '보통'], [0, '여유']];
@@ -640,7 +644,7 @@ document.addEventListener('click', ev => {
 /* MAP: 1차/2차 아래 자유 메모 */
 document.addEventListener('click', ev => {
   const a = ev.target.closest && ev.target.closest('[data-act=gmedit]'); if (!a || UI.v !== 'm') return; ev.stopPropagation();
-  const g = a.dataset.g, t = document.createElement('textarea'); t.className = 'gmo-i'; t.value = (S.gmemo || {})[g] || '';
+  const g = a.dataset.g + '|' + a.dataset.k, t = document.createElement('textarea'); t.className = 'gmo-i'; t.value = (S.gmemo || {})[g] || '';
   t.style.cssText = `left:${a.style.left};top:${a.style.top};width:${a.style.width};height:${Math.max(a.offsetHeight, 26)}px`;
   a.parentNode.appendChild(t); a.style.visibility = 'hidden'; t.focus(); let done = false;
   const grow = () => { t.style.height = 'auto'; t.style.height = Math.max(26, t.scrollHeight) + 'px'; }; t.oninput = grow;
