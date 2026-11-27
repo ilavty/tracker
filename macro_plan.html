@@ -239,6 +239,10 @@ html.emb .top{padding-right:96px}
 .mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-style:normal;font-size:1rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
+.exm{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);pointer-events:none;z-index:1}
+.exm span{font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;line-height:14px;white-space:nowrap}
+.exm i{width:10px;height:10px;border-radius:50%;background:#2f4a7a;margin-top:3px;flex:none}
+.exm b{width:3px;background:#7b8fb5;flex:none}
 .exl{position:absolute;width:0;margin-left:-1.5px;border-left:3px solid #7b8fb5;pointer-events:none;z-index:1}
 .wkl{position:absolute;width:0;border-left:1px solid rgba(47,74,122,.09);pointer-events:none}
 .wk{position:absolute;width:0;height:5px;border-left:1px solid rgba(47,74,122,.55);pointer-events:none}
@@ -544,7 +548,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `${g === 'P' ? `${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="mgd" style="left:${ex}px;top:${ly - 4}px"></div><div class="mgt" style="left:${Math.min(ex, TW - 12)}px;top:${ly - 22}px;transform:translateX(-50%)">${g === 'P' ? '1차' : '2차'}</div><div class="exl" style="left:${ex}px;top:${ly}px;height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly}px"></div>`;
+    gl += `${g === 'P' ? `${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="exm" style="left:${Math.min(ex, TW - 14)}px;top:${ly - 20}px"><span>${g === 'P' ? '1차' : '2차'}</span><i></i><b style="height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly - 6}px"></b></div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
