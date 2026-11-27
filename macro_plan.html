@@ -239,6 +239,7 @@ html.emb .top{padding-right:96px}
 .mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.58rem;color:#4aa3ea;font-weight:700;white-space:nowrap}
+.wkl{position:absolute;width:0;border-left:1px solid rgba(47,74,122,.09);pointer-events:none}
 .wk{position:absolute;width:0;height:5px;border-left:1px solid rgba(47,74,122,.55);pointer-events:none}
 .mgl2{position:absolute;height:0;border-top:2px solid #2f4a7a;pointer-events:none}
 .mgd{position:absolute;width:9px;height:9px;border-radius:50%;background:#2f4a7a;pointer-events:none}
@@ -528,6 +529,7 @@ function mapView() {
     const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; dv += `<div class="mdh" data-k="${c.yr}-${c.mo + 1}" data-w="${x1 - x0}" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; if (gap > 7) dv += `<div class="mdh gp" data-k="${MKEY(nx.a)}" data-w="${xn - x1}" style="left:${xn}px;height:${H - 44}px"></div>`; { const miss = []; let yy = c.yr, mm = c.mo + 2; if (mm > 12) { mm = 1; yy++; } while (yy < nx.yr || (yy === nx.yr && mm < nx.mo + 1)) { miss.push(yy + '-' + mm); if (++mm > 12) { mm = 1; yy++; } } if (miss.length && xn - x1 > 3) dv += `<div class="mgp" data-act="mgap" data-m="${miss.join(',')}" style="left:${x1}px;width:${xn - x1}px"></div>`; }
     if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
   });
+  MPOSA.forEach(e => { if (new Date(e[0] * DAY).getUTCDay() === 1) dv += `<i class="wkl" style="left:${TL + e[1] * px}px;top:${rows[0].y - 7}px;height:${H - rows[0].y - 1}px"></i>`; });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
   const NX = { r: 0, g: 80, s: 144 }, NW = { r: 56, g: 44, s: 62 };
