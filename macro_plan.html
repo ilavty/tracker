@@ -565,7 +565,7 @@ function mapView() {
   // 행 안내선 + 블록
   let bars = '', selPos = null;
   rows.forEach(r => {
-    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${Math.max(0, Math.min(tot, idxE(pd(r.g === 'P' ? S.exams.p : S.exams.s))) * px)}px;top:${r.y + r.h - 2}px"></div>`;
+    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div>`;
     r.bs.forEach(b => {
       if (b._hid) return;
       const bs0 = b.base ? pd(b.base[0]) : pd(b.s), be0 = b.base ? pd(b.base[1]) : pd(b.e);
