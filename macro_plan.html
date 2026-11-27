@@ -250,6 +250,7 @@ html.emb .top{padding-right:96px}
 .mgl2{position:absolute;height:0;border-top:2px solid #2f4a7a;pointer-events:none}
 .mgd{position:absolute;width:10px;height:10px;margin-left:-5px;border-radius:50%;box-sizing:border-box;background:#2f4a7a;pointer-events:none}
 .mgt{white-space:nowrap;position:absolute;font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;pointer-events:none}
+.mrb{position:absolute;border-radius:10px;pointer-events:none}
 .mrl{position:absolute;height:0;border-top:1px solid #d7dce6;pointer-events:none}
 .mgs{position:absolute;height:16px;background:linear-gradient(to bottom,rgba(47,74,122,.15),rgba(47,74,122,.10) 18%,rgba(47,74,122,.05) 50%,rgba(47,74,122,.015) 80%,rgba(47,74,122,0));pointer-events:none}
 .mn{position:absolute;box-sizing:border-box;border:1.6px solid #2f4a7a;background:#fff;border-radius:10px;padding:4px 10px;font-size:.8rem;font-weight:700;color:#2f4a7a;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer}
@@ -564,7 +565,7 @@ function mapView() {
   // 행 안내선 + 블록
   let bars = '', selPos = null;
   rows.forEach(r => {
-    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${Math.max(0, Math.min(tot, idxE(pd(r.g === 'P' ? S.exams.p : S.exams.s))) * px)}px;top:${r.y + r.h - 2}px"></div>`;
+    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrb" style="left:${TL}px;width:${Math.max(0, Math.min(tot, idxE(pd(r.g === 'P' ? S.exams.p : S.exams.s))) * px)}px;top:${r.y}px;height:${r.h - 4}px;background:${rgba(r.c, .075)}"></div>`;
     r.bs.forEach(b => {
       if (b._hid) return;
       const bs0 = b.base ? pd(b.base[0]) : pd(b.s), be0 = b.base ? pd(b.base[1]) : pd(b.e);
