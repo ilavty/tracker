@@ -238,7 +238,7 @@ html.emb .top{padding-right:96px}
 .mdv{position:absolute;top:36px;width:0;border-left:1.4px solid #a9b3c7}
 .mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
-.mtd i{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.7rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
+.mtd i{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-style:normal;font-size:1rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
 .exl{position:absolute;width:0;border-left:1.5px solid #2f4a7a;pointer-events:none;z-index:1}
 .wkl{position:absolute;width:0;border-left:1px solid rgba(47,74,122,.09);pointer-events:none}
 .wk{position:absolute;width:0;height:5px;border-left:1px solid rgba(47,74,122,.55);pointer-events:none}
@@ -254,8 +254,8 @@ html.emb .top{padding-right:96px}
 .mn.sub{border-width:2.2px;background:#fbfdff}
 .mn .mad{position:absolute;right:-9px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:1.3px solid #2f4a7a;color:#2f4a7a;font-size:.8rem;line-height:15px;text-align:center;cursor:pointer;opacity:0}
 .mn:hover .mad{opacity:1}
-.mb{position:absolute;box-sizing:border-box;height:26px;border:1.4px solid #2f4a7a;border-radius:8px;background:#fff;font-size:.72rem;font-weight:700;color:#2f4a7a;display:flex;align-items:center;padding:0 8px;cursor:grab;overflow:hidden;white-space:nowrap;touch-action:none;user-select:none;-webkit-user-select:none}
-.mb .ex{position:absolute;top:0;bottom:0;right:0;pointer-events:none;border-left:1.3px solid rgba(47,74,122,.25)}
+.mb{position:absolute;box-sizing:border-box;height:26px;border:0;border-radius:8px;background:#fff;font-size:.72rem;font-weight:700;color:#2f4a7a;display:flex;align-items:center;padding:0 8px;cursor:grab;overflow:hidden;white-space:nowrap;touch-action:none;user-select:none;-webkit-user-select:none}
+.mb .ex{position:absolute;top:0;bottom:0;right:0;pointer-events:none}
 .mgh2{position:absolute;height:26px;box-sizing:border-box;border:1.4px dashed;border-radius:8px;opacity:.7;pointer-events:none;background:transparent}
 .mb span{position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis}
 .mb .bn{flex:0 1 auto;min-width:0}
@@ -568,9 +568,9 @@ function mapView() {
       const bc = r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c;
       BPOS[b.id] = { x, y: yy, w }; if (selPos === null && MSEL === b.id) selPos = { x, y: yy, w };
       let ext = '', early = '';
-      if (pd(b.e) > be0) { const ex0 = TL + idxE(be0) * px - x; ext = `<div class="ex" style="left:${Math.max(0, ex0)}px;background:${rgba(r.c, .5)}"></div>`; }
+      if (pd(b.e) > be0) { const ex0 = TL + idxE(be0) * px - x; ext = `<div class="ex" style="left:${Math.max(0, ex0)}px;background:${rgba(r.c, .62)}"></div>`; }
       if (pd(b.e) < be0) { const ex1 = TL + idx(pd(b.e) + 1) * px, ew = (idxE(be0) - idx(pd(b.e) + 1)) * px - 2; if (ew > 2) early = `<div class="mgh2" style="left:${ex1}px;top:${yy}px;width:${ew}px;border-color:${bc}"></div>`; }
-      bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${bc};background:${rgba(r.c, .22)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div><div class="mpl" data-act="mnext" data-id="${b.id}" style="left:${x + w + 4}px;top:${yy + 3}px" title="아래에 블록 추가">+</div>`;
+      bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;background:${rgba(r.c, .32)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div><div class="mpl" data-act="mnext" data-id="${b.id}" style="left:${x + w + 4}px;top:${yy + 3}px" title="아래에 블록 추가">+</div>`;
     });
     r.bs.forEach(b => { (b._cg || []).forEach(g => { const x = TL + idx(g.s) * px, w = Math.max(10, (idxE(g.e) - idx(g.s)) * px - 2), yy = r.y + 8 + b._cl * (RH + LG) + (RH - 8) / 2;
       bars += `<div class="mcl" data-act="mdtg" data-k="${g.k}" title="세부 ${g.n}개 · 눌러서 펼치기" style="left:${x}px;top:${yy}px;width:${w}px;background:${rgba(r.c, .6)}"></div>`; }); });
