@@ -2088,6 +2088,8 @@ document.getElementById('study').addEventListener('contextmenu', e => { if (e.ta
 const keyStudy = e => {
   if (!studyActive || !SD || modalStack.length) return;
   const typing = e.target.closest('input,textarea');
+  // 화살표·스페이스가 페이지(플래너)를 스크롤하지 않게
+  if (!typing && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
   if (SD.mode === 'flash' && SD.deck && SD.i < SD.deck.length && !typing) {
     if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); flashFlip(); }
     else if (e.key === 'ArrowLeft') flashMark(false);
