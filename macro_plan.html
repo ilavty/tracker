@@ -212,6 +212,8 @@ html.emb .top{padding-right:96px}
 .mrh{position:absolute;cursor:crosshair}
 .mp::-webkit-scrollbar{display:none}
 .mt{position:relative;margin:0}
+.mtl{position:sticky;left:0;width:0;height:0;z-index:8}
+.mtlb{position:absolute;left:-4px;top:0;width:160px;background:#fff}
 .mt svg{position:absolute;left:0;top:0;pointer-events:none}
 .mbd{position:absolute;top:0;border-radius:14px}
 .mbd.a,.mbd.b{background:transparent}
@@ -540,7 +542,7 @@ function mapView() {
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
   const NX = { r: 0, g: 0, s: 62 }, NW = { r: 0, g: 44, s: 62 };
   const mids = r => r.y + (r.h - 6) / 2 - 14;
-  let nodes = `<div class="mgt" style="left:0;top:${MY + 2}px">MEMO</div>`, svg = `<svg width="${TW}" height="${H}">`;
+  let nodes = `<div class="mgt" style="left:0;top:${MY + 2}px">MEMO</div>`, svg = `<svg width="${TL}" height="${H}" style="position:absolute;left:0;top:0;overflow:visible">`;
   const link = (x1, y1, x2, y2) => { const xm = (x1 + x2) / 2, r = Math.min(10, Math.abs(y2 - y1) / 2), dir = y2 > y1 ? 1 : -1; return Math.abs(y2 - y1) < 1 ? `M${x1},${y1} H${x2}` : `M${x1},${y1} H${xm - r} Q${xm},${y1} ${xm},${y1 + dir * r} V${y2 - dir * r} Q${xm},${y2} ${xm + r},${y2} H${x2}`; };
   const gys = []; let gl = '';
   ['P', 'S'].forEach(g => {
@@ -601,7 +603,7 @@ function mapView() {
     HH = Math.max(H, top + PH);
     pop = mapSide(sb, left, top);
   }
-  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px">${bg}${svg}${lab}${dv}${td}${gl}${conn}${bars}${Object.keys(GM).map(g => GM[g].items.map(m => `<div class="gmo ${m.t ? '' : 'e'}" data-act="gmedit" data-g="${g}" data-k="${m.k}" style="left:${m.x + 3}px;top:${GM[g].y}px;width:${m.w - 6}px;${m.t ? `min-height:${m.h}px` : 'height:22px'}">${esc(m.t)}${m.t ? '' : '<b>+</b>'}</div>`).join('')).join('')}${nodes}${pop}</div></div></div>`;
+  return `<div class="mw"><div class="mp"><div class="mt" style="width:${TW}px;height:${HH}px"><div class="mtl"><div class="mtlb" style="height:${HH}px"><div style="position:absolute;left:4px;top:0">${svg}${nodes}</div></div></div>${bg}${lab}${dv}${td}${gl}${conn}${bars}${Object.keys(GM).map(g => GM[g].items.map(m => `<div class="gmo ${m.t ? '' : 'e'}" data-act="gmedit" data-g="${g}" data-k="${m.k}" style="left:${m.x + 3}px;top:${GM[g].y}px;width:${m.w - 6}px;${m.t ? `min-height:${m.h}px` : 'height:22px'}">${esc(m.t)}${m.t ? '' : '<b>+</b>'}</div>`).join('')).join('')}${pop}</div></div></div>`;
 }
 function mapSide(b, left, top) {
   const imp = [[2, '필수'], [1, '보통'], [0, '여유']];
