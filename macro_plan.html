@@ -217,6 +217,10 @@ html.emb .top{padding-right:96px}
 .mbd.a,.mbd.b{background:transparent}
 .mdh{position:absolute;top:36px;width:12px;margin-left:-6px;cursor:col-resize;z-index:3}
 .mdh:hover{background:rgba(74,163,234,.12)}
+.mcl{position:absolute;height:8px;border-radius:4px;cursor:pointer;z-index:2}
+.mcl:hover{filter:brightness(.92)}
+.mdt{position:absolute;top:27px;font-size:.62rem;font-weight:700;color:#6b7a94;cursor:pointer;z-index:5;padding:1px 7px;border-radius:9px;background:#fff;border:1px solid var(--bd)}
+.mdt:hover{color:#2f4a7a;border-color:#2f4a7a}
 .mgp{position:absolute;top:0;height:60px;z-index:4;cursor:pointer}
 .mgp:hover{background:rgba(74,163,234,.08)}
 .gmo.e{background:transparent;color:#b8c0cf;text-align:center;opacity:0;padding:0}
@@ -353,7 +357,7 @@ function normalize(x) {
   if (!x || !x.blocks) return seedState();
   x.phases = x.phases || [];
   x.notes = x.notes || [];
-  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.months = Array.isArray(x.months) ? x.months : []; x.gmemo = x.gmemo || {}; x.mw = x.mw || {}; x.gw = x.gw || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
+  x.wmemos = x.wmemos || {}; x.mgoals = x.mgoals || {}; x.mmemo = x.mmemo || {}; x.months = Array.isArray(x.months) ? x.months : []; x.gmemo = x.gmemo || {}; x.dc = x.dc || {}; x.mw = x.mw || {}; x.gw = x.gw || {}; x.tags = Array.isArray(x.tags) ? x.tags : ['강의', '블랭크', '기출', '노트정리'];
   Object.keys(x.wmemos).forEach(k => { const v = x.wmemos[k]; if (v && !x.mgoals['w:' + k]) x.mgoals['w:' + k] = [{ id: uid(), t: String(v).replace(/\n+/g, ' '), d: 0 }]; delete x.wmemos[k]; });
   x.blocks.forEach(b => { delete b.fresh; });
   x.notes.forEach(n => { delete n.fresh; });
@@ -461,7 +465,7 @@ function statsHtml() {
 
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
 const ZDEF = 1;
-let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236, MIDXE = null, MPOSA = [], MKEY = null, MDRAG = null;
+let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236, MIDXE = null, MPOSA = [], MKEY = null, MDETC = null, MDRAG = null;
 function mapSegs() {
   const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
@@ -474,13 +478,14 @@ function mapSegs() {
 function mapView() {
   const segs = mapSegs();
   const mkey = d => { const t = new Date(d * DAY); return t.getUTCFullYear() + '-' + (t.getUTCMonth() + 1); };
+  const detCollapsed = mk => { const v = (S.dc || {})[mk]; if (typeof v === 'boolean') return v; const [y, m] = mk.split('-').map(Number), t = new Date(TODAY * DAY); return y * 12 + m - 1 < t.getUTCFullYear() * 12 + t.getUTCMonth(); };
   const wt = d => { const v = (S.mw || {})[mkey(d)]; return v > 0 ? v : 1; };
   let tot = 0; const POS = new Map(), MPOS = [];
   segs.forEach((sg, i) => { if (i) { const gd = sg[0] - segs[i - 1][1] - 1, def = gd <= 7 ? 0 : Math.min(12, Math.round(Math.sqrt(gd) * 0.7)), ov = (S.gw || {})[mkey(sg[0])]; tot += ov >= 0 && gd > 7 ? ov : def; }
     for (let d = sg[0]; d <= sg[1]; d++) { const w = wt(d); POS.set(d, tot); MPOS.push([d, tot, w]); tot += w; } });
   const idx = d => { if (POS.has(d)) return POS.get(d); const nx = segs.find(sg => sg[0] > d); return nx ? POS.get(nx[0]) : tot; };
   const idxE = d => POS.has(d) ? POS.get(d) + wt(d) : idx(d);
-  MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
+  MDETC = detCollapsed; MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
   const TL = 236, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || ZDEF)); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
@@ -494,14 +499,18 @@ function mapView() {
   segs.forEach((sg, i) => { let d = sg[0]; while (d <= sg[1]) { const t = new Date(d * DAY), mo = t.getUTCFullYear() * 12 + t.getUTCMonth(), end = Math.min(sg[1], Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0) / DAY)); if (mo !== lastM) { ci++; lastM = mo; } cols.push({ a: d, b: end, ci, mo: t.getUTCMonth(), yr: t.getUTCFullYear() }); d = end + 1; } });
   const MCOL = []; cols.forEach((c, i) => { if (!i || cols[i - 1].ci !== c.ci) MCOL.push({ k: c.yr + '-' + (c.mo + 1), x: TL + idx(c.a) * px, w: TL + idxE(c.b) * px - (TL + idx(c.a) * px) }); });
   let y = TOP; const RH = 26, LG = 5;
-  const GM = {}, BPOS = {};
+  const GM = {}, BPOS = {}, DET = {}; S.blocks.forEach(c => { if (c.par && !c.after) { const mk = mkey(pd(c.s)); DET[mk] = (DET[mk] || 0) + 1; } });
   rows.forEach(r => {
-    const lanes = []; r.bs.sort((a, b) => pd(a.s) - pd(b.s));
+    const lanes = []; r.bs.sort((a, b) => pd(a.s) - pd(b.s)); r.bs.forEach(b => { b._hid = false; b._cg = null; });
     const has = id => r.bs.some(x => x.id === id), kids = {}; r.bs.forEach(b => { if (b.par && has(b.par)) (kids[b.par] = kids[b.par] || []).push(b); });
     r.bs.filter(b => !(b.par && has(b.par))).forEach(b => {
-      const ch = kids[b.id] || [], A = ch.filter(c => c.after), B = ch.filter(c => !c.after), na = Math.max(1, A.length), n = na + B.length - 1, st = Math.min(pd(b.s), ...ch.map(c => pd(c.s))), en = Math.max(pd(b.e), ...ch.map(c => pd(c.e)));
+      const ch = kids[b.id] || [], A = ch.filter(c => c.after), B0 = ch.filter(c => !c.after);
+      B0.forEach(c => { c._hid = detCollapsed(mkey(pd(c.s))); });
+      const B = B0.filter(c => !c._hid), H0 = B0.filter(c => c._hid), na = Math.max(1, A.length), ex = H0.length ? 1 : 0, n = na + B.length + ex - 1, st = Math.min(pd(b.s), ...ch.map(c => pd(c.s))), en = Math.max(pd(b.e), ...ch.map(c => pd(c.e)));
       let k = 0; for (; ; k++) { let ok = true; for (let j = 0; j <= n; j++) if (lanes[k + j] !== undefined && lanes[k + j] >= st) { ok = false; break; } if (ok) break; }
-      b._l = k + (na - 1) / 2; A.forEach((c, i) => c._l = k + i); B.forEach((c, i) => c._l = k + na + i); for (let j = 0; j <= n; j++) lanes[k + j] = en;
+      b._l = k + (na - 1) / 2; A.forEach((c, i) => c._l = k + i); B.forEach((c, i) => c._l = k + na + i);
+      b._cl = k + na + B.length; b._cg = []; H0.forEach(c => { const mk = mkey(pd(c.s)); let g = b._cg.find(x => x.k === mk); if (!g) b._cg.push(g = { k: mk, s: pd(c.s), e: pd(c.e), n: 0 }); g.s = Math.min(g.s, pd(c.s)); g.e = Math.max(g.e, pd(c.e)); g.n++; });
+      for (let j = 0; j <= n; j++) lanes[k + j] = en;
     });
     r.n = Math.max(1, lanes.length); r.h = r.n * (RH + LG) + 16; r.y = y; y += r.h; const nxr = rows[rows.indexOf(r) + 1];
     if (!nxr || nxr.g !== r.g) { const items = []; let mh = 0; MCOL.forEach(m => { const gt = (S.gmemo || {})[r.g + '|' + m.k] || '', cpl = Math.max(4, Math.floor((m.w - 30) / 12)), ln = gt ? gt.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / cpl)), 0) : 0, h = gt ? ln * 19 + 14 : 0; mh = Math.max(mh, h); items.push({ k: m.k, x: m.x, w: m.w, t: gt, h }); }); mh = Math.max(24, mh); GM[r.g] = { y: y + 4, h: mh, items }; y += mh + 10 + (nxr ? 16 : 0); }
@@ -513,6 +522,7 @@ function mapView() {
     const x0 = TL + idx(c.a) * px, x1 = TL + idxE(c.b) * px;
     bg += `<div class="mbd ${c.ci % 2 ? 'b' : 'a'}" style="left:${x0}px;width:${x1 - x0}px;height:${H}px"></div>`;
     if (!i || cols[i - 1].ci !== c.ci) { const mk = c.yr + '-' + (c.mo + 1), L = (S.mmemo || {})[mk] || []; lab += `<div class="mmw" data-k="${mk}" style="top:${MY}px;left:${x0 + 4}px;width:${Math.max(40, x1 - x0 - 8)}px">${L.map((t, j) => `<div class="mm" data-act="mmedit" data-k="${mk}" data-i="${j}" title="${esc(t)}">${esc(t)}</div>`).join('')}<div class="mm add" data-act="mmadd" data-k="${mk}">+</div></div>`; }
+    if ((!i || cols[i - 1].ci !== c.ci) && DET[c.yr + '-' + (c.mo + 1)]) { const dk = c.yr + '-' + (c.mo + 1); lab += `<div class="mdt" data-act="mdtg" data-k="${dk}" style="left:${x0 + 5}px" title="이 달 세부 계획 접기/펼치기">${detCollapsed(dk) ? '▸' : '▾'} ${DET[dk]}</div>`; }
     lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
     const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; dv += `<div class="mdh" data-k="${c.yr}-${c.mo + 1}" data-w="${x1 - x0}" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; if (gap > 7) dv += `<div class="mdh gp" data-k="${MKEY(nx.a)}" data-w="${xn - x1}" style="left:${xn}px;height:${H - 44}px"></div>`; { const miss = []; let yy = c.yr, mm = c.mo + 2; if (mm > 12) { mm = 1; yy++; } while (yy < nx.yr || (yy === nx.yr && mm < nx.mo + 1)) { miss.push(yy + '-' + mm); if (++mm > 12) { mm = 1; yy++; } } if (miss.length && xn - x1 > 3) dv += `<div class="mgp" data-act="mgap" data-m="${miss.join(',')}" style="left:${x1}px;width:${xn - x1}px"></div>`; }
     if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
@@ -548,6 +558,7 @@ function mapView() {
   rows.forEach(r => {
     bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${TW - TL}px;top:${mids(r) + 18}px"></div>`;
     r.bs.forEach(b => {
+      if (b._hid) return;
       const bs0 = b.base ? pd(b.base[0]) : pd(b.s), be0 = b.base ? pd(b.base[1]) : pd(b.e);
       const x = TL + idx(pd(b.s)) * px, w = Math.max(14, (idxE(pd(b.e)) - idx(pd(b.s))) * px - 2), yy = r.y + 8 + b._l * (RH + LG);
       const bc = r.c === ROW[r.g].c && r.wide ? '#2f4a7a' : r.c;
@@ -557,6 +568,8 @@ function mapView() {
       if (pd(b.e) < be0) { const ex1 = TL + idx(pd(b.e) + 1) * px, ew = (idxE(be0) - idx(pd(b.e) + 1)) * px - 2; if (ew > 2) early = `<div class="mgh2" style="left:${ex1}px;top:${yy}px;width:${ew}px;border-color:${bc}"></div>`; }
       bars += `${early}<div class="mb ${MSEL === b.id ? 'sel' : ''}" data-id="${b.id}" title="${esc(b.name)} ${md(pd(b.s))}–${md(pd(b.e))}" style="left:${x}px;top:${yy}px;width:${w}px;border-color:${bc};background:${rgba(r.c, .22)}">${ext}<span class="bn">${esc(b.name)}</span>${w > 120 ? `<span class="bd">${md(pd(b.s))} – ${md(pd(b.e))}</span>` : ''}${w > 190 ? (b.tags || []).slice(0, 3).map(t => `<span class="bt">${esc(t)}</span>`).join('') : ''}<span class="med" data-act="medit" data-id="${b.id}">✎</span><div class="rz2"></div></div><div class="mpl" data-act="mnext" data-id="${b.id}" style="left:${x + w + 4}px;top:${yy + 3}px" title="아래에 블록 추가">+</div>`;
     });
+    r.bs.forEach(b => { (b._cg || []).forEach(g => { const x = TL + idx(g.s) * px, w = Math.max(10, (idxE(g.e) - idx(g.s)) * px - 2), yy = r.y + 8 + b._cl * (RH + LG) + (RH - 8) / 2;
+      bars += `<div class="mcl" data-act="mdtg" data-k="${g.k}" title="세부 ${g.n}개 · 눌러서 펼치기" style="left:${x}px;top:${yy}px;width:${w}px;background:${rgba(r.c, .6)}"></div>`; }); });
   });
   let conn = '', csvg = ''; const cb = {}; S.blocks.forEach(b => { if (b.par && BPOS[b.par] && BPOS[b.id]) (cb[b.par] = cb[b.par] || []).push(b); });
   Object.keys(cb).forEach(pid => {
@@ -570,6 +583,7 @@ function mapView() {
     C.forEach(c => { const q = BPOS[c.id]; conn += `<div style="${ln}left:${xs}px;top:${q.y + 13}px;width:${q.x - xs}px;border-top:1.6px solid"></div>`; });
   });
   if (csvg) conn += `<svg style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible" width="${TW}" height="${H}">${csvg}</svg>`;
+  if (MSEL) { const hb = S.blocks.find(b => b.id === MSEL); if (hb && hb._hid) { MSEL = null; selPos = null; } }
   const sb = MSEL && S.blocks.find(b => b.id === MSEL);
   let pop = '', HH = H;
   if (sb && selPos) {
@@ -720,6 +734,7 @@ function ctxExt(m, id) {
 function addBranch(b, after = true) {
   const root = b.par && S.blocks.find(x => x.id === b.par) ? S.blocks.find(x => x.id === b.par) : b;
   const s0 = after ? pd(root.e) + 1 : pd(root.s), nb = { id: uid(), subj: root.subj, name: '새 블록', s: fd(s0), e: fd(after ? s0 + 6 : Math.min(pd(root.e), s0 + 6)), inten: 60, imp: 1, done: 0, log: [], base: null, par: root.id, after };
+  if (!after) { S.dc = S.dc || {}; S.dc[MKEY(s0)] = false; }
   nb.base = [nb.s, nb.e]; S.blocks.push(nb); save(); MSEL = nb.id; render();
   const inp = document.querySelector('.mside [data-f="name"]'); if (inp) { inp.focus(); inp.select(); }
 }
@@ -1088,6 +1103,7 @@ document.addEventListener('click', ev => {
       const r = a.getBoundingClientRect(); pop.style.left = Math.min(r.left, innerWidth - 350) + 'px'; pop.style.top = (r.bottom + 6) + 'px'; document.body.appendChild(pop);
       pop.onclick = e => { const it = e.target.closest('.it'); if (!it) return; pop.remove(); MSEL = it.dataset.id; render(); const bar = document.querySelector(`.mb[data-id="${it.dataset.id}"]`); if (bar) bar.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' }); };
     }
+    else if (act === 'mdtg') { const k = a.dataset.k, cur = MDETC ? MDETC(k) : false; S.dc = S.dc || {}; S.dc[k] = !cur; save(); render(); }
     else if (act === 'mgap') {
       const old = document.getElementById('stpop'); if (old) old.remove();
       const pop = document.createElement('div'); pop.id = 'stpop'; pop.dataset.k = 'gap';
