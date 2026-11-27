@@ -209,7 +209,7 @@ html.emb .top{padding-right:96px}
 .mside .bs button{border:none;background:none;color:#2f4a7a;font:inherit;font-size:.7rem;text-decoration:underline;cursor:pointer;padding:0 0 0 6px}
 .mside .del{border:none;background:none;color:#c0605c;font:inherit;font-size:.72rem;cursor:pointer;text-align:left;padding:2px 0}
 .mgh{position:absolute;background:rgba(74,163,234,.18);border:1.4px dashed #4aa3ea;border-radius:8px;pointer-events:none}
-.mrh{position:absolute;cursor:crosshair}
+.mrh{position:absolute;cursor:crosshair;touch-action:auto}
 .mp::-webkit-scrollbar{display:none}
 .mt{position:relative;margin:0}
 .mtl{position:sticky;left:0;width:0;height:0;z-index:8}
@@ -633,7 +633,7 @@ document.addEventListener('change', ev => {
 (function () {   // 행에서 끌어서 새 블록
   let g = null;
   document.addEventListener('pointerdown', ev => {
-    const h = ev.target.closest && ev.target.closest('.mrh'); if (!h || UI.v !== 'm' || ev.target.closest('.mb')) return;
+    const h = ev.target.closest && ev.target.closest('.mrh'); if (!h || UI.v !== 'm' || ev.pointerType === 'touch' || ev.target.closest('.mb')) return;
     const mt = h.closest('.mt'), box = mt.getBoundingClientRect();
     g = { h, mt, x0: ev.clientX, i0: (ev.clientX - box.left - MTL) / MPX, el: null, row: h.dataset.row };
     h.setPointerCapture(ev.pointerId); ev.preventDefault();
