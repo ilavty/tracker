@@ -544,7 +544,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `${g === 'P' ? `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="mgd" style="left:${ex}px;top:${ly - 4}px"></div><div class="mgt" style="left:${Math.min(ex, TW - 12)}px;top:${ly - 22}px;transform:translateX(-50%)">${g === 'P' ? '1차' : '2차'}</div><div class="exl" style="left:${ex}px;top:${ly}px;height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly}px"></div>`;
+    gl += `${g === 'P' ? `${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="mgd" style="left:${ex}px;top:${ly - 4}px"></div><div class="mgt" style="left:${Math.min(ex, TW - 12)}px;top:${ly - 22}px;transform:translateX(-50%)">${g === 'P' ? '1차' : '2차'}</div><div class="exl" style="left:${ex}px;top:${ly}px;height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly}px"></div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
