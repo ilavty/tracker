@@ -242,8 +242,7 @@ html.emb .top{padding-right:96px}
 .mtd{position:absolute;top:38px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-style:normal;font-size:1rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
 .exm{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);pointer-events:none;z-index:1}
-.exm span{font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;line-height:13px;white-space:nowrap}
-.exm i{width:10px;height:10px;border-radius:50%;background:#2f4a7a;margin-top:3px;flex:none}
+.exm i{width:19px;height:19px;border-radius:50%;background:#2f4a7a;color:#fff;font-style:normal;font-size:.68rem;font-weight:700;line-height:19px;text-align:center;flex:none}
 .exm b{width:3px;background:#7b8fb5;flex:none}
 .exl{position:absolute;width:0;margin-left:-1.5px;border-left:3px solid #7b8fb5;pointer-events:none;z-index:1}
 .wkl{position:absolute;width:0;border-left:1px solid rgba(47,74,122,.09);pointer-events:none}
@@ -498,7 +497,7 @@ function mapView() {
   MDETC = detCollapsed; MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
   const TL = 156, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || ZDEF)); MPX = px;
-  MTL = TL; const TW = TL + tot * px + 4, TOP = 55;
+  MTL = TL; const TW = TL + tot * px + 4, TOP = 48;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -551,7 +550,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `${g === 'P' ? `<div class="mgs" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>` : ''}<div class="exm" style="left:${Math.min(ex, TW - 14)}px;top:${ly - 31}px"><span>${g === 'P' ? '1차' : '2차'}</span><i></i><b style="height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly + 7}px"></b></div>`;
+    gl += `${g === 'P' ? `<div class="mgs" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>` : ''}<div class="exm" style="left:${Math.min(ex, TW - 14)}px;top:${ly - 23}px"><i>${g === 'P' ? '1' : '2'}</i><b style="height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly + 5}px"></b></div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
@@ -565,7 +564,7 @@ function mapView() {
   // 행 안내선 + 블록
   let bars = '', selPos = null;
   rows.forEach(r => {
-    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${TW - TL}px;top:${r.y + r.h - 2}px"></div>`;
+    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${Math.max(0, Math.min(tot, idxE(pd(r.g === 'P' ? S.exams.p : S.exams.s))) * px)}px;top:${r.y + r.h - 2}px"></div>`;
     r.bs.forEach(b => {
       if (b._hid) return;
       const bs0 = b.base ? pd(b.base[0]) : pd(b.s), be0 = b.base ? pd(b.base[1]) : pd(b.e);
