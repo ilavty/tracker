@@ -258,7 +258,7 @@ html.emb .top{padding-right:96px}
 .mn.root{background:#2f4a7a;color:#fff;font-weight:600}
 .mn.root small,.mn.grp small{color:#c9d6ee}
 .mn.grp{background:#2f4a7a;color:#fff;font-weight:600}
-.mn.sub{border-width:2.2px;background:#fbfdff}
+.mn.sub{border-width:0;background:#fbfdff}
 .mn .mad{position:absolute;right:-9px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:1.3px solid #2f4a7a;color:#2f4a7a;font-size:.8rem;line-height:15px;text-align:center;cursor:pointer;opacity:0}
 .mn:hover .mad{opacity:1}
 .mb{position:absolute;box-sizing:border-box;height:26px;border:0;box-shadow:0 1px 3px rgba(47,74,122,.13);border-radius:8px;background:#fff;font-size:.72rem;font-weight:700;color:#2f4a7a;display:flex;align-items:center;padding:0 8px;cursor:grab;overflow:hidden;white-space:nowrap;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -555,8 +555,8 @@ function mapView() {
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
-      if (r.wide) nodes += `<div class="mn sub" style="left:${NX.s}px;top:${mids(r)}px;width:${NW.s}px;height:36px;border-color:#9aa6b8" data-act="madd" data-subj="${r.id}">전체<span class="mad">+</span></div>`;
-      else nodes += `<div class="mn sub" style="left:${NX.s}px;top:${mids(r)}px;width:${NW.s}px;height:36px;border-color:${r.c}" data-act="madd" data-subj="${r.id}">${r.label}<span class="mad">+</span></div>`;
+      if (r.wide) nodes += `<div class="mn sub" style="left:${NX.s}px;top:${mids(r)}px;width:${NW.s}px;height:36px;border-color:transparent;background:rgba(154,166,184,.3)" data-act="madd" data-subj="${r.id}">전체<span class="mad">+</span></div>`;
+      else nodes += `<div class="mn sub" style="left:${NX.s}px;top:${mids(r)}px;width:${NW.s}px;height:36px;border-color:transparent;background:${rgba(r.c,.3)}" data-act="madd" data-subj="${r.id}">${r.label}<span class="mad">+</span></div>`;
       svg += `<path d="M${NX.s + NW.s},${cy} H${TL - 6}" stroke="${r.c}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
     });
   });
@@ -565,7 +565,7 @@ function mapView() {
   // 행 안내선 + 블록
   let bars = '', selPos = null;
   rows.forEach(r => {
-    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrb" style="left:${TL}px;width:${Math.max(0, Math.min(tot, idxE(pd(r.g === 'P' ? S.exams.p : S.exams.s))) * px)}px;top:${r.y}px;height:${r.h - 4}px;background:${rgba(r.c, .075)}"></div>`;
+    bars += `<div class="mrh" data-row="${r.id}" style="left:${TL}px;width:${TW - TL}px;top:${r.y}px;height:${r.h - 4}px"></div><div class="mrl" style="left:${TL}px;width:${Math.max(0, Math.min(tot, idxE(pd(r.g === 'P' ? S.exams.p : S.exams.s))) * px)}px;top:${r.y + r.h - 2}px"></div>`;
     r.bs.forEach(b => {
       if (b._hid) return;
       const bs0 = b.base ? pd(b.base[0]) : pd(b.s), be0 = b.base ? pd(b.base[1]) : pd(b.e);
