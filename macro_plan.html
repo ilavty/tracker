@@ -239,11 +239,11 @@ html.emb .top{padding-right:96px}
 .mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-style:normal;font-size:1rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
-.exl{position:absolute;width:0;border-left:1.5px solid #2f4a7a;pointer-events:none;z-index:1}
+.exl{position:absolute;width:0;border-left:3px solid #7b8fb5;pointer-events:none;z-index:1}
 .wkl{position:absolute;width:0;border-left:1px solid rgba(47,74,122,.09);pointer-events:none}
 .wk{position:absolute;width:0;height:5px;border-left:1px solid rgba(47,74,122,.55);pointer-events:none}
-.mgl2{position:absolute;height:0;border-top:2px solid #2f4a7a;pointer-events:none}
-.mgd{position:absolute;width:9px;height:9px;border-radius:50%;background:#2f4a7a;pointer-events:none}
+.mgl2{position:absolute;height:0;border-top:3px solid #7b8fb5;pointer-events:none}
+.mgd{position:absolute;width:11px;height:11px;border-radius:50%;background:#7b8fb5;pointer-events:none}
 .mgt{white-space:nowrap;position:absolute;font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;pointer-events:none}
 .mrl{position:absolute;height:0;border-top:1px solid #d7dce6;pointer-events:none}
 .mn{position:absolute;box-sizing:border-box;border:1.6px solid #2f4a7a;background:#fff;border-radius:10px;padding:4px 10px;font-size:.8rem;font-weight:700;color:#2f4a7a;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer}
@@ -270,7 +270,7 @@ html.emb .top{padding-right:96px}
 #ctxm .cx div:hover{background:none}
 #ctxm .cxb{width:28px;height:28px;border-radius:50%;border:1px solid var(--bd);background:#fff;font-size:1rem;cursor:pointer;color:#2f4a7a}
 #ctxm .cxb:hover{background:var(--soft)}
-.mb.sel{box-shadow:0 0 0 3px rgba(74,163,234,.4)}
+.mb.sel{box-shadow:0 0 0 2px rgba(74,163,234,.16)}
 .mb .rz2{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
 .mb .med{position:relative;z-index:1;margin-left:auto;padding-left:6px;font-size:.62rem;color:#9aa6b8;opacity:0}
 .mb:hover .med{opacity:1}
@@ -468,7 +468,7 @@ function statsHtml() {
 
 /* ================= MAP (마인드맵 + 날짜: 구조는 왼쪽, 날짜 위치는 오른쪽) ================= */
 const ZDEF = 1;
-let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 236, MIDXE = null, MPOSA = [], MKEY = null, MDETC = null, MDRAG = null;
+let MSEL = null, MPX = 4, MIDX = null, MSEGS = null, MCUM = null, MTL = 156, MIDXE = null, MPOSA = [], MKEY = null, MDETC = null, MDRAG = null;
 function mapSegs() {
   const iv = S.blocks.map(b => { const bs = b.base ? pd(b.base[0]) : pd(b.s), be = b.base ? pd(b.base[1]) : pd(b.e); return [Math.min(pd(b.s), bs), Math.max(pd(b.e), be)]; });
   [S.exams.p, S.exams.s].forEach(x => { const d = pd(x), t = new Date(d * DAY); iv.push([Math.floor(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY), d]); });   // 시험일이 든 달(시험일까지)도 날짜로 생김
@@ -489,7 +489,7 @@ function mapView() {
   const idx = d => { if (POS.has(d)) return POS.get(d); const nx = segs.find(sg => sg[0] > d); return nx ? POS.get(nx[0]) : tot; };
   const idxE = d => POS.has(d) ? POS.get(d) + wt(d) : idx(d);
   MDETC = detCollapsed; MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
-  const TL = 236, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
+  const TL = 156, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || ZDEF)); MPX = px;
   MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
@@ -533,7 +533,7 @@ function mapView() {
   MPOSA.forEach(e => { if (new Date(e[0] * DAY).getUTCDay() === 1) dv += `<i class="wkl" style="left:${TL + e[1] * px}px;top:${rows[0].y - 7}px;height:${H - rows[0].y - 1}px"></i>`; });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>▼</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
-  const NX = { r: 0, g: 80, s: 144 }, NW = { r: 56, g: 44, s: 62 };
+  const NX = { r: 0, g: 0, s: 62 }, NW = { r: 0, g: 44, s: 62 };
   const mids = r => r.y + (r.h - 6) / 2 - 14;
   let nodes = `<div class="mgt" style="left:0;top:${MY + 2}px">MEMO</div>`, svg = `<svg width="${TW}" height="${H}">`;
   const link = (x1, y1, x2, y2) => { const xm = (x1 + x2) / 2, r = Math.min(10, Math.abs(y2 - y1) / 2), dir = y2 > y1 ? 1 : -1; return Math.abs(y2 - y1) < 1 ? `M${x1},${y1} H${x2}` : `M${x1},${y1} H${xm - r} Q${xm},${y1} ${xm},${y1 + dir * r} V${y2 - dir * r} Q${xm},${y2} ${xm + r},${y2} H${x2}`; };
@@ -554,8 +554,6 @@ function mapView() {
     });
   });
   const rc = (gys[0] + gys[1]) / 2;
-  nodes += `<div class="mn root" style="left:${NX.r}px;top:${rc}px;width:${NW.r}px;height:36px">합격</div>`;
-  gys.forEach(gc => { svg += `<path d="${link(NX.r + NW.r, rc + 18, NX.g, gc + 18)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`; });
   svg += '</svg>';
   // 행 안내선 + 블록
   let bars = '', selPos = null;
