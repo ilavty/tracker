@@ -235,10 +235,10 @@ html.emb .top{padding-right:96px}
 .mmi{height:18px;box-sizing:border-box;width:100%;font:600 .62rem inherit;font-family:inherit;border:1.3px solid #4aa3ea;border-radius:9px;padding:0 8px;outline:none;color:#2f4a7a;background:#fff}
 .mbl{position:absolute;top:8px;text-align:center;font-size:.68rem;font-weight:700;color:#2f4a7a;line-height:1.25;letter-spacing:.06em;pointer-events:none}
 .mbl small{display:block;font-weight:500;letter-spacing:0;color:#7c90a6;font-size:.6rem}
-.mdv{position:absolute;top:36px;width:0;border-left:1.4px dashed #b8c0cf;opacity:.9}
+.mdv{position:absolute;top:36px;width:0;border-left:1.4px solid #a9b3c7}
 .mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
 .mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
-.mtd i{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.58rem;color:#4aa3ea;font-weight:700;white-space:nowrap}
+.mtd i{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.7rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
 .exl{position:absolute;width:0;border-left:1.5px solid #2f4a7a;pointer-events:none;z-index:1}
 .wkl{position:absolute;width:0;border-left:1px solid rgba(47,74,122,.09);pointer-events:none}
 .wk{position:absolute;width:0;height:5px;border-left:1px solid rgba(47,74,122,.55);pointer-events:none}
@@ -531,7 +531,7 @@ function mapView() {
     if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
   });
   MPOSA.forEach(e => { if (new Date(e[0] * DAY).getUTCDay() === 1) dv += `<i class="wkl" style="left:${TL + e[1] * px}px;top:${rows[0].y - 7}px;height:${H - rows[0].y - 1}px"></i>`; });
-  const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>오늘</i></div>` : '';
+  const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>▼</i></div>` : '';
   // 왼쪽 마인드맵 (행에 맞춰 세로 정렬)
   const NX = { r: 0, g: 80, s: 144 }, NW = { r: 56, g: 44, s: 62 };
   const mids = r => r.y + (r.h - 6) / 2 - 14;
