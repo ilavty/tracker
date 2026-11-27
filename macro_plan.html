@@ -233,14 +233,14 @@ html.emb .top{padding-right:96px}
 .mm.add{width:20px;padding:0;text-align:center;border-style:dashed;color:#9aa6b8;opacity:0}
 .mmw:hover .mm.add,.mm.add:hover{opacity:1}
 .mmi{height:18px;box-sizing:border-box;width:100%;font:600 .62rem inherit;font-family:inherit;border:1.3px solid #4aa3ea;border-radius:9px;padding:0 8px;outline:none;color:#2f4a7a;background:#fff}
-.mbl{position:absolute;top:8px;text-align:center;font-size:.68rem;font-weight:700;color:#2f4a7a;line-height:1.25;letter-spacing:.06em;pointer-events:none}
+.mbl{position:absolute;top:4px;text-align:center;font-size:.68rem;font-weight:700;color:#2f4a7a;line-height:1.25;letter-spacing:.06em;pointer-events:none}
 .mbl small{display:block;font-weight:500;letter-spacing:0;color:#7c90a6;font-size:.6rem}
 .mdv{position:absolute;top:36px;width:0;border-left:1.4px solid #a9b3c7}
 .mdg{position:absolute;top:22px;font-size:.58rem;color:#9aa6b8;transform:translateX(-50%);background:#fcfbfa;padding:0 3px;border-radius:6px}
-.mtd{position:absolute;top:44px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
+.mtd{position:absolute;top:38px;width:2px;background:#4aa3ea;opacity:.8;border-radius:1px;pointer-events:none}
 .mtd i{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-style:normal;font-size:1rem;line-height:1;color:#4aa3ea;font-weight:700;white-space:nowrap}
 .exm{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);pointer-events:none;z-index:1}
-.exm span{font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;line-height:14px;white-space:nowrap}
+.exm span{font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;line-height:13px;white-space:nowrap}
 .exm i{width:10px;height:10px;border-radius:50%;background:#2f4a7a;margin-top:3px;flex:none}
 .exm b{width:3px;background:#7b8fb5;flex:none}
 .exl{position:absolute;width:0;margin-left:-1.5px;border-left:3px solid #7b8fb5;pointer-events:none;z-index:1}
@@ -250,7 +250,7 @@ html.emb .top{padding-right:96px}
 .mgd{position:absolute;width:10px;height:10px;margin-left:-5px;border-radius:50%;box-sizing:border-box;background:#2f4a7a;pointer-events:none}
 .mgt{white-space:nowrap;position:absolute;font-size:.68rem;font-weight:700;color:#2f4a7a;letter-spacing:.04em;pointer-events:none}
 .mrl{position:absolute;height:0;border-top:1px solid #d7dce6;pointer-events:none}
-.mgs{position:absolute;height:9px;background:linear-gradient(to bottom,rgba(47,74,122,.18),rgba(47,74,122,.07) 45%,rgba(47,74,122,0));pointer-events:none}
+.mgs{position:absolute;height:16px;background:linear-gradient(to bottom,rgba(47,74,122,.15),rgba(47,74,122,.10) 18%,rgba(47,74,122,.05) 50%,rgba(47,74,122,.015) 80%,rgba(47,74,122,0));pointer-events:none}
 .mn{position:absolute;box-sizing:border-box;border:1.6px solid #2f4a7a;background:#fff;border-radius:10px;padding:4px 10px;font-size:.8rem;font-weight:700;color:#2f4a7a;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer}
 .mn small{font-weight:500;font-size:.62rem;color:#7c90a6}
 .mn.root{background:#2f4a7a;color:#fff;font-weight:600}
@@ -496,7 +496,7 @@ function mapView() {
   MDETC = detCollapsed; MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
   const TL = 156, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || ZDEF)); MPX = px;
-  MTL = TL; const TW = TL + tot * px + 4, TOP = 64;
+  MTL = TL; const TW = TL + tot * px + 4, TOP = 55;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -533,7 +533,7 @@ function mapView() {
     if ((!i || cols[i - 1].ci !== c.ci) && DET[c.yr + '-' + (c.mo + 1)]) { const dk = c.yr + '-' + (c.mo + 1); lab += `<div class="mdt" data-act="mdtg" data-k="${dk}" style="left:${x0 + 5}px" title="이 달 세부 계획 접기/펼치기">${detCollapsed(dk) ? '▸' : '▾'} ${DET[dk]}</div>`; }
     lab += `<div class="mbl" style="left:${x0}px;width:${x1 - x0}px">${EN[c.mo]}</div>`;
     const nx = cols[i + 1]; if (nx) { const gap = nx.a - c.b - 1, xn = TL + idx(nx.a) * px; dv += `<div class="mdv" style="left:${x1}px;height:${H - 44}px"></div>`; dv += `<div class="mdh" data-k="${c.yr}-${c.mo + 1}" data-w="${x1 - x0}" style="left:${x1}px;height:${H - 44}px"></div>`; if (xn - x1 > 3) dv += `<div class="mdv" style="left:${xn}px;height:${H - 44}px"></div>`; if (gap > 7) dv += `<div class="mdh gp" data-k="${MKEY(nx.a)}" data-w="${xn - x1}" style="left:${xn}px;height:${H - 44}px"></div>`; { const miss = []; let yy = c.yr, mm = c.mo + 2; if (mm > 12) { mm = 1; yy++; } while (yy < nx.yr || (yy === nx.yr && mm < nx.mo + 1)) { miss.push(yy + '-' + mm); if (++mm > 12) { mm = 1; yy++; } } if (miss.length && xn - x1 > 3) dv += `<div class="mgp" data-act="mgap" data-m="${miss.join(',')}" style="left:${x1}px;width:${xn - x1}px"></div>`; }
-    if (gap > 0) dv += `<div class="mdg" style="left:${(x1 + xn) / 2}px">⋯${gap}일</div>`; }
+  }
   });
   MPOSA.forEach(e => { if (new Date(e[0] * DAY).getUTCDay() === 1) dv += `<i class="wkl" style="left:${TL + e[1] * px}px;top:${rows[0].y - 7}px;height:${H - rows[0].y - 1}px"></i>`; });
   const td = (TODAY >= segs[0][0] && TODAY <= segs[segs.length - 1][1] && segs.some(sg => TODAY >= sg[0] && TODAY <= sg[1])) ? `<div class="mtd" style="left:${TL + idx(TODAY) * px}px;height:${H - 44}px"><i>▼</i></div>` : '';
@@ -549,7 +549,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `${g === 'P' ? `<div class="mgs" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="exm" style="left:${Math.min(ex, TW - 14)}px;top:${ly - 20}px"><span>${g === 'P' ? '1차' : '2차'}</span><i></i><b style="height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly - 6}px"></b></div>`;
+    gl += `${g === 'P' ? `<div class="mgs" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>` : ''}<div class="exm" style="left:${Math.min(ex, TW - 14)}px;top:${ly - 31}px"><span>${g === 'P' ? '1차' : '2차'}</span><i></i><b style="height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly + 7}px"></b></div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
