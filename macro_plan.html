@@ -498,7 +498,7 @@ function mapView() {
   MDETC = detCollapsed; MIDX = idx; MIDXE = idxE; MPOSA = MPOS; MSEGS = segs; MKEY = mkey;
   const TL = 156, AV = Math.max(560, Math.min(($('#root') || document.body).clientWidth - 8, 1500) - TL);
   const px = MDRAG ? MDRAG.px : Math.max(1.5, Math.max(5, (AV - 6) / tot) * (UI.zm || ZDEF)); MPX = px;
-  MTL = TL; const TW = TL + tot * px + 4, TOP = 48;
+  MTL = TL; const TW = TL + tot * px + 4, TOP = 62;
   // 행: 과목마다 한 줄, 그룹 전체용 줄
   const rows = [];
   ['P', 'S'].forEach(g => {
@@ -549,7 +549,7 @@ function mapView() {
     const rs = rows.filter(r => r.g === g), gc = (mids(rs[0]) + mids(rs[rs.length - 1])) / 2; gys.push(gc);
     nodes += `<div class="mn grp" style="left:${NX.g}px;top:${gc}px;width:${NW.g}px;height:36px" data-act="madd" data-subj="${g}">${g === 'P' ? '1차' : '2차'}<span class="mad">+</span></div>`;
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
-    const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
+    const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 21, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
     gl += `${g === 'P' ? `<div class="mgs" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>` : ''}<div class="exm" style="left:${Math.min(ex, TW - 14)}px;top:${ly - 23}px"><i>${g === 'P' ? '1' : '2'}</i><b style="height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly + 5}px"></b></div>`;
     rs.forEach(r => {
