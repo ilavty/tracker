@@ -270,7 +270,7 @@ html.emb .top{padding-right:96px}
 #ctxm .cx div:hover{background:none}
 #ctxm .cxb{width:28px;height:28px;border-radius:50%;border:1px solid var(--bd);background:#fff;font-size:1rem;cursor:pointer;color:#2f4a7a}
 #ctxm .cxb:hover{background:var(--soft)}
-.mb.sel{box-shadow:0 1px 3px rgba(47,74,122,.13),0 0 0 2px rgba(74,163,234,.16)}
+.mb.sel{filter:brightness(.88) saturate(1.25);box-shadow:0 1px 3px rgba(47,74,122,.13),0 0 0 2px rgba(74,163,234,.16)}
 .mb .rz2{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:ew-resize;z-index:2}
 .mb .med{position:relative;z-index:1;margin-left:auto;padding-left:6px;font-size:.62rem;color:#9aa6b8;opacity:0}
 .mb:hover .med{opacity:1}
@@ -544,7 +544,7 @@ function mapView() {
     // 그룹 선: 타임라인 끝(시험일)까지 쭉 이어짐 — 날짜는 선 끝에만
     const ed = pd(g === 'P' ? S.exams.p : S.exams.s), ex = TL + Math.min(tot, idxE(ed)) * px, ly = rows[0].y - 7, exEnd = TL + Math.min(tot, idxE(pd(S.exams.s))) * px;
     svg += `<path d="M${NX.g + NW.g},${gc + 18} H${NX.g + NW.g + 6}" stroke="none"/>`;
-    gl += `${g === 'P' ? `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="mgd" style="left:${ex - 4}px;top:${ly - 4}px"></div><div class="mgt" style="left:${ex - 2}px;top:${ly - 21}px;transform:translateX(-100%)">${g === 'P' ? '1차' : '2차'}</div><div class="exl" style="left:${ex}px;top:${ly}px;height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly}px"></div>`;
+    gl += `${g === 'P' ? `<div class="mgl2" style="left:${TL}px;top:${ly}px;width:${exEnd - TL}px"></div>${MPOSA.filter(e => new Date(e[0] * DAY).getUTCDay() === 1).map(e => `<i class="wk" style="left:${TL + e[1] * px}px;top:${ly - 5}px"></i>`).join('')}` : ''}<div class="mgd" style="left:${ex - 4.5}px;top:${ly - 3.5}px"></div><div class="mgt" style="left:${Math.min(ex, TW - 12)}px;top:${ly - 22}px;transform:translateX(-50%)">${g === 'P' ? '1차' : '2차'}</div><div class="exl" style="left:${ex - 1.5}px;top:${ly}px;height:${(g === 'P' ? GM.P.y - 2 : H - 8) - ly}px"></div>`;
     rs.forEach(r => {
       const cy = mids(r) + 18;
       svg += `<path d="${link(NX.g + NW.g, gc + 18, NX.s, cy)}" fill="none" stroke="#2f4a7a" stroke-width="1.5"/>`;
@@ -590,7 +590,7 @@ function mapView() {
   let pop = '', HH = H;
   if (sb && selPos) {
     const PW = 270, PH = 520;
-    let left = selPos.x + selPos.w + 10, top = selPos.y - 8;
+    let left = selPos.x + selPos.w + 34, top = selPos.y - 8;
     if (left + PW > TW) { left = selPos.x - PW - 10; }
     if (left < 4) { left = Math.max(4, Math.min(selPos.x, TW - PW - 4)); top = selPos.y + RH + 10; }
     HH = Math.max(H, top + PH);
