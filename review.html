@@ -556,9 +556,7 @@ async function pageHome(){
             B=seam&&O.some(o=>o.y===c.y+c.h&&ov(o.x,o.x+o.w,c.x,c.x+c.w)),
             Lf=seam&&O.some(o=>o.x+o.w===c.x&&ov(o.y,o.y+o.h,c.y,c.y+c.h)),
             R=seam&&O.some(o=>o.x===c.x+c.w&&ov(o.y,o.y+o.h,c.y,c.y+c.h));
-      s.style.setProperty('--pt',T?'0px':'7px');s.style.setProperty('--pb',B?'0px':'7px');
-      s.style.setProperty('--pl',Lf?'0px':'7px');s.style.setProperty('--pr',R?'0px':'7px');
-      s.style.margin=`${T?-.5:0}px ${R?-.5:0}px ${B?-.5:0}px ${Lf?-.5:0}px`;
+      s.style.margin=`${T?-.75:0}px ${R?-.75:0}px ${B?-.75:0}px ${Lf?-.75:0}px`;
       s.style.backgroundImage=cssUrl(splitUrl);
       s.style.backgroundSize=`${bw}px ${bh}px`;
       s.style.backgroundPosition=`${ox-c.x*cw}px ${oy-c.y*ch}px`;
