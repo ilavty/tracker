@@ -287,7 +287,7 @@ function save(...keys){
 }
 function flush(){
   if(!DB){pend.clear();setSync('LOCAL');return}
-  const keys=[...pend];pend.clear();
+  const keys=[...pend];pend.clear();keys.forEach(k=>inflight.add(k));
   const jobs=keys.map(k=>{
     const [kind,id]=k.split(':');
     try{
@@ -303,34 +303,56 @@ function flush(){
 }
 const typing=()=>{const a=document.activeElement;return a&&['TEXTAREA','INPUT','SELECT'].includes(a.tagName)};
 let remotePending=false;
+const seen={cats:new Set(),reviews:new Set()},inflight=new Set();let lockSeen=false;
 function onRemote(snap){
   let v=snap.val();
   const first=!synced;synced=true;
   if(first&&!v){ // empty database → push what's here
-    pend.add('layout');if(S.lock)pend.add('lock');S.cats.forEach(c=>pend.add('cat:'+c.id));S.reviews.forEach(r=>pend.add('rev:'+r.id));flush();return;
+    if(!S.cats.length)S.cats=defaults().cats;
+    norm();persist();
+    pend.add('layout');if(S.lock)pend.add('lock');S.cats.forEach(c=>pend.add('cat:'+c.id));S.reviews.forEach(r=>pend.add('rev:'+r.id));flush();
+    if(!typing())rerender();return;
   }
   v=v||{};
   const rc=v.cats||{},rr=v.reviews||{};
   const cats=[],revs=[];
+  /* an item missing remotely is treated as "deleted elsewhere" only if we have seen it there before;
+     otherwise it is simply not uploaded yet (partial snapshots arrive while our own writes are in flight) */
   Object.keys(rc).forEach(id=>{
+    seen.cats.add(id);
     const local=S.cats.find(c=>c.id===id);
     cats.push(pend.has('cat:'+id)&&local?local:Object.assign({id},rc[id]));
   });
   S.cats.forEach(c=>{
     if(rc[c.id])return;
-    if(first||pend.has('cat:'+c.id)){cats.push(c);pend.add('cat:'+c.id)}
+    const k='cat:'+c.id;
+    if(seen.cats.has(c.id)&&!pend.has(k))return;
+    cats.push(c);
+    if(!inflight.has(k)&&!pend.has(k))pend.add(k);
   });
   Object.keys(rr).forEach(id=>{
+    seen.reviews.add(id);
     const local=S.reviews.find(r=>r.id===id);
     revs.push(pend.has('rev:'+id)&&local?local:Object.assign({id},rr[id]));
   });
   S.reviews.forEach(r=>{
     if(rr[r.id])return;
-    if(first||pend.has('rev:'+r.id)){revs.push(r);pend.add('rev:'+r.id)}
+    const k='rev:'+r.id;
+    if(seen.reviews.has(r.id)&&!pend.has(k))return;
+    revs.push(r);
+    if(!inflight.has(k)&&!pend.has(k))pend.add(k);
   });
-  if(v.layout&&!pend.has('layout'))S.layout=Object.assign({},S.layout,v.layout);
-  if(!pend.has('lock')){if(v.lock)S.lock=v.lock;else if(first&&S.lock)pend.add('lock');else if(!first)S.lock=null}
+  if(!pend.has('layout')){
+    if(v.layout)S.layout=Object.assign({},S.layout,v.layout);
+    else if(!inflight.has('layout'))pend.add('layout');
+  }
+  if(!pend.has('lock')){
+    if(v.lock){S.lock=v.lock;lockSeen=true}
+    else if(lockSeen){S.lock=null;lockSeen=false}
+    else if(S.lock&&!inflight.has('lock'))pend.add('lock');
+  }
   S.cats=cats;S.reviews=revs;
+  if(first&&!S.cats.length){S.cats=defaults().cats;S.cats.forEach(c=>pend.add('cat:'+c.id))}
   norm();persist();
   if(pend.size){clearTimeout(flushT);flushT=setTimeout(flush,200)}else setSync('SYNCED');
   if(S.lock&&!isUnlocked()&&!document.getElementById('lock')){showLock();return}
