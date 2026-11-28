@@ -105,9 +105,10 @@ body.home{background:var(--stage);color:#f2f2f2}
 .page.in{max-width:none;margin:0;padding:22px 26px 60px}
 .page.rv{position:relative}
 .rvhead.hc{padding-right:150px;min-height:170px}
-.rvcover{position:absolute;right:0;top:64px;width:120px;--rot:0deg}
-.vtitle{font-size:30px;font-weight:700;line-height:1.35;margin-top:14px}
-.vmeta{font-family:var(--mono);font-size:14px;color:var(--brown);margin-top:12px;letter-spacing:.08em}
+.page.rv .rvcover{position:absolute;right:26px;top:84px;width:120px;margin:0;--rot:0deg}
+.vtitle{font-size:28px;font-weight:500;line-height:1.35;margin-top:14px}
+.vmeta{font-family:var(--mono);font-size:14px;color:var(--brown);margin-top:12px;letter-spacing:.08em;display:flex;align-items:center;gap:14px}
+.vmeta .vs{font-size:26px;letter-spacing:.12em;line-height:1}
 .vline{font-size:16px;margin-top:8px}
 .vbody{white-space:pre-wrap;line-height:1.95;font-size:16px;margin-top:30px;word-break:keep-all;overflow-wrap:anywhere}
 .collage{position:relative;width:100%;background:#fff;border:1px solid #e4e4e4;border-radius:3px;margin-bottom:40px}
@@ -932,7 +933,7 @@ async function pageReview(id,edit){
     head.append(typeField({value:r.line,onChange:v=>upd('line',v)}),el('hr',{class:'rule'}));
   }else{
     head.append(el('div',{class:'vtitle',text:r.title||'—'}));
-    head.append(el('div',{class:'vmeta',text:[r.date,r.rating?'★'.repeat(Math.min(r.rating,MAXR))+'☆'.repeat(MAXR-Math.min(r.rating,MAXR)):''].filter(Boolean).join('   ')}));
+    head.append(el('div',{class:'vmeta'},el('span',{text:r.date||''}),r.rating?el('span',{class:'vs',text:'★'.repeat(Math.min(r.rating,MAXR))+'☆'.repeat(MAXR-Math.min(r.rating,MAXR))}):null));
     if(r.line)head.append(el('div',{class:'vline',text:r.line}));
   }
 
