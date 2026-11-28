@@ -54,6 +54,9 @@ body.home{background:var(--stage);color:#f2f2f2}
 .grid:not(.edit) .stamp:hover::before{transform:translateX(130%);transition:transform .8s ease}
 .grid:not(.edit) .stamp:hover .plate{transform:translateY(-4px)}
 .grid:not(.edit) .stamp:active{transform:scale(.97);transition-duration:.1s}
+.grid.pl-hide:not(.edit) .plate{display:none}
+.grid.pl-hover:not(.edit) .plate{opacity:0;transition:opacity .25s,transform .25s}
+.grid.pl-hover:not(.edit) .stamp:hover .plate{opacity:1}
 .grid.pop .stamp{animation:pop .55s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i,0)*70ms)}
 @keyframes pop{from{opacity:0;transform:translateY(18px) scale(.9) rotate(-3deg)}}
 .grid.edit{background-image:linear-gradient(to right,rgba(255,255,255,.2) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.2) 1px,transparent 1px);box-shadow:inset -1px -1px 0 rgba(255,255,255,.2)}
@@ -500,7 +503,7 @@ async function pageHome(){
   const wxb=el('button',{class:'btn',onclick:()=>{cycleWx();wxb.textContent=wxLabel();if(editing)renderSettings()},text:wxLabel()});
   app.append(el('div',{class:'top'},el('h1',{},'REVIEW BOOK',el('span',{class:'cur'})),el('div',{class:'topr'},wxb,gear)));
   const wrap=el('div',{class:'sheetwrap'});
-  const grid=el('div',{class:'grid'+(editing?' edit':' tilt'+(popDone?'':' pop'))});popDone=true;
+  const grid=el('div',{class:'grid pl-'+(L.plate||'hover')+(editing?' edit':' tilt'+(popDone?'':' pop'))});popDone=true;
   wrap.append(grid);app.append(wrap);
   grid.style.gridTemplateColumns=`repeat(${L.cols},1fr)`;
 
@@ -1038,6 +1041,7 @@ function renderSettings(){
     el('button',{class:L.mode==='each'?'on':'',onclick:()=>{L.mode='each';save('layout');refreshHome();renderSettings()},text:'칸마다 따로'}))));
   if(L.mode==='split')panel.append(imgField('큰 그림',()=>L.img||'',v=>{L.img=v;save('layout')}));
 
+  panel.append(el('div',{class:'f'},el('label',{text:'이름표'}),el('div',{class:'seg'},...[['show','항상'],['hover','호버시'],['hide','숨김']].map(([k,nm])=>el('button',{class:(L.plate||'hover')===k?'on':'',onclick:()=>{L.plate=k;save('layout');refreshHome();renderSettings()},text:nm})))));
   panel.append(el('h3',{text:'LAYOUT'}));
   panel.append(el('div',{class:'f'},...PRESETS.map(([nm,cols,arr])=>el('button',{class:'sm',onclick:()=>packAll(cols,fillSizes(arr,S.cats.length)),text:nm}))));
   panel.append(el('div',{class:'f'},
