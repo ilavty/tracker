@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>외교사</title>
+<style>
+@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{--font:'Paperlogy','GmarketSans','Noto Sans KR',system-ui,sans-serif;--ink:#2a2520;--muted:#8a8175;--line:#e6e2dc;--bg:#ffffff;--surface:#fff;--soft:#f6f3ef;--sky:#3a8fc4;--sky-soft:#eaf5fc;--brown-soft:#f4ede5;--shadow:rgba(0,0,0,.12)}
+body.dark{--ink:#f2f3fa;--muted:#9da3c4;--line:#363b62;--bg:#171a30;--surface:#22264a;--soft:#2a2f57;--sky-soft:#22406a;--brown-soft:#30355e;--shadow:rgba(0,0,0,.5)}
+body.dark .sph{background:#fff;color:var(--c)}
+body.dark .rc .lb{background:#fff}
+body.dark .nd.nt{color:#141729;font-weight:500}body.dark .nd.yr{color:#141729}body.dark .nd.yr.ed{color:#141729}body.dark .nd.nt.plain{color:var(--c)}body.dark .nd.st .stx{color:#141729}
+body.dark .tt td{color:#141729;background:#eef0ff}body.dark .tt tr.hd td{color:#141729}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+*::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+button,input,select{font:inherit;color:inherit}
+.top{position:fixed;left:0;right:0;top:0;height:52px;display:flex;align-items:center;gap:7px;padding:0 14px;background:var(--surface);border-bottom:1px solid var(--line);z-index:50}
+.top select{font-size:13px;font-weight:600;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface);max-width:170px}
+.tb{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.tb:hover{background:var(--brown-soft)}.tb.on{background:var(--sky-soft);border-color:var(--sky)}
+.tb.ic{padding:6px 8px;min-width:32px;justify-content:center}
+.sep{width:1px;height:24px;background:var(--line);margin:0 2px}
+.quick{display:flex;align-items:center;gap:6px;margin-left:4px;flex:1;min-width:0;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:3px 3px 3px 10px;max-width:560px}
+.quick b{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.quick select{border:0;background:var(--surface);border-radius:6px;padding:4px 6px;font-size:12.5px;font-weight:600;max-width:130px}
+.quick input{flex:1;min-width:100px;font-size:13px;border:0;border-radius:6px;padding:6px 8px;background:var(--surface);outline:none}
+.hint{font-size:11.5px;color:var(--muted);white-space:nowrap}
+#vp{position:fixed;left:0;right:0;top:52px;bottom:0;overflow:hidden;touch-action:none;background:var(--bg)}
+#vp.pan{cursor:grabbing}#vp.draw{cursor:crosshair}
+#board{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:0 0}
+#rects,#nodes,#spines{position:absolute;left:0;top:0}
+#lines{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+#lines path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+#lines path.hit{stroke:transparent;stroke-width:14;pointer-events:stroke;cursor:pointer}
+#lines .lbl{pointer-events:all;cursor:pointer}
+#lines path.sel{filter:drop-shadow(0 0 2.5px rgba(58,143,196,.95))}
+.sp{position:absolute;z-index:1;width:18px;margin-left:-9px;cursor:pointer}
+.sp i{position:absolute;left:7.5px;top:0;bottom:0;width:3px;border-radius:0 0 2px 2px;background:var(--c)}
+.sp.cap-flat i{border-radius:0}.sp.cap-fade i{background:linear-gradient(var(--c) 70%,transparent)}
+.sp.cap-ar i::after{content:'';position:absolute;left:-5.5px;bottom:-9px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:11px solid var(--c)}
+.sp.cap-bar i{border-radius:0}.sp.cap-bar i::after{content:'';position:absolute;left:-7.5px;bottom:-1.5px;width:18px;height:3px;border-radius:2px;background:var(--c)}.sp.cap-cut i{border-radius:0}
+.sp.cap-dot i::after{content:'';position:absolute;left:-5px;bottom:-7px;width:9px;height:9px;border-radius:50%;background:var(--surface);border:2.5px solid var(--c)}
+.sp.cap-fdot i::after{content:'';position:absolute;left:-4.5px;bottom:-6px;width:12px;height:12px;border-radius:50%;background:var(--c)}
+.rc .lb.mv{left:0;top:0;transform:translate(-50%,-50%)}.rc .lb{cursor:grab}
+.hstub{position:absolute;height:3px;background:var(--c);border-radius:2px;margin-top:-1.5px}
+#vp,#vp *{-webkit-user-select:none;user-select:none}#vp .ed,#vp .ed *{-webkit-user-select:text;user-select:text}
+.nd.anchor{box-shadow:0 0 0 2.5px var(--sky),0 0 0 5px rgba(58,143,196,.25)}.rc.msel{box-shadow:0 0 0 2px var(--sky)}
+.mh.pt{width:10px;height:10px;margin:-5px 0 0 -5px;border-color:var(--brown)}
+.sp .end{position:absolute;left:3px;bottom:-6px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--c);cursor:ns-resize;opacity:0}
+.sp:hover .end,.sp.sel .end{opacity:1}
+.sph{position:absolute;z-index:3;width:max-content;transform:translate(-50%,-100%);padding:7px 18px;border-radius:999px;background:var(--surface);border:2px solid var(--c);color:var(--c);font-weight:600;font-size:15px;white-space:nowrap;cursor:grab;user-select:none;outline:none}
+.sph.sel{box-shadow:0 0 0 3px rgba(58,143,196,.35)}
+.sph.ed{cursor:text;user-select:text}
+.nd{position:absolute;z-index:2;width:max-content;max-width:380px;font-size:13px;line-height:1.5;user-select:none;cursor:grab;outline:none;white-space:pre-wrap;word-break:keep-all}
+.nd.yr{padding:4px 14px;border-radius:999px;background:var(--c);color:#fff;font-weight:600;white-space:nowrap}
+.nd.nt{padding:5px 10px;border-radius:7px;background:var(--t);color:var(--ink);border:1px solid var(--b)}
+.nd.nt.plain{background:transparent;border-color:transparent}
+.nd.sel{box-shadow:0 0 0 2px var(--sky)}
+.nd.ed{cursor:text;user-select:text;box-shadow:0 0 0 2px var(--sky)}
+.nd.yr.ed{color:#fff}
+.nd.drop{box-shadow:0 0 0 3px #f0b24a}
+.nd b{font-weight:700}.nd .r{color:#d0483a}.nd .bl{color:#2f74c0}
+.nd .ln{min-height:1.5em}
+.nd .ln.li{padding-left:1em;position:relative}
+.nd .ln.li::before{content:"";position:absolute;left:.25em;top:.68em;width:.3em;height:.3em;border-radius:50%;background:currentColor;opacity:.75}
+.nd .ln.li2{padding-left:2em}.nd .ln.li2::before{left:1.25em;background:none;border:1px solid currentColor;box-sizing:border-box}
+.nd.tbl{padding:0;background:var(--surface);border:0;border-radius:6px;overflow:hidden;white-space:normal}
+.tt{border-collapse:collapse;font-size:inherit}
+.tt td{border:1px solid var(--b);padding:4px 9px;min-width:46px;vertical-align:top;white-space:pre-wrap;background:var(--surface);color:var(--ink);outline:none}
+.tt tr.hd td{background:var(--t);font-weight:600;text-align:center}
+.tt td.ed{box-shadow:inset 0 0 0 2px var(--sky);cursor:text;user-select:text}
+.rc{position:absolute;border-radius:10px;background:var(--t);border:1.5px solid var(--b);cursor:move}
+.rc.nob{border-color:transparent}
+.rc.sel{box-shadow:0 0 0 2px var(--sky)}
+.rc .lb{position:absolute;left:10px;top:-11px;width:max-content;padding:1px 8px;border-radius:6px;background:var(--surface);border:1px solid var(--b);font-size:11.5px;color:var(--c);font-weight:600;white-space:nowrap;user-select:none}
+.rc .lb:empty{display:none}
+.rc .rs{position:absolute;right:-6px;bottom:-6px;width:13px;height:13px;border-radius:3px;background:var(--surface);border:2px solid var(--b);cursor:nwse-resize;opacity:0}
+.rc:hover .rs,.rc.sel .rs{opacity:1}
+.nd.st{padding:20px 30px;background:none;border:0;font-weight:700;text-align:center;color:var(--ink);white-space:pre-wrap}
+.nd.st svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;z-index:-1;pointer-events:none}
+.nd.st.sh-bubble{padding:12px 18px 22px}
+.nd.st.empty{padding:0}
+.nd.st .srs{position:absolute;right:-5px;bottom:-5px;width:12px;height:12px;border-radius:3px;background:var(--surface);border:2px solid var(--sky);cursor:nwse-resize;opacity:0}
+.nd.st:hover .srs,.nd.st.sel .srs,.nd.img:hover .srs,.nd.img.sel .srs{opacity:1}
+.nd.img{padding:0;max-width:none;background:var(--surface);border:1px solid var(--b);border-radius:6px;box-shadow:none!important}.nd.img.sel{outline:2px solid var(--sky);outline-offset:2px}.nd.img img{display:block;width:100%;object-fit:contain;border-radius:5px;pointer-events:none;-webkit-user-drag:none}
+.nd.img .srs{position:absolute;right:-5px;bottom:-5px;width:12px;height:12px;border-radius:3px;background:var(--surface);border:2px solid var(--sky);cursor:nwse-resize;opacity:0}
+.nd.st .stx{position:relative;display:block;outline:none}
+.nd.st.sel,.nd.st.ed{box-shadow:none}.nd.st.sel svg,.nd.st.ed svg{filter:drop-shadow(0 0 2px rgba(58,143,196,.95))}
+#nodes .nd{isolation:isolate}
+.fade{opacity:.13!important;transition:opacity .2s}
+body.focusing .sp,body.focusing .sph,body.focusing .rc{opacity:.3;transition:opacity .2s}
+.nd.pop{box-shadow:0 4px 14px var(--shadow);transform:scale(1.06);transform-origin:center;z-index:4;transition:transform .2s}
+#legend{position:fixed;left:14px;top:64px;z-index:40;display:flex;flex-wrap:wrap;gap:5px;align-items:center;max-width:calc(100% - 340px)}
+#legend .tg{border:0;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;color:#fff;background:var(--c);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#legend.foc .tg:not(.on){opacity:.3}
+#legend .tg.on{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
+#legend .add{border:1px dashed var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted);cursor:pointer}
+.ghost{position:absolute;border:1.5px dashed var(--sky);background:rgba(58,143,196,.08);border-radius:10px;pointer-events:none}
+.mh{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--surface);border:2px solid var(--sky);cursor:move;z-index:5}
+.menu{position:fixed;z-index:60;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px var(--shadow);padding:8px;display:flex;flex-direction:column;gap:7px;font-size:12.5px;min-width:210px;max-width:320px}
+.menu .row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.menu .k{color:var(--muted);font-size:11.5px;width:30px;flex:none}
+.menu hr{border:0;border-top:1px solid var(--line);margin:1px 0;width:100%}
+.sw{width:19px;height:19px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw.on{box-shadow:0 0 0 2px var(--ink)}
+.pb{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:4px 9px;cursor:pointer;font-size:12px}
+.pb:hover{background:var(--brown-soft)}.pb.on{background:var(--sky-soft);border-color:var(--sky)}
+.pb.del{color:#c0503c}
+.mi{border:0;background:none;text-align:left;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12.5px;width:100%}
+.mi:hover{background:var(--brown-soft)}.mi.del{color:#c0503c}
+.menu input{font-size:12.5px;border:1px solid var(--line);border-radius:7px;padding:5px 8px;flex:1;min-width:0;outline:none;background:var(--soft)}
+.help{position:fixed;right:14px;bottom:14px;z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:12px;line-height:1.75;color:var(--muted);box-shadow:0 4px 16px var(--shadow);max-width:300px}
+.help b{color:var(--ink);font-weight:600}
+.help .x{position:absolute;right:8px;top:4px;border:0;background:none;cursor:pointer;color:var(--muted);font-size:14px}
+.zoom{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;gap:4px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.zoom button{border:0;background:none;cursor:pointer;width:28px;height:28px;border-radius:7px;font-size:15px}
+.zoom button:hover{background:var(--brown-soft)}
+.zoom span{font-size:11.5px;color:var(--muted);min-width:38px;text-align:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:9px;font-size:12.5px;z-index:90;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:.92}
+@media print{
+ .top,.help,.zoom,.menu,.toast,.mh,#legend{display:none!important}
+ html,body{overflow:visible!important;height:auto!important;background:#fff!important}
+ #vp{position:static;overflow:visible}
+ .end,.rs{display:none!important}
+ .sel{box-shadow:none!important;filter:none!important}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:900px){.hint{display:none}}
+</style><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+<div class="top">
+ <select id="docSel" title="연표 고르기"></select><button class="tb ic" id="docMenu" title="연표 관리">⋯</button>
+ <div class="sep"></div>
+ <button class="tb" id="addCol">＋ 기둥</button>
+ <button class="tb" id="addNote">＋ 텍스트</button>
+ <button class="tb" id="addTbl">＋ 표</button>
+ <button class="tb" id="addImg" title="캡처 붙여넣기(⌘V)·끌어다 놓기도 돼요">＋ 이미지</button><input type="file" id="imgIn" accept="image/*" multiple hidden>
+ <button class="tb" id="stkBtn" title="폭발·말풍선·별 스티커">스티커</button>
+ <button class="tb" id="rectTool" title="드래그해서 배경 박스 그리기">▢ 박스</button>
+ <div class="quick"><b>연도 추가</b><select id="qCol"></select><input id="qIn" placeholder="1914 사라예보, 1939 2차대전, 1945 해방  ↵ (여러 줄 붙여넣기도 OK)"></div>
+ <span class="hint">⌘+드래그 연결 · 우클릭 설정</span><span class="hint" id="sync" title="클라우드 저장 상태">☁</span>
+ <div class="sep"></div>
+ <button class="tb ic" id="undo" title="되돌리기 (⌘Z)">↶</button>
+ <button class="tb ic" id="fit" title="전체 보기">⤢</button>
+ <button class="tb ic" id="goto" title="기둥 찾아가기 (가운데로)">⌖</button>
+ <button class="tb ic" id="dark" title="밝게 / 어둡게">☾</button>
+ <button class="tb ic" id="fileBtn" title="파일 저장/불러오기 · 인쇄">⇩</button>
+</div>
+<div id="vp"><div id="board"><div id="rects"></div><svg id="lines" width="1" height="1"><defs></defs><g id="lg"></g></svg><div id="spines"></div><div id="nodes"></div></div></div>
+<div id="legend"></div>
+<div class="zoom"><button id="zOut">−</button><span id="zVal">100%</span><button id="zIn">＋</button></div>
+<div class="help" id="help"><button class="x" id="helpX">✕</button>
+<b>연도 추가</b> 위 칸에서 기둥 고르고 <b>1914 사라예보 사건</b> ↵<br>
+<b>클릭</b> 바로 글자 수정 · <b>끌기</b> 이동 (다른 기둥에 놓으면 그 기둥으로)<br>
+<b>⌘ + 끌기</b> 선 연결 · 기둥↔기둥은 합치기(꺾인 선), 나머지는 관계선(가운데 점 끌면 휘어짐)<br>
+<b>우클릭</b> 색·크기·불렛·분류·삭제 · 선 양끝(화살표/지하철) · 기둥 끝 모양<br>
+<b>⌥ + 제목 끌기</b> 제목만 위아래로(연도는 그대로)<br>
+<b>Shift + 끌기</b> 일직선 맞추기 · 여러 개 골라서 끌면 같이 이동 · 박스 이름은 테두리 따라 이동<br>
+<b>선 더블클릭</b> 꺾는 점 추가(우클릭 삭제) · 붙은 텍스트는 끌어서 순서·줄 바꾸기(자석)<br>
+<b>연도를 위아래로 끌기</b> 간격 늘리기 · 여러 개 골라 우클릭 → 같은 높이 · ⌫ 삭제<br>
+<b>분류</b> 누르면 그것만 집중<br>
+<b>Esc → ⌫</b> 글자 수정 끝내고 지우기 · 글자 줄 앞에 <b>- </b> 쓰면 불렛 · <b>⌘B</b> 굵게<br>
+<b>이미지</b> 캡처하고 ⌘V · 파일 끌어다 놓기 · 모서리 끌어서 크기<br><b>빈 곳 끌기</b> 여러 개 고르기 · <b>스페이스 + 끌기 / 스크롤</b> 화면 이동 · <b>⌘ + 스크롤/핀치</b> 확대
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+<script>try{if(!localStorage.getItem('diplomacy_v1')){localStorage.setItem('diplomacy_v1',JSON.stringify({docs:[{"id":"dip_seed","name":"외교사","cols":[{"id":"c0001","t":"프랑스","c":"red","x":160,"y0":1069,"y1":1961},{"id":"c0002","t":"이탈리아 통일","c":"brown","x":297,"y0":1465,"y1":2092},{"id":"c0003","t":"독일 통일","c":"black","x":518,"y0":1399,"y1":2092},{"id":"c0004","t":"유럽동맹체제","c":"pink","x":386,"y0":2112,"y1":3481},{"id":"c0005","t":"모로코","c":"purple","x":130,"y0":3060,"y1":3364},{"id":"c0006","t":"WW1","c":"amber","x":386,"y0":3493,"y1":4205,"hp":"l"},{"id":"c0007","t":"WW2","c":"sky","x":386,"y0":4320,"y1":5194,"hp":"l"},{"id":"c0008","t":"동방","c":"sky","x":763,"y0":912,"y1":3463},{"id":"c0009","t":"미국","c":"brown","x":994,"y0":1019,"y1":5220},{"id":"c0010","t":"일본","c":"green","x":1195,"y0":1430,"y1":5194},{"id":"c0011","t":"중국","c":"red","x":1474,"y0":1407,"y1":5212},{"id":"c0012","t":"한국","c":"gray","x":1693,"y0":1800,"y1":2798}],"nodes":[{"id":"y0013","k":"y","t":"1814","col":"c0001","y":1099,"o":1},{"id":"n0014","k":"n","t":"(2) 칼리쉬","p":"y0013","auto":true,"ko":0},{"id":"n0015","k":"n","t":"(3) 쇼몽조약","p":"y0013","auto":true,"ko":1},{"id":"y0016","k":"y","t":"1815","col":"c0001","y":1148,"o":2},{"id":"n0017","k":"n","t":"(6) 비엔나회의 1815","p":"y0016","auto":true,"ko":0},{"id":"n0018","k":"n","t":"(6) 워털루 전투","p":"y0016","auto":true,"ko":1},{"id":"n0019","k":"n","t":"(11) 2차 파리회의","p":"y0016","auto":true,"ko":0,"r":1},{"id":"n0020","k":"n","t":"(11) 신성동맹","p":"y0016","auto":true,"ko":1,"r":1},{"id":"y0021","k":"y","t":"1818","col":"c0001","y":1234,"o":3},{"id":"n0022","k":"n","t":"엑스 라 샤펠","p":"y0021","auto":true,"ko":0},{"id":"y0023","k":"y","t":"1830","col":"c0001","y":1353,"o":4},{"id":"n0024","k":"n","t":"7월혁명","p":"y0023","auto":true,"ko":0},{"id":"n0025","k":"n","t":"1831 폴란드 반란, 벨기에 독립운동 성공","p":"y0023","auto":true,"ko":1},{"id":"y0026","k":"y","t":"1848","col":"c0001","y":1489,"o":5},{"id":"n0027","k":"n","t":"2월 혁명","p":"y0026","auto":true,"ko":0},{"id":"n0028","k":"n","t":"헝가리 독립 추진·실패","p":"y0026","auto":true,"ko":0,"r":1},{"id":"y0029","k":"y","t":"1865","col":"c0001","y":1864,"o":6},{"id":"n0030","k":"n","t":"(1) 비아리츠 회견","p":"y0029","auto":true,"ko":0},{"id":"y0031","k":"y","t":"1859","col":"c0002","y":1645,"o":7},{"id":"n0032","k":"n","t":"플롱비에르 협약","p":"y0031","auto":true,"ko":0},{"id":"n0033","k":"n","t":"오→사르 최후통첩","p":"y0031","auto":true,"ko":0,"r":1},{"id":"y0034","k":"y","t":"1860","col":"c0002","y":1724,"o":8},{"id":"n0035","k":"n","t":"투린조약","p":"y0034","auto":true,"ko":0},{"id":"y0036","k":"y","t":"1862","col":"c0002","y":1767,"o":9},{"id":"n0037","k":"n","t":"이탈리아 왕국","p":"y0036","auto":true,"ko":0},{"id":"y0038","k":"y","t":"1866","col":"c0002","y":1907,"o":10},{"id":"n0039","k":"n","t":"로마수복","p":"y0038","auto":true,"ko":0},{"id":"y0040","k":"y","t":"1870","col":"c0002","y":1979,"o":11},{"id":"n0041","k":"n","t":"베네치아 수복","p":"y0040","auto":true,"ko":0},{"id":"y0042","k":"y","t":"1834","col":"c0003","y":1422,"o":12},{"id":"n0043","k":"n","t":"관세동맹 (소독일)","p":"y0042","auto":true,"ko":0},{"id":"y0044","k":"y","t":"1863","col":"c0003","y":1794,"o":13},{"id":"n0045","k":"n","t":"알벤스레벤협정","p":"y0044","auto":true,"ko":0},{"id":"y0046","k":"y","t":"1864","col":"c0003","y":1829,"o":14},{"id":"n0047","k":"n","t":"2차 슐레스비히 전쟁: 엘베공국 세력 확장","p":"y0046","auto":true,"ko":0},{"id":"y0048","k":"y","t":"1865","col":"c0003","y":1864,"o":15},{"id":"n0049","k":"n","t":"가슈타인협정","p":"y0048","auto":true,"ko":0},{"id":"y0050","k":"y","t":"1866","col":"c0003","y":1907,"o":16},{"id":"n0051","k":"n","t":"보오전쟁 → 프라하조약","p":"y0050","auto":true,"ko":0},{"id":"y0052","k":"y","t":"1870","col":"c0003","y":1979,"o":17},{"id":"n0053","k":"n","t":"보불전쟁","p":"y0052","auto":true,"ko":0},{"id":"y0054","k":"y","t":"1871","col":"c0003","y":2021,"o":18},{"id":"n0055","k":"n","t":"프랑크푸르트조약","p":"y0054","auto":true,"ko":0},{"id":"y0056","k":"y","t":"1873","col":"c0004","y":2135,"o":19},{"id":"n0057","k":"n","t":"(5) 독러군사 (발효x)","p":"y0056","auto":true,"ko":0},{"id":"n0058","k":"n","t":"(6) 쉘부르","p":"y0056","auto":true,"ko":0,"r":1},{"id":"n0059","k":"n","t":"(10) 독일추가","p":"y0056","auto":true,"ko":1,"r":1},{"id":"n0060","k":"n","t":"삼제협상 1차","p":"y0056","auto":true,"ko":2,"r":1},{"id":"y0061","k":"y","t":"1878","col":"c0004","y":2281,"o":20},{"id":"n0062","k":"n","t":"(6) 베를린회의","p":"y0061","auto":true,"ko":0},{"id":"y0063","k":"y","t":"1879","col":"c0004","y":2319,"o":21},{"id":"n0064","k":"n","t":"독오동맹","p":"y0063","auto":true,"ko":0},{"id":"y0065","k":"y","t":"1881","col":"c0004","y":2371,"o":22},{"id":"n0066","k":"n","t":"삼제협상 2차","p":"y0065","auto":true,"ko":0},{"id":"y0067","k":"y","t":"1881","col":"c0004","y":2413,"o":23},{"id":"n0068","k":"n","t":"(6) 오·세","p":"y0067","auto":true,"ko":0},{"id":"n0069","k":"n","t":"(5) 바르도 조약","p":"y0067","auto":true,"ko":1},{"id":"y0070","k":"y","t":"1882","col":"c0004","y":2456,"o":24},{"id":"n0071","k":"n","t":"삼국동맹 1차","p":"y0070","auto":true,"ko":0},{"id":"n0072","k":"n","t":"(9) 영국, 이집트 점령","p":"y0070","auto":true,"ko":1},{"id":"y0073","k":"y","t":"1883","col":"c0004","y":2506,"o":25},{"id":"n0074","k":"n","t":"(10) 오·루","p":"y0073","auto":true,"ko":0},{"id":"y0075","k":"y","t":"1886","col":"c0004","y":2594,"o":26},{"id":"n0076","k":"n","t":"블랑제","p":"y0075","auto":true,"ko":0},{"id":"y0077","k":"y","t":"1887","col":"c0004","y":2637,"o":27},{"id":"n0078","k":"n","t":"삼국동맹 2차","p":"y0077","auto":true,"ko":0},{"id":"n0079","k":"n","t":"독러재보장조약","p":"y0077","auto":true,"ko":1},{"id":"n0080","k":"n","t":"(2) 지중해협정 1차·2차","p":"y0077","auto":true,"ko":2},{"id":"y0081","k":"y","t":"1890","col":"c0004","y":2679,"o":28},{"id":"n0082","k":"n","t":"비스마르크 사임","p":"y0081","auto":true,"ko":0},{"id":"n0083","k":"n","t":"1890 폐기","p":"y0081","auto":true,"ko":0,"r":1},{"id":"y0084","k":"y","t":"1894","col":"c0004","y":2730,"o":29},{"id":"n0085","k":"n","t":"러불협상","p":"y0084","auto":true,"ko":0},{"id":"y0086","k":"y","t":"1904","col":"c0004","y":3094,"o":30},{"id":"n0087","k":"n","t":"영불협상","p":"y0086","auto":true,"ko":0},{"id":"y0088","k":"y","t":"1907","col":"c0004","y":3206,"o":31},{"id":"n0089","k":"n","t":"(8) 영러협상","p":"y0088","auto":true,"ko":0},{"id":"y0090","k":"y","t":"1699","col":"c0008","y":938,"o":32},{"id":"n0091","k":"n","t":"카를로비츠조약","p":"y0090","auto":true,"ko":0},{"id":"y0092","k":"y","t":"1774","col":"c0008","y":995,"o":33},{"id":"n0093","k":"n","t":"쿠츠크가이나르지조약","p":"y0092","auto":true,"ko":0},{"id":"y0094","k":"y","t":"1829","col":"c0008","y":1280,"o":34},{"id":"n0095","k":"n","t":"(3) 런던의정서","p":"y0094","auto":true,"ko":0},{"id":"n0096","k":"n","t":"(9) 아드리아노플조약","p":"y0094","auto":true,"ko":0,"r":1},{"id":"y0097","k":"y","t":"1830","col":"c0008","y":1353,"o":35},{"id":"n0098","k":"n","t":"런던의정서 (그리스 독립)","p":"y0097","auto":true,"ko":0},{"id":"y0099","k":"y","t":"1833","col":"c0008","y":1397,"o":36},{"id":"n0100","k":"n","t":"웅키아르스켈레시조약","p":"y0099","auto":true,"ko":0},{"id":"y0101","k":"y","t":"1853","col":"c0008","y":1505,"o":37},{"id":"n0102","k":"n","t":"크림전쟁","p":"y0101","auto":true,"ko":0},{"id":"y0103","k":"y","t":"1855","col":"c0008","y":1547,"o":38},{"id":"n0104","k":"n","t":"프·오 평화예비안","p":"y0103","auto":true,"ko":0},{"id":"y0105","k":"y","t":"1856","col":"c0008","y":1581,"o":39},{"id":"n0106","k":"n","t":"파리강화회의","p":"y0105","auto":true,"ko":0},{"id":"y0107","k":"y","t":"1871","col":"c0008","y":2021,"o":40},{"id":"n0108","k":"n","t":"흑해중립조항 무력화","p":"y0107","auto":true,"ko":0},{"id":"y0109","k":"y","t":"1876","col":"c0008","y":2203,"o":41},{"id":"n0110","k":"n","t":"세, 몬 폭동","p":"y0109","auto":true,"ko":0},{"id":"y0111","k":"y","t":"1877","col":"c0008","y":2242,"o":42},{"id":"n0112","k":"n","t":"러·터 전쟁","p":"y0111","auto":true,"ko":0},{"id":"n0113","k":"n","t":"부다페스트 협정","p":"y0111","auto":true,"ko":1},{"id":"y0114","k":"y","t":"1878","col":"c0008","y":2281,"o":43},{"id":"n0115","k":"n","t":"(3) 산스테파노","p":"y0114","auto":true,"ko":0},{"id":"y0116","k":"y","t":"1885","col":"c0008","y":2564,"o":44},{"id":"n0117","k":"n","t":"(11) 세르비아→불가리아","p":"y0116","auto":true,"ko":0},{"id":"y0118","k":"y","t":"1903","col":"c0008","y":3059,"o":45},{"id":"n0119","k":"n","t":"(6) 세르비아 폭동","p":"y0118","auto":true,"ko":0},{"id":"y0120","k":"y","t":"1908","col":"c0008","y":3230,"o":46},{"id":"n0121","k":"n","t":"보헤병합","p":"y0120","auto":true,"ko":0},{"id":"y0122","k":"y","t":"1909","col":"c0008","y":3274,"o":47},{"id":"n0123","k":"n","t":"(10) 라꼬니기 협정","p":"y0122","auto":true,"ko":0},{"id":"y0124","k":"y","t":"1912","col":"c0008","y":3360,"o":48},{"id":"n0125","k":"n","t":"발칸 1차","p":"y0124","auto":true,"ko":0},{"id":"y0126","k":"y","t":"1913","col":"c0008","y":3403,"o":49},{"id":"n0127","k":"n","t":"런던회의","p":"y0126","auto":true,"ko":0},{"id":"n0128","k":"n","t":"발칸 2차","p":"y0126","auto":true,"ko":1},{"id":"n0129","k":"n","t":"(8) 부카레스트 조약","p":"y0126","auto":true,"ko":0,"r":1},{"id":"y0130","k":"y","t":"1783","col":"c0009","y":1042,"o":50},{"id":"n0131","k":"n","t":"독립","p":"y0130","auto":true,"ko":0},{"id":"y0132","k":"y","t":"1823","col":"c0009","y":1249,"o":51},{"id":"n0133","k":"n","t":"먼로Dct.","p":"y0132","auto":true,"ko":0},{"id":"y0134","k":"y","t":"1861","col":"c0009","y":1712,"o":52},{"id":"n0135","k":"n","t":"남북전쟁 시작","p":"y0134","auto":true,"ko":0},{"id":"y0136","k":"y","t":"1865","col":"c0009","y":1864,"o":53},{"id":"n0137","k":"n","t":"전쟁 끝: 북부 승리","p":"y0136","auto":true,"ko":0},{"id":"y0138","k":"y","t":"1898","col":"c0009","y":2903,"o":54},{"id":"n0139","k":"n","t":"미서전쟁","p":"y0138","auto":true,"ko":0},{"id":"y0140","k":"y","t":"1899","col":"c0009","y":2946,"o":55},{"id":"n0141","k":"n","t":"(9) 1차문호개방","p":"y0140","auto":true,"ko":0},{"id":"y0142","k":"y","t":"1900","col":"c0009","y":2986,"o":56},{"id":"n0143","k":"n","t":"(7) 2차 문호개방","p":"y0142","auto":true,"ko":0},{"id":"y0144","k":"y","t":"1905","col":"c0009","y":3137,"o":57},{"id":"n0145","k":"n","t":"(7) 가쓰라태프트","p":"y0144","auto":true,"ko":0},{"id":"y0146","k":"y","t":"1908","col":"c0009","y":3230,"o":58},{"id":"n0147","k":"n","t":"(11) 루트-다까히라","p":"y0146","auto":true,"ko":0},{"id":"y0148","k":"y","t":"1915","col":"c0009","y":3564,"o":59},{"id":"n0149","k":"n","t":"루시타니아호 사건","p":"y0148","auto":true,"ko":0},{"id":"y0150","k":"y","t":"1917","col":"c0009","y":3651,"o":60},{"id":"n0151","k":"n","t":"(2) 대독외교단절","p":"y0150","auto":true,"ko":0},{"id":"n0152","k":"n","t":"(5) 선택복무법","p":"y0150","auto":true,"ko":0,"r":1},{"id":"y0153","k":"y","t":"1932","col":"c0009","y":4263,"o":61},{"id":"n0154","k":"n","t":"스팀슨Dct.","p":"y0153","auto":true,"ko":0},{"id":"y0155","k":"y","t":"1933","col":"c0009","y":4306,"o":62},{"id":"n0156","k":"n","t":"미소 승인","p":"y0155","auto":true,"ko":0},{"id":"y0157","k":"y","t":"1934","col":"c0009","y":4348,"o":63},{"id":"n0158","k":"n","t":"상호무역협정안","p":"y0157","auto":true,"ko":0},{"id":"y0159","k":"y","t":"1937","col":"c0009","y":4522,"o":64},{"id":"n0160","k":"n","t":"중립법","p":"y0159","auto":true,"ko":0},{"id":"y0161","k":"y","t":"1939","col":"c0009","y":4639,"o":65},{"id":"n0162","k":"n","t":"(9) 금수조항철회","p":"y0161","auto":true,"ko":0},{"id":"y0163","k":"y","t":"1941","col":"c0009","y":4813,"o":66},{"id":"n0164","k":"n","t":"U-Boat 사건","p":"y0163","auto":true,"ko":0},{"id":"n0165","k":"n","t":"무기대여법","p":"y0163","auto":true,"ko":0,"r":1},{"id":"y0166","k":"y","t":"1842","col":"c0010","y":1469,"o":67},{"id":"n0167","k":"n","t":"해방필책","p":"y0166","auto":true,"ko":0},{"id":"y0168","k":"y","t":"1854","col":"c0010","y":1539,"o":68},{"id":"n0169","k":"n","t":"미일친화조약 (가나가와)","p":"y0168","auto":true,"ko":0},{"id":"y0170","k":"y","t":"1858","col":"c0010","y":1623,"o":69},{"id":"n0171","k":"n","t":"(7) 미일수호통상","p":"y0170","auto":true,"ko":0},{"id":"y0172","k":"y","t":"1866","col":"c0010","y":1907,"o":70},{"id":"n0173","k":"n","t":"메이지유신","p":"y0172","auto":true,"ko":0},{"id":"y0174","k":"y","t":"1879","col":"c0010","y":2319,"o":71},{"id":"n0175","k":"n","t":"(4) 류큐 병합","p":"y0174","auto":true,"ko":0},{"id":"y0176","k":"y","t":"1882","col":"c0010","y":2456,"o":72},{"id":"n0177","k":"n","t":"(7) 제물포조약","p":"y0176","auto":true,"ko":0},{"id":"y0178","k":"y","t":"1884","col":"c0010","y":2522,"o":73},{"id":"n0179","k":"n","t":"(11) 한성조약","p":"y0178","auto":true,"ko":0},{"id":"y0180","k":"y","t":"1885","col":"c0010","y":2564,"o":74},{"id":"n0181","k":"n","t":"(4) 텐진조약","p":"y0180","auto":true,"ko":0},{"id":"y0182","k":"y","t":"1894","col":"c0010","y":2730,"o":75},{"id":"n0183","k":"n","t":"(8) 청일전쟁","p":"y0182","auto":true,"ko":0},{"id":"y0184","k":"y","t":"1895","col":"c0010","y":2768,"o":76},{"id":"n0185","k":"n","t":"(4) 시모노세키조약","p":"y0184","auto":true,"ko":0},{"id":"y0186","k":"y","t":"1896","col":"c0010","y":2807,"o":77},{"id":"n0187","k":"n","t":"(5) 베버-고무라","p":"y0186","auto":true,"ko":0},{"id":"n0188","k":"n","t":"(9) 로바노프-야마가타","p":"y0186","auto":true,"ko":0,"r":1},{"id":"y0189","k":"y","t":"1898","col":"c0010","y":2903,"o":78},{"id":"n0190","k":"n","t":"(4) 로젠-니시협정","p":"y0189","auto":true,"ko":0},{"id":"y0191","k":"y","t":"1902","col":"c0010","y":3025,"o":79},{"id":"n0192","k":"n","t":"1차 영일동맹","p":"y0191","auto":true,"ko":0},{"id":"y0193","k":"y","t":"1904","col":"c0010","y":3094,"o":80},{"id":"n0194","k":"n","t":"(2) 러일전쟁","p":"y0193","auto":true,"ko":0},{"id":"y0195","k":"y","t":"1905","col":"c0010","y":3137,"o":81},{"id":"n0196","k":"n","t":"2차 영일동맹","p":"y0195","auto":true,"ko":0},{"id":"n0197","k":"n","t":"(9) 포츠머스 강화조약","p":"y0195","auto":true,"ko":0,"r":1},{"id":"y0198","k":"y","t":"1908","col":"c0010","y":3230,"o":82},{"id":"y0199","k":"y","t":"1911","col":"c0010","y":3330,"o":83},{"id":"n0200","k":"n","t":"3차 영일동맹","p":"y0199","auto":true,"ko":0},{"id":"y0201","k":"y","t":"1931","col":"c0010","y":4227,"o":84},{"id":"n0202","k":"n","t":"만주사변","p":"y0201","auto":true,"ko":0},{"id":"n0203","k":"n","t":"(9) 류타오사건","p":"y0201","auto":true,"ko":1},{"id":"y0204","k":"y","t":"1933","col":"c0010","y":4306,"o":85},{"id":"n0205","k":"n","t":"LN탈퇴","p":"y0204","auto":true,"ko":0},{"id":"n0206","k":"n","t":"탕구휴전협정","p":"y0204","auto":true,"ko":1},{"id":"y0207","k":"y","t":"1936","col":"c0010","y":4471,"o":86},{"id":"n0208","k":"n","t":"서안사건","p":"y0207","auto":true,"ko":0},{"id":"y0209","k":"y","t":"1937","col":"c0010","y":4522,"o":87},{"id":"n0210","k":"n","t":"랑방사건","p":"y0209","auto":true,"ko":0},{"id":"n0211","k":"n","t":"노구교사건","p":"y0209","auto":true,"ko":1},{"id":"y0212","k":"y","t":"1941","col":"c0010","y":4813,"o":88},{"id":"n0213","k":"n","t":"일소불가침","p":"y0212","auto":true,"ko":0},{"id":"y0214","k":"y","t":"1942","col":"c0010","y":4883,"o":89},{"id":"n0215","k":"n","t":"미드웨이해전","p":"y0214","auto":true,"ko":0},{"id":"y0216","k":"y","t":"1951","col":"c0010","y":5169,"o":90},{"id":"y0217","k":"y","t":"1840","col":"c0011","y":1430,"o":91},{"id":"n0218","k":"n","t":"아편전쟁","p":"y0217","auto":true,"ko":0},{"id":"y0219","k":"y","t":"1842","col":"c0011","y":1469,"o":92},{"id":"n0220","k":"n","t":"난징조약 (영중)","p":"y0219","auto":true,"ko":0},{"id":"y0221","k":"y","t":"1844","col":"c0011","y":1505,"o":93},{"id":"n0222","k":"n","t":"왕샤(미)·황푸(프) 조약","p":"y0221","auto":true,"ko":0},{"id":"y0223","k":"y","t":"1858","col":"c0011","y":1623,"o":94},{"id":"n0224","k":"n","t":"(5) 아이훈조약","p":"y0223","auto":true,"ko":0},{"id":"n0225","k":"n","t":"(8) 톈진조약","p":"y0223","auto":true,"ko":1},{"id":"y0226","k":"y","t":"1860","col":"c0011","y":1724,"o":95},{"id":"n0227","k":"n","t":"베이징조약","p":"y0226","auto":true,"ko":0},{"id":"y0228","k":"y","t":"1882","col":"c0011","y":2456,"o":96},{"id":"n0229","k":"n","t":"(8) 조중상민수륙장정","p":"y0228","auto":true,"ko":0},{"id":"y0230","k":"y","t":"1885","col":"c0011","y":2564,"o":97},{"id":"y0231","k":"y","t":"1894","col":"c0011","y":2730,"o":98},{"id":"y0232","k":"y","t":"1895","col":"c0011","y":2768,"o":99},{"id":"y0233","k":"y","t":"1896","col":"c0011","y":2807,"o":100},{"id":"n0234","k":"n","t":"청러비밀조약","p":"y0233","auto":true,"ko":0},{"id":"y0235","k":"y","t":"1931","col":"c0011","y":4227,"o":101},{"id":"y0236","k":"y","t":"1933","col":"c0011","y":4306,"o":102},{"id":"y0237","k":"y","t":"1936","col":"c0011","y":4471,"o":103},{"id":"y0238","k":"y","t":"1937","col":"c0011","y":4522,"o":104},{"id":"n0239","k":"n","t":"중소불가침","p":"y0238","auto":true,"ko":0},{"id":"y0240","k":"y","t":"1866","col":"c0012","y":1907,"o":105},{"id":"n0241","k":"n","t":"제너럴셔먼호 사건","p":"y0240","auto":true,"ko":0},{"id":"n0242","k":"n","t":"병인양요","p":"y0240","auto":true,"ko":1},{"id":"y0243","k":"y","t":"1871","col":"c0012","y":2021,"o":106},{"id":"n0244","k":"n","t":"신미양요","p":"y0243","auto":true,"ko":0},{"id":"y0245","k":"y","t":"1875","col":"c0012","y":2181,"o":107},{"id":"n0246","k":"n","t":"강화도 사건","p":"y0245","auto":true,"ko":0},{"id":"y0247","k":"y","t":"1880","col":"c0012","y":2354,"o":108},{"id":"n0248","k":"n","t":"조선책략","p":"y0247","auto":true,"ko":0},{"id":"y0249","k":"y","t":"1882","col":"c0012","y":2456,"o":109},{"id":"n0250","k":"n","t":"(5) 조미수호조약","p":"y0249","auto":true,"ko":0},{"id":"n0251","k":"n","t":"(6) 임오군란","p":"y0249","auto":true,"ko":1},{"id":"y0252","k":"y","t":"1884","col":"c0012","y":2522,"o":110},{"id":"n0253","k":"n","t":"(10) 갑신정변","p":"y0252","auto":true,"ko":0},{"id":"y0254","k":"y","t":"1885","col":"c0012","y":2564,"o":111},{"id":"n0255","k":"n","t":"(3) 거문도사건","p":"y0254","auto":true,"ko":0},{"id":"n0256","k":"n","t":"동학농민운동","p":"y0254","auto":true,"ko":0,"r":1},{"id":"n0257","k":"n","t":"한아밀약사건","p":"y0254","auto":true,"ko":1,"r":1},{"id":"y0258","k":"y","t":"1895","col":"c0012","y":2768,"o":112},{"id":"n0259","k":"n","t":"삼국간섭","p":"y0258","auto":true,"ko":0},{"id":"y0260","k":"y","t":"1904","col":"c0005","y":3094,"o":113},{"id":"n0261","k":"n","t":"(10) 스페인-프랑스 협정","p":"y0260","auto":true,"ko":0},{"id":"y0262","k":"y","t":"1905","col":"c0005","y":3137,"o":114},{"id":"n0263","k":"n","t":"모로코 1차","p":"y0262","auto":true,"ko":0},{"id":"y0264","k":"y","t":"1906","col":"c0005","y":3179,"o":115},{"id":"n0265","k":"n","t":"알헤시라스 협정","p":"y0264","auto":true,"ko":0},{"id":"y0266","k":"y","t":"1909","col":"c0005","y":3274,"o":116},{"id":"n0267","k":"n","t":"(2) 불·독 협정","p":"y0266","auto":true,"ko":0},{"id":"y0268","k":"y","t":"1911","col":"c0005","y":3330,"o":117},{"id":"n0269","k":"n","t":"모로코 2차","p":"y0268","auto":true,"ko":0},{"id":"n0270","k":"n","t":"모로코 협정","p":"y0268","auto":true,"ko":1},{"id":"y0271","k":"y","t":"1914","col":"c0006","y":3479,"o":118},{"id":"n0272","k":"n","t":"(6) 사라예보 사건","p":"y0271","auto":true,"ko":0},{"id":"n0273","k":"n","t":"(7) 오→세르비아 최후통첩","p":"y0271","auto":true,"ko":1},{"id":"n0274","k":"n","t":"일본 참전","p":"y0271","auto":true,"ko":2},{"id":"n0275","k":"n","t":"(8) 이탈리아 중립 선언","p":"y0271","auto":true,"ko":0,"r":1},{"id":"n0276","k":"n","t":"(8) 영국→독일 선전포고","p":"y0271","auto":true,"ko":1,"r":1},{"id":"y0277","k":"y","t":"1915","col":"c0006","y":3564,"o":119},{"id":"n0278","k":"n","t":"영-프 동맹 참전","p":"y0277","auto":true,"ko":0},{"id":"n0279","k":"n","t":"후세인-맥마흔 선언","p":"y0277","auto":true,"ko":1},{"id":"n0280","k":"n","t":"일본 21조 요구","p":"y0277","auto":true,"ko":2},{"id":"y0281","k":"y","t":"1916","col":"c0006","y":3607,"o":120},{"id":"n0282","k":"n","t":"사이크스-피코 합의","p":"y0281","auto":true,"ko":0},{"id":"n0283","k":"n","t":"러시아 10월 혁명","p":"y0281","auto":true,"ko":1},{"id":"y0284","k":"y","t":"1917","col":"c0006","y":3651,"o":121},{"id":"n0285","k":"n","t":"러시아 단독 강화","p":"y0284","auto":true,"ko":0},{"id":"n0286","k":"n","t":"벨푸어 선언","p":"y0284","auto":true,"ko":1},{"id":"n0287","k":"n","t":"(1) 독 무제한 잠수 사건","p":"y0284","auto":true,"ko":0,"r":1},{"id":"n0288","k":"n","t":"(2) 짐머만 전문사건","p":"y0284","auto":true,"ko":1,"r":1},{"id":"n0289","k":"n","t":"(4) 미국 참전","p":"y0284","auto":true,"ko":0,"r":2},{"id":"y0290","k":"y","t":"1918","col":"c0006","y":3751,"o":122},{"id":"n0291","k":"n","t":"(3) 브레스트-리토프스크 조약","p":"y0290","auto":true,"ko":0},{"id":"n0292","k":"n","t":"부카레스트 조약","p":"y0290","auto":true,"ko":1},{"id":"n0293","k":"n","t":"(11) 전쟁 종료: 콩피에뉴 휴전협정","p":"y0290","auto":true,"ko":2},{"id":"y0294","k":"y","t":"1919","col":"c0006","y":3807,"o":123},{"id":"n0295","k":"n","t":"베르사유 조약: 연합국-독일","p":"y0294","auto":true,"ko":0},{"id":"n0296","k":"n","t":"생제르맹 조약: 연합국-오스트리아","p":"y0294","auto":true,"ko":1},{"id":"n0297","k":"n","t":"뉴이 조약: 전승국-불가리아","p":"y0294","auto":true,"ko":0,"r":1},{"id":"n0298","k":"n","t":"파리강화회의","p":"y0294","auto":true,"ko":1,"r":1},{"id":"y0299","k":"y","t":"1920","col":"c0006","y":3901,"o":124},{"id":"n0300","k":"n","t":"트리아농 조약: 연합국-헝가리","p":"y0299","auto":true,"ko":0},{"id":"n0301","k":"n","t":"세브르조약: 연합국-오스만투르크 제국","p":"y0299","auto":true,"ko":1},{"id":"y0302","k":"y","t":"1921","col":"c0006","y":3944,"o":125},{"id":"n0303","k":"n","t":"(11) 워싱턴회의","p":"y0302","auto":true,"ko":0},{"id":"y0304","k":"y","t":"1922","col":"c0006","y":3987,"o":126},{"id":"n0305","k":"n","t":"(2) 워싱턴회의","p":"y0304","auto":true,"ko":0},{"id":"y0306","k":"y","t":"1923","col":"c0006","y":4030,"o":127},{"id":"n0307","k":"n","t":"로잔 조약","p":"y0306","auto":true,"ko":0},{"id":"n0308","k":"n","t":"그리스-튀르키예 전쟁","p":"y0306","auto":true,"ko":1},{"id":"y0309","k":"y","t":"1925","col":"c0006","y":4073,"o":128},{"id":"n0310","k":"n","t":"로카르노 조약","p":"y0309","auto":true,"ko":0},{"id":"y0311","k":"y","t":"1926","col":"c0006","y":4115,"o":129},{"id":"n0312","k":"n","t":"독일 LN 가입","p":"y0311","auto":true,"ko":0},{"id":"y0313","k":"y","t":"1928","col":"c0006","y":4175,"o":130},{"id":"n0314","k":"n","t":"부전 조약 (켈로그-브리앙 조약)","p":"y0313","auto":true,"ko":0},{"id":"y0315","k":"y","t":"1933","col":"c0007","y":4306,"o":131},{"id":"n0316","k":"n","t":"독일 LN 탈퇴","p":"y0315","auto":true,"ko":0},{"id":"n0317","k":"n","t":"대독유화정책","p":"y0315","auto":true,"ko":1},{"id":"y0318","k":"y","t":"1934","col":"c0007","y":4349,"o":132},{"id":"n0319","k":"n","t":"독불 군축회의","p":"y0318","auto":true,"ko":0},{"id":"n0320","k":"n","t":"1935 프랑스·소련 동맹","p":"y0318","auto":true,"ko":1},{"id":"y0321","k":"y","t":"1935","col":"c0007","y":4391,"o":133},{"id":"n0322","k":"n","t":"독일, 재군비 결정","p":"y0321","auto":true,"ko":0},{"id":"n0323","k":"n","t":"(9) 소련 LN 가입","p":"y0321","auto":true,"ko":1},{"id":"n0324","k":"n","t":"(10) 이탈리아 에티오피아 침공","p":"y0321","auto":true,"ko":2},{"id":"n0325","k":"n","t":"잠수함 보유 승인","p":"y0321","auto":true,"ko":0,"r":1},{"id":"y0326","k":"y","t":"1936","col":"c0007","y":4471,"o":134},{"id":"n0327","k":"n","t":"독일, 라인란트 진주","p":"y0326","auto":true,"ko":0},{"id":"y0328","k":"y","t":"1938","col":"c0007","y":4547,"o":135},{"id":"n0329","k":"n","t":"독일, 오스트리아 병합","p":"y0328","auto":true,"ko":0},{"id":"n0330","k":"n","t":"뮌헨 협정: 영·프·독·이","p":"y0328","auto":true,"ko":0,"r":1},{"id":"y0331","k":"y","t":"1939","col":"c0007","y":4639,"o":136},{"id":"n0332","k":"n","t":"(3) 독일, 체코 병합","p":"y0331","auto":true,"ko":0},{"id":"n0333","k":"n","t":"(5) 독·이 동맹","p":"y0331","auto":true,"ko":1},{"id":"n0334","k":"n","t":"(8) 독·소 불가침조약","p":"y0331","auto":true,"ko":2},{"id":"n0335","k":"n","t":"영·프 최후통첩","p":"y0331","auto":true,"ko":0,"r":1},{"id":"n0336","k":"n","t":"(9) 독일, 폴란드 침공","p":"y0331","auto":true,"ko":1,"r":1},{"id":"y0337","k":"y","t":"1940","col":"c0007","y":4733,"o":137},{"id":"n0338","k":"n","t":"겨울전쟁 (1939.11-1940.3) 소련-핀란드 전쟁","p":"y0337","auto":true,"ko":0},{"id":"n0339","k":"n","t":"(6) 이탈리아 참전","p":"y0337","auto":true,"ko":1},{"id":"n0340","k":"n","t":"프랑스 패배·휴전","p":"y0337","auto":true,"ko":0,"r":1},{"id":"n0341","k":"n","t":"(9) 독·이·일 삼국동맹","p":"y0337","auto":true,"ko":1,"r":1},{"id":"y0342","k":"y","t":"1941","col":"c0007","y":4813,"o":138},{"id":"n0343","k":"n","t":"(8) 대서양 헌장","p":"y0342","auto":true,"ko":0},{"id":"n0344","k":"n","t":"워싱턴 회의","p":"y0342","auto":true,"ko":1},{"id":"n0345","k":"n","t":"(12) 태평양전쟁","p":"y0342","auto":true,"ko":2},{"id":"y0346","k":"y","t":"1943","col":"c0007","y":4911,"o":139},{"id":"n0347","k":"n","t":"이탈리아 패전","p":"y0346","auto":true,"ko":0},{"id":"n0348","k":"n","t":"(10-11) 모스크바 3상회의","p":"y0346","auto":true,"ko":1},{"id":"n0349","k":"n","t":"(11) 카이로 회담","p":"y0346","auto":true,"ko":2},{"id":"n0350","k":"n","t":"(11) 테헤란 회담","p":"y0346","auto":true,"ko":0,"r":1},{"id":"n0351","k":"n","t":"노르망디","p":"y0346","auto":true,"ko":1,"r":1},{"id":"y0352","k":"y","t":"1944","col":"c0007","y":4991,"o":140},{"id":"n0353","k":"n","t":"브레튼우즈 회담","p":"y0352","auto":true,"ko":0},{"id":"n0354","k":"n","t":"덤바턴 오크스 회담","p":"y0352","auto":true,"ko":1},{"id":"y0355","k":"y","t":"1945","col":"c0007","y":5034,"o":141},{"id":"n0356","k":"n","t":"(2) 얄타회담","p":"y0355","auto":true,"ko":0},{"id":"n0357","k":"n","t":"(5) 독일 패전","p":"y0355","auto":true,"ko":1},{"id":"n0358","k":"n","t":"(7) 포츠담회담","p":"y0355","auto":true,"ko":2},{"id":"y0359","k":"y","t":"1947","col":"c0007","y":5098,"o":142},{"id":"n0360","k":"n","t":"(3) 모스크바회담","p":"y0359","auto":true,"ko":0},{"id":"n0361","k":"n","t":"포츠담 협정","p":"y0359","auto":true,"ko":1},{"id":"y0362","k":"y","t":"1951","col":"c0007","y":5169,"o":143},{"id":"n0363","k":"n","t":"샌프란시스코 조약","p":"y0362","auto":true,"ko":0}],"links":[{"id":"l0364","a":{"col":"c0002","y":2092,"end":1},"b":{"col":"c0004","y":2112},"t":"mg"},{"id":"l0365","a":{"col":"c0003","y":2092,"end":1},"b":{"col":"c0004","y":2112},"t":"mg"}],"rects":[],"tags":[],"view":{"x":20,"y":-250,"z":0.3}}],cur:'dip_seed',ts:0}));}}catch(e){}</script>
+<script>
+(()=>{
+const PAL=[['sky','#3a8fc4'],['brown','#8b6a4a'],['black','#3a332c'],['pink','#c9668f'],['purple','#8a74c0'],['green','#5f9a45'],['amber','#c98a1e'],['yellow','#f6d32d'],['indigo','#4a5aa8'],['red','#c0453a'],['gray','#8f877d']];
+const HEX=Object.fromEntries(PAL);
+const lighten=(h,a)=>{const n=parseInt(h.slice(1),16);const f=v=>Math.round(v+(255-v)*a).toString(16).padStart(2,'0');return '#'+f(n>>16)+f(n>>8&255)+f(n&255);};
+const DK=()=>document.body.classList.contains('dark');
+const setPal=()=>{const dk=document.body.classList.contains('dark');const NEON={sky:'#7fb6d9',brown:'#c9a988',black:'#d6d6e0',pink:'#d895b4',purple:'#a99ad6',green:'#93c28f',amber:'#d9b86e',yellow:'#f0d465',indigo:'#8f9bd6',red:'#d98d84',gray:'#b3ada6'};PAL.forEach(([k,h])=>{HEX[k]=dk?NEON[k]:h;});};
+const SIZES=[[11,'작게'],[13,'보통'],[15,'크게'],[18,'더 크게'],[22,'제목']];
+const rgb=h=>{const n=parseInt(h.slice(1),16);return [n>>16,n>>8&255,n&255];};
+const tint=(h,a)=>{const [r,g,b]=rgb(h);return `rgba(${r},${g},${b},${a})`;};
+const mix=(h,a)=>{const dk=document.body.classList.contains('dark');if(dk)return lighten(h,Math.max(0,.45-a*1.3));const c=rgb(h),base=dk?[34,38,74]:[255,255,255];return `rgb(${c.map((v,i)=>Math.round(base[i]+(v-base[i])*a)).join(',')})`;};
+const SK='diplomacy_v1';
+const uid=()=>Math.random().toString(36).slice(2,9);
+const $=s=>document.querySelector(s);
+const vp=$('#vp'),board=$('#board'),lg=$('#lg'),nodesEl=$('#nodes'),spEl=$('#spines'),rcEl=$('#rects'),svg=$('#lines');
+let ST;try{ST=JSON.parse(localStorage.getItem(SK)||'null');}catch(e){ST=null;}
+const blank=name=>({id:uid(),name,cols:[],nodes:[],links:[],rects:[],tags:[],view:{x:60,y:40,z:1}});
+let fresh=false;
+if(!ST||!ST.docs||!ST.docs.length){ST={docs:[blank('새 연표')],cur:null};ST.cur=ST.docs[0].id;fresh=true;}
+let D=ST.docs.find(d=>d.id===ST.cur)||ST.docs[0];
+if(!ST.gfix2){ST.docs.forEach(d=>{(d.nodes||[]).forEach(n=>{if(n.gp&&Math.abs(n.gp)>300)delete n.gp;});const ys=(d.nodes||[]).filter(n=>n.k==='y'&&!n.auto&&typeof n.y==='number');(d.nodes||[]).forEach(n=>{if(n.k==='y'&&!n.auto&&n.y>6000)n.y=6000;});});ST.gfix2=1;}
+if(!ST.gfix1){ST.docs.forEach(d=>(d.nodes||[]).forEach(n=>{if(n.gp&&Math.abs(n.gp)>300)delete n.gp;}));ST.gfix1=1;}
+let sel=null,lastCol=null,tool='',editing=null;const FOC=new Set();const MS=new Set();const MR=new Set();const KR={};
+ST.docs.forEach(d=>{d.tags=d.tags||[];});
+let FBref=null,pushT=null,cloudReady=false;
+const save=()=>{try{ST.ts=Date.now();localStorage.setItem(SK,JSON.stringify(ST));}catch(e){const t=document.querySelector('#toast');if(t){t.textContent='저장 공간이 꽉 찼어요 · 이미지를 좀 지우거나 작게 해주세요';t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3500);}}try{cloudPush();}catch(_){}};
+const UND=[];const snap=()=>{UND.push(JSON.stringify(D));if(UND.length>80)UND.shift();};
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),Math.max(1700,t.length*70));};
+const colOf=id=>D.cols.find(c=>c.id===id), nodeOf=id=>D.nodes.find(n=>n.id===id);
+const yearNum=t=>{const m=String(t).match(/-?\d+(\.\d+)?/);return m?+m[0]:1e9;};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const inl=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\{r\|(.+?)\}/g,'<span class="r">$1</span>').replace(/\{b\|(.+?)\}/g,'<span class="bl">$1</span>');
+const BUL=/^(\s*)([-•]) /;
+const fmtLines=s=>String(s).split('\n').map(l=>{const m=l.match(BUL);if(m){const lv=m[1].length>=2?' li2':'';return `<div class="ln li${lv}">${inl(l.slice(m[0].length))||'&nbsp;'}</div>`;}return `<div class="ln">${inl(l)||'&nbsp;'}</div>`;}).join('');
+const GAP=12, TOP=28;
+if(ST.dark)document.body.classList.add('dark');setPal();
+
+/* ── 그리기 ── */
+const BOX={};
+const tagOf=id=>(D.tags||[]).find(t=>t.id===id);
+const effTag=n=>n?(n.tg&&tagOf(n.tg)?n.tg:(n.p?effTag(nodeOf(n.p)):null)):null;
+function mixOf(n){if(n.k!=='n'||n.p||n.col||n.nomix)return null;const cs=[];D.links.forEach(l=>{if(isMerge(l))return;const o=l.a.n===n.id?l.b:l.b.n===n.id?l.a:null;if(!o)return;let k=null;if(o.col)k=(colOf(o.col)||{}).c;else{const m=nodeOf(o.n);if(m&&(m.k==='y'||m.p||m.col))k=nodeColor(m);}if(k&&HEX[k]&&!cs.includes(k))cs.push(k);});
+ if(cs.length<2)return null;const v=[0,0,0];cs.forEach(k=>rgb(HEX[k]).forEach((x,i)=>v[i]+=x/cs.length));const h='#'+v.map(x=>Math.round(x).toString(16).padStart(2,'0')).join('');HEX[h]=h;return h;}
+function nodeColor(n){if(!n)return 'sky';if(n.c)return n.c;if(n.tg&&tagOf(n.tg))return tagOf(n.tg).c;if(n.col&&colOf(n.col))return colOf(n.col).c;if(n.p){const p=nodeOf(n.p);if(p&&p!==n)return nodeColor(p);}return mixOf(n)||'sky';}
+function focVis(){const vis=new Set();if(!FOC.size)return null;D.nodes.forEach(n=>{if(FOC.has(effTag(n))){let x=n;while(x){vis.add(x.id);x=x.p?nodeOf(x.p):null;}}});return vis;}
+const BOOM=(()=>{const O=[[-98,48],[-52,47],[-12,44],[28,47],[70,42],[112,48],[158,45],[205,46]];const p=[];O.forEach(([a,r],i)=>{const b=(a+(O[(i+1)%8][0]+(i===7?360:0)))/2;p.push([a,r],[b,19+(i%3)*2]);});return p.map(([a,r])=>{a=a*Math.PI/180;return (50+Math.cos(a)*r).toFixed(1)+','+(52+Math.sin(a)*r).toFixed(1);}).join(' ');})();
+const STAR=(()=>{const p=[];for(let i=0;i<10;i++){const a=i/10*Math.PI*2-Math.PI/2,r=i%2?24:50;p.push((50+Math.cos(a)*r).toFixed(1)+','+(54+Math.sin(a)*r).toFixed(1));}return p.join(' ');})();
+const shapeSvg=(sh,h)=>{const bm=!sh||sh==='boom';let at=bm?`fill="${h}" stroke="${DK()?'#0f1124':'#2a2520'}" stroke-width="3"`:`fill="${mix(h,.2)}" stroke="${h}" stroke-width="2"`;at+=` vector-effect="non-scaling-stroke" stroke-linejoin="round"`;
+ if(sh==='bubble')return `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M8,2H92Q98,2 98,8V72Q98,78 92,78H40L24,98L28,78H8Q2,78 2,72V8Q2,2 8,2Z" ${at}/></svg>`;
+ if(sh==='star')return `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="${STAR}" ${at}/></svg>`;
+ return `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="${BOOM}" ${at}/></svg>`;};
+function legend(){const L=$('#legend');L.classList.toggle('foc',FOC.size>0);document.body.classList.toggle('focusing',FOC.size>0);
+ L.innerHTML=(D.tags||[]).map(t=>`<button class="tg${FOC.has(t.id)?' on':''}" data-tg="${t.id}" style="--c:${HEX[t.c]||HEX.sky}" title="눌러서 집중 · 우클릭 수정">${esc(t.name)}</button>`).join('')+`<button class="add" id="tagAdd">＋ 분류</button>`;}
+function lbPt(r){const w=r.w,h=r.h,P=2*(w+h);let d=((r.lp%1)+1)%1*P;if(d<w)return [d,0];d-=w;if(d<h)return [w,d];d-=h;if(d<w)return [w-d,h];d-=w;return [0,h-d];}
+function lbParam(r,x,y){const w=r.w,h=r.h,P=2*(w+h);const cx=Math.max(0,Math.min(w,x)),cy=Math.max(0,Math.min(h,y));const ds=[[Math.abs(cy),cx],[Math.abs(w-cx),w+cy],[Math.abs(h-cy),w+h+(w-cx)],[Math.abs(cx),2*w+h+(h-cy)]];
+ const inside=x>=0&&x<=w&&y>=0&&y<=h;const c=inside?ds.sort((a,b)=>a[0]-b[0])[0]:(()=>{const dd=[[Math.hypot(x-cx,y-0),cx],[Math.hypot(x-w,y-cy),w+cy],[Math.hypot(x-cx,y-h),w+h+(w-cx)],[Math.hypot(x,y-cy),2*w+h+(h-cy)]];return dd.sort((a,b)=>a[0]-b[0])[0];})();return c[1]/P;}
+function render(){legend();const FV=focVis();
+ rcEl.innerHTML=D.rects.map(r=>{const h=HEX[r.c]||HEX.sky;return `<div class="rc${r.nob?' nob':''}${MR.has(r.id)?' msel':''}${sel&&sel.t==='rect'&&sel.id===r.id?' sel':''}" data-r="${r.id}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;--t:${DK()?tint(lighten(h,.35),.13):tint(h,.13)};--b:${DK()?tint(h,.55):tint(h,.5)};--c:${h}"><span class="lb${r.lp!=null?' mv':''}"${r.lp!=null?` style="left:${lbPt(r)[0]}px;top:${lbPt(r)[1]}px"`:''}>${esc(r.l||'')}</span><span class="rs"></span></div>`;}).join('');
+ spEl.innerHTML=D.cols.map(c=>{const h=HEX[c.c]||HEX.sky;const s=sel&&sel.t==='col'&&sel.id===c.id?' sel':'';return `<div class="sp${s}${c.cap?' cap-'+c.cap:''}" data-c="${c.id}" style="left:${c.x}px;top:${c.y0}px;height:${Math.max(40,c.y1-c.y0)}px;--c:${h}"><i></i><span class="end"></span></div>${c.hp?`<div class="hstub" data-hs="${c.id}" style="left:${c.hp==='l'?c.x-18:c.x}px;top:${c.y0}px;width:18px;--c:${h}"></div>`:''}<div class="sph${s}" data-ch="${c.id}" style="left:${c.hp==='l'?c.x-16:c.hp==='r'?c.x+16:c.x}px;top:${c.hp?c.y0:c.y0+1}px;${c.hp==='l'?'transform:translate(-100%,-50%);':c.hp==='r'?'transform:translate(0,-50%);':''}--c:${h}">${esc(c.t)}</div>`;}).join('');
+ nodesEl.innerHTML=D.nodes.map(n=>{const h=HEX[nodeColor(n)]||HEX.sky;const fs=n.fs?`font-size:${n.fs}px;`:'';const sl=((sel&&sel.t==='node'&&sel.id===n.id)||MS.has(n.id)?' sel':'')+(MS.size>1&&[...MS][0]===n.id?' anchor':'');
+  const st=`style="${fs}--c:${h};--t:${mix(h,.14)};--b:${mix(h,.34)}"`;const fo=FV?(FV.has(n.id)?(FOC.has(effTag(n))&&n.k!=='y'?' pop':''):' fade'):'';
+  if(n.k==='st'){const em=!String(n.t||'').trim();const sz=Math.round(n.sz||(n.fs||13)*5.4);return `<div class="nd st sh-${n.sh||'boom'}${em?' empty':''}${sl}${fo}" data-n="${n.id}" ${st.replace('style="',`style="${em?`width:${sz}px;height:${sz}px;`:(n.sz?`min-width:${sz}px;min-height:${Math.round(sz*.6)}px;`:'')}`)}>${shapeSvg(n.sh,h)}<span class="stx">${em?'':fmtLines(n.t)}</span><span class="srs" title="끌어서 크기 조절"></span></div>`;}
+  if(n.k==='tb')return `<div class="nd tbl${sl}${fo}" data-n="${n.id}" ${st}><table class="tt">${n.rows.map((r,ri)=>`<tr${ri===0&&n.hd!==false?' class="hd"':''}>${r.map((c,ci)=>`<td data-rc="${ri},${ci}">${fmtLines(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  if(n.k==='img')return `<div class="nd img${sl}${fo}" data-n="${n.id}" style="width:${n.w||320}px;--c:${h};--b:${mix(h,.34)}"><img src="${n.src}" alt="" style="height:${Math.round((n.w||320)*(n.ar||.6))}px"><span class="srs" title="끌어서 크기 조절"></span></div>`;
+  if(n.k==='y')return `<div class="nd yr${sl}${fo}" data-n="${n.id}" ${st}>${inl(n.t)||'&nbsp;'}</div>`;
+  return `<div class="nd nt${n.plain?' plain':''}${sl}${fo}" data-n="${n.id}" ${st}>${fmtLines(n.t)}</div>`;}).join('');
+ layout();
+}
+let LDEPTH=0;const BRMAX=90;
+function trimRects(){D.rects.forEach(r=>{const e=rcEl.querySelector(`[data-r="${r.id}"]`);if(!e)return;let top=r.y,bot=r.y+r.h;delete r._ty;
+ const mem=(r.mem||[]).map(id=>BOX[id]).filter(Boolean);if(mem.length){const mt=Math.min(...mem.map(b=>b[1])),mb=Math.max(...mem.map(b=>b[1]+b[3]));const ms=new Set(r.mem);top=Math.min(top,mt-6);bot=Math.max(bot,mb+6);
+  for(const id in BOX){if(ms.has(id))continue;const n=nodeOf(id);if(!n||n.k==='y')continue;const b=BOX[id];if(b[0]+b[2]<=r.x||b[0]>=r.x+r.w)continue;if(b[1]+b[3]<=top-12||b[1]>=bot+8)continue;
+   if(b[1]+b[3]<=mt+2)top=Math.max(top,Math.min(Math.max(b[1]+b[3]+6,mt-10),mt-6));else if(b[1]>=mb-2)bot=Math.min(bot,Math.max(Math.min(b[1]-6,mb+10),mb+6));}}
+ e.style.top=top+'px';e.style.height=(bot-top)+'px';if(top!==r.y)r._ty=top-r.y;const lb=e.querySelector('.lb.mv');if(lb&&r.lp!=null){const pt=lbPt({...r,h:bot-top});lb.style.left=pt[0]+'px';lb.style.top=pt[1]+'px';}});}
+function syncGuides(){const ys=new Set(D.nodes.filter(n=>(n.hl||D.aal)&&n.k==='y'&&!n.p&&n.col).map(n=>yearNum(n.t)));let ch=false;
+ const ADJ={};const cy=n=>BOX[n.id][1]+BOX[n.id][3]/2+(ADJ[n.id]||0);
+ let GS=new Set();const chain=n=>{const sq=colSeq(n.col);const r=sq.slice(0,sq.indexOf(n)+1).reverse();const o=[];for(const k of r){if(k!==n&&GS.has(k))break;o.push(k);}return o;};
+ const slack=n=>{if(!(n.auto&&n.col))return 1e9;return chain(n).reduce((a,k)=>a+Math.max(0,k.gp||0),0);};
+ const lift=(n,d)=>{for(const k of chain(n)){if(d<=0.5)break;const t=Math.min(d,Math.max(0,k.gp||0));if(t>0){k.gp=(k.gp||0)-t;if(Math.abs(k.gp)<.5)delete k.gp;d-=t;}}};
+ const G=[];ys.forEach(Y=>{const seen=new Set();G.push(D.nodes.filter(n=>n.k==='y'&&!n.p&&BOX[n.id]&&yearNum(n.t)===Y).sort((a,b)=>BOX[a.id][1]-BOX[b.id][1]).filter(n=>{const k=n.col||('free'+n.id);if(seen.has(k))return false;seen.add(k);return true;}));});
+ const BR=bridges();BR.forEach(([n,yy])=>{const by={};yy.forEach(y=>{(by[yearNum(y.t)]=by[yearNum(y.t)]||[]).push(y);});Object.values(by).forEach(g=>{const seen=new Set();g=g.filter(y=>{const k=y.col||('free'+y.id);if(seen.has(k))return false;seen.add(k);return true;});if(g.length>1){const cs=g.map(cy);if(Math.max(...cs)-Math.min(...cs)<=BRMAX)G.push(g);}});});
+ G.forEach(g=>{if(g.length>1)g.forEach(n=>GS.add(n));});
+ G.forEach(g=>{if(g.length<2)return;
+  const h=g.reduce((a,n)=>(n.gm||0)>(a.gm||0)?n:a,g.find(n=>n.hl)||g[0]);let T=cy(h);g.forEach(n=>{T=Math.max(T,cy(n)-slack(n));});
+  g.forEach(n=>{const d=T-cy(n);if(Math.abs(d)>0.5){ADJ[n.id]=(ADJ[n.id]||0)+d;if(n.auto&&n.col){const sq=colSeq(n.col),nx=sq[sq.indexOf(n)+1];if(d>0){n.gp=(n.gp||0)+d;if(nx){const t=Math.min(d,Math.max(0,nx.gp||0));if(t>0){nx.gp-=t;if(Math.abs(nx.gp)<.5)delete nx.gp;}}}else{lift(n,-d);if(nx)nx.gp=(nx.gp||0)-d;}}else n.y+=d;ch=true;}});});
+ BR.forEach(([n,yy])=>{const B=BOX[n.id];if(!B)return;const cs=yy.map(cy);if(Math.max(...cs)-Math.min(...cs)>BRMAX+2)return;const t=Math.round(yy.reduce((a,y)=>a+cy(y),0)/yy.length-B[3]/2);if(Math.abs((n.y||0)-t)>0.5){n.y=t;ch=true;}});return ch;}
+function bridges(){const out=[];D.nodes.forEach(n=>{if(n.k!=='n'||n.p||n.col||n.noal||!BOX[n.id])return;const yy=[];D.links.forEach(l=>{if(isMerge(l))return;const o=l.a.n===n.id?l.b:l.b.n===n.id?l.a:null;if(!o||!o.n)return;const y=nodeOf(o.n);if(y&&y.k==='y'&&BOX[y.id]&&!yy.includes(y))yy.push(y);});if(yy.length>=2&&new Set(yy.map(y=>y.col||y.id)).size>=2)out.push([n,yy]);});return out;}
+function layout(){
+ const els={};nodesEl.querySelectorAll('.nd').forEach(e=>{els[e.dataset.n]=e;});
+ const sz={};for(const id in els){sz[id]=[els[id].offsetWidth,els[id].offsetHeight];}
+ const pos={};const kids=p=>D.nodes.filter(n=>n.p===p);const RS=D.rects.filter(r=>r.mem&&r.mem.length);const PADR=8;
+ const blk=(x,y,w,h,id)=>RS.find(R=>!R.mem.includes(id)&&x<R.x+R.w+PADR&&x+w>R.x-PADR&&y<R.y+R.h+PADR&&y+h>R.y-PADR);
+ const placeKids=p=>{const P=pos[p.id];if(!P)return 0;const x0=P[0]+P[2]+8;let bot=P[1]+P[3];const ks=kids(p.id);
+  const au=ks.filter(k=>k.auto).sort((a,b)=>(a.r||0)-(b.r||0)||(a.ko==null?1e9:a.ko)-(b.ko==null?1e9:b.ko));
+  const groups=[];au.forEach(k=>{const r=k.r||0;if(!groups.length||groups[groups.length-1].r!==r)groups.push({r,ks:[]});groups[groups.length-1].ks.push(k);});
+  let ry=P[1],rh=P[3];const rows=[];let xmax=x0;
+  groups.forEach((g,gi)=>{const mh=Math.max(...g.ks.map(k=>(sz[k.id]||[0,0])[1]));
+   if(g.r===0){rh=Math.max(P[3],mh);}else{ry=ry+rh+6;rh=mh;}
+   const yOf=(k,s2)=>g.r===0?(s2[1]>P[3]?P[1]:P[1]+(P[3]-s2[1])/2):ry+(rh-s2[1])/2;
+   let x=x0;const inRow=new Set();g.ks.forEach(k=>{const s2=sz[k.id]||[0,0];let hit=blk(x,yOf(k,s2),s2[0],s2[1],k.id);if(hit&&hit.mem.some(m=>inRow.has(m)))x=Math.max(x,hit.x+hit.w+PADR);pos[k.id]=[x,yOf(k,s2),s2[0],s2[1]];inRow.add(k.id);x+=s2[0]+6;});
+   if(g.r!==0){for(let it=0;it<4;it++){let push=0;g.ks.forEach(k=>{const q=pos[k.id];const h2=blk(q[0],q[1],q[2],q[3],k.id);if(h2&&!h2.mem.some(m=>inRow.has(m)))push=Math.max(push,h2.y+h2.h+PADR-ry);});if(push<=0)break;ry+=push;g.ks.forEach(k=>{const s2=sz[k.id]||[0,0];pos[k.id][1]=yOf(k,s2);});}}
+   xmax=Math.max(xmax,x);rows.push({r:g.r,y:ry,h:rh});bot=Math.max(bot,ry+rh);});
+  KR[p.id]={x0,xmax,rows,top:P[1],ph:P[3]};
+  ks.forEach(k=>{if(!k.auto){const s2=sz[k.id]||[0,0];pos[k.id]=[P[0]+(k.dx||0),P[1]+(k.dy||0),s2[0],s2[1]];}const kb=placeKids(k);if(k.auto&&pos[k.id])bot=Math.max(bot,pos[k.id][1]+kb);});
+  return bot-P[1];};
+ const RPAD=14,RM={};RS.forEach(R=>R.mem.forEach(id=>{(RM[id]=RM[id]||[]).push(R.id);}));
+ const rkOf=n=>{const ids=new Set(RM[n.id]||[]);const st=[n];while(st.length){const k=st.pop();(RM[k.id]||[]).forEach(x=>ids.add(x));D.nodes.forEach(q=>{if(q.p===k.id&&q.auto)st.push(q);});}return [...ids].sort().join(',');};
+ D.cols.forEach(c=>{let y=c.y0+TOP;
+  c._last=c.y0+TOP;let prk='';D.nodes.filter(n=>n.col===c.id&&n.auto&&!n.p).sort((a,b)=>yearNum(a.t)-yearNum(b.t)||(a.o||0)-(b.o||0)).forEach((n,ii)=>{const s=sz[n.id]||[60,26];
+   const rk=rkOf(n);if(ii>0&&rk!==prk)y+=RPAD;prk=rk;
+   y+=n.gp||0;pos[n.id]=[c.x-s[0]/2,y,s[0],s[1]];const mh=placeKids(n);c._last=y+s[1];c._lastc=y+s[1]/2;y+=Math.max(s[1],mh)+GAP;});c._auto=y;});
+ D.nodes.filter(n=>!n.p&&!(n.col&&n.auto&&colOf(n.col))).forEach(n=>{const s=sz[n.id]||[60,26];const cx=n.col&&colOf(n.col)&&n.k==='y'?colOf(n.col).x-s[0]/2:n.x;pos[n.id]=[cx,n.y,s[0],s[1]];placeKids(n);});
+ for(const k in BOX)delete BOX[k];
+ D.nodes.forEach(n=>{const p=pos[n.id];if(!p)return;const e=els[n.id];e.style.left=p[0]+'px';e.style.top=p[1]+'px';BOX[n.id]=p;});
+D.cols.forEach(c=>{if(c.hp){const f=colSeq(c.id)[0];const hd=spEl.querySelector(`.sph[data-ch="${c.id}"]`),st=spEl.querySelector(`.hstub[data-hs="${c.id}"]`);
+  if(c.hp==='r'&&f&&BOX[f.id]&&hd){const b=BOX[f.id],cy=b[1]+b[3]/2;const k=KR[f.id];const ex=Math.max(b[0]+b[2],k&&k.xmax?k.xmax-6:0);hd.style.left=(ex+22)+'px';hd.style.top=cy+'px';hd.style.transform='translate(0,-50%)';if(st){st.style.left=ex+'px';st.style.top=cy+'px';st.style.width='22px';}c._top=cy;}
+  else if(f&&BOX[f.id]&&hd){const b=BOX[f.id],cy=b[1]+b[3]/2;hd.style.left=(b[0]-16)+'px';hd.style.top=cy+'px';hd.style.transform='translate(-100%,-50%)';if(st){st.style.left=(b[0]-16)+'px';st.style.top=cy+'px';st.style.width='16px';}c._top=cy;}else c._top=null;}else c._top=null;});
+ D.cols.forEach(c=>{if(c.cap==='dot'||c.cap==='fdot'||c.cap==='flat')c.cap='bar';const len=c.cap==='cut'&&c._lastc?c._lastc:c.cap==='bar'&&c._lastc?Math.max(c._lastc+16,Math.min(c.y1,c._last+14)):Math.max(c.y1,(c._last||c.y0)+14);const e=spEl.querySelector(`.sp[data-c="${c.id}"]`);if(e){const t0=c._top!=null?c._top:c.y0;e.style.top=t0+'px';e.style.height=(len-t0)+'px';}c._y1=len;});
+ if(D.rects.some(r=>!r.mem)){D.rects.forEach(r=>{if(!r.mem)setMem(r);});return layout();}
+ if(syncGuides()&&(LDEPTH=(LDEPTH||0)+1)<24){const rv=layout();LDEPTH=0;return rv;}LDEPTH=0;trimRects();
+ lines();
+}
+/* 선 */
+function anchorBox(a){if(a.n){const b=BOX[a.n];return b?{x:b[0],y:b[1],w:b[2],h:b[3]}:null;}if(a.col){const c=colOf(a.col);if(!c)return null;let y=a.end&&c._y1!=null?c._y1:a.y;if(!a.ov){if(c._top!=null&&y<c._top)y=c._top;if(c._y1!=null&&y>c._y1)y=c._y1;}return {x:c.x,y,w:0,h:0,pt:1};}return null;}
+const isMerge=l=>l.t?l.t==='mg':!!(l.a.col&&l.b.col);
+function elbow(A,B,m){
+ const acx=A.x+A.w/2,acy=A.y+A.h/2,bcx=B.x+B.w/2,bcy=B.y+B.h/2;
+ const sepX=B.x>A.x+A.w+4||B.x+B.w<A.x-4;
+ if(A.pt!==B.pt){const P=A.pt?A:B,N=A.pt?B:A,px=P.x,py=P.y;let ex,ey=N.y+N.h/2,d;
+  if(px>=N.x-2&&px<=N.x+N.w+2){ey=py<N.y?N.y-2:N.y+N.h+2;d=`M${px},${py}V${ey}`;ex=px;}else{ex=px<N.x?N.x-2:N.x+N.w+2;d=`M${px},${py}V${ey}H${ex}`;}
+  if(!A.pt){const r=d.match(/-?[\d.]+/g).map(Number);d=r.length===3?`M${r[0]},${r[2]}V${r[1]}`:`M${ex},${ey}H${px}V${py}`;return {d,mx:px,my:ey,o:'h',s:[ex,ey],e:[px,py]};}
+  return {d,mx:px,my:ey,o:'h',s:[px,py],e:[ex,ey]};}
+ if(A.pt&&B.pt){const sx=acx,sy=acy,ex=bcx,ey=bcy;if(Math.abs(sx-ex)<2)return {d:`M${sx},${sy}V${ey}`,mx:sx,my:(sy+ey)/2,o:'h',s:[sx,sy],e:[ex,ey]};
+  let mm=m;if(mm!=null&&(mm<Math.min(sx,ex)-40||mm>Math.max(sx,ex)+40))mm=null;
+  if(mm==null)return {d:`M${sx},${sy}H${ex}V${ey}`,mx:ex,my:(sy+ey)/2,o:'h',s:[sx,sy],e:[ex,ey]};
+  return {d:`M${sx},${sy}H${mm}V${ey}H${ex}`,mx:mm,my:(sy+ey)/2,o:'h',s:[sx,sy],e:[ex,ey]};}
+ if(sepX){const r=bcx>acx;const sx=r?A.x+A.w:A.x,ex=r?B.x:B.x+B.w,sy=acy,ey=bcy;
+  if(Math.abs(sy-ey)<1)return {d:`M${sx},${sy}H${ex}`,mx:(sx+ex)/2,my:sy,o:'h',s:[sx,sy],e:[ex,ey]};
+  const mx=m!=null?m:(sx+ex)/2;return {d:`M${sx},${sy}H${mx}V${ey}H${ex}`,mx,my:(sy+ey)/2,o:'h',s:[sx,sy],e:[ex,ey]};}
+ const dn=bcy>acy;const sy=dn?A.y+A.h:A.y,ey=dn?B.y:B.y+B.h,sx=acx,ex=bcx;
+ if(Math.abs(sx-ex)<1)return {d:`M${sx},${sy}V${ey}`,mx:sx,my:(sy+ey)/2,o:'v',s:[sx,sy],e:[ex,ey]};
+ const my=m!=null?m:(sy+ey)/2;return {d:`M${sx},${sy}V${my}H${ex}V${ey}`,mx:(sx+ex)/2,my,o:'v',s:[sx,sy],e:[ex,ey]};
+}
+function clip(B,tx,ty){const cx=B.x+B.w/2,cy=B.y+B.h/2;if(B.pt)return [cx,cy];const dx=tx-cx,dy=ty-cy;if(!dx&&!dy)return [cx,cy];const hw=B.w/2+2,hh=B.h/2+2;const t=Math.min(dx?hw/Math.abs(dx):1e9,dy?hh/Math.abs(dy):1e9);return t>=1?[cx,cy]:[cx+dx*t,cy+dy*t];}
+function hopPath(l,r){let [sx,sy]=r.s,[ex,ey]=r.e;if(Math.abs(sy-ey)>10||Math.abs(ex-sx)<40)return null;const y=(sy+ey)/2;const skip=new Set([l.a.n,l.b.n]);
+ const rootOf=id=>{let k=nodeOf(id);while(k&&k.p)k=nodeOf(k.p);return k?k.id:null;};
+ const lo=()=>Math.min(sx,ex)+3,hi=()=>Math.max(sx,ex)-3;const hitsY=b=>!(b[1]>y+2||b[1]+b[3]<y-2);
+ for(const side of ['a','b']){const nid=l[side].n;if(!nid)continue;const ks=[];for(const id in BOX){if(id===nid||skip.has(id))continue;const b=BOX[id];if(rootOf(id)!==nid||!hitsY(b)||b[0]+b[2]<lo()||b[0]>hi())continue;ks.push(b);}
+  if(!ks.length)continue;const isS=side==='a';const px=isS?sx:ex,ox=isS?ex:sx;const d=ox>px?1:-1;const edge=d>0?Math.max(...ks.map(b=>b[0]+b[2]))+2:Math.min(...ks.map(b=>b[0]))-2;if(isS)sx=edge;else ex=edge;ks.forEach(b=>{});}
+ let H=0;for(const id in BOX){if(skip.has(id))continue;const rt=rootOf(id);if(rt===l.a.n||rt===l.b.n)continue;const b=BOX[id];if(b[0]+b[2]<lo()||b[0]>hi())continue;if(!hitsY(b))continue;if((b[0]<=sx&&sx<=b[0]+b[2])||(b[0]<=ex&&ex<=b[0]+b[2]))continue;H=Math.max(H,y-b[1]+7);}
+ const moved=sx!==r.s[0]||ex!==r.e[0];
+ if(!H){if(!moved)return null;return {d:`M${sx},${sy}L${ex},${ey}`,mx:(sx+ex)/2,my:y,s:[sx,sy],e:[ex,ey],mid:r.mid};}
+ const dir=ex>sx?1:-1,k=Math.min(22,Math.abs(ex-sx)/4),t=y-H;
+ return {d:`M${sx},${sy}C${sx+dir*k*.6},${sy} ${sx+dir*k*.4},${t} ${sx+dir*k},${t}L${ex-dir*k},${t}C${ex-dir*k*.4},${t} ${ex-dir*k*.6},${ey} ${ex},${ey}`,mx:(sx+ex)/2,my:t,s:[sx,sy],e:[ex,ey],mid:r.mid,hop:1};}
+function curve(A,B,q){const ac=[A.x+A.w/2,A.y+A.h/2],bc=[B.x+B.w/2,B.y+B.h/2];const mid=[(ac[0]+bc[0])/2,(ac[1]+bc[1])/2];
+ const h=q?[mid[0]+q[0],mid[1]+q[1]]:mid;const ctrl=q?[2*h[0]-mid[0],2*h[1]-mid[1]]:null;
+ const s=clip(A,...(ctrl||bc)),e=clip(B,...(ctrl||ac));
+ if(!q)return {d:`M${s[0]},${s[1]}L${e[0]},${e[1]}`,mx:(s[0]+e[0])/2,my:(s[1]+e[1])/2,s,e,mid};
+ const c2=[2*h[0]-(s[0]+e[0])/2,2*h[1]-(s[1]+e[1])/2];
+ return {d:`M${s[0]},${s[1]}Q${c2[0]},${c2[1]} ${e[0]},${e[1]}`,mx:h[0],my:h[1],s,e,mid:[(s[0]+e[0])/2,(s[1]+e[1])/2]};}
+function sCurve(A,B){const ac=[A.x+A.w/2,A.y+A.h/2],bc=[B.x+B.w/2,B.y+B.h/2];const dx=bc[0]-ac[0],dy=bc[1]-ac[1];
+ if(B.x>A.x+A.w+4||B.x+B.w<A.x-4){const r=dx>0;const sp=[r?A.x+A.w:A.x,ac[1]],ep=[r?B.x:B.x+B.w,bc[1]];const k=Math.max(16,Math.abs(ep[0]-sp[0])/2)*(r?1:-1);return `M${sp}C${sp[0]+k},${sp[1]} ${ep[0]-k},${ep[1]} ${ep}`;}
+ const dn=dy>0;const sp=[ac[0],dn?A.y+A.h:A.y],ep=[bc[0],dn?B.y:B.y+B.h];const k=Math.max(12,Math.abs(ep[1]-sp[1])/2)*(dn?1:-1);return `M${sp}C${sp[0]},${sp[1]+k} ${ep[0]},${ep[1]-k} ${ep}`;}
+function frame(A,B){const ac=[A.x+A.w/2,A.y+A.h/2],bc=[B.x+B.w/2,B.y+B.h/2];const v=[bc[0]-ac[0],bc[1]-ac[1]];const L=Math.hypot(v[0],v[1])||1;return {ac,bc,v,L,pp:[-v[1],v[0]]};}
+const ptAbs=(F,q)=>[F.ac[0]+F.v[0]*q[0]+F.pp[0]*q[1],F.ac[1]+F.v[1]*q[0]+F.pp[1]*q[1]];
+const ptLoc=(F,x,y)=>{const dx=x-F.ac[0],dy=y-F.ac[1],L2=F.L*F.L;return [(dx*F.v[0]+dy*F.v[1])/L2,(dx*F.pp[0]+dy*F.pp[1])/L2];};
+function polyCurve(A,B,pts){const F=frame(A,B);const P=pts.map(q=>ptAbs(F,q));const s0=clip(A,...P[0]),e0=clip(B,...P[P.length-1]);const Q=[s0,...P,e0];
+ let d=`M${Q[0]}`;for(let i=0;i<Q.length-1;i++){const p0=Q[i-1]||Q[i],p1=Q[i],p2=Q[i+1],p3=Q[i+2]||Q[i+1];const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];d+=`C${c1} ${c2} ${p2}`;}
+ return {d,s:s0,e:e0,mx:P[0][0],my:P[0][1],P,F};}
+function endColor(a){return a.col?(colOf(a.col)||{}).c:nodeColor(nodeOf(a.n));}
+function lines(){
+ const FVL=focVis();let o='',defs='';const used=new Set();
+ D.nodes.forEach(n=>{if(n.p&&!n.auto&&!n.nl&&BOX[n.id]&&BOX[n.p]){const r={d:sCurve(anchorBox({n:n.p}),anchorBox({n:n.id}))};o+=`<path d="${r.d}" stroke="${tint(HEX[nodeColor(n)]||HEX.sky,.55)}" stroke-width="1.3"${FVL&&!FVL.has(n.id)?' opacity=".1"':''}/>`;}});
+ {const bb=bbox();if(bb)D.nodes.forEach(n=>{if(n.hl&&BOX[n.id]){const b=BOX[n.id],y=b[1]+b[3]/2;o+=`<path d="M${bb[0]-120},${y}H${bb[2]+160}" stroke="${HEX[nodeColor(n)]||HEX.sky}" stroke-width="1" opacity=".28"/>`;}});}
+ D.links.forEach(l=>{const A=anchorBox(l.a),B=anchorBox(l.b);if(!A||!B)return;if(l.b.fy&&!A.pt)B.y=A.y+A.h/2;if(l.a.fy&&!B.pt)A.y=B.y+B.h/2;const mg=isMerge(l);const orth=!mg&&l.st==='orth';let r=(mg||orth)?elbow(A,B,l.m):(l.pts&&l.pts.length?polyCurve(A,B,l.pts):curve(A,B,l.q));if(!mg&&!orth&&!(l.pts&&l.pts.length)&&!l.q&&!l.nohop){const hp=hopPath(l,r);if(hp)r=hp;}l._r=r;l._mg=mg||orth;
+  const ca=HEX[endColor(l.a)]||HEX.sky,cb=HEX[endColor(l.b)]||HEX.sky;let stroke;
+  if(l.c)stroke=HEX[l.c];else if(ca!==cb){const gid='g'+l.id;defs+=`<linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${r.s[0]}" y1="${r.s[1]}" x2="${r.e[0]}" y2="${r.e[1]}"><stop offset="0" stop-color="${ca}"/><stop offset="1" stop-color="${cb}"/></linearGradient>`;stroke=`url(#${gid})`;}else stroke=ca;
+  const w=l.w||(mg?3:1.5);if(l.ar&&l.eb===undefined){l.eb='ar';delete l.ar;}let mk='';
+  [['ea','start',l.c?HEX[l.c]:ca],['eb','end',l.c?HEX[l.c]:cb]].forEach(([k,pos,mc])=>{const ty=l[k];if(!ty)return;const id=`m${ty}${mc.slice(1)}${String(w).replace('.','_')}`;
+   if(!used.has(id)){used.add(id);const S=ty==='ar'?7+w*2.2:ty==='ring'?7+w*2:5+w*2;
+    defs+=ty==='ar'?`<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="${S}" markerHeight="${S}" orient="auto-start-reverse"><polygon points="0,0 10,5 0,10" fill="${mc}"/></marker>`
+     :ty==='ring'?`<marker id="${id}" viewBox="0 0 12 12" refX="6" refY="6" markerUnits="userSpaceOnUse" markerWidth="${S}" markerHeight="${S}"><circle cx="6" cy="6" r="4.2" stroke="${mc}" stroke-width="2.6" style="fill:var(--surface)"/></marker>`
+     :`<marker id="${id}" viewBox="0 0 12 12" refX="6" refY="6" markerUnits="userSpaceOnUse" markerWidth="${S}" markerHeight="${S}"><circle cx="6" cy="6" r="5.5" fill="${mc}"/></marker>`;}
+   mk+=` marker-${pos}="url(#${id})"`;});
+  const s=sel&&sel.t==='link'&&sel.id===l.id;const fv=FVL;const lf=fv&&!((l.a.n&&fv.has(l.a.n))||(l.b.n&&fv.has(l.b.n)));
+  let sw=w,mka='';if(l.dl){sw=+(w*3.4).toFixed(2);const mid='dm'+l.id;defs+=`<mask id="${mid}" maskUnits="userSpaceOnUse" x="-20000" y="-20000" width="40000" height="40000"><path d="${r.d}" fill="none" stroke="#fff" stroke-width="${sw}"/><path d="${r.d}" fill="none" stroke="#000" stroke-width="${(sw/3).toFixed(2)}"/></mask>`;mka=` mask="url(#${mid})"`;}
+  o+=`<path d="${r.d}" stroke="${stroke}" stroke-width="${sw}"${mka}${!l.dl&&(l.ds||(r.hop&&l.ds!==0))?' stroke-dasharray="5 5"':''}${mk}${s?' class="sel"':''}${lf?' opacity=".1"':''}/><path class="hit" data-l="${l.id}" d="${r.d}"/>`;});
+ svg.querySelector('defs').innerHTML=defs;lg.innerHTML=o;
+ D.links.forEach(l=>{if(!l.lb||!l._r)return;const p=lg.querySelector('path.hit[data-l="'+l.id+'"]');if(!p)return;let pt;try{pt=p.getPointAtLength(p.getTotalLength()*(l.lp||.5));}catch(e){return;}
+  const NS='http://www.w3.org/2000/svg',g=document.createElementNS(NS,'g');g.setAttribute('class','lbl');g.dataset.l=l.id;
+  const rc=document.createElementNS(NS,'rect'),tx=document.createElementNS(NS,'text');tx.textContent=l.lb;tx.setAttribute('x',pt.x);tx.setAttribute('y',pt.y);tx.setAttribute('text-anchor','middle');tx.setAttribute('dominant-baseline','central');tx.setAttribute('font-size','12.5');tx.setAttribute('font-weight','600');tx.setAttribute('font-family',"Paperlogy,'Gmarket Sans','Noto Sans KR',sans-serif");tx.setAttribute('fill',l.c?HEX[l.c]:'#2a2520');
+  g.appendChild(rc);g.appendChild(tx);lg.appendChild(g);const bb=tx.getBBox();rc.setAttribute('x',bb.x-6);rc.setAttribute('y',bb.y-2);rc.setAttribute('width',bb.width+12);rc.setAttribute('height',bb.height+4);rc.setAttribute('rx',6);rc.setAttribute('fill','#ffffff');});
+ board.querySelectorAll('.mh').forEach(e=>e.remove());
+ if(sel&&sel.t==='link'){const l=D.links.find(x=>x.id===sel.id);if(l&&l._r&&l._r.P){l._r.P.forEach((q,i)=>{const h=document.createElement('div');h.className='mh pt';h.style.left=q[0]+'px';h.style.top=q[1]+'px';h.dataset.mh=l.id;h.dataset.pi=i;h.title='끌어서 모양 바꾸기 · 우클릭 지우기';board.appendChild(h);});}
+  else if(l&&l._r){const h=document.createElement('div');h.className='mh';h.style.left=l._r.mx+'px';h.style.top=l._r.my+'px';h.dataset.mh=l.id;h.title=l._mg?'끌어서 꺾이는 위치 옮기기':'끌어서 휘게 하기';board.appendChild(h);}}
+}
+
+/* ── 화면 ── */
+const applyView=()=>{const v=D.view;board.style.transform=`translate(${v.x}px,${v.y}px) scale(${v.z})`;$('#zVal').textContent=Math.round(v.z*100)+'%';};
+const toB=(cx,cy)=>{const r=vp.getBoundingClientRect(),v=D.view;return [(cx-r.left-v.x)/v.z,(cy-r.top-v.y)/v.z];};
+const zoomAt=(f,cx,cy)=>{const v=D.view,r=vp.getBoundingClientRect();const nz=Math.min(3,Math.max(.05,v.z*f));const px=cx-r.left,py=cy-r.top;v.x=px-(px-v.x)*nz/v.z;v.y=py-(py-v.y)*nz/v.z;v.z=nz;applyView();save();};
+vp.addEventListener('wheel',e=>{e.preventDefault();closeMenu();if(e.ctrlKey||e.metaKey)zoomAt(Math.exp(-e.deltaY*0.0025),e.clientX,e.clientY);else{D.view.x-=e.deltaX;D.view.y-=e.deltaY;applyView();save();}},{passive:false});
+$('#zIn').onclick=()=>{const r=vp.getBoundingClientRect();zoomAt(1.2,r.left+r.width/2,r.top+r.height/2);};
+$('#zOut').onclick=()=>{const r=vp.getBoundingClientRect();zoomAt(1/1.2,r.left+r.width/2,r.top+r.height/2);};
+function bbox(){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;const add=(a,b,c,d)=>{x0=Math.min(x0,a);y0=Math.min(y0,b);x1=Math.max(x1,c);y1=Math.max(y1,d);};
+ Object.values(BOX).forEach(b=>add(b[0],b[1],b[0]+b[2],b[1]+b[3]));D.cols.forEach(c=>add(c.x-80,c.y0-50,c.x+80,c._y1||c.y1));D.rects.forEach(r=>add(r.x,r.y-14,r.x+r.w,r.y+r.h));return x0>x1?null:[x0,y0,x1,y1];}
+$('#goto').onclick=()=>{if(!D.cols.length){toast('기둥이 없어요');return;}listMenu($('#goto'),D.cols.map(c=>({t:`<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${HEX[c.c]||HEX.sky};margin-right:7px"></span>${esc(c.t)}`,f:()=>{const r=vp.getBoundingClientRect();const f=colSeq(c.id)[0];const ty=c.y0;const z=Math.max(.6,D.view.z);D.view={z,x:r.width/2-c.x*z,y:120-ty*z};applyView();save();sel={t:'col',id:c.id};render();}})));};
+$('#fit').onclick=()=>{const b=bbox();if(!b)return;const r=vp.getBoundingClientRect();const z=Math.min(1.4,Math.max(.05,Math.min((r.width-80)/(b[2]-b[0]),(r.height-80)/(b[3]-b[1]))));D.view={z,x:(r.width-(b[2]-b[0])*z)/2-b[0]*z,y:(r.height-(b[3]-b[1])*z)/2-b[1]*z};applyView();save();};
+$('#dark').onclick=()=>{ST.dark=!ST.dark;document.body.classList.toggle('dark',ST.dark);setPal();$('#dark').textContent=ST.dark?'☀':'☾';save();render();};
+$('#dark').textContent=ST.dark?'☀':'☾';
+
+/* ── 우클릭 메뉴 ── */
+let menuEl=null;
+const closeMenu=()=>{if(menuEl){menuEl.remove();menuEl=null;}};
+const swRow=(cur,def,auto)=>`<div class="row"><span class="k">색</span>${PAL.map(([k,h])=>`<button class="sw${(cur||def)===k?' on':''}" data-sw="${k}" style="background:${h}"></button>`).join('')}${auto?`<button class="pb${!cur?' on':''}" data-a="cauto">자동</button>`:''}</div>`;
+function openMenu(cx,cy,html,on){closeMenu();const m=document.createElement('div');m.className='menu';m.innerHTML=html;document.body.appendChild(m);menuEl=m;
+ const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.max(8,Math.min(cx,innerWidth-w-8))+'px';m.style.top=Math.max(60,Math.min(cy,innerHeight-h-8))+'px';
+ m.addEventListener('pointerdown',e=>e.stopPropagation());m.addEventListener('contextmenu',e=>e.preventDefault());
+ m.onclick=e=>{const b=e.target.closest('button');if(!b)return;on(b,m);};
+ m.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>e.stopPropagation()));
+ return m;}
+addEventListener('pointerdown',e=>{if(menuEl&&!menuEl.contains(e.target))closeMenu();},true);
+function refresh(keep){save();updQ();render();}
+function nodeMenu(n,cx,cy){
+ const isT=n.k==='tb',isY=n.k==='y';
+ if(n.k==='img'){openMenu(cx,cy,`${swRow(n.c,'',true)}<hr><button class="mi" data-a="iw">기본 크기로</button><button class="mi del" data-a="idel">삭제</button>`,b=>{const a=b.dataset.a;if(b.dataset.sw||a==='cauto'){snap();if(b.dataset.sw)n.c=b.dataset.sw;else delete n.c;closeMenu();refresh();return;}if(a==='iw'){snap();n.w=360;refresh();}if(a==='idel'){snap();delNode(n.id);sel=null;closeMenu();refresh();}});return;}
+ const html=`${swRow(n.c,'',true)}
+ <div class="row"><span class="k">크기</span>${SIZES.map(([s,t])=>`<button class="pb${(n.fs||13)===s?' on':''}" data-fs="${s}">${t}</button>`).join('')}</div>
+ ${(D.tags||[]).length?`<div class="row"><span class="k">분류</span>${D.tags.map(t=>`<button class="pb${n.tg===t.id?' on':''}" data-tg="${t.id}" style="border-color:${HEX[t.c]}">${esc(t.name)}</button>`).join('')}<button class="pb${!n.tg?' on':''}" data-tg="">없음</button></div>`:''}
+ ${n.k==='st'?`<div class="row"><span class="k">도형</span><button class="pb${(n.sh||'boom')==='boom'?' on':''}" data-sh="boom">폭발</button><button class="pb${n.sh==='bubble'?' on':''}" data-sh="bubble">말풍선</button><button class="pb${n.sh==='star'?' on':''}" data-sh="star">별</button><button class="pb" data-a="edit">글자 쓰기</button></div>`:''}
+ ${!isY&&!isT&&n.k!=='st'?`<div class="row"><span class="k">모양</span><button class="pb${hasBul(n.t)?' on':''}" data-a="bul">• 불렛</button><button class="pb${n.plain?' on':''}" data-a="plain">글자만</button></div>`:''}
+ ${isT?`<div class="row"><span class="k">표</span><button class="pb" data-a="r+">행 ＋</button><button class="pb" data-a="r-">행 −</button><button class="pb" data-a="c+">열 ＋</button><button class="pb" data-a="c-">열 −</button><button class="pb${n.hd!==false?' on':''}" data-a="hd">머리행</button></div>`:''}
+ <hr>${n.k==='n'&&!n.p&&!n.col&&D.links.some(l=>l.a.n===n.id||l.b.n===n.id)?`<button class="mi" data-a="noal">${n.noal?'⇔ 이은 연도에 높이 자동 맞추기':'높이 자동 맞추기 끄기'}</button>`:''}<button class="mi" data-a="kid">＋ 옆에 텍스트 붙이기</button>
+ ${n.p&&!n.auto?`<button class="mi" data-a="nl">${n.nl?'연결선 보이기':'연결선 숨기기'}</button><button class="mi" data-a="snapk">옆에 다시 붙이기</button>`:''}${n.p?`<button class="mi" data-a="detach">떼어내기 (따로 움직이기)</button>`:''}
+ ${isY?`<button class="mi" data-a="hl">${n.hl?'가로 기준선 지우기':'— 가로 기준선 긋기'}</button>`:''}${n.col&&!n.auto&&isY?`<button class="mi" data-a="reauto">기둥 순서에 다시 넣기</button>`:''}${n.gp?`<button class="mi" data-a="gp0">위 간격 원래대로</button>`:''}
+ <button class="mi del" data-a="del">삭제</button>`;
+ openMenu(cx,cy,html,(b)=>{snap();const a=b.dataset.a;
+  if(b.dataset.sw)n.c=b.dataset.sw;if(a==='cauto')delete n.c;if(b.dataset.tg!==undefined){if(b.dataset.tg){n.tg=b.dataset.tg;delete n.c;}else delete n.tg;}if(b.dataset.sh)n.sh=b.dataset.sh;if(b.dataset.fs){n.fs=+b.dataset.fs===13?undefined:+b.dataset.fs;delete n.sz;}
+  if(a==='bul')n.t=toggleBul(n.t);if(a==='plain')n.plain=!n.plain;
+  if(isT){if(a==='r+')n.rows.push(n.rows[0].map(()=>''));if(a==='r-'&&n.rows.length>1)n.rows.pop();if(a==='c+')n.rows.forEach(r=>r.push(''));if(a==='c-'&&n.rows[0].length>1)n.rows.forEach(r=>r.pop());if(a==='hd')n.hd=n.hd===false;}
+  if(a==='kid'){closeMenu();const k=addKid(n,'');refresh();startEdit(k.id);return;}
+  if(a==='nl')n.nl=!n.nl;if(a==='noal'){n.noal=!n.noal;if(!n.noal)delete n.noal;}if(a==='hl')n.hl=!n.hl;if(a==='snapk'){n.auto=true;delete n.dx;delete n.dy;}
+  if(a==='detach'){const bx=BOX[n.id];delete n.p;n.auto=false;n.col=null;n.x=bx[0];n.y=bx[1];}
+  if(a==='edit'){closeMenu();if(!n.t)n.t=' ';refresh();startEdit(n.id);return;}
+  if(a==='reauto')n.auto=true;if(a==='gp0')delete n.gp;
+  if(a==='del'){delNode(n.id);sel=null;closeMenu();refresh();return;}
+  refresh();nodeMenu(n,parseFloat(menuEl.style.left),parseFloat(menuEl.style.top));});
+}
+const hasBul=t=>String(t).split('\n').every(l=>!l.trim()||BUL.test(l))&&String(t).trim()!=='';
+const toggleBul=t=>{const on=hasBul(t);return String(t).split('\n').map(l=>on?l.replace(BUL,'$1'):(l.trim()?'- '+l:l)).join('\n');};
+function alignSel(){const ids=[...MS].filter(id=>BOX[id]);if(ids.length<2)return;snap();
+ for(let it=0;it<3;it++){layout();const a0=BOX[ids[0]];const tgt=a0[1]+a0[3]/2;
+  ids.forEach((id,ii)=>{if(!ii)return;const n=nodeOf(id),b=BOX[id],d=tgt-(b[1]+b[3]/2);if(Math.abs(d)<.5)return;
+   if(n.k==='y'&&n.auto&&n.col&&!n.p)n.gp=Math.max(0,(n.gp||0)+d);else if(n.p){n.auto=false;n.dx=(n.dx!=null?n.dx:b[0]-BOX[n.p][0]);n.dy=(n.dy!=null?n.dy:b[1]-BOX[n.p][1])+d;}else n.y+=d;});}
+ refresh();}
+function multiMenu(cx,cy){openMenu(cx,cy,`<button class="mi" data-a="al">⇔ 같은 높이로 맞추기 (${MS.size}개)</button><button class="mi" data-a="gp">간격 원래대로</button><button class="mi del" data-a="del">고른 것 삭제</button>`,b=>{closeMenu();const a=b.dataset.a;
+ if(a==='al')alignSel();if(a==='gp'){snap();MS.forEach(id=>{const n=nodeOf(id);if(n)delete n.gp;});refresh();}if(a==='del'){snap();[...MS].forEach(delNode);MS.clear();refresh();}});}
+function colMenu(c,cx,cy,by){
+ const html=`<div class="row"><span class="k">이름</span><input data-in="ct" value="${esc(c.t).replace(/"/g,'&quot;')}"></div>${swRow(c.c,'sky')}
+ <div class="row"><span class="k">제목</span>${[['','위'],['l','왼쪽 ㅡ'],['r','오른쪽 ㅡ']].map(([v,t])=>`<button class="pb${(c.hp||'')===v?' on':''}" data-hp="${v}">${t}</button>`).join('')}</div>
+ <div class="row"><span class="k">끝</span>${[['','기본'],['cut','연도에서 끝'],['bar','ㅡ 막기'],['ar','▼ 화살표'],['fade','흐리게']].map(([v,t])=>`<button class="pb${(c.cap||'')===v?' on':''}" data-cap="${v}">${t}</button>`).join('')}</div>
+ <div class="row"><span class="k">연도</span><input data-in="yr" placeholder="1914 사라예보 / 오→세 선전포고 ↵"></div>
+ <hr>${c.grp?'<button class="mi" data-a="ungrp">묶음 풀기</button>':'<button class="mi" data-a="grp">⇕ 같은 세로줄 기둥끼리 묶기</button>'}<button class="mi" data-a="tight">제목을 첫 연도에 붙이기 (목 줄이기)</button><button class="mi" data-a="gpall">이 기둥 간격 전부 원래대로</button><button class="mi" data-a="br">⑂ 여기서 갈라지는 기둥</button><button class="mi del" data-a="del">기둥 삭제</button>`;
+ const m=openMenu(cx,cy,html,(b)=>{if(b.dataset.hp!==undefined){snap();if(b.dataset.hp)c.hp=b.dataset.hp;else delete c.hp;refresh();colMenu(c,parseFloat(m.style.left),parseFloat(m.style.top),by);return;}
+  if(b.dataset.a==='grp'){const same=D.cols.filter(k=>Math.abs(k.x-c.x)<1.5);if(same.length<2){toast('같은 세로줄에 다른 기둥이 없어요 · 제목을 끌어서 줄 맞추기');closeMenu();return;}snap();const g=c.grp||uid();same.forEach(k=>{k.grp=g;k.x=c.x;});closeMenu();refresh();toast(same.length+'개 기둥 묶음 · 하나 끌면 같이 움직여요');return;}
+  if(b.dataset.a==='ungrp'){snap();const g=c.grp;D.cols.forEach(k=>{if(k.grp===g)delete k.grp;});closeMenu();refresh();return;}
+  if(b.dataset.a==='tight'){const f=colSeq(c.id)[0];if(f&&(f.gp||0)>0){snap();c.y0+=f.gp;delete f.gp;}closeMenu();refresh();return;}
+  if(b.dataset.a==='gpall'){snap();D.nodes.forEach(n=>{if(n.col===c.id)delete n.gp;});closeMenu();refresh();return;}
+  if(b.dataset.a==='br'){snap();const y=Math.max(c.y0+20,by||c.y0+60);const nc=newCol(c.x+200,y+60);nc.t='새 갈래';D.links.push({id:uid(),a:{col:c.id,y},b:{col:nc.id,y:nc.y0},t:'mg'});closeMenu();sel={t:'col',id:nc.id};lastCol=nc.id;refresh();startColEdit(nc.id);toast('갈래 기둥 끝을 ⌘+끌기로 다른 기둥에 이으면 합쳐져요');return;}
+  if(b.dataset.cap!==undefined){snap();if(b.dataset.cap)c.cap=b.dataset.cap;else delete c.cap;refresh();colMenu(c,parseFloat(m.style.left),parseFloat(m.style.top));return;}if(b.dataset.sw){snap();c.c=b.dataset.sw;refresh();colMenu(c,parseFloat(m.style.left),parseFloat(m.style.top));}
+  if(b.dataset.a==='del'&&confirm('기둥을 지울까요? (위 연도·텍스트도 같이 지워져요)')){snap();D.nodes.filter(n=>n.col===c.id).map(n=>n.id).forEach(delNode);D.links=D.links.filter(l=>l.a.col!==c.id&&l.b.col!==c.id);D.cols=D.cols.filter(x=>x!==c);sel=null;lastCol=null;closeMenu();refresh();}});
+ const ct=m.querySelector('[data-in=ct]');ct.addEventListener('focus',snap,{once:true});ct.oninput=()=>{c.t=ct.value;save();updQ();render();};ct.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')closeMenu();};
+ const yr=m.querySelector('[data-in=yr]');yr.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'&&!e.isComposing){if(quickAdd(c,yr.value)){yr.value='';}}};
+ setTimeout(()=>yr.focus(),0);
+}
+function linkMenu(l,cx,cy){
+ const mg=isMerge(l);
+ const html=`<div class="row"><span class="k">종류</span><button class="pb${mg?' on':''}" data-t="mg">기둥 합치기</button><button class="pb${!mg?' on':''}" data-t="rel">관계선</button></div>
+ ${swRow(l.c,'',true).replace('>자동<','>그라데이션<')}
+ ${mg?'':`<div class="row"><span class="k">선</span><button class="pb${l.st!=='orth'?' on':''}" data-st="">직선·곡선</button><button class="pb${l.st==='orth'?' on':''}" data-st="orth">┐ 직각</button></div>`}
+ <div class="row"><span class="k">모양</span><button class="pb${!l.ds&&!l.dl?' on':''}" data-a="solid">실선</button><button class="pb${l.ds&&!l.dl?' on':''}" data-a="dash">점선</button><button class="pb${l.dl?' on':''}" data-a="dbl">두 줄</button></div><div class="row"><span class="k">글자</span><button class="pb${l.lb?' on':''}" data-a="lbl">${l.lb?'✎ 글자 고치기':'＋ 선 위에 글자'}</button>${l.lb?`<button class="pb${(l.lp||.5)===.25?' on':''}" data-a="lp25">앞</button><button class="pb${(l.lp||.5)===.5?' on':''}" data-a="lp50">가운데</button><button class="pb${(l.lp||.5)===.75?' on':''}" data-a="lp75">뒤</button>`:''}</div>${(l.a.col&&l.b.n)||(l.b.col&&l.a.n)?`<div class="row"><span class="k">수평</span><button class="pb${(l.a.fy||l.b.fy)?' on':''}" data-a="fy1">— 수평 맞추기</button><button class="pb${!(l.a.fy||l.b.fy)?' on':''}" data-a="fy0">자유</button></div>`:''}${l._r&&l._r.hop||l.nohop?`<div class="row"><span class="k">건너기</span><button class="pb${!l.nohop?' on':''}" data-a="hop1">⌒ 넘어가기</button><button class="pb${l.nohop?' on':''}" data-a="hop0">곧게</button></div>`:''}
+ ${[['ea','시작'],['eb','끝']].map(([k,t])=>`<div class="row"><span class="k">${t}</span>${[['','없음'],['ar','➤ 화살표'],['ring','○ 지하철'],['dot','● 점']].map(([v,x])=>`<button class="pb${(l[k]||'')===v?' on':''}" data-end="${k}" data-ev="${v}">${x}</button>`).join('')}</div>`).join('')}
+ <div class="row"><span class="k">굵기</span>${[[1,'얇게'],[1.5,'보통'],[2.4,'굵게'],[3,'기둥']].map(([w,t])=>`<button class="pb${(l.w||(mg?3:1.5))===w?' on':''}" data-w="${w}">${t}</button>`).join('')}</div>
+ ${mg||l.st==='orth'?'':'<div class="row" style="color:var(--muted);font-size:11.5px">선 더블클릭 → 꺾는 점 추가</div>'}<hr><button class="mi" data-a="straight">${mg||l.st==='orth'?'꺾임 원래대로':'곧게 펴기'}</button><button class="mi del" data-a="del">선 삭제</button>`;
+ openMenu(cx,cy,html,(b)=>{snap();const a=b.dataset.a;if(b.dataset.t){l.t=b.dataset.t;delete l.w;}if(b.dataset.sw)l.c=b.dataset.sw;if(a==='cauto')delete l.c;if(a==='fy1'){const P=l.a.col?l.a:l.b;P.fy=1;delete P.end;}if(a==='fy0'){delete l.a.fy;delete l.b.fy;}if(a==='hop1')delete l.nohop;if(a==='hop0')l.nohop=1;if(a==='solid'){l.ds=0;delete l.dl;}if(a==='dash'){l.ds=1;delete l.dl;}if(a==='dbl'){l.dl=1;l.ds=0;}if(a==='lbl'){const v=prompt('선 위에 쓸 글자 (비우면 지워져요)',l.lb||'');if(v!==null){if(v.trim())l.lb=v.trim();else{delete l.lb;delete l.lp;}}}if(a&&a.startsWith('lp'))l.lp=+a.slice(2)/100;if(b.dataset.end){if(l.ar){l.eb='ar';delete l.ar;}if(b.dataset.ev)l[b.dataset.end]=b.dataset.ev;else delete l[b.dataset.end];}if(b.dataset.w)l.w=+b.dataset.w;if(b.dataset.st!==undefined){if(b.dataset.st)l.st=b.dataset.st;else delete l.st;delete l.m;}if(a==='straight'){delete l.m;delete l.q;delete l.pts;}
+  if(a==='del'){D.links=D.links.filter(x=>x!==l);sel=null;closeMenu();refresh();return;}refresh();linkMenu(l,parseFloat(menuEl.style.left),parseFloat(menuEl.style.top));});
+}
+function rectMenu(r,cx,cy){
+ const html=`<div class="row"><span class="k">이름</span><input data-in="rl" value="${esc(r.l||'').replace(/"/g,'&quot;')}" placeholder="(없어도 돼요)"></div>${swRow(r.c,'sky')}
+ <div class="row"><span class="k">테두리</span><button class="pb${!r.nob?' on':''}" data-a="b1">있음</button><button class="pb${r.nob?' on':''}" data-a="b0">없음</button></div>
+ <hr><button class="mi" data-a="fit">안의 글자에 딱 맞추기</button><button class="mi" data-a="back">맨 뒤로 보내기</button><button class="mi" data-a="front">맨 앞으로</button><button class="mi del" data-a="del">박스 삭제</button>`;
+ const m=openMenu(cx,cy,html,(b)=>{snap();const a=b.dataset.a;if(b.dataset.sw)r.c=b.dataset.sw;if(a==='b1')r.nob=0;if(a==='b0')r.nob=1;if(a==='fit')fitRect(r);if(a==='back')D.rects=[r,...D.rects.filter(x=>x!==r)];if(a==='front')D.rects=[...D.rects.filter(x=>x!==r),r];
+  if(a==='del'){D.rects=D.rects.filter(x=>x!==r);sel=null;closeMenu();refresh();return;}refresh();rectMenu(r,parseFloat(menuEl.style.left),parseFloat(menuEl.style.top));});
+ const i=m.querySelector('input');i.addEventListener('focus',snap,{once:true});i.oninput=()=>{r.l=i.value;save();render();};i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')closeMenu();};
+}
+function bgMenu(cx,cy,bx,by){
+ openMenu(cx,cy,`<button class="mi" data-a="t">＋ 여기에 텍스트</button><button class="mi" data-a="tb">＋ 여기에 표</button><button class="mi" data-a="c">＋ 여기에 기둥</button><button class="mi" data-a="st">여기에 폭발 스티커</button><button class="mi" data-a="sb">여기에 말풍선</button>`,(b)=>{closeMenu();snap();const a=b.dataset.a;
+  if(a==='t'){const n={id:uid(),k:'n',t:'',x:bx,y:by};D.nodes.push(n);refresh();startEdit(n.id);}
+  if(a==='tb'){const n=newTable(bx,by);refresh();editCell(n.id,0,0);}
+  if(a==='st'||a==='sb'){const n=newSticker(bx,by,a==='st'?'boom':'bubble');sel={t:'node',id:n.id};refresh();}
+  if(a==='c'){const c=newCol(bx,by);refresh();sel={t:'col',id:c.id};lastCol=c.id;updQ();render();startColEdit(c.id);}});
+}
+vp.addEventListener('contextmenu',e=>{e.preventDefault();if(editing)finishEdit();const t=e.target;const [bx,by]=toB(e.clientX,e.clientY);
+ const nd=t.closest('.nd'),sp=t.closest('.sp'),sh=t.closest('.sph'),rc=t.closest('.rc'),hl=t.closest('.hit,.lbl'),mh=t.closest('.mh');
+ if(nd&&MS.size>1&&MS.has(nd.dataset.n)){multiMenu(e.clientX,e.clientY);return;}
+ if(nd){MS.clear();const n=nodeOf(nd.dataset.n);sel={t:'node',id:n.id};render();nodeMenu(n,e.clientX,e.clientY);return;}
+ if(mh&&mh.dataset.pi!=null){const l=D.links.find(x=>x.id===mh.dataset.mh);snap();l.pts.splice(+mh.dataset.pi,1);if(!l.pts.length)delete l.pts;sel={t:'link',id:l.id};refresh();return;}
+ if(hl||mh){const l=D.links.find(x=>x.id===(hl?hl.dataset.l:mh.dataset.mh));sel={t:'link',id:l.id};render();linkMenu(l,e.clientX,e.clientY);return;}
+ if(sp||sh){const c=colOf(sp?sp.dataset.c:sh.dataset.ch);sel={t:'col',id:c.id};lastCol=c.id;updQ();render();colMenu(c,e.clientX,e.clientY,by);return;}
+ if(rc){const r=D.rects.find(x=>x.id===rc.dataset.r);sel={t:'rect',id:r.id};render();rectMenu(r,e.clientX,e.clientY);return;}
+ sel=null;render();bgMenu(e.clientX,e.clientY,bx,by);});
+
+/* ── 추가 ── */
+function addKid(p,t){const k={id:uid(),k:'n',t,p:p.id,auto:p.k==='y'};if(!k.auto){const ks=D.nodes.filter(n=>n.p===p.id);const b=BOX[p.id]||[0,0,80,26];k.dx=b[2]+40;k.dy=ks.length*(b[3]+12);}D.nodes.push(k);return k;}
+function delNode(id){D.nodes.filter(n=>n.p===id).map(n=>n.id).forEach(delNode);D.nodes=D.nodes.filter(n=>n.id!==id);D.links=D.links.filter(l=>l.a.n!==id&&l.b.n!==id);}
+function newCol(x,y){const c={id:uid(),t:'새 기둥',c:PAL[D.cols.length%PAL.length][0],x,y0:y,y1:y+500};D.cols.push(c);return c;}
+function newSticker(x,y,sh){const n={id:uid(),k:'st',sh,t:'',c:sh==='boom'?'yellow':undefined,x,y};D.nodes.push(n);return n;}
+function newTable(x,y){const n={id:uid(),k:'tb',x,y,rows:[['',''],['','']]};D.nodes.push(n);return n;}
+const center=()=>{const r=vp.getBoundingClientRect();return toB(r.left+r.width/2,r.top+r.height/2);};
+$('#addCol').onclick=()=>{snap();const r=vp.getBoundingClientRect();const c0=toB(r.left+160,r.top+90);const xs=D.cols.map(c=>c.x);
+ const c=newCol(xs.length?Math.max(...xs)+380:c0[0],D.cols.length?Math.min(...D.cols.map(c=>c.y0)):Math.max(60,c0[1]));refresh();sel={t:'col',id:c.id};lastCol=c.id;updQ();render();startColEdit(c.id);};
+$('#addNote').onclick=()=>{snap();const b=center();const n={id:uid(),k:'n',t:'',x:b[0],y:b[1]};D.nodes.push(n);refresh();startEdit(n.id);};
+function addImgFile(f,bx,by){if(!f||!/^image\//.test(f.type))return;const u=URL.createObjectURL(f);const im=new Image();im.onload=()=>{const M=1400,k=Math.min(1,M/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(im,0,0,cv.width,cv.height);URL.revokeObjectURL(u);
+ const src=cv.toDataURL('image/jpeg',.86);snap();const w=Math.round(Math.min(360,im.width/2));const n={id:uid(),k:'img',src,x:Math.round(bx-w/2),y:Math.round(by-w*cv.height/cv.width/2),w,ar:+(cv.height/cv.width).toFixed(4)};D.nodes.push(n);sel={t:'node',id:n.id};refresh();};im.onerror=()=>{URL.revokeObjectURL(u);toast('이미지를 못 읽었어요');};im.src=u;}
+$('#addImg').onclick=()=>$('#imgIn').click();
+$('#imgIn').onchange=e=>{const b=center();[...e.target.files].forEach((f,i)=>addImgFile(f,b[0]+i*24,b[1]+i*24));e.target.value='';};
+addEventListener('paste',e=>{if(editing||/INPUT|TEXTAREA/.test(e.target.tagName)||e.target.isContentEditable)return;const fs=[...(e.clipboardData||{}).items||[]].filter(i=>i.kind==='file'&&/^image\//.test(i.type)).map(i=>i.getAsFile());if(!fs.length)return;e.preventDefault();const b=center();fs.forEach((f,i)=>addImgFile(f,b[0]+i*24,b[1]+i*24));});
+vp.addEventListener('dragover',e=>{if([...(e.dataTransfer||{}).types||[]].includes('Files'))e.preventDefault();});
+vp.addEventListener('drop',e=>{const fs=[...(e.dataTransfer||{}).files||[]].filter(f=>/^image\//.test(f.type));if(!fs.length)return;e.preventDefault();const [bx,by]=toB(e.clientX,e.clientY);fs.forEach((f,i)=>addImgFile(f,bx+i*24,by+i*24));});
+$('#addTbl').onclick=()=>{snap();const b=center();const n=newTable(b[0],b[1]);refresh();editCell(n.id,0,0);};
+$('#stkBtn').onclick=()=>{const b=$('#stkBtn').getBoundingClientRect();openMenu(b.left,b.bottom+6,`<button class="mi" data-s="boom">폭발 (지그재그)</button><button class="mi" data-s="bubble">말풍선</button><button class="mi" data-s="star">별</button>`,bt=>{closeMenu();snap();const c=center();const n=newSticker(c[0],c[1],bt.dataset.s);sel={t:'node',id:n.id};refresh();});};
+/* 분류(태그) · 집중 */
+$('#legend').addEventListener('click',e=>{const t=e.target.closest('.tg');if(t){const id=t.dataset.tg;FOC.has(id)?FOC.delete(id):FOC.add(id);render();return;}
+ if(e.target.closest('#tagAdd'))tagMenu(null,e.clientX,e.clientY);});
+$('#legend').addEventListener('contextmenu',e=>{const t=e.target.closest('.tg');if(!t)return;e.preventDefault();tagMenu(tagOf(t.dataset.tg),e.clientX,e.clientY);});
+function tagMenu(t,cx,cy){const isNew=!t;if(isNew)t={id:uid(),name:'',c:PAL[(D.tags.length+3)%PAL.length][0]};
+ const m=openMenu(cx,cy+8,`<div class="row"><span class="k">이름</span><input value="${esc(t.name).replace(/"/g,'&quot;')}" placeholder="예: 청일 · 한일 · 한청"></div>${swRow(t.c,'sky')}<hr>${isNew?'<button class="mi" data-a="ok">＋ 만들기</button>':'<button class="mi del" data-a="del">분류 삭제</button>'}`,b=>{
+  if(b.dataset.sw){t.c=b.dataset.sw;m.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===b));if(!isNew){save();render();}}
+  if(b.dataset.a==='ok'){const v=m.querySelector('input').value.trim();if(!v){toast('이름을 써요');return;}snap();t.name=v;D.tags.push(t);closeMenu();refresh();}
+  if(b.dataset.a==='del'){snap();D.tags=D.tags.filter(x=>x!==t);D.nodes.forEach(n=>{if(n.tg===t.id)delete n.tg;});FOC.delete(t.id);closeMenu();refresh();}});
+ const i=m.querySelector('input');setTimeout(()=>i.focus(),0);
+ i.oninput=()=>{if(!isNew){t.name=i.value;save();legend();}};i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'){if(isNew)m.querySelector('[data-a=ok]').click();else closeMenu();}};}
+$('#rectTool').onclick=()=>{tool=tool==='rect'?'':'rect';$('#rectTool').classList.toggle('on',tool==='rect');vp.classList.toggle('draw',tool==='rect');if(tool)toast('빈 곳을 드래그해서 박스를 그려요');};
+function updQ(){const q=$('#qCol');q.innerHTML=D.cols.length?D.cols.map(c=>`<option value="${c.id}"${c.id===lastCol?' selected':''}>${esc(c.t)}</option>`).join(''):'<option value="">기둥 없음</option>';if(!lastCol||!colOf(lastCol))lastCol=D.cols[0]?D.cols[0].id:null;}
+$('#qCol').onchange=e=>{lastCol=e.target.value;sel={t:'col',id:lastCol};render();};
+function quickAdd(c,v){v=v.trim();if(!v)return false;const m=v.match(/^(\S*\d\S*)\s*(.*)$/s);snap();
+ if(m){const yt=m[1],rest=m[2].trim();let y=D.nodes.find(n=>n.k==='y'&&n.col===c.id&&n.t===yt);
+  if(!y){y={id:uid(),k:'y',t:yt,col:c.id,auto:true,o:Date.now()};D.nodes.push(y);}
+  if(rest)rest.split(/\s+\/\s+|\s*\/\s*$/).forEach(t=>t.trim()&&addKid(y,t.trim()));}
+ else{const y=D.nodes.filter(n=>n.k==='y'&&n.col===c.id).sort((a,b)=>(b.o||0)-(a.o||0))[0];if(y)addKid(y,v);else{UND.pop();toast('맨 앞에 연도를 써요 (예: 1914 사라예보)');return false;}}
+ refresh();return true;}
+function multiAdd(c,v){const parts=v.split(/\s*[;\n]\s*|\s*,\s*(?=[^\s,]*\d)/).map(x=>x.trim()).filter(Boolean);if(parts.length<2)return quickAdd(c,v);
+ let ok=0;parts.forEach(x=>{if(quickAdd(c,x)){ok++;if(ok>1)UND.splice(UND.length-1,1);}});if(ok)toast(ok+'개 추가');return ok>0;}
+$('#qIn').addEventListener('paste',e=>{const t=(e.clipboardData||window.clipboardData).getData('text');if(!/\n/.test(t.trim()))return;e.preventDefault();const el=e.target;const a=el.selectionStart,b=el.selectionEnd;el.value=el.value.slice(0,a)+t.trim().split(/\r?\n/).map(x=>x.trim()).filter(Boolean).join('; ')+el.value.slice(b);});
+$('#qIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key!=='Enter'||e.isComposing)return;const c=colOf($('#qCol').value);if(!c){toast('＋ 기둥부터 만들어요');return;}lastCol=c.id;if(multiAdd(c,e.target.value))e.target.value='';});
+
+/* ── 글자 수정 (바로 클릭) ── */
+let finishEdit=()=>{};
+function visMap(raw){const lines=raw.split('\n');return lines.map(l=>{const map=[];let i=0;const m=l.match(BUL);if(m)i=m[0].length;let st=0;
+ while(i<l.length){if(l.startsWith('**',i)){i+=2;continue;}if(/^\{[rb]\|/.test(l.slice(i,i+3))){i+=3;st++;continue;}if(l[i]==='}'&&st){st--;i++;continue;}map.push(i);i++;}map.push(l.length);return map;});}
+function clickPos(el,cx,cy){const rg=document.caretRangeFromPoint?document.caretRangeFromPoint(cx,cy):null;if(!rg||!el.contains(rg.startContainer))return null;
+ const ln=(rg.startContainer.nodeType===1?rg.startContainer:rg.startContainer.parentElement).closest('.ln');if(!ln)return null;const lines=[...el.querySelectorAll('.ln')];const li=lines.indexOf(ln);
+ const pre=document.createRange();pre.setStart(ln,0);pre.setEnd(rg.startContainer,rg.startOffset);return [li,pre.toString().length];}
+function putCaret(el,li,off){let line=0;const walk=(n)=>{for(const c of n.childNodes){if(c.nodeName==='BR'){line++;continue;}if(c.nodeType===3){if(line===li){const r=document.createRange();r.setStart(c,Math.min(off,c.length));r.collapse(true);const s=getSelection();s.removeAllRanges();s.addRange(r);return true;}const parts=c.nodeValue.split('\n');if(parts.length>1){if(li<line+parts.length){let o=0;for(let k=0;k<li-line;k++)o+=parts[k].length+1;const r=document.createRange();r.setStart(c,Math.min(o+off,c.length));r.collapse(true);const s=getSelection();s.removeAllRanges();s.addRange(r);return true;}line+=parts.length-1;}}else if(c.nodeType===1){if(walk(c))return true;}}return false;};
+ if(!walk(el)){const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);}}
+function startEdit(id,cx,cy){const nel=nodesEl.querySelector(`[data-n="${id}"]`);if(!nel)return;const el=nel.querySelector('.stx')||nel;nel.classList.add('ed');const n=nodeOf(id);if(n.k==='tb')return;
+ let pos=null;if(cx!=null)pos=clickPos(el,cx,cy);
+ editing=id;closeMenu();el.classList.add('ed');el.contentEditable='true';el.innerText=n.t;el.focus();
+ if(pos){const mp=visMap(n.t)[pos[0]];putCaret(el,pos[0],mp?mp[Math.min(pos[1],mp.length-1)]:0);}
+ else{const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);}
+ const done=keep=>{el.removeEventListener('blur',onb);finishEdit=()=>{};el.contentEditable='false';editing=null;
+  if(keep!==false){const t=el.innerText.replace(/ /g,' ').replace(/\n+$/,'');if(t!==n.t){snap();n.t=t;}}
+  if(n.k!=='st'&&!n.t.trim()&&!D.links.some(l=>l.a.n===id||l.b.n===id)&&!D.nodes.some(k=>k.p===id)){delNode(id);sel=null;}else sel={t:'node',id};refresh();};
+ const onb=()=>done();el.addEventListener('blur',onb);finishEdit=()=>el.blur();
+ el.onkeydown=e=>{e.stopPropagation();
+  if(e.key==='Escape'){e.preventDefault();el.blur();return;}
+  if(e.key==='Enter'&&!e.isComposing){e.preventDefault();if(n.k==='y'||e.metaKey){el.blur();return;}
+   const s=getSelection();const r=s.getRangeAt(0);const pre=document.createRange();pre.selectNodeContents(el);pre.setEnd(r.startContainer,r.startOffset);const before=pre.toString().split('\n').pop();
+   const m=before.match(BUL);if(m&&before.trim()==='-'){document.execCommand('delete');document.execCommand('delete');return;}
+   document.execCommand('insertLineBreak');if(m)document.execCommand('insertText',false,m[0]);return;}
+  if(e.key==='Tab'){e.preventDefault();document.execCommand('insertText',false,'  ');return;}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='b'){e.preventDefault();const s=getSelection();if(!s.rangeCount||s.isCollapsed)return;document.execCommand('insertText',false,'**'+s.toString()+'**');}};
+ el.onpaste=e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text/plain'));};
+ el.oninput=()=>{const b=BOX[id];if(b){b[2]=nel.offsetWidth;b[3]=nel.offsetHeight;}lines();};
+}
+function editCell(id,ri,ci){render();const n=nodeOf(id);const td=nodesEl.querySelector(`[data-n="${id}"] td[data-rc="${ri},${ci}"]`);if(!td)return;editing=id;closeMenu();
+ td.classList.add('ed');td.contentEditable='true';td.innerText=n.rows[ri][ci];td.focus();const r=document.createRange();r.selectNodeContents(td);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);
+ const done=()=>{td.removeEventListener('blur',done);finishEdit=()=>{};editing=null;const t=td.innerText.replace(/ /g,' ').replace(/\n+$/,'');if(t!==n.rows[ri][ci]){snap();n.rows[ri][ci]=t;}refresh();};
+ td.addEventListener('blur',done);finishEdit=()=>td.blur();
+ td.onkeydown=e=>{e.stopPropagation();if(e.key==='Escape'){td.blur();return;}
+  if(e.key==='Tab'){e.preventDefault();td.blur();let r2=ri,c2=ci+(e.shiftKey?-1:1);if(c2>=n.rows[0].length){c2=0;r2++;}if(c2<0){c2=n.rows[0].length-1;r2--;}if(r2>=n.rows.length){snap();n.rows.push(n.rows[0].map(()=>''));}if(r2>=0)editCell(id,r2,c2);return;}
+  if(e.key==='Enter'&&!e.isComposing&&!e.shiftKey){e.preventDefault();document.execCommand('insertLineBreak');}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='b'){e.preventDefault();const s=getSelection();if(!s.isCollapsed)document.execCommand('insertText',false,'**'+s.toString()+'**');}};
+ td.onpaste=e=>{e.preventDefault();document.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text/plain'));};
+ td.oninput=()=>{const el=td.closest('.nd');const b=BOX[id];if(b){b[2]=el.offsetWidth;b[3]=el.offsetHeight;}lines();};
+}
+function startColEdit(id){const h=spEl.querySelector(`.sph[data-ch="${id}"]`);if(!h)return;const c=colOf(id);editing='col';h.classList.add('ed');h.contentEditable='true';h.focus();const r=document.createRange();r.selectNodeContents(h);const s=getSelection();s.removeAllRanges();s.addRange(r);
+ const done=()=>{h.removeEventListener('blur',done);finishEdit=()=>{};editing=null;const t=h.innerText.trim();if(t&&t!==c.t){snap();c.t=t;}refresh();};h.addEventListener('blur',done);finishEdit=()=>h.blur();
+ h.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();h.blur();}};}
+
+/* ── 포인터 ── */
+let drag=null,dropHi=null,SPACE=false;
+addEventListener('keydown',e=>{if(e.code==='Space'&&!editing&&!/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)&&!e.target.isContentEditable){e.preventDefault();if(!SPACE){SPACE=true;vp.style.cursor='grab';}}});
+addEventListener('keyup',e=>{if(e.code==='Space'){SPACE=false;vp.style.cursor='';}});
+addEventListener('blur',()=>{SPACE=false;vp.style.cursor='';});
+const pickCol=(id,by)=>{const c=colOf(id);if(!c)return id;const inR=k=>by>=(k._top!=null?k._top:k.y0)-6&&by<=(k._y1!=null?k._y1:k.y1)+6;const cs=D.cols.filter(k=>Math.abs(k.x-c.x)<10&&inR(k));if(cs.length<2)return cs[0]?cs[0].id:id;
+ const dist=k=>{const ys=colSeq(k.id).map(n=>BOX[n.id]).filter(Boolean);if(!ys.length)return 1e9;return Math.min(...ys.map(b=>{const t=b[1],bt=b[1]+b[3];return by<t?(t-by)*1.5:by>bt?by-bt:0;}));};return cs.reduce((a,k)=>dist(k)<dist(a)?k:a).id;};
+const hitAt=(cx,cy)=>{for(const e of document.elementsFromPoint(cx,cy)){if(e.closest('.menu'))return null;const n=e.closest('.nd');if(n)return {n:n.dataset.n};const sp=e.closest('.sp');if(sp)return {col:pickCol(sp.dataset.c,toB(cx,cy)[1])};const h=e.closest('.sph');if(h)return {col:h.dataset.ch,head:1};const hl=e.closest&&e.closest('.hit');if(hl){const l=D.links.find(x=>x.id===hl.dataset.l);if(l){const bx=toB(cx,cy)[0];const cs=[l.a,l.b].filter(a=>a.col).map(a=>colOf(a.col)).filter(Boolean);if(cs.length){const c=cs.reduce((p,q)=>Math.abs(q.x-bx)<Math.abs(p.x-bx)?q:p);if(Math.abs(c.x-bx)<14)return {col:c.id,ov:1};}}}}return null;};
+vp.addEventListener('pointerdown',e=>{if(e.button!==0)return;const t=e.target;if(!t.closest('.ed')){try{getSelection().removeAllRanges();}catch(_){}}
+ if(editing){if(t.closest('.ed'))return;finishEdit();}
+ closeMenu();const [bx,by]=toB(e.clientX,e.clientY);const cmd=e.metaKey||e.ctrlKey;
+ const nd=t.closest('.nd'),sp=t.closest('.sp'),sh=t.closest('.sph'),rc=t.closest('.rc'),hl=t.closest('.hit,.lbl'),mh=t.closest('.mh');
+ drag={sx:e.clientX,sy:e.clientY,bx,by,moved:false};vp.setPointerCapture(e.pointerId);
+ if(SPACE){drag.k='pan';drag.vx=D.view.x;drag.vy=D.view.y;vp.classList.add('pan');return;}
+ if(mh&&mh.dataset.pi!=null){const l=D.links.find(x=>x.id===mh.dataset.mh);drag.k='pt';drag.l=l;drag.i=+mh.dataset.pi;snap();return;}
+ if(mh){const l=D.links.find(x=>x.id===mh.dataset.mh);drag.k='mid';drag.l=l;drag.o=l._r.o;snap();return;}
+ if(cmd&&(nd||sp||sh)){const a=nd?{n:nd.dataset.n}:{col:sp?pickCol(sp.dataset.c,by):sh.dataset.ch,y:sh?(colOf(sh.dataset.ch)._top!=null?colOf(sh.dataset.ch)._top:colOf(sh.dataset.ch).y0):by};drag.k='link';drag.a=a;drag.fromHead=!!(sh&&!nd&&!sp);
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('stroke','#3a8fc4');p.setAttribute('stroke-width','1.6');p.setAttribute('stroke-dasharray','4 4');lg.appendChild(p);drag.ghost=p;return;}
+ if(t.classList.contains('srs')&&nd){const n=nodeOf(nd.dataset.n);drag.k='ssize';drag.n=n;drag.os=BOX[n.id][2];snap();return;}
+ if(nd&&!e.shiftKey&&(MS.size>1||MR.size)&&MS.has(nd.dataset.n)){drag.k='group';drag.items=groupItems();snap();return;}
+ if(nd){const n=nodeOf(nd.dataset.n);drag.k='node';drag.n=n;const b=BOX[n.id];drag.ox=b[0];drag.oy=b[1];drag.gp0=n.gp||0;drag.wasAuto=!!(n.k==='y'&&n.auto&&n.col&&!n.p);if(drag.wasAuto)gapInit(n,drag);drag.shift=e.shiftKey;const td=t.closest('td');if(td)drag.cell=td.dataset.rc;return;}
+ if(t.classList.contains('end')&&sp){const c=colOf(sp.dataset.c);drag.k='colend';drag.c=c;drag.oy=c._y1||c.y1;snap();return;}
+ if(sh){const c=colOf(sh.dataset.ch);drag.k='col';drag.c=c;drag.ox=c.x;drag.oy=c.y0;if(e.altKey){drag.alt=1;drag.f=colSeq(c.id)[0];drag.fgp0=drag.f?(drag.f.gp||0):0;drag.oy1=c.y1;}return;}
+ if(sp){drag.k='spclick';drag.c=colOf(sp.dataset.c);return;}
+ if(hl){drag.k='lclick';drag.id=hl.dataset.l;return;}
+ if(t.classList.contains('rs')&&rc){const r=D.rects.find(x=>x.id===rc.dataset.r);drag.k='rsize';drag.r=r;drag.ow=r.w;drag.oh=r.h;snap();return;}
+ if(SPACE){drag.k='pan';drag.vx=D.view.x;drag.vy=D.view.y;vp.classList.add('pan');return;}
+ if(false){drag.k='marq';const g=document.createElement('div');g.className='ghost';board.appendChild(g);drag.g=g;return;}
+ if(tool==='rect'){drag.k='draw';const g=document.createElement('div');g.className='ghost';board.appendChild(g);drag.g=g;return;}
+ if(rc&&t.closest('.lb')){const r=D.rects.find(x=>x.id===rc.dataset.r);drag.k='lbl';drag.r=r;snap();return;}
+ if(rc&&MR.has(rc.dataset.r)&&(MR.size+MS.size)>1){drag.k='group';drag.items=groupItems();return;}
+ if(rc){const r=D.rects.find(x=>x.id===rc.dataset.r);drag.k='rect';drag.r=r;drag.ox=r.x;drag.oy=r.y;return;}
+ {drag.k='marq';const g=document.createElement('div');g.className='ghost';board.appendChild(g);drag.g=g;drag.add=e.shiftKey||e.metaKey;if(!drag.add){MS.clear();MR.clear();}}
+});
+function shiftSnap(n,nx,ny,dx,dy){const b=BOX[n.id];if(!b)return [nx,ny];const w=b[2],h=b[3];const pe=[];if(n.p)pe.push(n.p);D.nodes.forEach(k=>{if(k.p===n.id)pe.push(k.id);});D.links.forEach(l=>{if(l.a.n===n.id&&l.b.n)pe.push(l.b.n);if(l.b.n===n.id&&l.a.n)pe.push(l.a.n);});
+ let sx=null,sy=null,bx=1e9,by=1e9;const cx=nx+w/2,cy=ny+h/2;pe.forEach(id=>{const q=BOX[id];if(!q)return;const qx=q[0]+q[2]/2,qy=q[1]+q[3]/2;if(Math.abs(qy-cy)<by){by=Math.abs(qy-cy);sy=qy;}if(Math.abs(qx-cx)<bx){bx=Math.abs(qx-cx);sx=qx;}});
+ const T=40;if(by<T||bx<T){if(by<=bx&&by<T)return [nx,sy-h/2];if(bx<T)return [sx-w/2,ny];}
+ return Math.abs(dx)>Math.abs(dy)?[nx,drag.oy]:[drag.ox,ny];}
+function colSeq(c){return D.nodes.filter(n=>n.col===c&&n.auto&&!n.p&&n.k==='y').sort((a,b)=>yearNum(a.t)-yearNum(b.t)||(a.o||0)-(b.o||0));}
+function extBottom(id){let b=BOX[id]?BOX[id][1]+BOX[id][3]:0;D.nodes.forEach(k=>{if(k.p===id&&k.auto)b=Math.max(b,extBottom(k.id));});return b;}
+function gapInit(n,d){const sq=colSeq(n.col);const i=sq.indexOf(n);const nx=sq[i+1],pv=sq[i-1];d.nx=nx;d.ngp0=nx?(nx.gp||0):0;
+ const top=BOX[n.id][1];d.minD=pv?-(top-extBottom(pv.id)-4):-(drag.gp0);d.maxD=nx?(BOX[nx.id][1]-extBottom(n.id)-4):1e9;}
+function groupItems(){const ids=new Set(MS);const moving=id=>{let k=nodeOf(id);while(k){if(ids.has(k.id)&&!(k.k==='y'&&k.auto&&k.col&&!k.p)&&!(k.p&&k.auto))return true;if(!(k.p&&k.auto))return false;k=nodeOf(k.p);}return false;};
+ const its=[];ids.forEach(id=>{const n=nodeOf(id);if(!n||!BOX[id])return;if(n.k==='y'&&n.auto&&n.col&&!n.p)return;if(n.p&&n.auto)return;
+  if(n.p){let a=nodeOf(n.p),up=false;while(a){if(ids.has(a.id)&&moving(a.id)){up=true;break;}if(!(a.p&&!a.auto)&&!(a.p&&a.auto))break;a=nodeOf(a.p);}if(up)return;its.push({n,kid:1,dx:n.dx!=null?n.dx:BOX[id][0]-BOX[n.p][0],dy:n.dy!=null?n.dy:BOX[id][1]-BOX[n.p][1]});}
+  else its.push({n,x:BOX[id][0],y:BOX[id][1]});});
+ MR.forEach(rid=>{const r=D.rects.find(x=>x.id===rid);if(r)its.push({r,x:r.x,y:r.y});});
+ const cols=new Set([...ids].map(id=>nodeOf(id)).filter(n=>n&&n.k==='y'&&n.auto&&n.col&&!n.p).map(n=>n.col));
+ cols.forEach(cid=>{const sq=colSeq(cid);let i=0;while(i<sq.length){if(!ids.has(sq[i].id)){i++;continue;}let j=i;while(j+1<sq.length&&ids.has(sq[j+1].id))j++;
+  const top=sq[i],last=sq[j],pv=sq[i-1],nx=sq[j+1];its.push({run:1,top,nx,gp0:top.gp||0,ngp0:nx?(nx.gp||0):0,minD:pv?-(BOX[top.id][1]-extBottom(pv.id)-4):-(top.gp||0),maxD:nx?(BOX[nx.id][1]-extBottom(last.id)-4):1e9});i=j+1;}});
+ return its;}
+function magnet(n){const K=KR[n.p];const b=BOX[n.id];if(!K||!b)return false;const cx=b[0]+b[2]/2,cy=b[1]+b[3]/2;const rows=K.rows.length?K.rows:[{r:0,y:K.top,h:K.ph}];
+ const last=rows[rows.length-1];const yb=last.y+last.h;if(cx<K.x0-30||cx>K.xmax+b[2]/2+50||cy<K.top-20||cy>yb+b[3]+16)return false;
+ let r=null;for(const w of rows)if(cy>=w.y-3&&cy<=w.y+w.h+3)r=w.r;if(r==null){if(!K.rows.some(w=>w.r===0)&&cy<=K.top+K.ph)r=0;else if(cy>yb)r=last.r+1;else r=rows.reduce((a,w)=>Math.abs(w.y+w.h/2-cy)<Math.abs(a.y+a.h/2-cy)?w:a).r;}
+ const sib=D.nodes.filter(k=>k.p===n.p&&k.auto&&k!==n&&(k.r||0)===r).sort((a,c)=>BOX[a.id][0]-BOX[c.id][0]);let idx=sib.filter(k=>BOX[k.id][0]+BOX[k.id][2]/2<cx).length;sib.splice(idx,0,n);sib.forEach((k,i)=>{k.ko=i;});
+ n.auto=true;delete n.dx;delete n.dy;if(r)n.r=r;else delete n.r;
+ const used=[...new Set(D.nodes.filter(k=>k.p===n.p&&k.auto).map(k=>k.r||0))].sort((a,c)=>a-c);D.nodes.forEach(k=>{if(k.p===n.p&&k.auto){const ni=used.indexOf(k.r||0);if(ni)k.r=ni;else delete k.r;}});return true;}
+const t0id=e=>{const x=document.elementFromPoint(e.clientX,e.clientY);const nd=x&&x.closest('.nd');return nd?nd.dataset.n:null;};
+function setMem(r){r.mem=D.nodes.filter(n=>n.k!=='y'&&BOX[n.id]&&(()=>{const b=BOX[n.id],cx=b[0]+b[2]/2,cy=b[1]+b[3]/2;return cx>r.x&&cx<r.x+r.w&&cy>r.y&&cy<r.y+r.h;})()).map(n=>n.id);}
+function nodeMem(n){if(n.k==='y'||!BOX[n.id])return;const b=BOX[n.id],cx=b[0]+b[2]/2,cy=b[1]+b[3]/2;D.rects.forEach(r=>{if(!r.mem)return;r.mem=r.mem.filter(id=>id!==n.id);if(cx>r.x&&cx<r.x+r.w&&cy>r.y&&cy<r.y+r.h)r.mem.push(n.id);});}
+function fitRect(r){if(!r.mem||!r.mem.length)setMem(r);const bs=(r.mem||[]).map(id=>BOX[id]).filter(Boolean);if(!bs.length)return;const x0=Math.min(...bs.map(b=>b[0])),y0=Math.min(...bs.map(b=>b[1])),x1=Math.max(...bs.map(b=>b[0]+b[2])),y1=Math.max(...bs.map(b=>b[1]+b[3]));r.x=x0-10;r.y=y0-(r.l?16:10);r.w=x1-x0+20;r.h=y1-r.y+10;}
+function moveCol(c,ddx,ddy){c.x+=ddx;c.y0+=ddy;c.y1+=ddy;D.nodes.filter(n=>n.col===c.id&&!n.auto&&!n.p).forEach(n=>{n.y+=ddy;if(n.k!=='y'&&typeof n.x==='number')n.x+=ddx;});D.links.forEach(l=>[l.a,l.b].forEach(a=>{if(a.col===c.id)a.y+=ddy;}));}
+function nearCol(cx){let best=null,bd=28/D.view.z+10;D.cols.forEach(c=>{const d=Math.abs(c.x-cx);if(d<bd){bd=d;best=c;}});return best;}
+vp.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy,z=D.view.z;
+ if(!drag.moved&&Math.hypot(dx,dy)<4)return;if(!drag.moved){drag.moved=true;if(['node','col','rect'].includes(drag.k))snap();if(drag.k==='node'||drag.k==='col'){sel=null;}}
+ const [bx,by]=toB(e.clientX,e.clientY);
+ if(drag.k==='pan'){D.view.x=drag.vx+dx;D.view.y=drag.vy+dy;applyView();}
+ else if(drag.k==='node'){const n=drag.n;let nx=drag.ox+dx/z,ny=drag.oy+dy/z;if(e.shiftKey){if(Math.abs(dx)>Math.abs(dy))ny=drag.oy;else nx=drag.ox;}
+  if(drag.wasAuto&&!drag.free&&Math.abs(dx/z)<40){n.gm=Date.now();let d=dy/z;if(drag.nx&&!e.altKey){d=Math.max(drag.minD,Math.min(drag.maxD,d));n.gp=drag.gp0+d;drag.nx.gp=drag.ngp0-d;}else{n.gp=Math.max(0,drag.gp0+d);if(drag.nx)drag.nx.gp=drag.ngp0;}drag.gap=true;layout();const bk=BOX[n.id][1]-(drag.oy+Math.max(drag.minD,d));drag.blk=bk>8&&d<0;return;}
+  if(drag.wasAuto&&!drag.free){drag.free=true;drag.gap=false;n.gp=drag.gp0||undefined;if(drag.nx)drag.nx.gp=drag.ngp0||undefined;}
+  if(n.p){const pb=BOX[n.p];n.auto=false;n.dx=nx-pb[0];n.dy=ny-pb[1];}else{n.auto=false;n.col=null;n.x=nx;n.y=ny;}
+  layout();if(dropHi){dropHi.classList.remove('sel');dropHi=null;}
+  drag.yt=null;if(!n.p&&n.k==='n'){let yt=null;for(const el of document.elementsFromPoint(e.clientX,e.clientY)){const q=el.closest('.nd');if(!q||q.dataset.n===n.id)continue;let k=nodeOf(q.dataset.n);while(k&&k.p&&k.k!=='y')k=nodeOf(k.p);if(k&&k.k==='y'&&k!==n)yt=k;break;}
+   if(yt){drag.yt=yt.id;const e3=nodesEl.querySelector(`[data-n="${yt.id}"]`);if(e3){e3.classList.add('sel');dropHi=e3;}return;}}
+  if(!n.p){const tg=nearCol(nx+BOX[n.id][2]/2);if(tg){const e2=spEl.querySelector(`.sph[data-ch="${tg.id}"]`);if(e2){e2.classList.add('sel');dropHi=e2;}}}}
+ else if(drag.k==='col'&&drag.alt){const c=drag.c;let ny=drag.oy+dy/z;if(drag.f)ny=Math.min(ny,drag.oy+drag.fgp0);c.y0=ny;if(drag.f)drag.f.gp=drag.fgp0-(ny-drag.oy);render();}
+ else if(drag.k==='col'){const c=drag.c;let ex=dx,ey=dy;if(e.shiftKey){if(Math.abs(dx)>Math.abs(dy))ey=0;else ex=0;}let tx=drag.ox+ex/z;const grp=c.grp?D.cols.filter(k=>k.grp===c.grp):[c];if(!e.altKey){let best=10/z+4;D.cols.forEach(k=>{if(grp.includes(k))return;const d=Math.abs(k.x-tx);if(d<best){best=d;tx=k.x;}});}
+  const ddx=tx-c.x,ddy=drag.oy+ey/z-c.y0;grp.forEach(k=>moveCol(k,ddx,ddy));render();}
+ else if(drag.k==='ssize'&&drag.n.k==='img'){drag.n.w=Math.max(60,Math.round(drag.os+dx/z));render();}
+ else if(drag.k==='ssize'){drag.n.sz=Math.max(24,drag.os+Math.max(dx,dy)/z);render();}
+ else if(drag.k==='colend'){drag.c.y1=Math.max(drag.c.y0+40,(drag.c._last||0)+14,drag.oy+dy/z);render();}
+ else if(drag.k==='rect'){const lx=e.shiftKey&&Math.abs(dy)>Math.abs(dx),ly=e.shiftKey&&!lx;drag.r.x=drag.ox+(lx?0:dx/z);drag.r.y=drag.oy+(ly?0:dy/z);const el=rcEl.querySelector(`[data-r="${drag.r.id}"]`);el.style.left=drag.r.x+'px';el.style.top=drag.r.y+'px';}
+ else if(drag.k==='group'){let ddx=dx/z,ddy=dy/z;if(e.shiftKey){if(Math.abs(ddx)>Math.abs(ddy))ddy=0;else ddx=0;}
+  const runs=drag.items.filter(it=>it.run);let rd=ddy;if(runs.length&&!e.altKey){runs.forEach(it=>{rd=Math.max(it.minD,Math.min(it.maxD,rd));});}
+  drag.items.forEach(it=>{if(it.run){const tm=Date.now();D.nodes.forEach(k=>{if(MS.has(k.id)&&k.k==='y')k.gm=tm;});it.top.gp=it.gp0+rd;if(it.nx)it.nx.gp=e.altKey?it.ngp0:it.ngp0-rd;return;}if(it.r){it.r.x=it.x+ddx;it.r.y=it.y+ddy;}else if(it.kid){it.n.auto=false;it.n.dx=it.dx+ddx;it.n.dy=it.dy+ddy;}else{it.n.auto=false;it.n.col=null;it.n.x=it.x+ddx;it.n.y=it.y+ddy;}});render();}
+ else if(drag.k==='pt'){const l=drag.l;const A=anchorBox(l.a),B=anchorBox(l.b);if(A&&B){l.pts[drag.i]=ptLoc(frame(A,B),bx,by);lines();}}
+ else if(drag.k==='lbl'){const r=drag.r;r.lp=lbParam(r,bx-r.x,by-r.y);render();}
+ else if(drag.k==='rsize'){drag.r.w=Math.max(40,drag.ow+dx/z);drag.r.h=Math.max(30,drag.oh+dy/z);const el=rcEl.querySelector(`[data-r="${drag.r.id}"]`);el.style.width=drag.r.w+'px';el.style.height=drag.r.h+'px';}
+ else if(drag.k==='marq'||drag.k==='draw'){const x=Math.min(bx,drag.bx),y=Math.min(by,drag.by);Object.assign(drag.g.style,{left:x+'px',top:y+'px',width:Math.abs(bx-drag.bx)+'px',height:Math.abs(by-drag.by)+'px'});}
+ else if(drag.k==='mid'){const l=drag.l;if(l._mg||l.st==='orth')l.m=drag.o==='h'?bx:by;else{const md=l._r.mid;l.q=[bx-md[0],by-md[1]];if(e.shiftKey||Math.hypot(l.q[0],l.q[1])<6)delete l.q;}lines();}
+ else if(drag.k==='link'){const A=anchorBox(drag.a)||{x:drag.bx,y:drag.by,w:0,h:0,pt:1};const h=hitAt(e.clientX,e.clientY);let B={x:bx,y:by,w:0,h:0,pt:1};
+  if(dropHi){dropHi.classList.remove('drop');dropHi=null;}
+  if(h&&h.n&&h.n!==drag.a.n){const el=nodesEl.querySelector(`[data-n="${h.n}"]`);el.classList.add('drop');dropHi=el;B=anchorBox({n:h.n});}
+  else if(h&&h.col)B={x:colOf(h.col).x,y:by,w:0,h:0,pt:1};
+  if(e.shiftKey&&!A.pt&&B.pt)B.y=A.y+A.h/2;if(e.shiftKey&&A.pt&&!B.pt){A.y=B.y+B.h/2;}
+  drag.ghost.setAttribute('d',(drag.a.col&&h&&h.col?elbow(A,B,null):curve(A,B,null)).d);}
+});
+vp.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;if(d.blk)setTimeout(()=>toast('같은 높이로 묶인 다른 기둥 연도가 바로 위 연도에 막혀서 더 못 올라가요 · 그쪽 위 간격을 줄이거나 기준선을 지우면 돼요'),30);vp.classList.remove('pan');if(dropHi){dropHi.classList.remove('drop','sel');dropHi=null;}
+ const [bx,by]=toB(e.clientX,e.clientY);
+ if(d.k==='link'){d.ghost.remove();const h=hitAt(e.clientX,e.clientY);
+  if(h&&(h.n&&h.n!==d.a.n||h.col&&d.a.col!==h.col)){snap();const b=h.n?{n:h.n}:{col:h.col,y:h.head?(colOf(h.col)._top!=null?colOf(h.col)._top:colOf(h.col).y0):by};if(h.ov){b.ov=1;if(d.a.n&&BOX[d.a.n]){b.y=BOX[d.a.n][1]+BOX[d.a.n][3]/2;b.fy=1;}}const A0=d.a.col&&colOf(d.a.col);const aT=A0?(A0._top!=null?A0._top:A0.y0):0;const aa=A0&&b.col&&A0._y1!=null&&(b.y>A0._y1-4||(d.fromHead&&b.y>aT+4))?{col:d.a.col,y:A0._y1,end:1}:d.a;if(aa.end){const ey=A0._y1;if(b.y<ey||d.fromHead)b.y=Math.max(b.y,ey);}let aa2=aa;if(A0&&b.n&&A0._y1!=null&&BOX[b.n]&&BOX[b.n][1]>(A0._lastc!=null?A0._lastc:A0._y1)){aa2={col:d.a.col,y:A0._y1,end:1};}if(e.shiftKey){if(d.a.n&&b.col){b.fy=1;if(BOX[d.a.n])b.y=BOX[d.a.n][1]+BOX[d.a.n][3]/2;}else if(d.a.col&&b.n){aa2={col:d.a.col,y:BOX[b.n]?BOX[b.n][1]+BOX[b.n][3]/2:d.a.y,fy:1};}}const l={id:uid(),a:aa2,b};if(aa2.end&&b.n){l.st='orth';l.w=3;}if(b.fy&&nodeOf(d.a.n)&&nodeOf(d.a.n).k==='y')l.w=3;D.links.push(l);sel={t:'link',id:l.id};refresh();}
+  return;}
+ if(d.k==='marq'&&!d.moved){d.g.remove();if(sel||MS.size){sel=null;MS.clear();render();}return;}
+ if(d.k==='marq'){d.g.remove();const x0=Math.min(bx,d.bx),x1=Math.max(bx,d.bx),y0=Math.min(by,d.by),y1=Math.max(by,d.by);
+  D.nodes.forEach(n=>{const b=BOX[n.id];if(b&&b[0]<x1&&b[0]+b[2]>x0&&b[1]<y1&&b[1]+b[3]>y0)MS.add(n.id);});D.rects.forEach(r=>{if(r.x>=x0&&r.x+r.w<=x1&&r.y>=y0&&r.y+r.h<=y1)MR.add(r.id);});sel=null;render();if(MS.size)toast(`${MS.size}개 골랐어요 · 우클릭 → 같은 높이로`);return;}
+ if(d.k==='draw'){d.g.remove();if(d.moved){const r={id:uid(),x:Math.min(bx,d.bx),y:Math.min(by,d.by),w:Math.abs(bx-d.bx),h:Math.abs(by-d.by),c:'sky',l:''};if(r.w>20&&r.h>15){snap();setMem(r);D.rects.push(r);tool='';$('#rectTool').classList.remove('on');vp.classList.remove('draw');sel={t:'rect',id:r.id};refresh();}}return;}
+ if(!d.moved){
+  if(d.k==='node'&&d.shift){if(sel&&sel.t==='node'&&!MS.size)MS.add(sel.id);MS.has(d.n.id)?MS.delete(d.n.id):MS.add(d.n.id);sel=null;render();if(MS.size>1)toast(MS.size===2?'처음 고른 것(진한 테두리)에 맞춰요 · 우클릭 → 같은 높이로':`${MS.size}개 · 우클릭 → 같은 높이로`);return;}
+  if(d.k==='node'){MS.clear();MR.clear();sel={t:'node',id:d.n.id};render();if(d.cell){const [ri,ci]=d.cell.split(',').map(Number);editCell(d.n.id,ri,ci);}else if(d.n.k!=='img'&&!(d.n.k==='st'&&!String(d.n.t||'').trim()))startEdit(d.n.id,e.clientX,e.clientY);}
+  else if(d.k==='col'||d.k==='spclick'){sel={t:'col',id:d.c.id};lastCol=d.c.id;updQ();render();}
+  else if(d.k==='lclick'){const now=Date.now();if(LCL.id===d.id&&now-LCL.t<400){LCL={t:0,id:null};addPt(d.id,e.clientX,e.clientY);}else{LCL={t:now,id:d.id};sel={t:'link',id:d.id};render();}}
+  else if(d.k==='rect'){sel={t:'rect',id:d.r.id};render();}
+  else if(d.k==='pan'){if(sel||MS.size){sel=null;MS.clear();render();}}
+  else if(d.k==='lbl'){UND.pop();sel={t:'rect',id:d.r.id};render();}
+  else if(d.k==='colend'||d.k==='rsize'||d.k==='mid'||d.k==='ssize'||d.k==='pt')UND.pop();
+  else if(d.k==='group'){const id=t0id(e);MS.clear();MR.clear();if(id){sel={t:'node',id};}render();}
+  return;}
+ if(d.k==='node'&&d.gap){refresh();return;}
+ if(d.k==='group'){refresh();return;}
+ if(d.k==='node'&&!d.n.p&&d.yt&&nodeOf(d.yt)){const n=d.n;n.p=d.yt;delete n.col;n.auto=true;if(!magnet(n)){n.ko=D.nodes.filter(k=>k.p===n.p&&k.auto).length;delete n.r;}toast('연도 옆에 붙였어요 · 떼려면 우클릭 → 떼어내기');refresh();return;}
+ if(d.k==='node'&&d.n.p){magnet(d.n);}
+ if(d.k==='rect'||d.k==='rsize')setMem(d.r);
+ if(d.k==='node'){layout();nodeMem(d.n);}
+ if(d.k==='node'){const n=d.n;if(!n.p){const b=BOX[n.id];const c=nearCol(b[0]+b[2]/2);if(c){n.col=c.id;if(n.k==='y')n.auto=true;else n.y=b[1];}else n.col=null;}}
+ refresh();
+});
+function addPt(id,cx,cy){const l=D.links.find(x=>x.id===id);if(l&&!isMerge(l)&&l.st!=='orth'){const A=anchorBox(l.a),B=anchorBox(l.b);if(!A||!B)return;snap();const F=frame(A,B);const [bx,by]=toB(cx,cy);
+  if(!l.pts)l.pts=[];if(l.q&&!l.pts.length&&l._r){l.pts.push(ptLoc(F,l._r.mx,l._r.my));delete l.q;}const q=ptLoc(F,bx,by);let i=l.pts.findIndex(p=>p[0]>q[0]);if(i<0)i=l.pts.length;l.pts.splice(i,0,q);sel={t:'link',id:l.id};refresh();toast('점 추가 · 점 끌어서 모양 · 우클릭으로 지우기');}}
+let LCL={t:0,id:null};
+vp.addEventListener('dblclick',e=>{if(editing)return;const sh=e.target.closest('.sph');if(sh){startColEdit(sh.dataset.ch);return;}
+ if(e.target.closest('.nd,.sp,.hit,.mh,.rc'))return;
+ const [bx,by]=toB(e.clientX,e.clientY);snap();const n={id:uid(),k:'n',t:'',x:bx,y:by-12};D.nodes.push(n);refresh();startEdit(n.id);});
+addEventListener('keydown',e=>{if(editing||/INPUT/.test(e.target.tagName)||(e.target.tagName==='SELECT'&&!/Backspace|Delete/.test(e.key)))return;if(e.target.tagName==='SELECT')e.target.blur();
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return;}
+ if((e.key==='Backspace'||e.key==='Delete')&&(MS.size||MR.size)){e.preventDefault();snap();[...MS].forEach(delNode);D.rects=D.rects.filter(r=>!MR.has(r.id));MS.clear();MR.clear();sel=null;refresh();return;}
+ if((e.key==='Backspace'||e.key==='Delete')&&sel){e.preventDefault();if(sel.t==='col')return;snap();
+  if(sel.t==='node')delNode(sel.id);else if(sel.t==='link')D.links=D.links.filter(l=>l.id!==sel.id);else if(sel.t==='rect')D.rects=D.rects.filter(r=>r.id!==sel.id);
+  sel=null;closeMenu();refresh();}
+ if(e.key==='Escape'){MS.clear();sel=null;closeMenu();tool='';$('#rectTool').classList.remove('on');vp.classList.remove('draw');render();}
+});
+function undo(){const s=UND.pop();if(!s){toast('더 되돌릴 게 없어요');return;}Object.assign(D,JSON.parse(s));sel=null;closeMenu();refresh();applyView();}
+$('#undo').onclick=undo;
+
+/* ── 연표 여러 개 · 파일 ── */
+function docList(){$('#docSel').innerHTML=ST.docs.map(d=>`<option value="${d.id}"${d.id===D.id?' selected':''}>${esc(d.name)}</option>`).join('');}
+const switchDoc=d=>{FOC.clear();D=d;ST.cur=d.id;UND.length=0;sel=null;lastCol=null;closeMenu();save();docList();updQ();render();applyView();};
+$('#docSel').onchange=e=>switchDoc(ST.docs.find(d=>d.id===e.target.value));
+function listMenu(btn,items){const r=btn.getBoundingClientRect();openMenu(r.left,r.bottom+6,items.map((it,i)=>`<button class="mi${it.del?' del':''}" data-i="${i}">${typeof it.t==='function'?it.t():it.t}</button>`).join(''),b=>{closeMenu();items[+b.dataset.i].f();});}
+$('#docMenu').onclick=()=>listMenu($('#docMenu'),[
+ {t:'＋ 새 연표',f:()=>{const n=prompt('새 연표 이름','새 연표');if(n===null)return;const d=blank(n.trim()||'새 연표');ST.docs.push(d);switchDoc(d);}},
+ {t:'이름 바꾸기',f:()=>{const n=prompt('연표 이름',D.name);if(n&&n.trim()){D.name=n.trim();save();docList();}}},
+ {t:()=>D.aal?'✓ 같은 연도 자동으로 같은 높이 (켜짐)':'같은 연도 자동으로 같은 높이',f:()=>{snap();D.aal=!D.aal;if(!D.aal)delete D.aal;save();refresh();toast(D.aal?'모든 기둥의 같은 연도를 같은 높이로 맞춰요':'자동 맞추기 껐어요');}},
+ {t:'복제',f:()=>{const d=JSON.parse(JSON.stringify(D));d.id=uid();d.name=D.name+' 복사본';ST.docs.push(d);switchDoc(d);}},
+ {t:'이 연표 삭제',del:1,f:()=>{if(!confirm(`'${D.name}' 연표를 지울까요?`))return;ST.docs=ST.docs.filter(d=>d!==D);if(!ST.docs.length)ST.docs.push(blank('새 연표'));switchDoc(ST.docs[0]);}}]);
+$('#fileBtn').onclick=()=>listMenu($('#fileBtn'),[
+ {t:'이 연표 파일로 저장 (.json)',f:()=>dl(D.name+'.json',JSON.stringify(D))},
+ {t:'전체 연표 파일로 저장',f:()=>dl('연표_전체.json',JSON.stringify(ST))},
+ {t:'파일 불러오기',f:()=>$('#fileIn').click()},
+ {t:'PDF 파일로 바로 저장 (한 장)',f:()=>exportPng('pdf')},
+ {t:'이미지로 저장 (PNG, 한 장)',f:()=>exportPng('png')},
+ {t:'인쇄 · A4 한 장에 전부',f:()=>printIt('fit')},
+ {t:'인쇄 · A4 여러 장으로 나눠서',f:()=>printIt('pages')}]);
+const dl=(name,txt)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download=name.replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);};
+$('#fileIn').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);let first;
+ if(o.docs){o.docs.forEach(d=>{d.tags=d.tags||[];if(ST.docs.some(x=>x.id===d.id))d.id=uid();ST.docs.push(d);});first=o.docs[0];}
+ else if(o.cols){o.tags=o.tags||[];if(ST.docs.some(x=>x.id===o.id))o.id=uid();ST.docs.push(o);first=o;}else throw 0;switchDoc(first);toast('불러왔어요');}catch(err){toast('연표 파일이 아니에요');}});e.target.value='';};
+function jpgPdf(cv,W,H){const du=cv.toDataURL('image/jpeg',.93);const bin=atob(du.split(',')[1]);const jp=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)jp[i]=bin.charCodeAt(i);
+ const enc=t=>new TextEncoder().encode(t);const parts=[];let off=0;const offs=[];const push=u=>{parts.push(u);off+=u.length;};const f=n=>n.toFixed(2);
+ push(enc('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'));
+ const obj=(n,body,stream)=>{offs[n]=off;push(enc(`${n} 0 obj\n${body}\n`));if(stream){push(enc('stream\n'));push(stream);push(enc('\nendstream\n'));}push(enc('endobj\n'));};
+ obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+ obj(3,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(W)} ${f(H)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+ obj(4,`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jp.length} >>`,jp);
+ const cs=enc(`q ${f(W)} 0 0 ${f(H)} 0 0 cm /Im0 Do Q`);obj(5,`<< /Length ${cs.length} >>`,cs);
+ const xo=off;let x=`xref\n0 6\n0000000000 65535 f \n`;for(let n=1;n<=5;n++)x+=String(offs[n]).padStart(10,'0')+' 00000 n \n';x+=`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xo}\n%%EOF`;push(enc(x));
+ return new Blob(parts,{type:'application/pdf'});}
+function exportPng(fmt){sel=null;MS.clear();closeMenu();render();const b=bbox();if(!b)return;toast('이미지 만드는 중…');
+ const go=async()=>{const bw=Math.ceil(b[2]-b[0]+80),bh=Math.ceil(b[3]-b[1]+80);const old={...D.view};const sc=Math.max(.5,Math.min(2.5,Math.sqrt(16e6/(bw*bh))));const ox=Math.floor(b[0]-40),oy=Math.floor(b[1]-40);
+  const svgTxt=(()=>{const c=svg.cloneNode(true);c.querySelectorAll('.hit').forEach(e=>e.remove());c.querySelectorAll('.sel').forEach(e=>e.classList.remove('sel'));c.setAttribute('xmlns','http://www.w3.org/2000/svg');c.setAttribute('width',bw);c.setAttribute('height',bh);c.setAttribute('viewBox',`${ox} ${oy} ${bw} ${bh}`);c.removeAttribute('style');c.removeAttribute('id');
+   const st=document.createElementNS('http://www.w3.org/2000/svg','style');st.textContent='path{fill:none;stroke-linecap:round;stroke-linejoin:round} marker path,marker polygon,marker circle{stroke-linecap:butt}';c.insertBefore(st,c.firstChild);c.querySelectorAll('marker *').forEach(e=>{if(!e.getAttribute('fill')&&e.tagName!=='path')return;});return new XMLSerializer().serializeToString(c);})();
+  board.style.transform='none';board.style.left=(-b[0]+40)+'px';board.style.top=(-b[1]+40)+'px';const vs=vp.getAttribute('style')||'';vp.setAttribute('style',`position:absolute;left:0;top:0;right:auto;bottom:auto;width:${bw}px;height:${bh}px;background:transparent`);
+  const L=[rcEl,spEl,nodesEl];const show=on=>L.forEach((e,k)=>{e.style.visibility=on[k]?'':'hidden';});svg.style.display='none';
+  const back=()=>{L.forEach(e=>e.style.visibility='');svg.style.display='';vp.setAttribute('style',vs);board.style.left='';board.style.top='';D.view=old;applyView();};
+  const O={scale:sc,width:bw,height:bh,windowWidth:bw+40,windowHeight:bh+40,scrollX:0,scrollY:0,logging:false};
+  try{show([1,0,0]);const c1=await html2canvas(vp,{...O,backgroundColor:'#ffffff'});show([0,1,1]);const c2=await html2canvas(vp,{...O,backgroundColor:null});back();
+   const im=await new Promise((res,rej)=>{const u=URL.createObjectURL(new Blob([svgTxt],{type:'image/svg+xml'}));const m=new Image();m.onload=()=>{res(m);setTimeout(()=>URL.revokeObjectURL(u),1000);};m.onerror=rej;m.src=u;});
+   const cv=document.createElement('canvas');cv.width=c1.width;cv.height=c1.height;const x=cv.getContext('2d');x.drawImage(c1,0,0);x.drawImage(im,0,0,cv.width,cv.height);x.drawImage(c2,0,0);
+   if(fmt==='pdf'){const bl=jpgPdf(cv,bw*.75,bh*.75);const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(D.name||'연표').replace(/[\\/:*?"<>|]/g,'_')+'.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast('PDF 저장했어요');return;}
+   cv.toBlob(bl=>{if(!bl){toast('이미지가 너무 커요');return;}const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(D.name||'연표').replace(/[\\/:*?"<>|]/g,'_')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast('저장했어요');},'image/png');}
+  catch(err){back();console.log(err);toast('이미지 만들기 실패');}};
+ if(window.html2canvas)go();else{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';sc.onload=go;sc.onerror=()=>toast('인터넷 연결이 필요해요');document.head.appendChild(sc);}}
+function printIt(mode){sel=null;MS.clear();closeMenu();render();const b=bbox();if(!b){print();return;}
+ const bw=b[2]-b[0]+40,bh=b[3]-b[1]+40;const land=bw>bh*1.15;const W=land?1040:715,H=land?715:1040;const z=mode==='big'?1:mode==='fit'?Math.min(1,W/bw,(H-12)/bh):Math.min(1,W/bw);const old={...D.view};
+ board.style.transform='none';board.style.zoom=z;board.style.left=(-b[0]+20/z)+'px';board.style.top=(-b[1]+20/z)+'px';vp.style.height=(mode==='fit'?Math.min(bh*z+20,H-8):bh*z+40)+'px';vp.classList.add('printing');
+ const st=document.createElement('style');st.textContent=mode==='big'?`@page{size:${Math.ceil(bw+40)}px ${Math.ceil(bh+40)}px;margin:0}`:`@page{size:A4 ${land?'landscape':'portrait'};margin:10mm}`;document.head.appendChild(st);
+ let done=false;const fin=()=>{if(done)return;done=true;st.remove();vp.style.height='';vp.classList.remove('printing');board.style.zoom='';board.style.left='';board.style.top='';D.view=old;applyView();removeEventListener('afterprint',fin);};
+ addEventListener('afterprint',fin);setTimeout(()=>{addEventListener('pointerdown',fin,{once:true,capture:true});print();},80);}
+$('#helpX').onclick=()=>{$('#help').remove();try{localStorage.setItem(SK+'_help2','1');}catch(e){}};
+try{if(localStorage.getItem(SK+'_help2'))$('#help').remove();}catch(e){}
+
+/* 처음 열 때 예시 */
+if(fresh){
+ D.name='예시 연표';
+ const a={id:uid(),t:'세계전쟁',c:'pink',x:220,y0:70,y1:520},b={id:uid(),t:'동북아',c:'indigo',x:660,y0:70,y1:520};D.cols.push(a,b);
+ const Y=(c,t,ks)=>{const y={id:uid(),k:'y',t,col:c.id,auto:true,o:D.nodes.length};D.nodes.push(y);ks.forEach(k=>D.nodes.push({id:uid(),k:'n',t:k,p:y.id,auto:true}));return y;};
+ const y1=Y(a,'1914',['(6) 사라예보 사건','(7) 오→세 선전포고']);Y(a,'1917',['미국 참전']);Y(a,'1919',['- 베르사유 조약\n- 생제르맹 조약']);
+ const y2=Y(b,'1910',['한일병합']);Y(b,'1931',['만주사변']);
+ D.tags.push({id:'tk',name:'한',c:'sky'},{id:'tj',name:'일',c:'gray'});D.nodes.forEach(n=>{if(n.t==='한일병합')n.tg='tk';if(n.t==='만주사변')n.tg='tj';});
+ D.nodes.push({id:uid(),k:'st',sh:'boom',t:'',c:'yellow',x:150,y:180});
+ D.rects.push({id:uid(),x:170,y:84,w:420,h:92,c:'amber',l:'1차 세계대전'});
+ D.links.push({id:uid(),a:{n:y1.id},b:{n:y2.id},ds:1,q:[0,-40]});
+ D.links.push({id:uid(),a:{col:a.id,y:400},b:{col:b.id,y:450}});
+ save();
+}
+docList();updQ();applyView();render();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>render());
+window._tl={get D(){return D},KR,BOX};
+/* ── 클라우드 자동 저장 (Firebase) ── */
+try{if(window.firebase){const cfg={apiKey:"AIzaSyCboDDyAjbNBN6aPQXdQD0L9jk64ykWQ8o",projectId:"time-8d30b",databaseURL:"https://tracker-d3a39-default-rtdb.firebaseio.com/"};const app=firebase.apps.find(a=>a.name==='diplomacy')||firebase.initializeApp(cfg,'diplomacy');FBref=app.database().ref('diplomacy/v1');}}catch(e){FBref=null;}
+const setSync=(t,c)=>{const e=$('#sync');if(e){e.textContent=t;e.style.color=c||'';}};
+function cloudPush(now){if(!FBref||!cloudReady)return;clearTimeout(pushT);const go=()=>{setSync('☁ …');FBref.set({ts:ST.ts||1,d:JSON.stringify(ST)}).then(()=>setSync('☁ ✓','#5f9a45')).catch(()=>{setSync('☁ ✕','#c0453a');toast('클라우드 저장 실패 · 이 기기에는 저장됐어요');});};if(now)go();else pushT=setTimeout(go,3000);}
+if(FBref){FBref.once('value').then(sn=>{const r=sn.val();const lt=ST.ts||0;
+ if(r&&r.d){const ct=r.ts||0;
+  if(ct>lt&&sessionStorage.getItem('dgp')!==String(ct)){try{JSON.parse(r.d);sessionStorage.setItem('dgp',String(ct));localStorage.setItem(SK,r.d);location.reload();return;}catch(e){}}
+  cloudReady=true;if(lt>ct)cloudPush(true);else setSync('☁ ✓','#5f9a45');}
+ else{cloudReady=true;ST.ts=Math.max(lt,1);cloudPush(true);}
+}).catch(()=>setSync('☁ ✕','#c0453a'));}else setSync('☁ ✕','#c0453a');
+window.addEventListener('pagehide',()=>{if(FBref&&cloudReady&&pushT){clearTimeout(pushT);try{FBref.set({ts:ST.ts||1,d:JSON.stringify(ST)});}catch(e){}}});
+
+})();
+</script>
+</body></html>
