@@ -193,6 +193,7 @@ if(!ST||!ST.docs||!ST.docs.length){ST={docs:[blank('새 연표')],cur:null};ST.c
 let D=ST.docs.find(d=>d.id===ST.cur)||ST.docs[0];
 if(!ST.gfix2){ST.docs.forEach(d=>{(d.nodes||[]).forEach(n=>{if(n.gp&&Math.abs(n.gp)>300)delete n.gp;});const ys=(d.nodes||[]).filter(n=>n.k==='y'&&!n.auto&&typeof n.y==='number');(d.nodes||[]).forEach(n=>{if(n.k==='y'&&!n.auto&&n.y>6000)n.y=6000;});});ST.gfix2=1;}
 if(!ST.gfix1){ST.docs.forEach(d=>(d.nodes||[]).forEach(n=>{if(n.gp&&Math.abs(n.gp)>300)delete n.gp;}));ST.gfix1=1;}
+if(!ST.hfix1){ST.docs.forEach(d=>(d.cols||[]).forEach(c=>{if((c.t==='WW1'||c.t==='WW2')&&c.hp==='l')delete c.hp;}));ST.hfix1=1;ST.ts=Date.now();try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}}
 let sel=null,lastCol=null,tool='',editing=null;const FOC=new Set();const MS=new Set();const MR=new Set();const KR={};
 ST.docs.forEach(d=>{d.tags=d.tags||[];});
 let FBref=null,pushT=null,cloudReady=false;
