@@ -65,13 +65,12 @@ body.home{background:var(--stage);color:#f2f2f2}
 .grid.edit .stamp{cursor:grab}
 .grid.edit .stamp::after{content:'';position:absolute;inset:10px;border:1.5px dashed rgba(255,255,255,.85);pointer-events:none}
 .grid.edit .stamp.sel::after{border:2px solid #fff}
-.grid.edit .stamp.sel .plate{background:var(--sky)}
 .handle{position:absolute;right:11px;bottom:11px;width:26px;height:26px;background:#fff;border:2px solid var(--ink);cursor:nwse-resize;z-index:2;display:none}
 .grid.edit .handle{display:block}
 .grid.edit .stamp.sel .handle{background:var(--ink)}
-.plate{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(255,255,255,.9);color:var(--ink);padding:6px 8px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;transition:transform .15s}
-.plate b{font-size:clamp(11px,2.3vw,16px);font-weight:700;letter-spacing:.02em}
-.plate i{font-family:var(--mono);font-style:normal;font-size:clamp(9px,1.7vw,12px);color:var(--brown)}
+.plate{position:absolute;left:20px;right:20px;bottom:18px;color:#fff;padding:0;display:flex;justify-content:space-between;align-items:baseline;gap:6px;transition:transform .15s;text-shadow:0 1px 6px rgba(20,40,80,.55),0 0 2px rgba(20,40,80,.4)}
+.plate b{font-size:clamp(13px,2.6vw,20px);font-weight:700;letter-spacing:.08em}
+.plate i{font-family:var(--mono);font-style:normal;font-size:clamp(9px,1.7vw,12px);letter-spacing:.1em;color:#fff;opacity:.9}
 
 /* ---------- PAGES ---------- */
 .page{max-width:720px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 22px 80px}
@@ -503,7 +502,7 @@ async function pageHome(){
   const wxb=el('button',{class:'btn',onclick:()=>{cycleWx();wxb.textContent=wxLabel();if(editing)renderSettings()},text:wxLabel()});
   app.append(el('div',{class:'top'},el('h1',{},'REVIEW BOOK',el('span',{class:'cur'})),el('div',{class:'topr'},wxb,gear)));
   const wrap=el('div',{class:'sheetwrap'});
-  const grid=el('div',{class:'grid pl-'+(L.plate||'hover')+(editing?' edit':' tilt'+(popDone?'':' pop'))});popDone=true;
+  const grid=el('div',{class:'grid pl-'+(L.plate||'show')+(editing?' edit':' tilt'+(popDone?'':' pop'))});popDone=true;
   wrap.append(grid);app.append(wrap);
   grid.style.gridTemplateColumns=`repeat(${L.cols},1fr)`;
 
@@ -1041,7 +1040,7 @@ function renderSettings(){
     el('button',{class:L.mode==='each'?'on':'',onclick:()=>{L.mode='each';save('layout');refreshHome();renderSettings()},text:'칸마다 따로'}))));
   if(L.mode==='split')panel.append(imgField('큰 그림',()=>L.img||'',v=>{L.img=v;save('layout')}));
 
-  panel.append(el('div',{class:'f'},el('label',{text:'이름표'}),el('div',{class:'seg'},...[['show','항상'],['hover','호버시'],['hide','숨김']].map(([k,nm])=>el('button',{class:(L.plate||'hover')===k?'on':'',onclick:()=>{L.plate=k;save('layout');refreshHome();renderSettings()},text:nm})))));
+  panel.append(el('div',{class:'f'},el('label',{text:'이름표'}),el('div',{class:'seg'},...[['show','항상'],['hover','호버시'],['hide','숨김']].map(([k,nm])=>el('button',{class:(L.plate||'show')===k?'on':'',onclick:()=>{L.plate=k;save('layout');refreshHome();renderSettings()},text:nm})))));
   panel.append(el('h3',{text:'LAYOUT'}));
   panel.append(el('div',{class:'f'},...PRESETS.map(([nm,cols,arr])=>el('button',{class:'sm',onclick:()=>packAll(cols,fillSizes(arr,S.cats.length)),text:nm}))));
   panel.append(el('div',{class:'f'},
