@@ -264,6 +264,26 @@ function norm(){
   S.reviews.forEach(r=>{r.photos=r.photos||[];r.items=r.items||[]});
 }
 
+/* resize/move a stamp; stamps in the way are pushed to the first free spot (rows grow if needed) */
+function reflow(c,n,base,rows0){
+  const L={cols:S.layout.cols,rows:Math.max(rows0,n.y+n.h)};
+  const moved=new Map();moved.set(c.id,{x:n.x,y:n.y,w:n.w,h:n.h});
+  const others=base.filter(b=>b.id!==c.id);
+  const placed=[{...n},...others.filter(b=>!hit(b,n))];
+  others.filter(b=>hit(b,n)).forEach(b=>{
+    const p=findSpot(b.w,b.h,placed,L);
+    placed.push({x:p.x,y:p.y,w:b.w,h:b.h});moved.set(b.id,{x:p.x,y:p.y,w:b.w,h:b.h});
+  });
+  return{moved,rows:L.rows};
+}
+function applyReflow(c,n,base,rows0){
+  const {moved,rows}=reflow(c,n,base,rows0);
+  S.cats.forEach(z=>Object.assign(z,moved.get(z.id)||base.find(q=>q.id===z.id)));
+  S.layout.rows=Math.min(10,rows);
+}
+const snapCats=()=>S.cats.map(z=>({id:z.id,x:z.x,y:z.y,w:z.w,h:z.h}));
+const placeStyle=(s,c)=>{s.style.gridColumn=`${c.x+1} / span ${c.w}`;s.style.gridRow=`${c.y+1} / span ${c.h}`};
+
 /* ================= storage + sync ================= */
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert('저장 실패: 브라우저 저장공간이 가득 찼어요')}};
 let DB=null,synced=false,flushT=null;
@@ -482,7 +502,7 @@ async function pageHome(){
     }
     if(editing){
       s.append(el('div',{class:'handle'}));
-      bindEdit(s,c,grid);
+      bindEdit(s,c,grid,items);
       s.addEventListener('dblclick',()=>{location.hash='#/c/'+c.id});
     }else{
       s.addEventListener('click',()=>{location.hash='#/c/'+c.id});
@@ -512,7 +532,7 @@ async function pageHome(){
 }
 
 /* drag to move / drag corner to resize, snapped to cells */
-function bindEdit(s,c,grid){
+function bindEdit(s,c,grid,items){
   s.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
     const isH=e.target.classList.contains('handle');
@@ -522,24 +542,22 @@ function bindEdit(s,c,grid){
     const r=grid.getBoundingClientRect();
     const cw=r.width/S.layout.cols,ch=cw*ASP;
     const sx=e.clientX,sy=e.clientY,o={x:c.x,y:c.y,w:c.w,h:c.h};
-    const others=S.cats.filter(z=>z!==c);
+    const base=snapCats(),rows0=S.layout.rows;
     s.setPointerCapture(e.pointerId);e.preventDefault();
     const mv=ev=>{
       const dx=Math.round((ev.clientX-sx)/cw),dy=Math.round((ev.clientY-sy)/ch);
       const n={...o};
       if(isH){n.w=Math.max(1,o.w+dx);n.h=Math.max(1,o.h+dy)}else{n.x=o.x+dx;n.y=o.y+dy}
-      if(n.x<0||n.y<0||n.x+n.w>S.layout.cols||n.y+n.h>S.layout.rows)return;
-      if(others.some(z=>hit(z,n)))return;
-      Object.assign(c,n);
-      s.style.gridColumn=`${c.x+1} / span ${c.w}`;
-      s.style.gridRow=`${c.y+1} / span ${c.h}`;
+      if(n.x<0||n.y<0||n.x+n.w>S.layout.cols||n.y+n.h>10)return;
+      applyReflow(c,n,base,rows0);
+      items.forEach(it=>placeStyle(it.s,it.c));
       fitFn&&fitFn();
     };
     const up=()=>{
       s.removeEventListener('pointermove',mv);
       s.removeEventListener('pointerup',up);
       s.removeEventListener('pointercancel',up);
-      save('cat:'+c.id);renderSettings();
+      save('layout',...S.cats.map(z=>'cat:'+z.id));renderSettings();
     };
     s.addEventListener('pointermove',mv);
     s.addEventListener('pointerup',up);
@@ -903,8 +921,10 @@ function renderSettings(){
     panel.append(el('div',{class:'f'},el('label',{text:'이름'}),name));
     const setSize=(k,v)=>{
       const n={x:c.x,y:c.y,w:c.w,h:c.h,[k]:v};
-      if(n.x+n.w>L.cols||n.y+n.h>L.rows||S.cats.some(z=>z!==c&&hit(z,n)))return renderSettings();
-      Object.assign(c,n);save('cat:'+c.id);refreshHome();renderSettings();
+      n.w=Math.min(n.w,L.cols);
+      if(n.x+n.w>L.cols)n.x=L.cols-n.w;
+      applyReflow(c,n,snapCats(),L.rows);
+      save('layout',...S.cats.map(z=>'cat:'+z.id));refreshHome();renderSettings();
     };
     panel.append(el('div',{class:'f'},
       ...numField('가로',c.w,1,10,v=>setSize('w',v)),
