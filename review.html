@@ -33,19 +33,19 @@ body.home{background:var(--stage);color:#f2f2f2}
 .grid{display:grid;width:100%;margin:0 auto;max-width:900px;transform-origin:center;transition:transform .2s}
 .grid.tilt{transform:rotate(-1.2deg)}
 .perfmask,.stamp,.cs.perf{
-  --h:5px;
+  --h:5px;--pt:7px;--pb:7px;--pl:7px;--pr:7px;
   -webkit-mask:
-    linear-gradient(#000,#000) center/calc(100% - 14px) calc(100% - 14px) no-repeat,
-    radial-gradient(circle at 50% 0,#0000 var(--h),#000 calc(var(--h) + .5px)) top/14px 7px round no-repeat,
-    radial-gradient(circle at 50% 100%,#0000 var(--h),#000 calc(var(--h) + .5px)) bottom/14px 7px round no-repeat,
-    radial-gradient(circle at 0 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) left/7px 14px no-repeat round,
-    radial-gradient(circle at 100% 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) right/7px 14px no-repeat round;
+    linear-gradient(#000,#000) var(--pl) var(--pt)/calc(100% - var(--pl) - var(--pr)) calc(100% - var(--pt) - var(--pb)) no-repeat,
+    radial-gradient(circle at 50% 0,#0000 var(--h),#000 calc(var(--h) + .5px)) top/14px var(--pt) round no-repeat,
+    radial-gradient(circle at 50% 100%,#0000 var(--h),#000 calc(var(--h) + .5px)) bottom/14px var(--pb) round no-repeat,
+    radial-gradient(circle at 0 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) left/var(--pl) 14px no-repeat round,
+    radial-gradient(circle at 100% 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) right/var(--pr) 14px no-repeat round;
           mask:
-    linear-gradient(#000,#000) center/calc(100% - 14px) calc(100% - 14px) no-repeat,
-    radial-gradient(circle at 50% 0,#0000 var(--h),#000 calc(var(--h) + .5px)) top/14px 7px round no-repeat,
-    radial-gradient(circle at 50% 100%,#0000 var(--h),#000 calc(var(--h) + .5px)) bottom/14px 7px round no-repeat,
-    radial-gradient(circle at 0 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) left/7px 14px no-repeat round,
-    radial-gradient(circle at 100% 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) right/7px 14px no-repeat round;
+    linear-gradient(#000,#000) var(--pl) var(--pt)/calc(100% - var(--pl) - var(--pr)) calc(100% - var(--pt) - var(--pb)) no-repeat,
+    radial-gradient(circle at 50% 0,#0000 var(--h),#000 calc(var(--h) + .5px)) top/14px var(--pt) round no-repeat,
+    radial-gradient(circle at 50% 100%,#0000 var(--h),#000 calc(var(--h) + .5px)) bottom/14px var(--pb) round no-repeat,
+    radial-gradient(circle at 0 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) left/var(--pl) 14px no-repeat round,
+    radial-gradient(circle at 100% 50%,#0000 var(--h),#000 calc(var(--h) + .5px)) right/var(--pr) 14px no-repeat round;
 }
 .stamp{position:relative;background-color:var(--sky);background-repeat:no-repeat;display:block;text-align:left;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;transition:transform .32s cubic-bezier(.3,1.6,.5,1),filter .2s}
 .grid:not(.edit) .stamp::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.6) 50%,transparent 70%);transform:translateX(-130%);pointer-events:none;z-index:1}
@@ -539,6 +539,15 @@ async function pageHome(){
     const bw=im.naturalWidth*sc,bh=im.naturalHeight*sc;
     const ox=(gw-bw)/2,oy=(gh-bh)/2;
     items.forEach(({s,c})=>{
+      const seam=!editing&&L.mode==='split';
+      const ov=(a0,a1,b0,b1)=>a0<b1&&b0<a1,O=S.cats.filter(o=>o!==c);
+      const T=seam&&O.some(o=>o.y+o.h===c.y&&ov(o.x,o.x+o.w,c.x,c.x+c.w)),
+            B=seam&&O.some(o=>o.y===c.y+c.h&&ov(o.x,o.x+o.w,c.x,c.x+c.w)),
+            Lf=seam&&O.some(o=>o.x+o.w===c.x&&ov(o.y,o.y+o.h,c.y,c.y+c.h)),
+            R=seam&&O.some(o=>o.x===c.x+c.w&&ov(o.y,o.y+o.h,c.y,c.y+c.h));
+      s.style.setProperty('--pt',T?'0px':'7px');s.style.setProperty('--pb',B?'0px':'7px');
+      s.style.setProperty('--pl',Lf?'0px':'7px');s.style.setProperty('--pr',R?'0px':'7px');
+      s.style.margin=`${T?-.5:0}px ${R?-.5:0}px ${B?-.5:0}px ${Lf?-.5:0}px`;
       s.style.backgroundImage=cssUrl(splitUrl);
       s.style.backgroundSize=`${bw}px ${bh}px`;
       s.style.backgroundPosition=`${ox-c.x*cw}px ${oy-c.y*ch}px`;
