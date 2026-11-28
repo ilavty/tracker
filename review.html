@@ -55,17 +55,9 @@ body.home{background:var(--stage);color:#f2f2f2}
 .grid:not(.edit) .stamp:hover .plate{transform:translateY(-4px)}
 .grid:not(.edit) .stamp:active{transform:scale(.97);transition-duration:.1s}
 .grid.sp{position:relative}
-.grid.sp::before{content:'';position:absolute;inset:7px;background:var(--gbg) var(--gpos)/var(--gsz) no-repeat}
-.grid.sp .stamp{--dt:0px;--db:0px;--dl:0px;--dr:0px}
-.grid.sp .stamp::after{content:'';position:absolute;inset:-1px;padding:1px;background-origin:content-box;pointer-events:none;z-index:1;background:
-  radial-gradient(circle at 0 50%,var(--stage) 5px,#0000 5.5px) 0 -7px/14px var(--dt) round no-repeat,
-  radial-gradient(circle at 100% 50%,var(--stage) 5px,#0000 5.5px) 0 -7px/14px var(--dt) round no-repeat,
-  radial-gradient(circle at 0 50%,var(--stage) 5px,#0000 5.5px) 0 calc(100% + 7px)/14px var(--db) round no-repeat,
-  radial-gradient(circle at 100% 50%,var(--stage) 5px,#0000 5.5px) 0 calc(100% + 7px)/14px var(--db) round no-repeat,
-  radial-gradient(circle at 50% 0,var(--stage) 5px,#0000 5.5px) -7px 0/var(--dl) 14px no-repeat round,
-  radial-gradient(circle at 50% 100%,var(--stage) 5px,#0000 5.5px) -7px 0/var(--dl) 14px no-repeat round,
-  radial-gradient(circle at 50% 0,var(--stage) 5px,#0000 5.5px) calc(100% + 7px) 0/var(--dr) 14px no-repeat round,
-  radial-gradient(circle at 50% 100%,var(--stage) 5px,#0000 5.5px) calc(100% + 7px) 0/var(--dr) 14px no-repeat round}
+.grid.sp::before{content:'';position:absolute;inset:0;background:var(--gbg) var(--gpos)/var(--gsz) no-repeat;-webkit-mask:var(--gmask) 0 0/100% 100% no-repeat;mask:var(--gmask) 0 0/100% 100% no-repeat;pointer-events:none}
+.grid.sp .stamp{background-color:transparent;background-image:none}
+.grid.sp .stamp:hover{background:var(--sbg) var(--sbp)/var(--sbs) no-repeat var(--sky)}
 .grid.pl-hide:not(.edit) .plate{display:none}
 .grid.pl-hover:not(.edit) .plate{opacity:0;transition:opacity .25s,transform .25s}
 .grid.pl-hover:not(.edit) .stamp:hover .plate{opacity:1}
@@ -561,19 +553,29 @@ async function pageHome(){
     const sc=Math.max(gw/im.naturalWidth,gh/im.naturalHeight);
     const bw=im.naturalWidth*sc,bh=im.naturalHeight*sc;
     const ox=(gw-bw)/2,oy=(gh-bh)/2;
-    if(!editing){grid.style.setProperty('--gbg',cssUrl(splitUrl));grid.style.setProperty('--gsz',`${bw}px ${bh}px`);grid.style.setProperty('--gpos',`${ox-7}px ${oy-7}px`)}
+    if(!editing){
+      grid.style.setProperty('--gbg',cssUrl(splitUrl));grid.style.setProperty('--gsz',`${bw}px ${bh}px`);grid.style.setProperty('--gpos',`${ox}px ${oy}px`);
+      /* one real cut-out: circles on every stamp edge, punched through the whole picture */
+      const seen=new Set();let d=`M0 0H${gw}V${gh}H0Z`;
+      const dot=(x,y)=>{const k=Math.round(x*2)+','+Math.round(y*2);if(seen.has(k))return;seen.add(k);
+        d+=`M${(x-5).toFixed(1)} ${y.toFixed(1)}a5 5 0 1 0 10 0a5 5 0 1 0 -10 0Z`};
+      S.cats.forEach(c=>{
+        const x0=c.x*cw,x1=(c.x+c.w)*cw,y0=c.y*ch,y1=(c.y+c.h)*ch;
+        const nx=Math.max(1,Math.round((x1-x0)/14)),ny=Math.max(1,Math.round((y1-y0)/14));
+        for(let i=0;i<=nx;i++){const x=x0+(x1-x0)*i/nx;dot(x,y0);dot(x,y1)}
+        for(let i=0;i<=ny;i++){const y=y0+(y1-y0)*i/ny;dot(x0,y);dot(x1,y)}
+      });
+      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${gw}" height="${gh}" viewBox="0 0 ${gw} ${gh}"><path fill-rule="evenodd" d="${d}"/></svg>`;
+      grid.style.setProperty('--gmask',`url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+    }
     items.forEach(({s,c})=>{
-      if(!editing){
-        const ov=(a0,a1,b0,b1)=>a0<b1&&b0<a1,O=S.cats.filter(o=>o!==c);
-        const T=O.some(o=>o.y+o.h===c.y&&ov(o.x,o.x+o.w,c.x,c.x+c.w)),
-              B=O.some(o=>o.y===c.y+c.h&&ov(o.x,o.x+o.w,c.x,c.x+c.w)),
-              Lf=O.some(o=>o.x+o.w===c.x&&ov(o.y,o.y+o.h,c.y,c.y+c.h)),
-              R=O.some(o=>o.x===c.x+c.w&&ov(o.y,o.y+o.h,c.y,c.y+c.h));
-        [['t',T],['b',B],['l',Lf],['r',R]].forEach(([k,v])=>{s.style.setProperty('--p'+k,v?'0px':'7px');s.style.setProperty('--d'+k,v?'14px':'0px')});
+      if(editing){
+        s.style.backgroundImage=cssUrl(splitUrl);
+        s.style.backgroundSize=`${bw}px ${bh}px`;
+        s.style.backgroundPosition=`${ox-c.x*cw}px ${oy-c.y*ch}px`;
+      }else{
+        s.style.setProperty('--sbg',cssUrl(splitUrl));s.style.setProperty('--sbs',`${bw}px ${bh}px`);s.style.setProperty('--sbp',`${ox-c.x*cw}px ${oy-c.y*ch}px`);
       }
-      s.style.backgroundImage=cssUrl(splitUrl);
-      s.style.backgroundSize=`${bw}px ${bh}px`;
-      s.style.backgroundPosition=`${ox-c.x*cw}px ${oy-c.y*ch}px`;
     });
   };
   fitFn();
