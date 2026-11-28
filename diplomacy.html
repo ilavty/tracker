@@ -193,6 +193,7 @@ if(!ST||!ST.docs||!ST.docs.length){ST={docs:[blank('새 연표')],cur:null};ST.c
 let D=ST.docs.find(d=>d.id===ST.cur)||ST.docs[0];
 if(!ST.gfix2){ST.docs.forEach(d=>{(d.nodes||[]).forEach(n=>{if(n.gp&&Math.abs(n.gp)>300)delete n.gp;});const ys=(d.nodes||[]).filter(n=>n.k==='y'&&!n.auto&&typeof n.y==='number');(d.nodes||[]).forEach(n=>{if(n.k==='y'&&!n.auto&&n.y>6000)n.y=6000;});});ST.gfix2=1;}
 if(!ST.gfix1){ST.docs.forEach(d=>(d.nodes||[]).forEach(n=>{if(n.gp&&Math.abs(n.gp)>300)delete n.gp;}));ST.gfix1=1;}
+if(!ST.hfix2){ST.docs.forEach(d=>{(d.cols||[]).forEach(c=>{if(c.t==='WW1'||c.t==='WW2'){const ys=(d.nodes||[]).filter(n=>n.k==='y'&&n.col===c.id&&typeof n.y==='number').map(n=>n.y);if(ys.length)c.y0=Math.min(...ys)-30;}});(d.nodes||[]).forEach(n=>{if(n.t==='사이크스-피코 합의'&&n.p&&n.auto)n.sd='l';});});ST.hfix2=1;ST.ts=Date.now();try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}}
 if(!ST.hfix1){ST.docs.forEach(d=>(d.cols||[]).forEach(c=>{if((c.t==='WW1'||c.t==='WW2')&&c.hp==='l')delete c.hp;}));ST.hfix1=1;ST.ts=Date.now();try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}}
 let sel=null,lastCol=null,tool='',editing=null;const FOC=new Set();const MS=new Set();const MR=new Set();const KR={};
 ST.docs.forEach(d=>{d.tags=d.tags||[];});
@@ -265,7 +266,7 @@ function layout(){
  const pos={};const kids=p=>D.nodes.filter(n=>n.p===p);const RS=D.rects.filter(r=>r.mem&&r.mem.length);const PADR=8;
  const blk=(x,y,w,h,id)=>RS.find(R=>!R.mem.includes(id)&&x<R.x+R.w+PADR&&x+w>R.x-PADR&&y<R.y+R.h+PADR&&y+h>R.y-PADR);
  const placeKids=p=>{const P=pos[p.id];if(!P)return 0;const x0=P[0]+P[2]+8;let bot=P[1]+P[3];const ks=kids(p.id);
-  const au=ks.filter(k=>k.auto).sort((a,b)=>(a.r||0)-(b.r||0)||(a.ko==null?1e9:a.ko)-(b.ko==null?1e9:b.ko));
+  const au=ks.filter(k=>k.auto&&k.sd!=='l').sort((a,b)=>(a.r||0)-(b.r||0)||(a.ko==null?1e9:a.ko)-(b.ko==null?1e9:b.ko));
   const groups=[];au.forEach(k=>{const r=k.r||0;if(!groups.length||groups[groups.length-1].r!==r)groups.push({r,ks:[]});groups[groups.length-1].ks.push(k);});
   let ry=P[1],rh=P[3];const rows=[];let xmax=x0;
   groups.forEach((g,gi)=>{const mh=Math.max(...g.ks.map(k=>(sz[k.id]||[0,0])[1]));
@@ -274,6 +275,7 @@ function layout(){
    let x=x0;const inRow=new Set();g.ks.forEach(k=>{const s2=sz[k.id]||[0,0];let hit=blk(x,yOf(k,s2),s2[0],s2[1],k.id);if(hit&&hit.mem.some(m=>inRow.has(m)))x=Math.max(x,hit.x+hit.w+PADR);pos[k.id]=[x,yOf(k,s2),s2[0],s2[1]];inRow.add(k.id);x+=s2[0]+6;});
    if(g.r!==0){for(let it=0;it<4;it++){let push=0;g.ks.forEach(k=>{const q=pos[k.id];const h2=blk(q[0],q[1],q[2],q[3],k.id);if(h2&&!h2.mem.some(m=>inRow.has(m)))push=Math.max(push,h2.y+h2.h+PADR-ry);});if(push<=0)break;ry+=push;g.ks.forEach(k=>{const s2=sz[k.id]||[0,0];pos[k.id][1]=yOf(k,s2);});}}
    xmax=Math.max(xmax,x);rows.push({r:g.r,y:ry,h:rh});bot=Math.max(bot,ry+rh);});
+  {let lx=P[0]-6;ks.filter(k=>k.auto&&k.sd==='l').sort((a,b)=>(a.ko==null?1e9:a.ko)-(b.ko==null?1e9:b.ko)).forEach(k=>{const s2=sz[k.id]||[0,0];lx-=s2[0];pos[k.id]=[lx,P[3]>=s2[1]?P[1]+(P[3]-s2[1])/2:P[1],s2[0],s2[1]];lx-=6;bot=Math.max(bot,P[1]+s2[1]);});}
   KR[p.id]={x0,xmax,rows,top:P[1],ph:P[3]};
   ks.forEach(k=>{if(!k.auto){const s2=sz[k.id]||[0,0];pos[k.id]=[P[0]+(k.dx||0),P[1]+(k.dy||0),s2[0],s2[1]];}const kb=placeKids(k);if(k.auto&&pos[k.id])bot=Math.max(bot,pos[k.id][1]+kb);});
   return bot-P[1];};
@@ -405,7 +407,7 @@ function nodeMenu(n,cx,cy){
  ${!isY&&!isT&&n.k!=='st'?`<div class="row"><span class="k">모양</span><button class="pb${hasBul(n.t)?' on':''}" data-a="bul">• 불렛</button><button class="pb${n.plain?' on':''}" data-a="plain">글자만</button></div>`:''}
  ${isT?`<div class="row"><span class="k">표</span><button class="pb" data-a="r+">행 ＋</button><button class="pb" data-a="r-">행 −</button><button class="pb" data-a="c+">열 ＋</button><button class="pb" data-a="c-">열 −</button><button class="pb${n.hd!==false?' on':''}" data-a="hd">머리행</button></div>`:''}
  <hr>${n.k==='n'&&!n.p&&!n.col&&D.links.some(l=>l.a.n===n.id||l.b.n===n.id)?`<button class="mi" data-a="noal">${n.noal?'⇔ 이은 연도에 높이 자동 맞추기':'높이 자동 맞추기 끄기'}</button>`:''}<button class="mi" data-a="kid">＋ 옆에 텍스트 붙이기</button>
- ${n.p&&!n.auto?`<button class="mi" data-a="nl">${n.nl?'연결선 보이기':'연결선 숨기기'}</button><button class="mi" data-a="snapk">옆에 다시 붙이기</button>`:''}${n.p?`<button class="mi" data-a="detach">떼어내기 (따로 움직이기)</button>`:''}
+ ${n.p&&!n.auto?`<button class="mi" data-a="nl">${n.nl?'연결선 보이기':'연결선 숨기기'}</button><button class="mi" data-a="snapk">옆에 다시 붙이기</button>`:''}${n.p&&n.auto?`<button class="mi" data-a="sd">${n.sd==='l'?'▶ 오른쪽에 붙이기':'◀ 왼쪽에 붙이기'}</button>`:''}${n.p?`<button class="mi" data-a="detach">떼어내기 (따로 움직이기)</button>`:''}
  ${isY?`<button class="mi" data-a="hl">${n.hl?'가로 기준선 지우기':'— 가로 기준선 긋기'}</button>`:''}${n.col&&!n.auto&&isY?`<button class="mi" data-a="reauto">기둥 순서에 다시 넣기</button>`:''}${n.gp?`<button class="mi" data-a="gp0">위 간격 원래대로</button>`:''}
  <button class="mi del" data-a="del">삭제</button>`;
  openMenu(cx,cy,html,(b)=>{snap();const a=b.dataset.a;
@@ -413,7 +415,7 @@ function nodeMenu(n,cx,cy){
   if(a==='bul')n.t=toggleBul(n.t);if(a==='plain')n.plain=!n.plain;
   if(isT){if(a==='r+')n.rows.push(n.rows[0].map(()=>''));if(a==='r-'&&n.rows.length>1)n.rows.pop();if(a==='c+')n.rows.forEach(r=>r.push(''));if(a==='c-'&&n.rows[0].length>1)n.rows.forEach(r=>r.pop());if(a==='hd')n.hd=n.hd===false;}
   if(a==='kid'){closeMenu();const k=addKid(n,'');refresh();startEdit(k.id);return;}
-  if(a==='nl')n.nl=!n.nl;if(a==='noal'){n.noal=!n.noal;if(!n.noal)delete n.noal;}if(a==='hl')n.hl=!n.hl;if(a==='snapk'){n.auto=true;delete n.dx;delete n.dy;}
+  if(a==='sd'){if(n.sd==='l')delete n.sd;else n.sd='l';}if(a==='nl')n.nl=!n.nl;if(a==='noal'){n.noal=!n.noal;if(!n.noal)delete n.noal;}if(a==='hl')n.hl=!n.hl;if(a==='snapk'){n.auto=true;delete n.dx;delete n.dy;}
   if(a==='detach'){const bx=BOX[n.id];delete n.p;n.auto=false;n.col=null;n.x=bx[0];n.y=bx[1];}
   if(a==='edit'){closeMenu();if(!n.t)n.t=' ';refresh();startEdit(n.id);return;}
   if(a==='reauto')n.auto=true;if(a==='gp0')delete n.gp;
