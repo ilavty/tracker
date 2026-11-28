@@ -351,6 +351,24 @@ function flush(){
   const run=j=>{try{const r=DB.ref(j[1]);return j[0]==='set'?r.set(j[2]):r.remove()}catch(err){return Promise.reject(err)}};
   Promise.all(jobs.map(run)).then(()=>setSync('SYNCED')).catch(()=>setSync('OFFLINE')).then(()=>keys.forEach(k=>writing.delete(k)));
 }
+
+/* one-time: bring the Notion book reviews in (merged by id, never overwrites) */
+async function seedBooks(){
+  try{
+    if(localStorage.getItem('rb_seed_books1'))return;
+    const cat=S.cats.find(c=>c.name==='책');if(!cat)return;
+    const r=await fetch('review_seed_books.json');if(!r.ok)return;
+    const list=await r.json();let n=0;
+    list.forEach(b=>{
+      if(S.reviews.some(x=>x.id===b.id))return;
+      const t=new Date(b.date+'T12:00:00').getTime();
+      const rv=Object.assign({id:b.id,cat:cat.id,title:b.title,date:b.date,rating:b.rating,line:b.line,body:b.body,cover:b.cover,photos:[],items:[],created:t},look());
+      S.reviews.push(rv);save('rev:'+rv.id);n++;
+    });
+    localStorage.setItem('rb_seed_books1','1');
+    if(n&&!typing())rerender();
+  }catch(e){}
+}
 const typing=()=>{const a=document.activeElement;return a&&['TEXTAREA','INPUT','SELECT'].includes(a.tagName)};
 let remotePending=false;
 const seen={cats:new Set(),reviews:new Set()},inflight=new Set();let lockSeen=false;
@@ -408,6 +426,7 @@ function onRemote(snap){
   if(pend.size){clearTimeout(flushT);flushT=setTimeout(flush,200)}else setSync('SYNCED');
   if(S.lock&&!isUnlocked()&&!document.getElementById('lock')){showLock();return}
   if(typing()){remotePending=true}else rerender();
+  seedBooks();
 }
 window.addEventListener('focusout',()=>{setTimeout(()=>{if(remotePending&&!typing()){remotePending=false;rerender()}},50)});
 if(DB){
