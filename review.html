@@ -94,7 +94,14 @@ body.home{background:var(--stage);color:#f2f2f2}
 .empty{height:40vh}
 
 /* ---------- COLLAGE ---------- */
-.collage{position:relative;width:100%;background:var(--stage);border-radius:3px;margin-bottom:40px}
+.page.rv{position:relative}
+.rvhead.hc{padding-right:150px;min-height:170px}
+.rvcover{position:absolute;right:0;top:64px;width:120px;--rot:0deg}
+.vtitle{font-size:30px;font-weight:700;line-height:1.35;margin-top:14px}
+.vmeta{font-family:var(--mono);font-size:14px;color:var(--brown);margin-top:12px;letter-spacing:.08em}
+.vline{font-size:16px;margin-top:8px}
+.vbody{white-space:pre-wrap;line-height:1.95;font-size:16px;margin-top:30px;word-break:keep-all;overflow-wrap:anywhere}
+.collage{position:relative;width:100%;background:#fff;border:1px solid #e4e4e4;border-radius:3px;margin-bottom:40px}
 .collage .cs{position:absolute;margin:0;--pt:7px;--pb:7px;--pl:7px;--pr:7px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
 .collage .cs .ci{height:100%;aspect-ratio:auto;padding:6px;font-size:clamp(9px,1.4vw,14px)}
 .collage .cs:hover{transform:rotate(var(--rot)) scale(1.07) translateY(-4px);z-index:5}
@@ -355,6 +362,12 @@ function flush(){
 /* one-time: bring the Notion book reviews in (merged by id, never overwrites) */
 async function seedBooks(){
   try{
+    if(!localStorage.getItem('rb_fix_rating1')){
+      const inv={2:1,3:2,5:3};let ch=false;
+      S.reviews.forEach(x=>{if(x.id.startsWith('nb_')&&inv[x.rating]&&x.rating>3-0&&false){}});
+      S.reviews.forEach(x=>{if(x.id.startsWith('nb_')&&x.nbfix!==1){const v=inv[x.rating];if(v){x.rating=v;x.nbfix=1;save('rev:'+x.id);ch=true}else{x.nbfix=1}}});
+      if(S.reviews.some(x=>x.id.startsWith('nb_')))localStorage.setItem('rb_fix_rating1','1');
+    }
     if(localStorage.getItem('rb_seed_books1'))return;
     const cat=S.cats.find(c=>c.name==='책');if(!cat)return;
     const r=await fetch('review_seed_books.json');if(!r.ok)return;
@@ -464,7 +477,7 @@ function el(tag,attrs={},...kids){
   return e;
 }
 const cssUrl=u=>'url("'+String(u).replace(/["\\\n]/g,'\\$&')+'")';
-const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
+const stars=n=>{n=Math.min(n,3);return '★'.repeat(n)+'☆'.repeat(3-n)};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const catOf=id=>S.cats.find(c=>c.id===id);
 
@@ -710,7 +723,7 @@ function wxLoop(){
   wx.raf=requestAnimationFrame(wxLoop);
 }
 function applyWx(){
-  const t=wxCur(),n=(S.layout.wx&&S.layout.wx.n)||5;
+  const h=location.hash||'#/',t=(h==='#/'||h==='#')?wxCur():'',n=(S.layout.wx&&S.layout.wx.n)||5;
   if(t!==wx.t){wx.P=[];wx.t=t}
   wx.n=n;
   if(!t){wx.c.getContext('2d').clearRect(0,0,wx.c.width,wx.c.height);return}
@@ -846,84 +859,91 @@ async function pageCat(id){
 }
 
 /* ================= REVIEW (text) ================= */
-async function pageReview(id){
+async function pageReview(id,edit){
   document.body.className='';
   if(ro){ro.disconnect();ro=null}
   const r=S.reviews.find(x=>x.id===id);
   if(!r){location.hash='#/';return}
   const c=catOf(r.cat);
   if(c&&c.type==='scrap')return pageScrap(r,c);
+  if(edit===undefined)edit=!r.title;
+  const tok=++rtok;
+  const coverUrl=await resolveImg(r.cover);
+  if(tok!==rtok)return;
   app.textContent='';
-  const page=el('div',{class:'page'});
+  const page=el('div',{class:'page rv'});
   page.append(el('div',{class:'bar'},
     el('button',{onclick:()=>{location.hash='#/c/'+r.cat},text:'← LIST'}),
-    el('button',{class:'danger',onclick:()=>delReview(r),text:'DELETE'})));
-
+    el('div',{class:'grp'},
+      el('button',{onclick:()=>pageReview(id,!edit),text:edit?'DONE':'EDIT'}),
+      el('button',{class:'danger',onclick:()=>delReview(r),text:'DELETE'}))));
   const upd=(k,v)=>{r[k]=v;save('rev:'+r.id)};
-  page.append(el('span',{class:'lab',text:'TITLE'}));
-  const title=typeField({value:r.title,big:true,onChange:v=>upd('title',v)});
-  page.append(title,el('hr',{class:'rule'}));
+  const MAXR=3;
+  const head=el('div',{class:'rvhead'+(coverUrl?' hc':'')});
+  page.append(head);
+  if(coverUrl){
+    const t=el('div',{class:'cs perf rvcover',style:'--rot:0deg;--mt:0px;--mr:0px'},el('div',{class:'ci'}));
+    t.firstChild.style.backgroundImage=cssUrl(coverUrl);
+    page.append(t);
+  }
+  let title=null;
+  if(edit){
+    head.append(el('span',{class:'lab',text:'TITLE'}));
+    title=typeField({value:r.title,big:true,onChange:v=>upd('title',v)});
+    head.append(title,el('hr',{class:'rule'}));
+    head.append(el('span',{class:'lab',text:'DATE'}));
+    const d=el('input',{type:'date'});d.value=r.date||'';
+    d.addEventListener('change',()=>upd('date',d.value));
+    head.append(d);
+    head.append(el('span',{class:'lab',text:'RATING'}));
+    const st=el('div',{class:'stars'});
+    const drawStars=()=>{
+      st.textContent='';
+      for(let i=1;i<=MAXR;i++)st.append(el('span',{onclick:()=>{upd('rating',r.rating===i?0:i);drawStars()},text:i<=r.rating?'★':'☆'}));
+    };
+    drawStars();head.append(st);
+    head.append(el('span',{class:'lab',text:'LINE'}));
+    head.append(typeField({value:r.line,onChange:v=>upd('line',v)}),el('hr',{class:'rule'}));
+  }else{
+    head.append(el('div',{class:'vtitle',text:r.title||'—'}));
+    head.append(el('div',{class:'vmeta',text:[r.date,r.rating?'★'.repeat(Math.min(r.rating,MAXR))+'☆'.repeat(MAXR-Math.min(r.rating,MAXR)):''].filter(Boolean).join('   ')}));
+    if(r.line)head.append(el('div',{class:'vline',text:r.line}));
+  }
 
-  page.append(el('span',{class:'lab',text:'DATE'}));
-  const d=el('input',{type:'date'});d.value=r.date||'';
-  d.addEventListener('change',()=>upd('date',d.value));
-  page.append(d);
-
-  page.append(el('span',{class:'lab',text:'RATING'}));
-  const st=el('div',{class:'stars'});
-  const drawStars=()=>{
-    st.textContent='';
-    for(let i=1;i<=5;i++)st.append(el('span',{onclick:()=>{upd('rating',r.rating===i?0:i);drawStars()},text:i<=r.rating?'★':'☆'}));
-  };
-  drawStars();page.append(st);
-
-  page.append(el('span',{class:'lab',text:'LINE'}));
-  page.append(typeField({value:r.line,onChange:v=>upd('line',v)}),el('hr',{class:'rule'}));
-
-  page.append(el('span',{class:'lab',text:'PLACE'}));
-  const placeBox=el('div');page.append(placeBox);
-  const mapUrl=p=>p.url||('https://map.naver.com/p/search/'+encodeURIComponent(((p.name||'')+' '+(p.addr||'')).trim()));
-  const drawPlace=edit=>{
-    placeBox.textContent='';
+  const p0=r.place;
+  const showPlace=(c&&c.name==='장소')||(p0&&(p0.name||p0.addr||p0.url));
+  if(showPlace){
+    const placeBox=el('div');
+    const mapUrl=p=>p.url||('https://map.naver.com/p/search/'+encodeURIComponent(((p.name||'')+' '+(p.addr||'')).trim()));
     const p=r.place||(r.place={name:'',addr:'',url:''});
-    const has=p.name||p.addr||p.url;
-    if(has&&!edit){
-      placeBox.append(el('div',{class:'placecard'},
+    if(edit){
+      page.append(el('span',{class:'lab',text:'PLACE'}),placeBox);
+      const up=(k,v)=>{p[k]=v;save('rev:'+r.id)};
+      placeBox.append(el('span',{class:'sublab',text:'NAME'}),typeField({value:p.name,onChange:v=>up('name',v)}),el('hr',{class:'rule'}));
+      placeBox.append(el('span',{class:'sublab',text:'ADDRESS'}),typeField({value:p.addr,onChange:v=>up('addr',v)}),el('hr',{class:'rule'}));
+      const link=el('input',{type:'text',style:'width:100%;padding:6px 8px;border:1px solid #bbb;border-radius:2px;font-size:13px'});link.value=p.url||'';
+      link.addEventListener('change',()=>up('url',link.value.trim()));
+      placeBox.append(el('span',{class:'sublab',text:'NAVER MAP LINK'}),link);
+    }else if(p.name||p.addr||p.url){
+      page.append(el('div',{class:'placecard'},
         el('div',{class:'pn',text:p.name||'—'}),
         p.addr?el('div',{class:'pa',text:p.addr}):null,
-        el('div',{class:'pb'},
-          el('a',{class:'mapbtn',href:mapUrl(p),target:'_blank',rel:'noopener',text:'네이버 지도에서 보기 ↗'}),
-          el('button',{class:'sm',onclick:()=>drawPlace(true),text:'EDIT'}))));
-      return;
+        el('div',{class:'pb'},el('a',{class:'mapbtn',href:mapUrl(p),target:'_blank',rel:'noopener',text:'네이버 지도에서 보기 ↗'}))));
     }
-    const up=(k,v)=>{p[k]=v;save('rev:'+r.id)};
-    placeBox.append(el('span',{class:'sublab',text:'NAME'}),typeField({value:p.name,onChange:v=>up('name',v)}),el('hr',{class:'rule'}));
-    placeBox.append(el('span',{class:'sublab',text:'ADDRESS'}),typeField({value:p.addr,onChange:v=>up('addr',v)}),el('hr',{class:'rule'}));
-    const link=el('input',{type:'text',style:'width:100%;padding:6px 8px;border:1px solid #bbb;border-radius:2px;font-size:13px'});link.value=p.url||'';
-    link.addEventListener('change',()=>up('url',link.value.trim()));
-    placeBox.append(el('span',{class:'sublab',text:'NAVER MAP LINK'}),link);
-    placeBox.append(el('div',{class:'addrow'},el('button',{class:'sm',onclick:()=>{up('url',link.value.trim());drawPlace(false)},text:'DONE'})));
-  };
-  drawPlace(false);
+  }
 
-  page.append(el('span',{class:'lab',text:'COVER'}));
-  const coverBox=el('div');page.append(coverBox);
-  const drawCover=async()=>{
-    coverBox.textContent='';
-    const u=await resolveImg(r.cover);
-    if(u){
-      const t=el('div',{class:'cs perf',style:'width:96px;display:inline-block;--rot:0deg;--mt:0px;--mr:0px'},el('div',{class:'ci'}));
-      t.firstChild.style.backgroundImage=cssUrl(u);
-      coverBox.append(t,el('button',{class:'sm x',style:'margin-left:10px',onclick:()=>{upd('cover','');drawCover()},text:'REMOVE'}));
-    }
-    coverBox.append(imgInput(v=>{upd('cover',v);drawCover()},u?'CHANGE':'ADD'));
-  };
-  drawCover();
+  if(edit){
+    page.append(el('span',{class:'lab',text:'COVER'}));
+    const coverBox=el('div');page.append(coverBox);
+    if(coverUrl)coverBox.append(el('button',{class:'sm x',style:'margin-right:10px',onclick:()=>{upd('cover','');pageReview(id,true)},text:'REMOVE'}));
+    coverBox.append(imgInput(v=>{upd('cover',v);pageReview(id,true)},coverUrl?'CHANGE':'ADD'));
+    page.append(el('span',{class:'lab',text:'REVIEW'}));
+    page.append(typeField({value:r.body,multi:true,body:true,onChange:v=>upd('body',v)}));
+    page.append(el('span',{class:'lab',text:'PHOTOS'}));
+  }else if(r.body){
+    page.append(el('div',{class:'vbody',text:r.body}));
+  }
 
-  page.append(el('span',{class:'lab',text:'REVIEW'}));
-  page.append(typeField({value:r.body,multi:true,body:true,onChange:v=>upd('body',v)}));
-
-  page.append(el('span',{class:'lab',text:'PHOTOS'}));
   const photoBox=el('div');page.append(photoBox);
   const drawPhotos=async()=>{
     photoBox.textContent='';
@@ -931,18 +951,18 @@ async function pageReview(id){
     for(let i=0;i<r.photos.length;i++){
       const u=await resolveImg(r.photos[i]);
       const p=el('div',{class:'pol'},el('div',{class:'tapeb'}),el('div',{class:'pi'}),
-        el('div',{class:'x',onclick:()=>{r.photos.splice(i,1);save('rev:'+r.id);drawPhotos()},text:'×'}));
+        edit?el('div',{class:'x',onclick:()=>{r.photos.splice(i,1);save('rev:'+r.id);drawPhotos()},text:'×'}):null);
       p.style.setProperty('--r',((i*37%9)-4)+'deg');
       p.querySelector('.tapeb').style.setProperty('--tr',((i*53%11)-5)+'deg');
       if(u)p.querySelector('.pi').style.backgroundImage=cssUrl(u);
       row.append(p);
     }
     if(r.photos.length)photoBox.append(row);
-    photoBox.append(imgInput(v=>{r.photos.push(v);save('rev:'+r.id);drawPhotos()}));
+    if(edit)photoBox.append(imgInput(v=>{r.photos.push(v);save('rev:'+r.id);drawPhotos()}));
   };
   drawPhotos();
   app.append(page);
-  if(!r.title)title.focusEnd();
+  if(title&&!r.title)title.focusEnd();
 }
 function delReview(r){
   if(!confirm('이 리뷰를 삭제할까요?'))return;
