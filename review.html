@@ -94,6 +94,15 @@ body.home{background:var(--stage);color:#f2f2f2}
 .empty{height:40vh}
 
 /* ---------- COLLAGE ---------- */
+.fold{max-width:720px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 22px 80px}
+.fold.wide{max-width:1100px}
+.ftabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:4px}
+.ftabs::-webkit-scrollbar{display:none}
+.ftab{font-family:var(--mono);font-size:12px;letter-spacing:.08em;padding:9px 16px 8px;border:2px solid var(--ink);border-bottom:0;border-radius:9px 9px 0 0;white-space:nowrap;flex:none;position:relative;top:0;transition:transform .15s}
+.ftab:not(.on):hover{transform:translateY(-3px)}
+.ftab.on{background:#fff;font-weight:700;z-index:2;margin-bottom:-2px;padding-bottom:10px}
+.fbody{border:2px solid var(--ink);border-radius:0 9px 9px 9px;background:#fff;position:relative}
+.page.in{max-width:none;margin:0;padding:22px 26px 60px}
 .page.rv{position:relative}
 .rvhead.hc{padding-right:150px;min-height:170px}
 .rvcover{position:absolute;right:0;top:64px;width:120px;--rot:0deg}
@@ -805,6 +814,23 @@ function newReview(catId){
   S.reviews.push(r);save('rev:'+r.id);return r;
 }
 
+
+/* folder tabs: switch category while staying inside a category / review */
+const TABC=['#cfe5fb','#f5ecd2','#e4d3c0','#dbeaf8','#efe3cc','#d9c7b2'];
+function folder(page,activeId){
+  const wide=page.classList.contains('wide');
+  const f=el('div',{class:'fold'+(wide?' wide':'')});
+  const tabs=el('div',{class:'ftabs'});
+  S.cats.forEach((c,i)=>{
+    const on=c.id===activeId;
+    const t=el('button',{class:'ftab'+(on?' on':''),text:c.name,onclick:()=>{if(!on)location.hash='#/c/'+c.id}});
+    if(!on)t.style.background=TABC[i%TABC.length];
+    tabs.append(t);
+  });
+  page.classList.add('in');
+  f.append(tabs,el('div',{class:'fbody'},page));
+  return f;
+}
 let rtok=0;
 async function pageCat(id){
   const tok=++rtok;
@@ -855,7 +881,7 @@ async function pageCat(id){
     page.append(box);
   }
   if(tok!==rtok)return;
-  app.textContent='';app.append(page);
+  app.textContent='';app.append(folder(page,id));
 }
 
 /* ================= REVIEW (text) ================= */
@@ -961,7 +987,7 @@ async function pageReview(id,edit){
     if(edit)photoBox.append(imgInput(v=>{r.photos.push(v);save('rev:'+r.id);drawPhotos()}));
   };
   drawPhotos();
-  app.append(page);
+  app.append(folder(page,r.cat));
   if(title&&!r.title)title.focusEnd();
 }
 function delReview(r){
@@ -1082,7 +1108,7 @@ async function pageScrap(r,c){
   page.append(tools);
   page.append(el('div',{class:'f',style:'margin:0 0 12px'},el('span',{class:'lab',style:'margin:0 10px 0 0',text:'PHOTO'}),imgInput(v=>addPhoto(v),'ADD')));
   page.append(paper);
-  app.append(page);
+  app.append(folder(page,r.cat));
 
   fit();
   for(const it of r.items.slice().sort((a,b)=>(a.z||0)-(b.z||0)))await draw(it);
