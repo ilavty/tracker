@@ -131,7 +131,9 @@ button{cursor:pointer;border:none;background:none}
 .irow{display:grid;grid-template-columns:10px fit-content(55%) minmax(0,1fr) auto 20px;gap:8px;align-items:baseline;padding:5px 2px;border-top:1px dashed var(--soft)}
 .irow:first-child{border-top:none}
 .irow.nolab{grid-template-columns:10px 1fr auto 20px}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block;transform:translateY(-1px)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;transform:translateY(-1px);position:relative}
+.dot[data-tip]::before{content:'';position:absolute;inset:-7px}
+.dot[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-20%);white-space:nowrap;background:#1f2a37;color:#fff;font-size:12px;line-height:1;padding:7px 9px;border-radius:6px;z-index:50;pointer-events:none}
 .lv0{background:var(--lv0)}.lv1{background:var(--lv1)}.lv2{background:var(--lv2)}.lv3{background:var(--lv3)}
 .ilab{font-size:15px;color:var(--navy);font-weight:400;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
 .itext{font-size:15px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
@@ -1037,7 +1039,7 @@ function cardHtml(c, opts = {}) {
     <div class="cbody">${items.map(it => {
     const s = st(it.id);
     return `<div class="irow ${it.label ? '' : 'nolab'}" data-iid="${it.id}">
-        <span class="dot lv${s.lv || 0}" title="${LV_NAME[s.lv || 0]} · 맞음 ${s.c || 0} / 틀림 ${s.w || 0}"></span>
+        <span class="dot lv${s.lv || 0}" data-tip="${LV_NAME[s.lv || 0]} · 맞음 ${s.c || 0} / 틀림 ${s.w || 0}"></span>
         ${it.label ? `<span class="ilab">${hiQ(it.label, q)}</span>` : ''}
         <span class="itext">${hiQ(it.text, q)}</span>
         <span class="itags">${it.tags.slice().sort(ko).map(t => `<span class="tag" data-tagv="${esc(t)}">#${esc(t)}</span>`).join('')}</span>
@@ -1730,7 +1732,7 @@ function viewStart() { SD.i = 0; SD.hideMode = false; SD.hidden = false; viewDra
 function viewDraw() {
   const st_ = $('#study'); const n = SD.units.length; const u = SD.units[SD.i]; const c = u.card;
   const rows = u.items.map(it => { const s = st(it.id); return `<div class="irow ${it.label ? '' : 'nolab'}">
-        <span class="dot lv${s.lv || 0}"></span>
+        <span class="dot lv${s.lv || 0}" data-tip="${LV_NAME[s.lv || 0]} · 맞음 ${s.c || 0} / 틀림 ${s.w || 0}"></span>
         ${it.label ? `<span class="ilab">${esc(it.label)}</span>` : ''}
         <span class="itext">${esc(it.text)}</span><span></span>
         <span class="star ${s.star ? 'on' : ''}" onclick="event.stopPropagation();viewStar('${it.id}')">${s.star ? '★' : '☆'}</span>
